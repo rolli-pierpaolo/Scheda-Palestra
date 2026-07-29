@@ -247,6 +247,19 @@ body.flash{background:var(--amber) !important;}
 .undo-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
 .undo-toast button{background:none;border:none;color:var(--red);font-weight:800;text-decoration:underline;padding:2px 4px;font-size:13px;}
 .chart-btn{background:none;border:1px solid var(--line);color:var(--accent,var(--green));font-size:12px;padding:4px 8px;border-radius:6px;float:right;margin-left:6px;}
+/* ---------------- OBIETTIVI: toast di sblocco + lista nella modale ---------------- */
+.achiev-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--panel2);border:2px solid var(--green);color:var(--text);padding:10px 16px;border-radius:16px;z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.5);max-width:85%;display:flex;align-items:center;gap:10px;}
+.achiev-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.achiev-toast-icon{font-size:26px;}
+.achiev-toast-label{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--green);text-transform:uppercase;}
+.achiev-toast-name{font-size:14px;font-weight:800;}
+.achiev-count{font-size:11px;font-weight:700;color:var(--muted);margin-left:6px;}
+.achiev-row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line);}
+.achiev-row:last-child{border-bottom:none;}
+.achiev-icon{font-size:26px;width:34px;text-align:center;flex:0 0 auto;}
+.achiev-row.locked{opacity:.5;}
+.achiev-title{font-weight:800;font-size:14px;}
+.achiev-desc{font-size:12px;color:var(--muted);margin-top:2px;}
 /* ---------------- MODALI (grafico progressione + categorie giorni) ---------------- */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;}
 .modal-box{background:var(--panel2);border:1px solid var(--line);border-radius:12px;max-width:360px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.5);}

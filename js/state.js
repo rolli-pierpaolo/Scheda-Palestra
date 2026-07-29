@@ -77,6 +77,7 @@ function addLibraryExercise(name, group){
     if(!extraLists.esercizi) extraLists.esercizi=[];
     extraLists.esercizi.push(name);
     saveExtraLists();
+    checkAchievements();
   }
   if(group) setExerciseGroup(name, group);
 }

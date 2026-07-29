@@ -30,6 +30,7 @@ const CORE_ASSETS = [
   './js/plate-calc.js',
   './js/exercise-library.js',
   './js/home.js',
+  './js/achievements.js',
   './js/app-init.js',
 ];
 

@@ -143,6 +143,7 @@ function archiveAndReset(){
 
   storicoExtra[archiveName.trim()] = JSON.parse(JSON.stringify(state.days));
   saveStorico();
+  checkAchievements(); // va fatto ORA: valuta anche "zero settimane saltate" sul blocco appena archiviato, prima che state venga azzerato qui sotto
 
   const newDays = state.days.map(d => ({
     name: d.name,
@@ -194,9 +195,9 @@ function exerciseCard(ex, exi, accent){
             <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
             <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
           </div>
-          <input class="set-input" inputmode="decimal" placeholder="${kgPlaceholder}" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+          <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="${kgPlaceholder}" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
         </div>
-        <input class="set-input" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">
+        <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">
       </div>`;
     }).join('');
     const wkey = activeDayIdx+"_"+exi+"_"+w;
@@ -211,12 +212,12 @@ function exerciseCard(ex, exi, accent){
     const maxRowHtml = maxShown ? `<div class="set-row max-row">
           <div></div>
           <div class="max-cell">
-            <input class="set-input max-input" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxPair[0].peso??'')}" onchange="updateMax(${exi},${w},0,'peso',this.value)">
-            <input class="set-input max-input" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxPair[1].peso??'')}" onchange="updateMax(${exi},${w},1,'peso',this.value)">
+            <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxPair[0].peso??'')}" onchange="updateMax(${exi},${w},0,'peso',this.value)">
+            <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxPair[1].peso??'')}" onchange="updateMax(${exi},${w},1,'peso',this.value)">
           </div>
           <div class="max-cell">
-            <input class="set-input max-input" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxPair[0].rip??'')}" onchange="updateMax(${exi},${w},0,'rip',this.value)">
-            <input class="set-input max-input" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxPair[1].rip??'')}" onchange="updateMax(${exi},${w},1,'rip',this.value)">
+            <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxPair[0].rip??'')}" onchange="updateMax(${exi},${w},0,'rip',this.value)">
+            <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxPair[1].rip??'')}" onchange="updateMax(${exi},${w},1,'rip',this.value)">
           </div>
         </div>` : '';
     return `<div class="week-block">
@@ -309,7 +310,11 @@ function updateSet(exi, w, si, field, val, recordPeso){
   saveState();
   if(field==='peso' && recordPeso!==undefined && recordPeso!==null){
     const p = parseFloat(String(val).replace(',','.'));
-    if(!isNaN(p) && p>recordPeso) celebratePR();
+    if(!isNaN(p) && p>recordPeso){
+      celebratePR();
+      bumpAchievCounter('prCount');
+      checkAchievements();
+    }
   }
 }
 function stepSet(exi, w, si, delta, btn){
@@ -325,7 +330,11 @@ function stepSet(exi, w, si, delta, btn){
   const input = btn.closest('.kg-wrap').querySelector('.set-input');
   if(input) input.value = next;
   saveState();
-  if(record && next>record.peso) celebratePR();
+  if(record && next>record.peso){
+    celebratePR();
+    bumpAchievCounter('prCount');
+    checkAchievements();
+  }
 }
 // il riquadro "max" ha lo stesso spirito a cascata di recupero/schema: espandendolo
 // in una settimana si espande anche in quelle dopo. Nascondendolo pero' NON si
@@ -382,6 +391,7 @@ function toggleWeekDone(exi, w){
   }
   saveState();
   renderActive();
+  if(nowDone) checkAchievements();
   const next = nextCardIndex(exi);
   if(nowDone && state.days[activeDayIdx].esercizi[next]){
     activeExerciseIdx = next;
@@ -543,6 +553,8 @@ function linkExercises(exiA, exiB, type){
   list.splice(idxA+1, 0, objB);
   saveState();
   renderActive();
+  bumpAchievCounter('linkCount');
+  checkAchievements();
 }
 function unlinkExercise(exi){
   const ex = state.days[activeDayIdx].esercizi[exi];
@@ -645,9 +657,9 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
         <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
         <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
       </div>
-      <input class="set-input" inputmode="decimal" placeholder="${kgPlaceholder}" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+      <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="${kgPlaceholder}" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
     </div>
-    <input class="set-input" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">`;
+    <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">`;
 }
 // la card per una coppia collegata: stesso impianto di exerciseCard, ma con due
 // intestazioni (una per esercizio) e un'unica settimana condivisa, dove ogni
@@ -689,13 +701,13 @@ function linkedExerciseCard(exA, exiA, exB, exiB, accent){
           <div class="linked-sub-rows">
             <div class="linked-sub-row">
               <span class="linked-tag" title="${escapeAttr(exA.nome||'')}">${escapeHtml(exA.nome||'—')}</span>
-              <input class="set-input max-input" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxA.peso??'')}" onchange="updateMax(${exiA},${w},0,'peso',this.value)">
-              <input class="set-input max-input" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxA.rip??'')}" onchange="updateMax(${exiA},${w},0,'rip',this.value)">
+              <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxA.peso??'')}" onchange="updateMax(${exiA},${w},0,'peso',this.value)">
+              <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxA.rip??'')}" onchange="updateMax(${exiA},${w},0,'rip',this.value)">
             </div>
             <div class="linked-sub-row">
               <span class="linked-tag" title="${escapeAttr(exB.nome||'')}">${escapeHtml(exB.nome||'—')}</span>
-              <input class="set-input max-input" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxB.peso??'')}" onchange="updateMax(${exiB},${w},0,'peso',this.value)">
-              <input class="set-input max-input" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxB.rip??'')}" onchange="updateMax(${exiB},${w},0,'rip',this.value)">
+              <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxB.peso??'')}" onchange="updateMax(${exiB},${w},0,'peso',this.value)">
+              <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxB.rip??'')}" onchange="updateMax(${exiB},${w},0,'rip',this.value)">
             </div>
           </div>
         </div>

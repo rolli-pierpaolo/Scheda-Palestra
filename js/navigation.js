@@ -162,6 +162,7 @@ function logWorkoutDay(dayIdx){
     state.programStartDate = key;
     saveState();
   }
+  checkAchievements();
 }
 function finishDay(){
   const day = state.days[activeDayIdx];

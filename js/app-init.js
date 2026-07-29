@@ -1,11 +1,13 @@
 // ---------------- INIT ----------------
 loadState();
 loadActivePos();
+loadAchievements();
 maybeAutoBackup();
 updateTitles();
 renderDayTabs();
 renderActive();
 renderHistList();
+checkAchievements();
 document.getElementById('histBody').innerHTML = '<div class="footer-note">Seleziona un WO storico qui sopra.</div>';
 // niente allenamento in corso (mai iniziato, o concluso con "Giorno terminato"):
 // si apre sulla Home invece che tornare dritti sulla scheda esercizi
