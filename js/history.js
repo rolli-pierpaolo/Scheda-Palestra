@@ -1,0 +1,64 @@
+// ---------------- STORICO ----------------
+// stessa idea di activeDayIdx/activeExerciseIdx ma per la tab Storico: histActive
+// e' il titolo del WO archiviato scelto (es. "WO 12"), histDayIdx il giorno dentro
+// quel WO. E' tutto di sola lettura, qui non si modifica nulla dei dati storici
+let histActive = null;
+let histDayIdx = 0;
+let histEditMode = false;
+function toggleHistEdit(){
+  histEditMode = !histEditMode;
+  const btn = document.getElementById('histEditBtn');
+  if(btn){ btn.textContent = histEditMode ? '\u2705 Fatto' : '\u270f\ufe0f Modifica'; btn.classList.toggle('active', histEditMode); }
+  renderHistList();
+}
+function renderHistList(){
+  const el = document.getElementById('histList');
+  const titles = Object.keys(getStorico());
+  el.innerHTML = titles.map(t=>{
+    const safe = String(t).replace(/'/g,"\\'");
+    const delBtn = histEditMode ? `<button class="hist-del" onclick="event.stopPropagation();deleteHistEntry('${safe}')" title="Elimina">\u2715</button>` : '';
+    return `<span class="hist-chip-wrap"><button class="hist-chip ${t===histActive?'active':''}" onclick="selectHist('${safe}')">${escapeHtml(t)}</button>${delBtn}</span>`;
+  }).join('');
+}
+function selectHist(t){
+  histActive = t; histDayIdx = 0;
+  renderHistList();
+  renderHistDayTabs();
+  renderHistBody();
+}
+function renderHistDayTabs(){
+  const el = document.getElementById('histDayTabs');
+  if(!histActive){ el.innerHTML=''; return; }
+  const days = getStorico()[histActive];
+  el.innerHTML = days.map((d,i)=>{
+    const a = dayAccent(d, i);
+    return `<button class="day-btn ${i===histDayIdx?'active':''}" style="--accent:${a.c}" onclick="selectHistDay(${i})">${escapeHtml(d.name)}</button>`;
+  }).join('');
+}
+function selectHistDay(i){ histDayIdx=i; renderHistDayTabs(); renderHistBody(); }
+// scheda di sola lettura per un esercizio del WO storico: una riga per ogni
+// settimana che ha davvero delle serie compilate (le settimane senza dati,
+// tipo quelle mai arrivate a farle, spariscono invece di mostrarsi vuote)
+function renderHistBody(){
+  const el = document.getElementById('histBody');
+  if(!histActive){ el.innerHTML = '<div class="footer-note">Seleziona un WO storico qui sopra.</div>'; return; }
+  const day = getStorico()[histActive][histDayIdx];
+  const a = dayAccent(day, histDayIdx);
+  el.innerHTML = day.esercizi.map(ex=>{
+    const weeksHtml = [0,1,2,3].map(w=>{
+      const sets = (ex.sets[w]||[]).filter(s=>s.peso||s.rip);
+      if(!sets.length){
+        if(ex.weekSkipped && ex.weekSkipped[w]) return `<div class="hist-week hist-week-skipped">Sett.${w+1}: saltata</div>`;
+        return '';
+      }
+      const chips = sets.map(s=>`<span class="hist-set">${escapeHtml(s.peso??'')}${s.peso&&s.rip?' × ':''}${escapeHtml(s.rip??'')}</span>`).join('');
+      return `<div class="hist-week">Sett.${w+1} (${escapeHtml(ex.recupero[w]||'')}): ${chips}</div>`;
+    }).join('');
+    return `<div class="card hist-card" style="--accent:${a.c}">
+      <div class="ex-name">${escapeHtml(ex.nome)}</div>
+      <div class="schema-line">${escapeHtml(ex.schema[0]||'')}</div>
+      <div style="padding:0 12px 12px;">${weeksHtml || '<span class="footer-note">Nessun dato registrato</span>'}</div>
+    </div>`;
+  }).join('');
+}
+

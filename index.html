@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Logbook</title>
+<script src="js/bootstrap.js"></script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Logbook">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0D0D0D">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <span class="app-version" id="appVersion">v19</span>
+  <button class="home-btn" onclick="showHome()" title="Home" aria-label="Home">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M4 11 L12 4 L20 11 V20 H4 Z"/><path d="M9.5 20 V13 H14.5 V20"/></svg>
+  </button>
+  <h1>Logbook</h1>
+  <div class="tabs">
+    <button class="tab-btn" id="tabActiveBtn" onclick="showView('active')">Allenamento</button>
+    <button class="tab-btn" id="tabHistBtn" onclick="showView('hist')">Storico</button>
+  </div>
+</div>
+<div id="dayTabsActive" class="day-tabs" style="display:none;"></div>
+<div id="viewHome" style="display:none;"></div>
+<main id="viewActive" style="display:none;"></main>
+
+<div id="viewHist" style="display:none;">
+  <div class="hist-list-row">
+    <div class="hist-list" id="histList"></div>
+    <button class="add-ex small2 hist-edit-btn" id="histEditBtn" onclick="toggleHistEdit()">✏️ Modifica</button>
+  </div>
+  <div id="histDayTabs" class="day-tabs"></div>
+  <main id="histBody"></main>
+
+  <div class="backup-row">
+    <button class="add-ex small2" onclick="exportBackup()">⬇️ Esporta backup</button>
+    <button class="add-ex small2" onclick="exportBackupFile()">💾 Salva backup su file</button>
+    <button class="add-ex small2" onclick="shareBackup()">📤 Condividi backup</button>
+    <button class="add-ex small2" onclick="importBackup()">⬆️ Importa backup di testo</button>
+    <button class="add-ex small2" onclick="document.getElementById('fileImportInput').click()">📂 Importa backup Json da file</button>
+    <input id="fileImportInput" type="file" accept="application/json,.json" style="display:none" onchange="importBackupFile(event)">
+  </div>
+  <div class="settings-row">
+    <button class="add-ex small2" onclick="openDaysModal()">⚙️ Modifica categorie giorni (Push/Pull/Legs...)</button>
+    <button class="add-ex small2" style="margin-top:8px;" onclick="openCalendar()">📅 Calendario allenamenti</button>
+    <button class="add-ex small2" style="margin-top:8px;" onclick="openExerciseLibrary()">📚 Libreria esercizi</button>
+  </div>
+  <div class="footer-note">Dati salvati automaticamente su questo telefono (localStorage). Aggiungi questa pagina alla schermata Home per aprirla come un'app. Fai un backup ogni tanto: se cancelli i dati del browser o cambi telefono, senza backup li perdi.</div>
+</div>
+<div id="chartModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeChart()">
+  <div class="modal-box">
+    <div class="modal-head"><span id="chartTitle">Esercizio</span><button onclick="closeChart()">✕</button></div>
+    <div id="chartBody" class="modal-body"></div>
+  </div>
+</div>
+<div id="daysModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeDaysModal()">
+  <div class="modal-box">
+    <div class="modal-head"><span>Categorie giorni</span><button onclick="closeDaysModal()">✕</button></div>
+    <div id="daysModalBody" class="modal-body"></div>
+  </div>
+</div>
+<div id="calendarModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeCalendar()">
+  <div class="modal-box">
+    <div class="modal-head"><span>Calendario allenamenti</span><button onclick="closeCalendar()">✕</button></div>
+    <div id="calendarBody" class="modal-body"></div>
+  </div>
+</div>
+<div id="plateModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closePlateCalc()">
+  <div class="modal-box">
+    <div class="modal-head"><span id="plateTitle">Calcolo dischi</span><button onclick="closePlateCalc()">✕</button></div>
+    <div id="plateBody" class="modal-body"></div>
+  </div>
+</div>
+<div id="linkModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeLinkPicker()">
+  <div class="modal-box">
+    <div class="modal-head"><span id="linkTitle">Collega esercizio</span><button onclick="closeLinkPicker()">✕</button></div>
+    <div id="linkBody" class="modal-body"></div>
+  </div>
+</div>
+<div id="libraryModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeExerciseLibrary()">
+  <div class="modal-box">
+    <div class="modal-head"><span>Libreria esercizi</span><div style="display:flex;gap:8px;align-items:center;"><button id="libraryEditBtn" onclick="toggleLibraryEditMode()" title="Modifica/rimuovi esercizi">✏️</button><button onclick="closeExerciseLibrary()">✕</button></div></div>
+    <div id="libraryBody" class="modal-body"></div>
+  </div>
+</div>
+<div id="undoToast" class="undo-toast">
+  <span>Esercizio eliminato</span>
+  <button onclick="undoDeleteExercise()">Annulla</button>
+</div>
+<div id="timerBar" class="timer-bar" style="display:none;">
+  <span id="timerLabel">Recupero</span>
+  <span id="timerClock">00:00</span>
+  <button onclick="stopTimer()">✕</button>
+</div>
+<div class="savebar">💾 <b id="saveStatus">Salvato</b></div>
+
+<!-- Logica divisa per argomento invece che in un unico file:-->
+
+<script src="js/data.js"></script>          <!-- esercizi/recuperi/schemi/scheda di base/storico -->
+<script src="js/state.js"></script>         <!-- colori dei giorni, chiavi di storage, caricamento stato -->
+<script src="js/combobox.js"></script>      <!-- autocomplete su nome esercizio/recupero/schema/giorni -->
+<script src="js/records.js"></script>       <!-- record personali (PR) -->
+<script src="js/chart.js"></script>         <!-- grafico di progressione -->
+<script src="js/backup.js"></script>        <!-- esporta/importa backup, manuale e automatico -->
+<script src="js/utils.js"></script>         <!-- escape html, altezza automatica delle textarea -->
+<script src="js/timer.js"></script>         <!-- timer di recupero -->
+<script src="js/navigation.js"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
+<script src="js/days-modal.js"></script>    <!-- modifica categorie giorni (nome/colore/aggiungi/elimina) -->
+<script src="js/exercise-card.js"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
+<script src="js/history.js"></script>       <!-- tab Storico: elenco ed esercizi dei WO archiviati -->
+<script src="js/calendar.js"></script>      <!-- calendario mensile dei giorni di allenamento terminati -->
+<script src="js/plate-calc.js"></script>    <!-- calcolatore dischi bilanciere per esercizio -->
+<script src="js/exercise-library.js"></script> <!-- libreria esercizi: ricerca, filtro gruppo muscolare, aggiungi/rimuovi -->
+<script src="js/home.js"></script>          <!-- pagina Home: progresso settimanale, giorno suggerito, elenco giorni -->
+<script src="js/app-init.js"></script>      <!-- avvio vero e proprio dell'app, va per ultimo -->
+</body>
+</html>
