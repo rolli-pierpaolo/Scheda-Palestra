@@ -172,6 +172,15 @@ function loadState(){
   try{
     workoutInProgress = localStorage.getItem(WORKOUT_IN_PROGRESS_KEY) === '1';
   }catch(e){ workoutInProgress = false; }
+  // autocorrezione: se il flag e' rimasto vero (es. salvato da una versione
+  // precedente che lo attivava anche solo toccando un campo) ma nessuna
+  // settimana risulta davvero completata in nessun giorno, non e' un
+  // allenamento "in corso" per davvero - si corregge qui cosi' non serve
+  // aspettare un "Giorno terminato" per tornare a vedere la Home
+  if(workoutInProgress && !state.days.some(d => (d.esercizi||[]).some(ex => (ex.weekDone||[]).some(Boolean)))){
+    workoutInProgress = false;
+    saveWorkoutInProgress();
+  }
 }
 function saveDeletedStorico(){
   localStorage.setItem(DELETED_STORICO_KEY, JSON.stringify(deletedStorico));
