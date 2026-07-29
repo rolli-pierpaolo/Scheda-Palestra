@@ -33,10 +33,12 @@ main{padding:12px;}
 /* ---------------- HOME ---------------- */
 #viewHome{padding:20px 16px 30px;}
 .home-hero{text-align:center;padding:18px 10px 22px;}
+.home-block-week{font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--green);margin-bottom:10px;}
 .home-progress-label{font-size:12px;font-weight:800;letter-spacing:2px;color:var(--muted);}
 .home-progress-num{font-size:72px;font-weight:900;color:var(--green);line-height:1;margin-top:6px;text-shadow:0 0 24px rgba(154,205,50,.45);}
 .home-progress-of{font-size:34px;color:var(--muted);font-weight:800;}
 .home-progress-sub{font-size:13px;font-weight:700;color:var(--text);margin-top:8px;text-transform:uppercase;letter-spacing:.5px;}
+.home-motivation{text-align:center;font-size:13px;font-weight:700;color:var(--text);font-style:italic;margin:0 6px 12px;opacity:.9;}
 .home-suggested-btn{display:block;width:100%;background:var(--accent,var(--green));border:none;border-radius:16px;padding:18px 14px;margin-bottom:48px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
 .home-suggested-label{display:block;font-size:11px;font-weight:800;letter-spacing:1.5px;color:#0D0D0D;opacity:.7;}
 .home-suggested-name{display:block;font-size:24px;font-weight:900;color:#0D0D0D;text-transform:uppercase;margin-top:4px;letter-spacing:.5px;}
