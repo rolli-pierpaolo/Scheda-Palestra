@@ -164,7 +164,7 @@ main{padding:12px;}
 .set-btns .add-ex.small{flex:none;width:auto;padding:5px 10px;font-size:10px;margin-top:0;border-width:1px;border-style:solid;}
 .add-ex.danger{color:var(--red);border-color:var(--red);}
 /* ---------------- BACKUP / IMPOSTAZIONI GIORNI (solo tab Storico) ---------------- */
-.backup-row{display:flex;flex-wrap:wrap;gap:8px;padding:16px 12px 0;}
+.backup-row{display:flex;flex-wrap:wrap;gap:8px;padding:16px 12px 0; margin-bottom: 40px;}
 .backup-row .add-ex{flex:1 1 140px;}
 .add-ex.small2{padding:10px;font-size:12px;margin-top:0;}
 .del-ex{background:none;border:none;color:var(--red);font-size:11px;font-weight:700;padding:6px 12px;float:right;}
