@@ -139,7 +139,15 @@ function archiveAndReset(){
   if(archiveName === null || !archiveName.trim()) return;
   const newTitle = prompt("Nome del nuovo mese che stai per iniziare?", suggestNextTitle(state.title));
   if(newTitle === null || !newTitle.trim()) return;
-  if(!confirm(`Salvo "${archiveName}" nello Storico e azzero pesi/ripetizioni per iniziare "${newTitle}". Nome esercizi, recupero e schema restano come base di partenza. Continuare?`)) return;
+  // richiesto a ogni nuovo blocco (non solo la primissima volta), precompilato
+  // con l'ultimo valore usato: cosi' si puo' cambiare durata da un blocco
+  // all'altro senza doverla lasciare per forza fissa a quella iniziale
+  let weeksVal = prompt("Quante settimane durerà il nuovo blocco?", String(state.weeksPerBlock||4));
+  if(weeksVal === null) return;
+  let weeksN = parseInt(String(weeksVal).replace(',','.'), 10);
+  if(isNaN(weeksN) || weeksN<1) weeksN = state.weeksPerBlock||4;
+  if(weeksN>12) weeksN = 12;
+  if(!confirm(`Salvo "${archiveName}" nello Storico e azzero pesi/ripetizioni per iniziare "${newTitle}" (${weeksN} settimane). Nome esercizi, recupero e schema restano come base di partenza. Continuare?`)) return;
 
   storicoExtra[archiveName.trim()] = JSON.parse(JSON.stringify(state.days));
   saveStorico();
@@ -148,11 +156,12 @@ function archiveAndReset(){
   const newDays = state.days.map(d => ({
     name: d.name,
     esercizi: d.esercizi.map(ex => ({
-      nome: ex.nome, commento: ex.commento, recupero: ex.recupero.slice(), schema: ex.schema.slice(),
-      sets: (ex.sets||[[],[],[],[]]).map(weekSets => (weekSets||[]).map(()=>({peso:'',rip:''})))
+      nome: ex.nome, commento: ex.commento,
+      recupero: resizeArr(ex.recupero, weeksN, ''), schema: resizeArr(ex.schema, weeksN, ''),
+      sets: Array.from({length:weeksN}, (_,i) => (ex.sets && ex.sets[i] ? ex.sets[i].map(()=>({peso:'',rip:''})) : []))
     }))
   }));
-  state = { title: newTitle.trim(), days: newDays, programStartDate: todayKey() };
+  state = { title: newTitle.trim(), days: newDays, programStartDate: todayKey(), weeksPerBlock: weeksN };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
   collapsedMap = {};
@@ -179,7 +188,8 @@ function suggestNextWeight(ex, w, si){
   return isNaN(p) ? null : Math.round(p*10)/10;
 }
 function exerciseCard(ex, exi, accent){
-  const weeks = [0,1,2,3];
+  const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+  const weeks = Array.from({length:nWeeks}, (_,i)=>i);
   const record = getRecordForExercise(ex.nome);
   const recordAttr = record ? record.peso : 'null';
   const weeksHtml = weeks.map(w=>{
@@ -289,21 +299,21 @@ function updateMeta(exi, field, w, val){
   // le settimane successive seguono quella appena modificata (comoda scrittura
   // in cascata), finche' non vengono a loro volta modificate a mano: da li'
   // in poi e' quella modifica manuale a propagarsi in avanti
-  for(let k=w+1;k<4;k++){ ex[field][k] = val; }
-  if(w<3) renderActive();
+  for(let k=w+1;k<ex[field].length;k++){ ex[field][k] = val; }
+  if(w<ex[field].length-1) renderActive();
   saveState();
 }
 // nota libera per la singola settimana, senza cascata: a differenza di
 // recupero/schema qui ogni settimana resta indipendente dalle altre
 function updateWeekNote(exi, w, val){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.weekNote) ex.weekNote=['','','',''];
+  if(!ex.weekNote) ex.weekNote=emptyStrArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
   ex.weekNote[w] = val;
   saveState();
 }
 function updateSet(exi, w, si, field, val, recordPeso){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.sets) ex.sets=[[],[],[],[]];
+  if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
   if(!ex.sets[w]) ex.sets[w]=[];
   while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
   ex.sets[w][si][field]=val;
@@ -319,7 +329,7 @@ function updateSet(exi, w, si, field, val, recordPeso){
 }
 function stepSet(exi, w, si, delta, btn){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.sets) ex.sets=[[],[],[],[]];
+  if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
   if(!ex.sets[w]) ex.sets[w]=[];
   while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
   let cur = parseFloat(String(ex.sets[w][si].peso).replace(',','.'));
@@ -346,10 +356,10 @@ function maxHasData(ex, w){
 }
 function toggleMax(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.maxShown) ex.maxShown=[false,false,false,false];
+  if(!ex.maxShown) ex.maxShown=new Array((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4).fill(false);
   const showing = !ex.maxShown[w];
   ex.maxShown[w] = showing;
-  for(let k=w+1;k<4;k++){
+  for(let k=w+1;k<ex.maxShown.length;k++){
     if(showing || !maxHasData(ex,k)) ex.maxShown[k] = showing;
   }
   saveState();
@@ -373,12 +383,12 @@ function nextCardIndex(exi){
 }
 function toggleWeekDone(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.weekDone) ex.weekDone=[false,false,false,false];
+  if(!ex.weekDone) ex.weekDone=new Array((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4).fill(false);
   const nowDone = !ex.weekDone[w];
   ex.weekDone[w] = nowDone;
   // completata e saltata sono mutuamente esclusive: segnarne una toglie l'altra
   if(nowDone && ex.weekSkipped) ex.weekSkipped[w] = false;
-  if(nowDone && w<3){
+  if(nowDone && w<ex.weekDone.length-1){
     collapsedMap[activeDayIdx+"_"+exi+"_"+w] = true;
     collapsedMap[activeDayIdx+"_"+exi+"_"+(w+1)] = false;
     saveCollapsed();
@@ -404,7 +414,7 @@ function toggleWeekDone(exi, w){
 // anche nello Storico (vedi renderHistBody in history.js) invece di sparire e basta
 function toggleWeekSkipped(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.weekSkipped) ex.weekSkipped=[false,false,false,false];
+  if(!ex.weekSkipped) ex.weekSkipped=new Array((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4).fill(false);
   const nowSkipped = !ex.weekSkipped[w];
   ex.weekSkipped[w] = nowSkipped;
   if(nowSkipped && ex.weekDone) ex.weekDone[w] = false;
@@ -413,7 +423,7 @@ function toggleWeekSkipped(exi, w){
 }
 function updateMax(exi, w, idx, field, val){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.maxExtra) ex.maxExtra=[[],[],[],[]];
+  if(!ex.maxExtra) ex.maxExtra=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
   if(!ex.maxExtra[w]) ex.maxExtra[w]=[];
   if(!ex.maxExtra[w][idx]) ex.maxExtra[w][idx]={};
   ex.maxExtra[w][idx][field]=val;
@@ -421,8 +431,8 @@ function updateMax(exi, w, idx, field, val){
 }
 function addSet(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.sets) ex.sets=[[],[],[],[]];
-  for(let k=0;k<4;k++){ if(!ex.sets[k]) ex.sets[k]=[]; ex.sets[k].push({peso:'',rip:''}); }
+  if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
+  for(let k=0;k<ex.sets.length;k++){ if(!ex.sets[k]) ex.sets[k]=[]; ex.sets[k].push({peso:'',rip:''}); }
   renderActive();
   saveState();
 }
@@ -448,7 +458,7 @@ function removeSet(exi, w){
   if(otherWeeksHaveData){
     ex.sets[w].pop();
   } else {
-    for(let k=0;k<4;k++){ if(ex.sets[k] && ex.sets[k].length>0) ex.sets[k].pop(); }
+    for(let k=0;k<ex.sets.length;k++){ if(ex.sets[k] && ex.sets[k].length>0) ex.sets[k].pop(); }
   }
   renderActive();
   saveState();
@@ -456,7 +466,8 @@ function removeSet(exi, w){
 // aggiunge una scheda esercizio vuota in fondo al giorno; niente qui obbliga a
 // scegliere subito il nome, si compila dopo dal campo con l'autocomplete
 function addExercise(dayIdx){
-  state.days[dayIdx].esercizi.push({nome:'',commento:'',recupero:['','','',''],schema:['','','',''],sets:[[],[],[],[]]});
+  const n = ensureWeeksPerBlock();
+  state.days[dayIdx].esercizi.push({nome:'',commento:'',recupero:emptyStrArr(n),schema:emptyStrArr(n),sets:emptySetsArr(n)});
   renderActive();
   saveState();
 }
@@ -639,7 +650,8 @@ function onLinkPartnerNameChosen(val){
     pickLinkPartner(matchIdx);
     return;
   }
-  day.esercizi.push({nome:val, commento:'', recupero:['','','',''], schema:['','','',''], sets:[[],[],[],[]]});
+  const n = ensureWeeksPerBlock();
+  day.esercizi.push({nome:val, commento:'', recupero:emptyStrArr(n), schema:emptyStrArr(n), sets:emptySetsArr(n)});
   pickLinkPartner(day.esercizi.length-1);
 }
 // input kg/rip di UNA sola riga di UN solo esercizio del gruppo (con la sua
@@ -666,7 +678,8 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
 // riga numerata si sdoppia in due sotto-righe (una per esercizio)
 function linkedExerciseCard(exA, exiA, exB, exiB, accent){
   const typeLabel = exA.linkType === 'jumpset' ? 'Jump set' : 'Super set';
-  const weeks = [0,1,2,3];
+  const nWeeks = (exA.recupero && exA.recupero.length) || state.weeksPerBlock || 4;
+  const weeks = Array.from({length:nWeeks}, (_,i)=>i);
   const weeksHtml = weeks.map(w=>{
     const wkey = activeDayIdx+"_"+exiA+"_"+w;
     const isCollapsed = (wkey in collapsedMap) ? !!collapsedMap[wkey] : (w !== 0);

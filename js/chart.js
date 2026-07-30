@@ -5,7 +5,8 @@
 // all'altro, quindi confrontare i pesi tra mesi diversi non avrebbe senso
 function computeExerciseWeekProgress(ex){
   const points = [];
-  for(let w=0; w<4; w++){
+  const nWeeks = (ex.sets && ex.sets.length) || (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+  for(let w=0; w<nWeeks; w++){
     const sets = (ex.sets && ex.sets[w]) || [];
     let best = null;
     sets.forEach(s=>{

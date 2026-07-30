@@ -45,7 +45,10 @@ function renderHistBody(){
   const day = getStorico()[histActive][histDayIdx];
   const a = dayAccent(day, histDayIdx);
   el.innerHTML = day.esercizi.map(ex=>{
-    const weeksHtml = [0,1,2,3].map(w=>{
+    // il numero di settimane di QUESTO esercizio storico (non quello del blocco
+    // attivo: un WO archiviato puo' avere una durata diversa da quella corrente)
+    const nWeeks = (ex.sets && ex.sets.length) || (ex.recupero && ex.recupero.length) || 4;
+    const weeksHtml = Array.from({length:nWeeks}, (_,i)=>i).map(w=>{
       const sets = (ex.sets[w]||[]).filter(s=>s.peso||s.rip);
       if(!sets.length){
         if(ex.weekSkipped && ex.weekSkipped[w]) return `<div class="hist-week hist-week-skipped">Sett.${w+1}: saltata</div>`;

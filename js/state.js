@@ -162,6 +162,16 @@ function loadState(){
   if(!state.programStartDate && Object.keys(calendarLog).length){
     state.programStartDate = mostRecentMondayKey();
   }
+  // numero di settimane del blocco attivo (prima era sempre fisso a 4 in tutta
+  // l'app). Se manca: se il programma ha gia' esercizi veri (dati salvati
+  // prima che questo campo esistesse) si assume 4 senza chiedere nulla, per
+  // non alterare dati gia' in uso; se invece e' un programma davvero vuoto
+  // (utente nuovo, nessun esercizio da nessuna parte) resta senza valore,
+  // sara' ensureWeeksPerBlock() a chiederlo al primo esercizio aggiunto
+  if(!state.weeksPerBlock){
+    const hasExistingData = (state.days||[]).some(d=>(d.esercizi||[]).some(ex=>ex.recupero && ex.recupero.length));
+    if(hasExistingData) state.weeksPerBlock = 4;
+  }
   try{
     const rawg = localStorage.getItem(EXERCISE_GROUPS_KEY);
     if(rawg) exerciseGroups = JSON.parse(rawg);
@@ -182,6 +192,33 @@ function loadState(){
     workoutInProgress = false;
     saveWorkoutInProgress();
   }
+}
+// ---------------- SETTIMANE PER BLOCCO (configurabile, non piu' fisso a 4) ----------------
+function emptyStrArr(n){ return new Array(n).fill(''); }
+// niente Array(n).fill([]): condividerebbe lo STESSO array tra tutte le
+// settimane (fill non clona), una modifica su una settimana finirebbe per
+// comparire anche nelle altre. Array.from crea un array nuovo per ogni indice
+function emptySetsArr(n){ return Array.from({length:n}, () => []); }
+// riporta un array esistente alla nuova lunghezza n, mantenendo i valori gia'
+// presenti indice per indice e riempiendo il resto col default: usato quando
+// si archivia e si sceglie un numero di settimane diverso dal blocco precedente
+function resizeArr(arr, n, fill){
+  const out = [];
+  for(let i=0;i<n;i++) out.push(arr && arr[i]!==undefined ? arr[i] : fill);
+  return out;
+}
+// chiesto la primissima volta che si aggiunge un esercizio a un programma
+// nuovo (weeksPerBlock ancora senza valore) - da li' in poi resta quello per
+// tutto il blocco corrente, finche' non si archivia e se ne sceglie uno nuovo
+function ensureWeeksPerBlock(){
+  if(state.weeksPerBlock) return state.weeksPerBlock;
+  let val = prompt('Quante settimane dura un blocco di allenamento?', '4');
+  let n = parseInt(String(val||'').replace(',','.'), 10);
+  if(isNaN(n) || n<1) n = 4;
+  if(n>12) n = 12;
+  state.weeksPerBlock = n;
+  saveState();
+  return n;
 }
 function saveDeletedStorico(){
   localStorage.setItem(DELETED_STORICO_KEY, JSON.stringify(deletedStorico));

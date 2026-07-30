@@ -3,6 +3,18 @@
 // e workoutInProgress in state.js): elenco giorni, progresso settimanale e
 // giorno suggerito, tutto calcolato dal calendario che gia' esiste
 function showHome(){
+  // tornare alla Home (di proposito, toccando la casetta) vuol dire "per ora ho
+  // finito qui": se non si azzera anche qui, un allenamento segnato come
+  // completato ma mai chiuso con "Giorno terminato" resterebbe "in corso" per
+  // sempre, e alla riapertura dell'app (anche giorni dopo) si tornerebbe
+  // dritti li' invece che alla Home, anche se nel frattempo non si e' toccato
+  // piu' nulla. Nessun problema a farlo sempre: quando showHome() viene
+  // chiamata da finishDay() o all'avvio il flag e' gia' false, questo e' un
+  // no-op in quei casi
+  if(workoutInProgress){
+    workoutInProgress = false;
+    saveWorkoutInProgress();
+  }
   renderHome();
   showView('home');
 }
@@ -58,15 +70,17 @@ function computeMonthlyWorkoutsCount(){
   });
   return total;
 }
-// in che settimana del blocco attivo (4 settimane) si e', contando da
-// programStartDate: bloccata tra 1 e 4 perche' oltre la 4 tocca "Archivia e
-// inizia un nuovo mese" (il blocco successivo riparte da 1)
+// in che settimana del blocco attivo si e' (durata configurabile, vedi
+// state.weeksPerBlock), contando da programStartDate: bloccata tra 1 e la
+// durata del blocco perche' oltre tocca "Archivia e inizia un nuovo mese"
+// (il blocco successivo riparte da 1, eventualmente con una durata diversa)
 function computeCurrentBlockWeek(){
+  const total = state.weeksPerBlock || 4;
   const startKey = state.programStartDate || mostRecentMondayKey();
   const start = new Date(startKey+'T00:00:00');
   const diffDays = Math.floor((new Date() - start) / 86400000);
   const week = Math.floor(diffDays/7) + 1;
-  return Math.min(Math.max(week,1),4);
+  return Math.min(Math.max(week,1),total);
 }
 // gruppi muscolari allenati nel giorno suggerito (in ordine di comparsa negli
 // esercizi), usata per scegliere una frase motivazionale in tema
@@ -289,7 +303,7 @@ function renderHome(){
     ${motivation ? `<div class="home-motivation">${escapeHtml(motivation)}</div>` : ''}` : '';
   el.innerHTML = `
     <div class="home-hero">
-      <div class="home-block-week">SETTIMANA ${blockWeek} DI 4</div>
+      <div class="home-block-week">SETTIMANA ${blockWeek} DI ${state.weeksPerBlock||4}</div>
       <div class="home-progress-label">GIORNO</div>
       <div class="home-progress-num">${done}<span class="home-progress-of">/${total}</span></div>
       <div class="home-progress-sub">allenamenti in the bag 💪</div>
