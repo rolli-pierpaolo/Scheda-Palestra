@@ -1,4 +1,14 @@
 // ---------------- INIT ----------------
+// chiede al sistema di NON liberare mai i dati di questo sito sotto pressione
+// di spazio ("storage persistente"): silenzioso su quasi tutti i browser
+// (nessuna finestra di permesso, la decisione e' automatica in base all'uso),
+// riduce il rischio di perdita dati se l'app resta a lungo senza essere aperta.
+// Un solo tentativo basta, non serve richiederlo a ogni avvio
+if('storage' in navigator && navigator.storage.persist && localStorage.getItem('scheda_wo18_storage_persist_asked_v1') !== '1'){
+  navigator.storage.persist().catch(()=>{}).finally(()=>{
+    try{ localStorage.setItem('scheda_wo18_storage_persist_asked_v1','1'); }catch(e){}
+  });
+}
 loadState();
 loadActivePos();
 loadAchievements();
