@@ -755,7 +755,7 @@ function linkedExerciseCard(exA, exiA, exB, exiB, accent){
       ${prBadgeA}
       <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiA},this.value)">${escapeHtml(exA.commento??'')}</textarea>
     </div>
-    <button class="link-type-divider" style="background:${accent.d}" onclick="openLinkPicker(${exiA})" title="Gestisci collegamento">⚡ ${typeLabel} <span class="link-type-manage">🔗 gestisci</span></button>
+    <button class="link-type-divider" onclick="openLinkPicker(${exiA})" title="Gestisci collegamento"><span class="link-type-pill" style="background:${accent.d}">⚡ ${typeLabel} <span class="link-type-manage">🔗 gestisci</span></span></button>
     <div class="card-head linked-head compact">
       <button class="del-ex" onclick="deleteExercise(${exiB})">Elimina</button>
       <button class="chart-btn" onclick="openChart(${exiB})" title="Grafico progressione">📈</button>
