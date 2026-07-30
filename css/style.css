@@ -58,9 +58,19 @@ main{padding:12px;}
 .card-head{padding:10px 12px 4px;}
 /* ---------------- SUPERSET / JUMP SET (esercizi collegati) ---------------- */
 .card.linked-group{border-top:1px solid var(--line);border-left:4px solid var(--accent,var(--green));}
-.link-group-label{padding:5px 12px;font-size:11px;font-weight:800;color:var(--text);letter-spacing:.4px;}
 .linked-head{border-bottom:1px dashed var(--line);}
 .linked-head:last-of-type{border-bottom:none;}
+/* meno spazio verticale rispetto a un esercizio singolo: qui ce ne sono due
+   impilati, che insieme formano concettualmente "un unico esercizio" */
+.linked-head.compact{padding:8px 12px 3px;}
+.linked-head.compact .ex-comment.compact{min-height:22px;padding:6px 10px;margin-top:4px;}
+/* tipo di collegamento (super set/jump set) unificato in un solo elemento tra
+   i due nomi, cliccabile per gestire il collegamento: prima erano due bottoni
+   🔗 duplicati (uno per esercizio) piu' un'etichetta separata in cima alla
+   card, facile da perdere di vista visto che i due nomi sono il primo vero
+   punto di lettura */
+.link-type-divider{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:none;border:none;color:var(--text);font-size:11px;font-weight:800;letter-spacing:.4px;padding:6px 12px;border-bottom:1px dashed var(--line);}
+.link-type-manage{font-size:10px;font-weight:700;opacity:.75;text-decoration:underline;}
 /* riquadro sottilissimo solo per non confondere a quale numero di serie
    appartengono le due sotto-righe (una per esercizio) */
 .linked-set-group{border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:5px 5px 4px;margin-bottom:5px;}
