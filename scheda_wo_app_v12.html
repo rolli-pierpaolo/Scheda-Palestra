@@ -202,7 +202,7 @@ function loadState(){
     if(raw){ state = JSON.parse(raw); }
   }catch(e){}
   if(!state) state = JSON.parse(JSON.stringify(DATA.attivo));
-  if(!state.title) state.title = DATA.attivo.title || "Allenamento";
+  if(!state.title) state.title = DATA.attivo.title || "A";
   try{
     const rawc = localStorage.getItem(COLLAPSE_KEY);
     if(rawc) collapsedMap = JSON.parse(rawc);
@@ -666,7 +666,7 @@ function renderActive(){
 }
 
 function updateTitles(){
-  document.getElementById('tabActiveBtn').textContent = "Allenamento (" + (state.title || "attuale") + ")";
+  document.getElementById('tabActiveBtn').textContent = " + (state.title || "attuale")";
 }
 
 function suggestNextTitle(t){

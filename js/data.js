@@ -289,10 +289,10 @@ const DATA = {
   ],
   "giorni": [],
   "attivo": {
-    "title": "Il mio allenamento",
+    "title": "Workout",
     "days": [
       {
-        "name": "Giorno 1",
+        "name": "A",
         "esercizi": []
       }
     ]
