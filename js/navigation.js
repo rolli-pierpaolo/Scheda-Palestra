@@ -82,6 +82,18 @@ function trySnapToActiveExercise(force){
   }
 }
 function showView(v){
+  // Se sono già in Allenamento e premo di nuovo il pulsante,
+  // torno in cima alla pagina.
+  if(
+    v === 'active' &&
+    document.getElementById('viewActive').style.display !== 'none'
+  ){
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    return;
+  }
   if(v!=='active') discardReorderIfPending();
   document.getElementById('viewActive').style.display = v==='active' ? '' : 'none';
   document.getElementById('dayTabsActive').style.display = v==='active' ? '' : 'none';
@@ -134,6 +146,24 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+// ---------------- RIALINEAMENTO DOPO CHIUSURA TASTIERA ----------------
+// quando la tastiera mobile si chiude, il browser spesso lascia la pagina
+// spostata verso il basso. Dopo un piccolo ritardo riallinea l'esercizio attivo.
+let lastViewportHeight = window.innerHeight;
+
+window.addEventListener('resize', () => {
+  const currentHeight = window.innerHeight;
+
+  // se l'altezza aumenta significa che la tastiera è probabilmente chiusa
+  if(currentHeight > lastViewportHeight + 100){
+    setTimeout(() => {
+      trySnapToActiveExercise(true);
+    }, 250);
+  }
+
+  lastViewportHeight = currentHeight;
+});
+
 function renderDayTabs(){
   const el = document.getElementById('dayTabsActive');
   el.innerHTML = state.days.map((d,i)=>{
@@ -164,18 +194,93 @@ function logWorkoutDay(dayIdx){
   }
   checkAchievements();
 }
+function openNextWeekForDay(dayIdx){
+  const day = state.days[dayIdx];
+  if(!day) return;
+
+  day.esercizi.forEach((ex, exi)=>{
+    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+
+    if(!ex.weekDone) ex.weekDone = new Array(nWeeks).fill(false);
+
+    const nextWeek = ex.weekDone.findIndex((done, i)=>{
+      return done && i < nWeeks-1 && !ex.weekDone[i+1];
+    });
+
+    if(nextWeek !== -1){
+      collapsedMap[dayIdx+"_"+exi+"_"+nextWeek] = true;
+      collapsedMap[dayIdx+"_"+exi+"_"+(nextWeek+1)] = false;
+    }
+  });
+
+  saveCollapsed();
+}
+function forceNextWeekForDay(dayIdx){
+  const day = state.days[dayIdx];
+  if(!day) return;
+
+  day.esercizi.forEach((ex, exi)=>{
+    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+
+    if(!ex.weekDone) ex.weekDone = new Array(nWeeks).fill(false);
+    if(!ex.weekSkipped) ex.weekSkipped = new Array(nWeeks).fill(false);
+
+    let currentWeek = 0;
+
+    for(let i=0;i<nWeeks;i++){
+      if(ex.weekDone[i] || ex.weekSkipped[i]){
+        currentWeek = i;
+      }
+    }
+
+    if(currentWeek < nWeeks-1){
+      collapsedMap[dayIdx+"_"+exi+"_"+currentWeek] = true;
+      collapsedMap[dayIdx+"_"+exi+"_"+(currentWeek+1)] = false;
+    }
+  });
+
+  saveCollapsed();
+}
+function allExercisesClosed(day){
+  return day.esercizi.every(ex=>{
+    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+
+    if(!ex.weekDone) ex.weekDone = new Array(nWeeks).fill(false);
+    if(!ex.weekSkipped) ex.weekSkipped = new Array(nWeeks).fill(false);
+
+    let currentWeek = 0;
+
+    for(let i=0;i<nWeeks;i++){
+      if(ex.weekDone[i] || ex.weekSkipped[i]){
+        currentWeek = i;
+      }
+    }
+
+    return ex.weekDone[currentWeek] || ex.weekSkipped[currentWeek];
+  });
+}
 function finishDay(){
   const day = state.days[activeDayIdx];
   if(!confirm(`Segnare "${day.name}" come terminato oggi?`)) return;
+
+  if(!allExercisesClosed(day)){
+    if(!confirm("Alcuni esercizi non risultano completati o saltati. Vuoi comunque passare alla settimana successiva?")){
+      return;
+    }
+  }
+
   discardReorderIfPending();
   logWorkoutDay(activeDayIdx);
+
+  forceNextWeekForDay(activeDayIdx);
+
   activeDayIdx = (activeDayIdx+1) % state.days.length;
   activeExerciseIdx = null;
   saveActivePos();
-  // la sessione e' conclusa: si torna subito alla Home (non ha senso restare
-  // sulla scheda esercizi, ne' passare dritti al giorno dopo, "tanto e' finito")
+
   workoutInProgress = false;
   saveWorkoutInProgress();
+
   renderDayTabs();
   renderActive();
   showHome();

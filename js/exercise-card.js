@@ -13,7 +13,7 @@ function renderActive(){
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
   const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">↕️ Modifica ordine</button>` : '';
-  const finishBtn = day.esercizi.length>0 ? `<button class="add-ex" style="margin-top:18px;border-color:var(--green);color:var(--green);font-size:15px;" onclick="finishDay()">✅ Giorno terminato — vai al prossimo</button>` : '';
+  const finishBtn = day.esercizi.length>0 ? `<button class="add-ex" style="margin-top:18px;border-color:var(--green);color:var(--green);font-size:15px;" onclick="finishDay()">✅ Giorno di allenamento terminato!</button>` : '';
   // gli esercizi "collegati" (super set/jump set, vedi piu' sotto) vengono
   // renderizzati insieme in un'unica card: quello che segue nell'array (il
   // partner) va saltato qui, e' gia' incluso dentro linkedExerciseCard
@@ -388,11 +388,7 @@ function toggleWeekDone(exi, w){
   ex.weekDone[w] = nowDone;
   // completata e saltata sono mutuamente esclusive: segnarne una toglie l'altra
   if(nowDone && ex.weekSkipped) ex.weekSkipped[w] = false;
-  if(nowDone && w<ex.weekDone.length-1){
-    collapsedMap[activeDayIdx+"_"+exi+"_"+w] = true;
-    collapsedMap[activeDayIdx+"_"+exi+"_"+(w+1)] = false;
-    saveCollapsed();
-  }
+ 
   // l'allenamento si considera "iniziato" solo quando si segna davvero
   // completata almeno una settimana, non solo toccando/guardando un campo
   if(nowDone && !workoutInProgress){
