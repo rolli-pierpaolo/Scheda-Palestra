@@ -73,11 +73,13 @@ main{padding:12px;}
    riga tratteggiata: dentro alla cornice unica non serve un'altra divisione */
 .linked-head.compact .ex-comment.compact{background:transparent;border:none;border-radius:0;color:var(--muted);font-style:italic;font-size:11px;padding:2px 2px 4px;margin-top:1px;min-height:0;resize:none;}
 .linked-head.compact .pr-badge{margin:2px 0 0;}
-/* tipo di collegamento (super set/jump set) come una piccola etichetta
-   "a pillola" centrata tra i due nomi, invece di una barra colorata a tutta
-   larghezza che leggeva come un muro tra due card separate */
-.link-type-divider{width:100%;display:flex;align-items:center;justify-content:center;background:none;border:none;padding:1px 0 3px;}
-.link-type-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:800;color:var(--text);letter-spacing:.3px;}
+/* tipo di collegamento (super set/jump set): una sottile riga colorata (stesso
+   colore dell'accent/bordo della card) che attraversa tutta la larghezza, con
+   l'etichetta del tipo centrata sopra - non piu' una barra piena a tutta
+   altezza (sembrava un muro tra due card separate), ma nemmeno invisibile */
+.link-type-divider{position:relative;width:100%;display:flex;align-items:center;justify-content:center;background:none;border:none;padding:9px 0;}
+.link-type-divider::before{content:'';position:absolute;left:14px;right:14px;top:50%;height:2px;background:var(--accent,var(--green));transform:translateY(-50%);}
+.link-type-pill{position:relative;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:800;color:var(--text);letter-spacing:.3px;background:var(--accent,var(--green));}
 .link-type-manage{font-size:9px;font-weight:700;opacity:.8;text-decoration:underline;}
 /* riquadro sottilissimo solo per non confondere a quale numero di serie
    appartengono le due sotto-righe (una per esercizio) */
