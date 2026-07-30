@@ -10,9 +10,18 @@ function openDaysModal(){
       <input type="color" class="day-color-input" value="${a.c}" title="Colore del giorno" onchange="updateDayColor(${i},this.value)">
       <button class="del-day-btn" onclick="deleteDay(${i})" title="Elimina giorno">✕</button>
     </div>`;
-  }).join('')
-  + '<button class="add-ex small2" style="margin-top:6px;" onclick="addDay()">+ Aggiungi giorno</button>'
-  + '<div class="footer-note" style="padding:12px 0 0;text-align:left;">Il nome scelto determina l\'etichetta della scheda per quel giorno; il colore puoi cambiarlo qui a fianco. Vale solo per il ciclo attivo.</div>';
+ }).join('')
++ '<button class="add-ex small2" style="margin-top:6px;" onclick="addDay()">+ Aggiungi giorno</button>'
++ `
+<div class="days-row" style="margin-top:12px;">
+  <span class="days-label">Allenamento</span>
+  <input class="meta-input"
+    value="${escapeAttr(state.title || '')}"
+    placeholder="Nome allenamento"
+    onchange="updateWorkoutTitle(this.value)">
+</div>
+`
++ '<div class="footer-note" style="padding:12px 0 0;text-align:left;">Il nome scelto determina l\'etichetta della scheda per quel giorno; il colore puoi cambiarlo qui a fianco. Vale solo per il ciclo attivo.</div>';
   document.getElementById('daysModal').style.display = 'flex';
 }
 function closeDaysModal(){
@@ -25,6 +34,18 @@ function renameDay(i, val){
   saveState();
   renderDayTabs();
   renderActive();
+}
+function updateWorkoutTitle(val){
+  val = (val || '').trim();
+
+  if(!val){
+    state.title = "Allenamento";
+  } else {
+    state.title = val;
+  }
+
+  saveState();
+  updateTitles();
 }
 // colore scelto a mano dall'utente per quel giorno: da qui in poi dayAccent()
 // usa sempre questo invece di ripiegare su ACCENTS/posizione
