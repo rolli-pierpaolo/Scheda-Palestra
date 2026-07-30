@@ -747,22 +747,24 @@ function linkedExerciseCard(exA, exiA, exB, exiB, accent){
   const prBadgeB = recordB ? `<div class="pr-badge">🏆 Record: ${escapeHtml(String(recordB.peso))} kg${recordB.rip? ' × '+escapeHtml(String(recordB.rip)) : ''}</div>` : '';
 
   return `<div class="card linked-group" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
-    <div class="card-head linked-head compact">
-      <button class="del-ex" onclick="deleteExercise(${exiA})">Elimina</button>
-      <button class="chart-btn" onclick="openChart(${exiA})" title="Grafico progressione">📈</button>
-      <button class="chart-btn" onclick="openPlateCalc(${exiA})" title="Calcola dischi bilanciere">🏋️</button>
-      <div class="name-row"><div class="combo-wrap"><textarea class="ex-name" rows="1" placeholder="Seleziona esercizio..." oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)" onfocus="onComboFocus(this,'esercizi')" onchange="updateName(${exiA},this.value)">${escapeHtml(exA.nome??'')}</textarea></div></div>
-      ${prBadgeA}
-      <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiA},this.value)">${escapeHtml(exA.commento??'')}</textarea>
-    </div>
-    <button class="link-type-divider" onclick="openLinkPicker(${exiA})" title="Gestisci collegamento"><span class="link-type-pill" style="background:${accent.d}">⚡ ${typeLabel} <span class="link-type-manage">🔗 gestisci</span></span></button>
-    <div class="card-head linked-head compact">
-      <button class="del-ex" onclick="deleteExercise(${exiB})">Elimina</button>
-      <button class="chart-btn" onclick="openChart(${exiB})" title="Grafico progressione">📈</button>
-      <button class="chart-btn" onclick="openPlateCalc(${exiB})" title="Calcola dischi bilanciere">🏋️</button>
-      <div class="name-row"><div class="combo-wrap"><textarea class="ex-name" rows="1" placeholder="Seleziona esercizio..." oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)" onfocus="onComboFocus(this,'esercizi')" onchange="updateName(${exiB},this.value)">${escapeHtml(exB.nome??'')}</textarea></div></div>
-      ${prBadgeB}
-      <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiB},this.value)">${escapeHtml(exB.commento??'')}</textarea>
+    <div class="linked-pair-frame">
+      <div class="card-head linked-head compact">
+        <button class="del-ex" onclick="deleteExercise(${exiA})">Elimina</button>
+        <button class="chart-btn" onclick="openChart(${exiA})" title="Grafico progressione">📈</button>
+        <button class="chart-btn" onclick="openPlateCalc(${exiA})" title="Calcola dischi bilanciere">🏋️</button>
+        <div class="name-row"><div class="combo-wrap"><textarea class="ex-name" rows="1" placeholder="Seleziona esercizio..." oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)" onfocus="onComboFocus(this,'esercizi')" onchange="updateName(${exiA},this.value)">${escapeHtml(exA.nome??'')}</textarea></div></div>
+        ${prBadgeA}
+        <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiA},this.value)">${escapeHtml(exA.commento??'')}</textarea>
+      </div>
+      <button class="link-type-divider" onclick="openLinkPicker(${exiA})" title="Gestisci collegamento"><span class="link-type-pill" style="background:${accent.d}">⚡ ${typeLabel} <span class="link-type-manage">🔗 gestisci</span></span></button>
+      <div class="card-head linked-head compact">
+        <button class="del-ex" onclick="deleteExercise(${exiB})">Elimina</button>
+        <button class="chart-btn" onclick="openChart(${exiB})" title="Grafico progressione">📈</button>
+        <button class="chart-btn" onclick="openPlateCalc(${exiB})" title="Calcola dischi bilanciere">🏋️</button>
+        <div class="name-row"><div class="combo-wrap"><textarea class="ex-name" rows="1" placeholder="Seleziona esercizio..." oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)" onfocus="onComboFocus(this,'esercizi')" onchange="updateName(${exiB},this.value)">${escapeHtml(exB.nome??'')}</textarea></div></div>
+        ${prBadgeB}
+        <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiB},this.value)">${escapeHtml(exB.commento??'')}</textarea>
+      </div>
     </div>
     <div class="weeks">${weeksHtml}</div>
   </div>`;

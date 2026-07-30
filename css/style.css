@@ -57,25 +57,26 @@ main{padding:12px;}
 .card{background:var(--panel2);border-radius:12px;margin-bottom:14px;overflow:hidden;border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));}
 .card-head{padding:10px 12px 4px;}
 /* ---------------- SUPERSET / JUMP SET (esercizi collegati) ---------------- */
-/* niente separatori/sfondi a "blocchi" tra i due esercizi: devono leggersi
-   come un unico esercizio con una pausa (o niente pausa) in mezzo, non come
-   due card separate messe una sopra l'altra */
 .card.linked-group{border-top:1px solid var(--line);border-left:4px solid var(--accent,var(--green));}
+/* i due esercizi + il tipo di collegamento vivono dentro una sola cornice
+   sottile: e' quello che li fa leggere come UN blocco unico invece di due
+   card separate impilate, e fa anche da confine pulito verso le settimane
+   sotto (che prima serviva alle righe tratteggiate, ora rimosse) */
+.linked-pair-frame{margin:8px 12px 6px;border:1px solid var(--accent,var(--green));border-radius:10px;overflow:hidden;}
 .linked-head{border-bottom:none;}
 /* meno spazio verticale rispetto a un esercizio singolo: qui ce ne sono due
    impilati, che insieme formano concettualmente "un unico esercizio" */
-.linked-head.compact{padding:6px 12px 0;}
+.linked-head.compact{padding:6px 10px 2px;}
 .linked-head.compact .name-row{margin-bottom:0;}
-/* nota facoltativa: stesso trattamento minimale della nota-settimana (riga
-   sottile, sfondo trasparente) invece di un secondo box scuro sotto al nome,
-   che raddoppiava la sensazione di "due esercizi separati" */
-.linked-head.compact .ex-comment.compact{background:transparent;border:none;border-bottom:1px dashed var(--line);border-radius:0;color:var(--muted);font-style:italic;font-size:11px;padding:3px 2px 5px;margin-top:2px;min-height:0;resize:none;}
+/* nota facoltativa: stessa idea minimale della nota-settimana (niente sfondo
+   scuro, che raddoppiava la sensazione di "due esercizi separati"), ma senza
+   riga tratteggiata: dentro alla cornice unica non serve un'altra divisione */
+.linked-head.compact .ex-comment.compact{background:transparent;border:none;border-radius:0;color:var(--muted);font-style:italic;font-size:11px;padding:2px 2px 4px;margin-top:1px;min-height:0;resize:none;}
 .linked-head.compact .pr-badge{margin:2px 0 0;}
 /* tipo di collegamento (super set/jump set) come una piccola etichetta
    "a pillola" centrata tra i due nomi, invece di una barra colorata a tutta
-   larghezza: una barra piena leggeva come un muro che separa due card, la
-   pillola invece resta un'annotazione sopra un'unica scheda continua */
-.link-type-divider{width:100%;display:flex;align-items:center;justify-content:center;background:none;border:none;padding:2px 0 4px;}
+   larghezza che leggeva come un muro tra due card separate */
+.link-type-divider{width:100%;display:flex;align-items:center;justify-content:center;background:none;border:none;padding:1px 0 3px;}
 .link-type-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:800;color:var(--text);letter-spacing:.3px;}
 .link-type-manage{font-size:9px;font-weight:700;opacity:.8;text-decoration:underline;}
 /* riquadro sottilissimo solo per non confondere a quale numero di serie
