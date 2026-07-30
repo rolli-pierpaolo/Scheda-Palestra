@@ -402,7 +402,7 @@ function toggleWeekDone(exi, w){
   if(nowDone && state.days[activeDayIdx].esercizi[next]){
     activeExerciseIdx = next;
     saveActivePos();
-    setTimeout(()=>trySnapToActiveExercise(true), 120);
+    setTimeout(()=>trySnapToActiveExercise(true), 250);
   }
 }
 // "saltata" e' per le settimane che non farai apposta (infortunio, imprevisto):
