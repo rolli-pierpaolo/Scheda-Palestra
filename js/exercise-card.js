@@ -123,7 +123,7 @@ function renderReorderList(day){
 }
 
 function updateTitles(){
-document.getElementById('tabActiveBtn').textContent = state.title || "attuale";}
+document.getElementById('tabActiveBtn').textContent = state.title || "Allenamento";}
 
 // suggerisce il prossimo titolo incrementando l'ultimo numero trovato (es. "WO 18" -> "WO 19");
 // se non c'e' nessun numero nel titolo attuale, ripiega su un nome generico
