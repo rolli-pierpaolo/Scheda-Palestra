@@ -15,11 +15,32 @@ html,body{margin:0;padding:0;background:var(--bg-black);color:var(--text);font-f
 body{padding-bottom:70px;}
 /* ---------------- BARRA IN ALTO + TAB ALLENAMENTO/STORICO/GIORNI ---------------- */
 .topbar{position:sticky;top:0;z-index:20;background:#000;border-bottom:2px solid var(--green);padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;}
-.topbar h1{margin:0;font-size:16px;letter-spacing:.5px;color:var(--green);font-weight:800;text-align:center;text-transform:uppercase;transition:font-size .15s;}
-/* in Home il nome dell'app si legge in grande (e' la schermata "di casa"),
+.topbar h1{
+    margin:0;
+    font-size:16px;
+    letter-spacing:.5px;
+    color:var(--green);
+    font-weight:800;
+    text-align:center;
+    text-transform:uppercase;
+    transition:font-size .15s;
+}
+
+body.on-home .topbar h1{
+    font-size:30px;
+    letter-spacing:1.5px;
+
+}/* in Home il nome dell'app si legge in grande (e' la schermata "di casa"),
    nelle altre viste resta piccolo e discreto per lasciare spazio alle tab */
-body.on-home .topbar h1{font-size:28px;letter-spacing:1px;}
-/* numero di versione, piccolissimo e discreto, in alto a sinistra: si aggiorna
+body.on-home .topbar h1{
+    font-size:30px;
+    letter-spacing:1.5px;
+    animation:titleGlow 4s ease-in-out infinite;
+
+text-shadow:
+    0 0 5px rgba(154,205,50,.3),
+    0 0 10px rgba(154,205,50,.2);
+}/* numero di versione, piccolissimo e discreto, in alto a sinistra: si aggiorna
    da solo a ogni commit (vedi .git/hooks/pre-commit), serve solo per accorgersi
    a colpo d'occhio che e' stata fatta una modifica dall'ultima volta */
 .app-version{position:absolute;top:calc(env(safe-area-inset-top) + 4px);left:6px;font-size:8px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted);opacity:.5;}
@@ -41,8 +62,14 @@ main{padding:12px;}
 .home-hero{text-align:center;padding:18px 10px 22px;}
 .home-block-week{font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--green);margin-bottom:10px;}
 .home-progress-label{font-size:12px;font-weight:800;letter-spacing:2px;color:var(--muted);}
-.home-progress-num{font-size:72px;font-weight:900;color:var(--green);line-height:1;margin-top:6px;text-shadow:0 0 24px rgba(154,205,50,.45);}
-.home-progress-of{font-size:34px;color:var(--muted);font-weight:800;}
+.home-progress-num{
+  font-size:72px;
+  font-weight:900;
+  color:var(--accent,var(--green));
+  line-height:1;
+  margin-top:6px;
+  text-shadow:0 0 24px rgba(0,0,0,.35);
+}.home-progress-of{font-size:34px;color:var(--muted);font-weight:800;}
 .home-progress-sub{font-size:13px;font-weight:700;color:var(--text);margin-top:8px;text-transform:uppercase;letter-spacing:.5px;}
 .home-suggested-btn{display:block;width:100%;background:var(--accent,var(--green));border:none;border-radius:16px;padding:18px 14px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
 .home-motivation{text-align:center;font-size:16px;font-weight:800;color:var(--text);font-style:italic;margin:0 6px 34px;opacity:.95;line-height:1.35;}
@@ -296,3 +323,26 @@ body.flash{background:var(--amber) !important;}
 .days-row:last-of-type{margin-bottom:0;}
 .days-label{flex:0 0 66px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;}
 .days-row .combo-wrap .meta-input{text-align:left;color:var(--text);font-weight:700;}
+
+@keyframes titleGlow{
+
+    0%{
+        text-shadow:
+            0 0 5px rgba(154,205,50,.3),
+            0 0 10px rgba(154,205,50,.2);
+    }
+
+    50%{
+        text-shadow:
+            0 0 15px rgba(154,205,50,.8),
+            0 0 30px rgba(154,205,50,.5),
+            0 0 45px rgba(154,205,50,.3);
+    }
+
+    100%{
+        text-shadow:
+            0 0 5px rgba(154,205,50,.3),
+            0 0 10px rgba(154,205,50,.2);
+    }
+
+}

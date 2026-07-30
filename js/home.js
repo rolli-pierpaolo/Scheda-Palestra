@@ -288,6 +288,7 @@ function renderHome(){
   const {done, total} = computeWeeklyProgress();
   const suggestedIdx = computeSuggestedDayIdx();
   const suggestedDay = state.days[suggestedIdx];
+  const progressAccent = suggestedDay ? dayAccent(suggestedDay, suggestedIdx).c : 'var(--green)';
   const monthlyCount = computeMonthlyWorkoutsCount();
   const blockWeek = computeCurrentBlockWeek();
   const dayButtons = state.days.map((d,i)=>{
@@ -305,8 +306,7 @@ function renderHome(){
     <div class="home-hero">
       <div class="home-block-week">SETTIMANA ${blockWeek} DI ${state.weeksPerBlock||4}</div>
       <div class="home-progress-label">GIORNO</div>
-      <div class="home-progress-num">${done}<span class="home-progress-of">/${total}</span></div>
-      <div class="home-progress-sub">allenamenti in the bag 💪</div>
+<div class="home-progress-num" style="--accent:${progressAccent}">${done}<span class="home-progress-of">/${total}</span></div>      <div class="home-progress-sub">allenamenti in the bag 💪</div>
     </div>
     ${suggestedHtml}
     <div class="home-days-label">I tuoi giorni</div>
