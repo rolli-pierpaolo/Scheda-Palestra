@@ -306,11 +306,20 @@ function renderHome(){
     <div class="home-hero">
       <div class="home-block-week">SETTIMANA ${blockWeek} DI ${state.weeksPerBlock||4}</div>
       <div class="home-progress-label">GIORNO</div>
-<div class="home-progress-num" style="--accent:${progressAccent}">${done}<span class="home-progress-of">/${total}</span></div>      <div class="home-progress-sub">allenamenti in the bag 💪</div>
-    </div>
+<div class="home-progress-num" style="--accent:${progressAccent}">
+  <span id="homeProgressCount">0</span><span class="home-progress-of">/${total}</span>
+</div>   
     ${suggestedHtml}
     <div class="home-days-label">I tuoi giorni</div>
     <div class="home-days-grid">${dayButtons}</div>
     <div class="home-total-stat">🔥 ${monthlyCount} allenamenti completati questo mese</div>
   `;
+  if(typeof gsap !== "undefined"){
+  gsap.to("#homeProgressCount", {
+    innerText: done,
+    duration: 0.8,
+    snap: { innerText: 1 },
+    ease: "power2.out"
+  });
+}
 }
