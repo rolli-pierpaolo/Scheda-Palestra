@@ -297,18 +297,25 @@ function renderHome(){
   }).join('');
   const motivation = suggestedDay ? pickMotivationalPhrase(suggestedIdx) : '';
   const suggestedHtml = suggestedDay ? `
-    <button class="home-suggested-btn" style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}" onclick="startDayFromHome(${suggestedIdx})">
-      <span class="home-suggested-label">💥 OGGI TOCCA A</span>
-      <span class="home-suggested-name">${escapeHtml(suggestedDay.name)}</span>
-    </button>
+ <button 
+  class="home-suggested-btn"
+  style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}"
+  onmousedown="this.classList.add('pressed')"
+  onmouseup="this.classList.remove('pressed')"
+  onmouseleave="this.classList.remove('pressed')"
+  ontouchstart="this.classList.add('pressed')"
+  ontouchend="this.classList.remove('pressed')"
+  onclick="startDayFromHome(${suggestedIdx})">
+<span class="home-suggested-name accent-shine">${escapeHtml(suggestedDay.name)}</span></button>
     ${motivation ? `<div class="home-motivation">${escapeHtml(motivation)}</div>` : ''}` : '';
   el.innerHTML = `
     <div class="home-hero">
       <div class="home-block-week">SETTIMANA ${blockWeek} DI ${state.weeksPerBlock||4}</div>
       <div class="home-progress-label">GIORNO</div>
 <div class="home-progress-num" style="--accent:${progressAccent}">
-  <span id="homeProgressCount">0</span><span class="home-progress-of">/${total}</span>
-</div>   
+  <span id="homeProgressCount" class="accent-shine">0</span>
+  <span class="home-progress-of">/${total}</span>
+</div>
     ${suggestedHtml}
     <div class="home-days-label">I tuoi giorni</div>
     <div class="home-days-grid">${dayButtons}</div>
@@ -323,3 +330,4 @@ function renderHome(){
   });
 }
 }
+

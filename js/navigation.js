@@ -1,4 +1,5 @@
 let activeDayIdx = 0;
+let activeFirstAnimation = true;
 // ---------------- POSIZIONE ATTIVA (giorno + esercizio) ----------------
 // ricorda in che giorno/esercizio ero rimasto, per riaprire il file esattamente li'
 const ACTIVE_POS_KEY = "scheda_wo18_active_pos_v1";
@@ -94,36 +95,38 @@ function showView(v){
     });
     return;
   }
+
   if(v!=='active') discardReorderIfPending();
+
   document.getElementById('viewActive').style.display = v==='active' ? '' : 'none';
   document.getElementById('dayTabsActive').style.display = v==='active' ? '' : 'none';
   document.getElementById('viewHist').style.display = v==='hist' ? '' : 'none';
   document.getElementById('viewHome').style.display = v==='home' ? '' : 'none';
+
   document.getElementById('tabActiveBtn').classList.toggle('active', v==='active');
   document.getElementById('tabHistBtn').classList.toggle('active', v==='hist');
-  // in Home il titolo si vede piu' grande (e' la schermata dove ha senso che
-  // si legga bene il nome dell'app), nelle altre viste resta piccolo e discreto
+
   document.body.classList.toggle('on-home', v==='home');
+if(v === 'home'){
+  animateSuggestedWorkout();
+}
   if(v==='active'){
+    activeFirstAnimation = true;
+
     requestWakeLock();
-    // renderActive() (che chiama autoGrowAllExNames) puo' essere girato mentre
-    // la vista era ancora display:none (es. al primo avvio, o arrivando dalla
-    // Home): scrollHeight di un elemento nascosto e' 0, quindi l'altezza delle
-    // textarea nome esercizio veniva calcolata sbagliata e restavano strette
-    // finche' non si ridisegnava la pagina un'altra volta da visibile. Ricalcola
-    // qui, ora che la vista e' sicuramente visibile
+
     autoGrowAllExNames();
+
   } else {
     releaseWakeLock();
   }
 }
 
+
 // ---------------- SCHERMO SEMPRE ACCESO IN ALLENAMENTO ----------------
-// mentre sei sulla tab Allenamento (mani impegnate/sudate) il telefono non deve
-// bloccarsi da solo. Se il browser non supporta la Wake Lock API (o nega il
-// permesso) non succede nulla di grave, semplicemente il telefono si blocchera'
-// come sempre - percio' il try/catch silenzioso
+
 let wakeLock = null;
+
 async function requestWakeLock(){
   try{
     if('wakeLock' in navigator){
@@ -131,158 +134,280 @@ async function requestWakeLock(){
     }
   }catch(e){}
 }
+
+
 function releaseWakeLock(){
   if(wakeLock){
     wakeLock.release().catch(()=>{});
     wakeLock = null;
   }
 }
-// il wake lock si "libera" da solo quando la tab va in background (schermata Home,
-// cambio app...): quando si torna a guardare la pagina e siamo ancora su
-// Allenamento va richiesto di nuovo
+
+
 document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible' && document.getElementById('viewActive').style.display !== 'none'){
+  if(
+    document.visibilityState === 'visible' &&
+    document.getElementById('viewActive').style.display !== 'none'
+  ){
     requestWakeLock();
   }
 });
 
+
 // ---------------- RIALINEAMENTO DOPO CHIUSURA TASTIERA ----------------
-// quando la tastiera mobile si chiude, il browser spesso lascia la pagina
-// spostata verso il basso. Dopo un piccolo ritardo riallinea l'esercizio attivo.
+
 let lastViewportHeight = window.innerHeight;
 
 window.addEventListener('resize', () => {
+
   const currentHeight = window.innerHeight;
 
-  // se l'altezza aumenta significa che la tastiera è probabilmente chiusa
   if(currentHeight > lastViewportHeight + 100){
     setTimeout(() => {
       trySnapToActiveExercise(true);
-    }, 250);
+    },250);
   }
 
   lastViewportHeight = currentHeight;
 });
 
+
 function renderDayTabs(){
+
   const el = document.getElementById('dayTabsActive');
+
   el.innerHTML = state.days.map((d,i)=>{
-    const a = dayAccent(d, i);
-    return `<button class="day-btn ${i===activeDayIdx?'active':''}" style="--accent:${a.c}" onclick="selectDay(${i})">${escapeHtml(d.name)}</button>`;
+
+    const a = dayAccent(d,i);
+
+    return `
+    <button 
+      class="day-btn ${i===activeDayIdx?'active':''}" 
+      style="--accent:${a.c}" 
+      onclick="selectDay(${i})">
+      ${escapeHtml(d.name)}
+    </button>`;
+
   }).join('');
 }
-function selectDay(i){ discardReorderIfPending(); activeDayIdx=i; activeExerciseIdx=null; saveActivePos(); renderDayTabs(); renderActive(); }
+
+
+function selectDay(i){
+  discardReorderIfPending();
+  activeDayIdx=i;
+  activeExerciseIdx=null;
+  saveActivePos();
+  renderDayTabs();
+  renderActive();
+}
+
 
 // ---------------- FINE GIORNO DI ALLENAMENTO ----------------
-// registra nel calendario che oggi e' stato fatto questo giorno (Push/Pull/Legs...)
-// e passa in automatico al giorno successivo nell'ordine delle tab, tornando al
-// primo dopo l'ultimo
+
+
 function logWorkoutDay(dayIdx){
+
   const day = state.days[dayIdx];
+
   if(!day) return;
-  const a = dayAccent(day, dayIdx);
+
+  const a = dayAccent(day,dayIdx);
   const key = todayKey();
-  if(!calendarLog[key]) calendarLog[key] = [];
-  calendarLog[key].push({name: day.name, color: a.c});
+
+  if(!calendarLog[key]) calendarLog[key]=[];
+
+  calendarLog[key].push({
+    name:day.name,
+    color:a.c
+  });
+
   saveCalendarLog();
-  // primissimo "Giorno terminato" mai premuto (utente nuovo, o dati vecchi che
-  // non avevano ancora questo campo): il blocco attivo parte ufficialmente da
-  // oggi, il giorno vero del primo allenamento, non da una stima
+
   if(!state.programStartDate){
     state.programStartDate = key;
     saveState();
   }
+
   checkAchievements();
 }
+
+
 function openNextWeekForDay(dayIdx){
+
   const day = state.days[dayIdx];
+
   if(!day) return;
 
-  day.esercizi.forEach((ex, exi)=>{
-    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+  day.esercizi.forEach((ex,exi)=>{
 
-    if(!ex.weekDone) ex.weekDone = new Array(nWeeks).fill(false);
+    const nWeeks =
+      (ex.recupero && ex.recupero.length) ||
+      state.weeksPerBlock ||
+      4;
 
-    const nextWeek = ex.weekDone.findIndex((done, i)=>{
-      return done && i < nWeeks-1 && !ex.weekDone[i+1];
+
+    if(!ex.weekDone)
+      ex.weekDone = new Array(nWeeks).fill(false);
+
+
+    const nextWeek = ex.weekDone.findIndex((done,i)=>{
+      return done && i<nWeeks-1 && !ex.weekDone[i+1];
     });
 
-    if(nextWeek !== -1){
-      collapsedMap[dayIdx+"_"+exi+"_"+nextWeek] = true;
-      collapsedMap[dayIdx+"_"+exi+"_"+(nextWeek+1)] = false;
+
+    if(nextWeek!==-1){
+
+      collapsedMap[dayIdx+"_"+exi+"_"+nextWeek]=true;
+
+      collapsedMap[dayIdx+"_"+exi+"_"+(nextWeek+1)]=false;
+
     }
+
   });
 
+
   saveCollapsed();
+
 }
+
+
 function forceNextWeekForDay(dayIdx){
+
   const day = state.days[dayIdx];
+
   if(!day) return;
 
-  day.esercizi.forEach((ex, exi)=>{
-    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
 
-    if(!ex.weekDone) ex.weekDone = new Array(nWeeks).fill(false);
-    if(!ex.weekSkipped) ex.weekSkipped = new Array(nWeeks).fill(false);
+  day.esercizi.forEach((ex,exi)=>{
 
-    let currentWeek = 0;
+
+    const nWeeks =
+      (ex.recupero && ex.recupero.length) ||
+      state.weeksPerBlock ||
+      4;
+
+
+    if(!ex.weekDone)
+      ex.weekDone = new Array(nWeeks).fill(false);
+
+
+    if(!ex.weekSkipped)
+      ex.weekSkipped = new Array(nWeeks).fill(false);
+
+
+
+    let currentWeek=0;
+
 
     for(let i=0;i<nWeeks;i++){
+
       if(ex.weekDone[i] || ex.weekSkipped[i]){
-        currentWeek = i;
+        currentWeek=i;
       }
+
     }
 
-    if(currentWeek < nWeeks-1){
-      collapsedMap[dayIdx+"_"+exi+"_"+currentWeek] = true;
-      collapsedMap[dayIdx+"_"+exi+"_"+(currentWeek+1)] = false;
+
+    if(currentWeek<nWeeks-1){
+
+      collapsedMap[dayIdx+"_"+exi+"_"+currentWeek]=true;
+
+      collapsedMap[dayIdx+"_"+exi+"_"+(currentWeek+1)]=false;
+
     }
+
   });
+
 
   saveCollapsed();
+
 }
+
+
 function allExercisesClosed(day){
+
   return day.esercizi.every(ex=>{
-    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
 
-    if(!ex.weekDone) ex.weekDone = new Array(nWeeks).fill(false);
-    if(!ex.weekSkipped) ex.weekSkipped = new Array(nWeeks).fill(false);
 
-    let currentWeek = 0;
+    const nWeeks =
+      (ex.recupero && ex.recupero.length) ||
+      state.weeksPerBlock ||
+      4;
+
+
+    if(!ex.weekDone)
+      ex.weekDone = new Array(nWeeks).fill(false);
+
+
+    if(!ex.weekSkipped)
+      ex.weekSkipped = new Array(nWeeks).fill(false);
+
+
+    let currentWeek=0;
+
 
     for(let i=0;i<nWeeks;i++){
+
       if(ex.weekDone[i] || ex.weekSkipped[i]){
-        currentWeek = i;
+        currentWeek=i;
       }
+
     }
+
 
     return ex.weekDone[currentWeek] || ex.weekSkipped[currentWeek];
+
   });
+
 }
+
+
 function finishDay(){
+
   const day = state.days[activeDayIdx];
-  if(!confirm(`Segnare "${day.name}" come terminato oggi?`)) return;
+
+
+  if(!confirm(`Segnare "${day.name}" come terminato oggi?`))
+    return;
+
 
   if(!allExercisesClosed(day)){
-    if(!confirm("Alcuni esercizi non risultano completati o saltati. Vuoi comunque passare alla settimana successiva?")){
+
+    if(!confirm(
+      "Alcuni esercizi non risultano completati o saltati. Vuoi comunque passare alla settimana successiva?"
+    )){
       return;
     }
+
   }
 
+
   discardReorderIfPending();
+
   logWorkoutDay(activeDayIdx);
 
   forceNextWeekForDay(activeDayIdx);
 
-  activeDayIdx = (activeDayIdx+1) % state.days.length;
-  activeExerciseIdx = null;
+
+  activeDayIdx =
+    (activeDayIdx+1) % state.days.length;
+
+
+  activeExerciseIdx=null;
+
   saveActivePos();
 
-  workoutInProgress = false;
+
+  workoutInProgress=false;
+
   saveWorkoutInProgress();
 
+
   renderDayTabs();
+
   renderActive();
+
   showHome();
+
 }
 
