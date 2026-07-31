@@ -31,7 +31,19 @@ function renderActive(){
      </div>
      ${finishBtn}
      <button class="add-ex" style="margin-top:10px;border-color:var(--amber);color:var(--amber);" onclick="archiveAndReset()">📦 Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
-  autoGrowAllExNames();
+    autoGrowAllExNames();
+
+  if(typeof gsap !== "undefined" && activeFirstAnimation){
+  activeFirstAnimation = false;
+
+  gsap.from("#viewActive .card", {
+    y:35,
+    opacity:0,
+    duration:0.55,
+    stagger:0.12,
+    ease:"power2.out"
+  });
+}
 }
 
 // ---------------- RIORDINO ESERCIZI ----------------
