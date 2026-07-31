@@ -99,16 +99,53 @@
     </div>
   </div>
 </div>
+<div id="finishWorkoutModal"
+class="modal-overlay"
+style="display:none;"
+onclick="if(event.target===this) closeFinishWorkoutModal()">
+
+  <div class="modal-box finish-modal">
+
+    <div id="finishWorkoutBody"></div>
+
+  </div>
+
+</div>
+
+
+<div id="trainingOrderModal"
+class="modal-overlay"
+style="display:none;"
+onclick="if(event.target===this) closeTrainingOrderModal()">
+
+  <div class="modal-box finish-modal">
+
+    <div id="trainingOrderBody"></div>
+
+  </div>
+
+</div>
+
+
 <div id="undoToast" class="undo-toast">
   <span>Esercizio eliminato</span>
   <button onclick="undoDeleteExercise()">Annulla</button>
 </div>
+
+
 <div id="timerBar" class="timer-bar" style="display:none;">
   <span id="timerLabel">Recupero</span>
   <span id="timerClock">00:00</span>
   <button onclick="stopTimer()">✕</button>
 </div>
-<div class="savebar">💾 <b id="saveStatus">Salvato</b></div>
+
+
+<div id="workoutCompleteFx"></div>
+
+
+<div class="savebar">
+  💾 <b id="saveStatus">Salvato</b>
+</div>
 
 <!-- Logica divisa per argomento invece che in un unico file:-->
 

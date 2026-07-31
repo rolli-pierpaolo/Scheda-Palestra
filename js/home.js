@@ -34,26 +34,69 @@ function currentWeekRange(){
 // quanti dei giorni definiti dall'utente sono stati fatti almeno una volta questa
 // settimana di calendario (lun-dom), non quante volte in totale sono stati loggati
 function computeWeeklyProgress(){
-  const {monday, sunday} = currentWeekRange();
-  const doneNames = new Set();
-  Object.keys(calendarLog).forEach(key=>{
-    const d = new Date(key+'T00:00:00');
-    if(d>=monday && d<=sunday){
-      calendarLog[key].forEach(e=>doneNames.add(e.name));
-    }
-  });
-  return { done: doneNames.size, total: state.days.length };
+
+  const done =
+
+  state.completedTrainingDays
+  ? state.completedTrainingDays.length
+  : 0;
+
+
+  return{
+
+    done:Math.min(
+      done,
+      state.days.length
+    ),
+
+    total:state.days.length
+
+  };
+
 }
+
+
 // stessa logica di avanzamento gia' usata da "Giorno terminato": guarda l'ultimo
 // giorno registrato nel calendario (qualsiasi data) e suggerisce quello dopo,
 // tornando al primo se non ci si e' mai allenati o se non lo trova piu' tra i giorni
 function computeSuggestedDayIdx(){
-  const dates = Object.keys(calendarLog).filter(k=>calendarLog[k] && calendarLog[k].length).sort();
+
+  if(state.currentTrainingDayIdx !== null &&
+     state.currentTrainingDayIdx !== undefined){
+    return state.currentTrainingDayIdx;
+  }
+
+
+  if(state.trainingQueue && state.trainingQueue.length > 0){
+    return state.trainingQueue[0];
+  }
+
+
+
+  const startKey = state.programStartDate || mostRecentMondayKey();
+
+  const dates = Object.keys(calendarLog)
+    .filter(k =>
+      k >= startKey &&
+      calendarLog[k] &&
+      calendarLog[k].length
+    )
+    .sort();
+
+
   if(!dates.length) return 0;
+
+
   const lastEntries = calendarLog[dates[dates.length-1]];
   const lastName = lastEntries[lastEntries.length-1].name;
+
+
   const lastIdx = state.days.findIndex(d=>d.name===lastName);
+
+
   if(lastIdx===-1) return 0;
+
+
   return (lastIdx+1) % state.days.length;
 }
 // allenamenti fatti da quando e' iniziato il blocco attivo (le 4 settimane
@@ -75,12 +118,13 @@ function computeMonthlyWorkoutsCount(){
 // durata del blocco perche' oltre tocca "Archivia e inizia un nuovo mese"
 // (il blocco successivo riparte da 1, eventualmente con una durata diversa)
 function computeCurrentBlockWeek(){
+
   const total = state.weeksPerBlock || 4;
-  const startKey = state.programStartDate || mostRecentMondayKey();
-  const start = new Date(startKey+'T00:00:00');
-  const diffDays = Math.floor((new Date() - start) / 86400000);
-  const week = Math.floor(diffDays/7) + 1;
-  return Math.min(Math.max(week,1),total);
+
+  const current = (state.currentWeek ?? 0) + 1;
+
+  return Math.min(current, total);
+
 }
 // gruppi muscolari allenati nel giorno suggerito (in ordine di comparsa negli
 // esercizi), usata per scegliere una frase motivazionale in tema
@@ -283,12 +327,23 @@ function pickMotivationalPhrase(dayIdx){
   return pool[dayIndex % pool.length];
 }
 function renderHome(){
+
   const el = document.getElementById('viewHome');
   if(!el) return;
-  const {done, total} = computeWeeklyProgress();
+
   const suggestedIdx = computeSuggestedDayIdx();
+
+  const weekly = computeWeeklyProgress();
+
+  const done = Math.min(weekly.done + 1, weekly.total);
+const total = weekly.total;
+
   const suggestedDay = state.days[suggestedIdx];
-  const progressAccent = suggestedDay ? dayAccent(suggestedDay, suggestedIdx).c : 'var(--green)';
+
+  const progressAccent = suggestedDay 
+    ? dayAccent(suggestedDay, suggestedIdx).c 
+    : 'var(--green)';
+
   const monthlyCount = computeMonthlyWorkoutsCount();
   const blockWeek = computeCurrentBlockWeek();
   const dayButtons = state.days.map((d,i)=>{

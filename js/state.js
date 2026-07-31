@@ -126,12 +126,115 @@ function saveCalendarLog(){
 // tutto lo stato vive in localStorage sotto queste chiavi; se una chiave manca o
 // e' corrotta si ripiega sui default (scheda vuota/allenamento base di DATA.attivo)
 function loadState(){
+
   try{
+
     const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){ state = JSON.parse(raw); }
+
+    if(raw){
+      state = JSON.parse(raw);
+    }
+
   }catch(e){}
-  if(!state) state = JSON.parse(JSON.stringify(DATA.attivo));
-  if(!state.title) state.title = DATA.attivo.title || "Allenamento";
+
+
+
+  if(!state){
+
+    state = JSON.parse(JSON.stringify(DATA.attivo));
+
+  }
+
+
+
+  if(!state.title){
+
+    state.title = DATA.attivo.title || "Allenamento";
+
+  }
+
+
+
+  // settimana corrente
+  if(state.currentWeek === undefined){
+
+    state.currentWeek = 0;
+
+  }
+
+
+
+  // giorni completati settimana corrente
+  if(!state.completedTrainingDays){
+
+    state.completedTrainingDays = [];
+
+  }
+
+
+
+  // storico settimane completate
+  // compatibilità con vecchi salvataggi
+  if(!state.completedWeeks){
+
+    state.completedWeeks = [];
+
+
+    if(state.currentWeek > 0){
+
+      for(let i = 0; i < state.currentWeek; i++){
+
+        state.completedWeeks.push(i);
+
+      }
+
+    }
+
+  }
+
+
+
+  // giorno allenamento corrente
+  if(state.currentTrainingDayIdx === undefined){
+
+    state.currentTrainingDayIdx = null;
+
+  }
+
+
+
+  // coda allenamenti
+  if(!state.trainingQueue){
+
+    state.trainingQueue = (state.days || []).map((_,i)=>i);
+
+  }
+
+
+
+  saveState();
+
+}
+
+function getWeekStatus(weekIndex){
+
+  const current = state.currentWeek || 0;
+
+
+  if(weekIndex < current){
+    return "completed";
+  }
+
+
+  if(weekIndex === current){
+    return "active";
+  }
+
+
+  return "locked";
+
+}
+
   try{
     const rawc = localStorage.getItem(COLLAPSE_KEY);
     if(rawc) collapsedMap = JSON.parse(rawc);
@@ -159,6 +262,13 @@ function loadState(){
   // "Giorno terminato" premuto davvero, cosi' parte dal giorno vero e non da
   // una stima. Se invece il calendario ha gia' delle voci (dati vecchi salvati
   // prima che questo campo esistesse) si stima il lunedi' di questa settimana
+  if(!state){
+  state = JSON.parse(JSON.stringify(DATA.attivo));
+}
+
+if(!state.days){
+  state.days = [];
+}
   if(!state.programStartDate && Object.keys(calendarLog).length){
     state.programStartDate = mostRecentMondayKey();
   }
@@ -192,7 +302,7 @@ function loadState(){
     workoutInProgress = false;
     saveWorkoutInProgress();
   }
-}
+
 // ---------------- SETTIMANE PER BLOCCO (configurabile, non piu' fisso a 4) ----------------
 function emptyStrArr(n){ return new Array(n).fill(''); }
 // niente Array(n).fill([]): condividerebbe lo STESSO array tra tutte le
