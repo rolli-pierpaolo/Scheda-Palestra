@@ -13,7 +13,34 @@ function renderActive(){
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
   const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">↕️ Modifica ordine</button>` : '';
-  const finishBtn = day.esercizi.length>0 ? `<button class="add-ex" style="margin-top:18px;border-color:var(--green);color:var(--green);font-size:15px;" onclick="finishDay()">✅ Giorno di allenamento terminato!</button>` : '';
+const finishBtn = day.esercizi.length>0 ? `<button class="add-ex" style="margin-top:18px;border-color:var(--green);color:var(--green);font-size:15px;" onclick="openFinishWorkoutModal(${activeDayIdx})">✅ Giorno di allenamento terminato!</button>` : '';  const suggestedIdx = computeSuggestedDayIdx();
+
+const switchTrainingDay = 
+activeDayIdx !== suggestedIdx
+?
+`
+<div class="switch-training-box">
+
+  <div class="switch-training-title">
+    ⚠️ Giorno diverso dal previsto
+  </div>
+
+  <div class="switch-training-sub">
+    Oggi era previsto:
+    <b>${escapeHtml(state.days[suggestedIdx].name)}</b>
+  </div>
+
+<button class="add-ex"
+onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
+  🏋️ Fai ${escapeHtml(day.name)} oggi
+</button>
+
+</div>
+`
+:
+'';
+  
+  
   // gli esercizi "collegati" (super set/jump set, vedi piu' sotto) vengono
   // renderizzati insieme in un'unica card: quello che segue nell'array (il
   // partner) va saltato qui, e' gia' incluso dentro linkedExerciseCard
@@ -24,7 +51,7 @@ function renderActive(){
     const partnerExi = (ex.linkGroupId && day.esercizi[exi+1] && day.esercizi[exi+1].linkGroupId===ex.linkGroupId) ? exi+1 : null;
     cardsHtml += partnerExi!==null ? linkedExerciseCard(ex, exi, day.esercizi[partnerExi], partnerExi, a) : exerciseCard(ex, exi, a);
   }
-  main.innerHTML = emptyState + cardsHtml +
+  main.innerHTML = switchTrainingDay + emptyState + cardsHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -32,6 +59,9 @@ function renderActive(){
      ${finishBtn}
      <button class="add-ex" style="margin-top:10px;border-color:var(--amber);color:var(--amber);" onclick="archiveAndReset()">📦 Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
     autoGrowAllExNames();
+    document.querySelectorAll('.ex-comment').forEach(t=>{
+  autoGrowTextarea(t);
+});
 
   if(typeof gsap !== "undefined" && activeFirstAnimation){
   activeFirstAnimation = false;
@@ -172,8 +202,15 @@ function archiveAndReset(){
       sets: Array.from({length:weeksN}, (_,i) => (ex.sets && ex.sets[i] ? ex.sets[i].map(()=>({peso:'',rip:''})) : []))
     }))
   }));
-  state = { title: newTitle.trim(), days: newDays, programStartDate: todayKey(), weeksPerBlock: weeksN };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+state = { 
+  title: newTitle.trim(), 
+  days: newDays, 
+  programStartDate: todayKey(), 
+  weeksPerBlock: weeksN,
+  currentTrainingDayIdx: null,
+  trainingQueue: newDays.map((_,i)=>i)
+};
+saveState();
 
   collapsedMap = {};
   saveCollapsed();
@@ -199,102 +236,521 @@ function suggestNextWeight(ex, w, si){
   return isNaN(p) ? null : Math.round(p*10)/10;
 }
 function exerciseCard(ex, exi, accent){
+
   const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
   const weeks = Array.from({length:nWeeks}, (_,i)=>i);
+
   const record = getRecordForExercise(ex.nome);
   const recordAttr = record ? record.peso : 'null';
+
+
   const weeksHtml = weeks.map(w=>{
+
+
+    const currentWeek = state.currentWeek || 0;
+
+    const isCurrentWeek = w === currentWeek;
+    const isPastWeek = w < currentWeek;
+    const isFutureWeek = w > currentWeek;
+
+    const isReadOnlyWeek = isPastWeek;
+
+
     const sets = ex.sets && ex.sets[w] ? ex.sets[w] : [];
-    const setRows = (sets.length?sets:[{peso:'',rip:''},{peso:'',rip:''},{peso:'',rip:''},{peso:'',rip:''}]).map((s,si)=>{
+
+
+    const setRows = (sets.length ? sets : [
+      {peso:'',rip:''},
+      {peso:'',rip:''},
+      {peso:'',rip:''},
+      {peso:'',rip:''}
+    ]).map((s,si)=>{
+
+
       const roman = ["I","II","III","IV","V","VI","VII","VIII"][si] || (si+1);
-      const suggestedKg = (!s.peso && s.peso!==0) ? suggestNextWeight(ex, w, si) : null;
-      const kgPlaceholder = suggestedKg!==null ? ('ultimo peso: '+suggestedKg) : 'kg';
-      return `<div class="set-row">
+
+
+      const suggestedKg = (!s.peso && s.peso!==0)
+      ? suggestNextWeight(ex,w,si)
+      : null;
+
+
+      const kgPlaceholder = suggestedKg!==null
+      ? ('ultimo peso: '+suggestedKg)
+      : 'kg';
+
+
+
+      return `
+      <div class="set-row">
+
+
         <div class="set-label">${roman}</div>
+
+
         <div class="kg-wrap">
+
+
           <div class="stepper-pair">
-            <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
-            <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
+
+            <button class="stepper"
+            ${isReadOnlyWeek?'disabled':''}
+            onclick="stepSet(${exi},${w},${si},-2.5,this)">
+            −
+            </button>
+
+
+            <button class="stepper"
+            ${isReadOnlyWeek?'disabled':''}
+            onclick="stepSet(${exi},${w},${si},2.5,this)">
+            +
+            </button>
+
+
           </div>
-          <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="${kgPlaceholder}" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+
+
+
+          <input class="set-input"
+          ${isReadOnlyWeek?'disabled':''}
+          ondblclick="toggleFieldKeyboard(this)"
+          onblur="resetFieldKeyboard(this)"
+          inputmode="decimal"
+          placeholder="${kgPlaceholder}"
+          value="${escapeAttr(s.peso ?? '')}"
+          onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+
+
         </div>
-        <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">
+
+
+
+        <input class="set-input"
+        ${isReadOnlyWeek?'disabled':''}
+        ondblclick="toggleFieldKeyboard(this)"
+        onblur="resetFieldKeyboard(this)"
+        inputmode="numeric"
+        placeholder="rip"
+        value="${escapeAttr(s.rip ?? '')}"
+        onchange="updateSet(${exi},${w},${si},'rip',this.value)">
+
+
+
       </div>`;
     }).join('');
+
+
+
     const wkey = activeDayIdx+"_"+exi+"_"+w;
-    const isCollapsed = (wkey in collapsedMap) ? !!collapsedMap[wkey] : (w !== 0);
-    // due tentativi extra (0 e 1) invece di uno solo, ognuno con la sua kg/rip;
-    // insieme occupano lo stesso spazio che prima occupava la singola casella
-    const maxRaw = (ex.maxExtra && ex.maxExtra[w]) || [];
-    const maxPair = [maxRaw[0]||{}, maxRaw[1]||{}];
-    const maxShown = !!(ex.maxShown && ex.maxShown[w]);
+
+
+    const isCompletedWeek =
+      state.completedWeeks &&
+      state.completedWeeks.includes(w);
+
+
+
+    const isCollapsed = isCurrentWeek ? false : true;
+
+
+
     const weekDone = !!(ex.weekDone && ex.weekDone[w]);
     const weekSkipped = !!(ex.weekSkipped && ex.weekSkipped[w]);
-    const maxRowHtml = maxShown ? `<div class="set-row max-row">
-          <div></div>
-          <div class="max-cell">
-            <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxPair[0].peso??'')}" onchange="updateMax(${exi},${w},0,'peso',this.value)">
-            <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxPair[1].peso??'')}" onchange="updateMax(${exi},${w},1,'peso',this.value)">
-          </div>
-          <div class="max-cell">
-            <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxPair[0].rip??'')}" onchange="updateMax(${exi},${w},0,'rip',this.value)">
-            <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxPair[1].rip??'')}" onchange="updateMax(${exi},${w},1,'rip',this.value)">
-          </div>
-        </div>` : '';
-    return `<div class="week-block">
-      <button class="week-toggle ${isCollapsed?'collapsed':''} ${weekDone?'done':''} ${weekSkipped?'skipped':''}" style="background:${accent.d}" onclick="toggleWeek(this,'${wkey}')">
-        <span>SETTIMANA ${w+1}${weekSkipped?' — saltata':''}</span><span class="chev">▾</span>
-      </button>
-      <div class="week-body ${isCollapsed?'collapsed':''}">
-        <input class="week-note" placeholder="nota settimana (facoltativo)" value="${escapeAttr((ex.weekNote && ex.weekNote[w]) ?? '')}" onchange="updateWeekNote(${exi},${w},this.value)">
-        <div class="meta-row"><span class="meta-label">Recupero</span><div class="combo-wrap"><input class="meta-input" placeholder="—" value="${escapeAttr(ex.recupero[w]??'')}" oninput="onComboInput(this,'recuperi')" onfocus="onComboFocus(this,'recuperi')" onchange="updateMeta(${exi},'recupero',${w},this.value)"></div><button class="recupero-play" onclick="startTimerFromRow(this)">▶</button></div>
-        <div class="meta-row"><span class="meta-label">Sets x Reps</span><div class="combo-wrap"><input class="meta-input schema" placeholder="—" value="${escapeAttr(ex.schema[w]??'')}" oninput="onComboInput(this,'schemi')" onfocus="onComboFocus(this,'schemi')" onchange="updateMeta(${exi},'schema',${w},this.value)"></div></div>
-        <div class="sets-wrap">${setRows}</div>
-        ${maxRowHtml}
-        <div class="set-btns">
-          <button class="max-toggle" onclick="toggleMax(${exi},${w})">${maxShown?'nascondi max':'max'}</button>
-          <div class="week-done-wrap">
-            <span class="week-done-label">completata / saltata:</span>
-            <div class="week-status-btns">
-              <button class="week-done-btn ${weekDone?'checked':''}" onclick="toggleWeekDone(${exi},${w})" title="Segna settimana completata">✓</button>
-              <button class="week-skip-btn ${weekSkipped?'checked':''}" onclick="toggleWeekSkipped(${exi},${w})" title="Segna settimana saltata">⏭</button>
-            </div>
-          </div>
-          <div class="set-btns-right">
-            <button class="add-ex small" onclick="addSet(${exi},${w})">+ serie</button>
-            <button class="add-ex small danger" onclick="removeSet(${exi},${w})">− serie</button>
-          </div>
-        </div>
+
+
+
+    const maxRaw = (ex.maxExtra && ex.maxExtra[w]) || [];
+
+    const maxPair = [
+      maxRaw[0]||{},
+      maxRaw[1]||{}
+    ];
+
+
+
+    const maxShown = !!(ex.maxShown && ex.maxShown[w]);
+
+
+
+    const maxRowHtml = maxShown ? `
+
+    <div class="set-row max-row">
+
+
+      <div></div>
+
+
+      <div class="max-cell">
+
+
+        <input class="set-input max-input"
+        ${isReadOnlyWeek?'disabled':''}
+        placeholder="max kg"
+        value="${escapeAttr(maxPair[0].peso??'')}"
+        onchange="updateMax(${exi},${w},0,'peso',this.value)">
+
+
+
+        <input class="set-input max-input"
+        ${isReadOnlyWeek?'disabled':''}
+        placeholder="max kg"
+        value="${escapeAttr(maxPair[1].peso??'')}"
+        onchange="updateMax(${exi},${w},1,'peso',this.value)">
+
+
       </div>
+
+
+
+      <div class="max-cell">
+
+
+        <input class="set-input max-input"
+        ${isReadOnlyWeek?'disabled':''}
+        placeholder="max rip"
+        value="${escapeAttr(maxPair[0].rip??'')}"
+        onchange="updateMax(${exi},${w},0,'rip',this.value)">
+
+
+
+        <input class="set-input max-input"
+        ${isReadOnlyWeek?'disabled':''}
+        placeholder="max rip"
+        value="${escapeAttr(maxPair[1].rip??'')}"
+        onchange="updateMax(${exi},${w},1,'rip',this.value)">
+
+
+      </div>
+
+
+    </div>
+
+
+    ` : '';
+
+
+
+    return `
+
+    <div class="week-block">
+
+
+      <button class="week-toggle
+      ${isCollapsed?'collapsed':''}
+      ${weekDone?'done':''}
+      ${weekSkipped?'skipped':''}
+      ${isCurrentWeek?'current-week':''}
+      ${isCompletedWeek?'completed-week':''}
+      ${isFutureWeek?'future-week':''}"
+      style="background:${accent.d}"
+      onclick="toggleWeek(this,'${wkey}',${w})">
+
+
+        <span>
+
+        ${
+  isCompletedWeek
+  ? '✓ '
+  : isCurrentWeek
+    ? '🔥 '
+    : isFutureWeek
+      ? '🔒 '
+      : ''
+}
+
+        SETTIMANA ${w+1}${weekSkipped?' — saltata':''}
+
+        </span>
+
+
+        <span class="chev">▾</span>
+
+
+      </button>
+
+
+
+      <div class="week-body ${isCollapsed?'collapsed':''}">
+      <input class="week-note"
+      ${isReadOnlyWeek?'disabled':''}
+      placeholder="nota settimana (facoltativo)"
+      value="${escapeAttr((ex.weekNote && ex.weekNote[w]) ?? '')}"
+      onchange="updateWeekNote(${exi},${w},this.value)">
+
+
+
+      <div class="meta-row">
+
+        <span class="meta-label">Recupero</span>
+
+
+        
+
+<div class="combo-wrap">
+
+<input class="meta-input"
+${isReadOnlyWeek?'disabled':''}
+placeholder="—"
+value="${escapeAttr(ex.recupero[w]??'')}"
+oninput="onComboInput(this,'recuperi')"
+onfocus="onComboFocus(this,'recuperi')"
+onchange="updateMeta(${exi},'recupero',${w},this.value)">
+</div>
+
+
+        <button class="recupero-play"
+        onclick="startTimerFromRow(this)">
+        ▶
+        </button>
+
+
+      </div>
+
+
+
+
+      <div class="meta-row">
+
+
+        <span class="meta-label">Sets x Reps</span>
+
+
+        <input class="meta-input schema"
+        ${isReadOnlyWeek?'disabled':''}
+        value="${escapeAttr(ex.schema[w]??'')}"
+        onchange="updateMeta(${exi},'schema',${w},this.value)">
+
+
+
+      </div>
+
+
+
+
+      <div class="sets-wrap">
+
+        ${setRows}
+
+      </div>
+
+
+
+
+      ${maxRowHtml}
+
+
+
+
+
+      <div class="set-btns">
+
+
+
+        <button class="max-toggle"
+        ${isReadOnlyWeek?'disabled':''}
+        onclick="toggleMax(${exi},${w})">
+
+        ${maxShown?'nascondi max':'max'}
+
+        </button>
+
+
+
+
+
+        <div class="week-done-wrap">
+
+
+          <span class="week-done-label">
+          completata / saltata:
+          </span>
+
+
+
+          <button class="week-done-btn ${weekDone?'checked':''}"
+          ${isReadOnlyWeek?'disabled':''}
+          onclick="toggleWeekDone(${exi},${w})">
+
+          ✓
+
+          </button>
+
+
+
+          <button class="week-skip-btn ${weekSkipped?'checked':''}"
+          ${isReadOnlyWeek?'disabled':''}
+          onclick="toggleWeekSkipped(${exi},${w})">
+
+          ⏭
+
+          </button>
+
+
+        </div>
+
+
+
+
+
+        <div class="set-btns-right">
+
+
+          <button class="add-ex small"
+          ${isReadOnlyWeek?'disabled':''}
+          onclick="addSet(${exi},${w})">
+
+          + serie
+
+          </button>
+
+
+
+
+          <button class="add-ex small danger"
+          ${isReadOnlyWeek?'disabled':''}
+          onclick="removeSet(${exi},${w})">
+
+          − serie
+
+          </button>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+    </div>
+
+
+
     </div>`;
+
+
+
   }).join('');
 
-  const prBadge = record ? `<div class="pr-badge">\ud83c\udfc6 Record: ${escapeHtml(String(record.peso))} kg${record.rip? ' \u00d7 '+escapeHtml(String(record.rip)) : ''}</div>` : '';
-  return `<div class="card" data-exi="${exi}" style="--accent:${accent.c}">
+
+
+
+  const prBadge = record 
+  ? `<div class="pr-badge">🏆 Record: ${escapeHtml(String(record.peso))} kg${record.rip?' × '+escapeHtml(String(record.rip)):''}</div>`
+  : '';
+
+
+
+
+  return `
+
+
+  <div class="card" data-exi="${exi}" style="--accent:${accent.c}">
+
+
     <div class="card-head">
-      <button class="del-ex" onclick="deleteExercise(${exi})">Elimina</button>
-      <button class="chart-btn" onclick="openChart(${exi})" title="Grafico progressione">\ud83d\udcc8</button>
-      <button class="chart-btn" onclick="openPlateCalc(${exi})" title="Calcola dischi bilanciere">\ud83c\udfcb\ufe0f</button>
-      <button class="chart-btn" onclick="openLinkPicker(${exi})" title="Collega (super set/jump set)">\ud83d\udd17</button>
-      <div class="name-row">
-        <div class="combo-wrap"><textarea class="ex-name" rows="1" placeholder="Seleziona esercizio..." oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)" onfocus="onComboFocus(this,'esercizi')" onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome??'')}</textarea></div>
-      </div>
+
+
+      <button class="del-ex" onclick="deleteExercise(${exi})">
+      Elimina
+      </button>
+
+
+
+      <button class="chart-btn" onclick="openChart(${exi})">
+      📈
+      </button>
+
+
+
+      <button class="chart-btn" onclick="openPlateCalc(${exi})">
+      🏋️
+      </button>
+
+
+
+      <button class="chart-btn" onclick="openLinkPicker(${exi})">
+      🔗
+      </button>
+
+
+
+
+    <div class="name-row">
+
+<div class="combo-wrap">
+
+<textarea 
+class="ex-name"
+rows="1"
+placeholder="Seleziona esercizio..."
+oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)"
+onfocus="onComboFocus(this,'esercizi')"
+onchange="updateName(${exi},this.value)">
+${escapeHtml(ex.nome??'')}
+</textarea>
+
+</div>
+
+</div>
+
+
+
+
       ${prBadge}
-      <textarea class="ex-comment" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exi},this.value)">${escapeHtml(ex.commento??'')}</textarea>
+
+
+
+
+      
+
+<textarea 
+class="ex-comment"
+rows="2"
+placeholder="Note / tecnica (facoltativo)"
+oninput="autoGrowTextarea(this)"
+onchange="updateComment(${exi},this.value)">${escapeHtml(ex.commento || '')}
+</textarea>
+
+
+
     </div>
-    <div class="weeks">${weeksHtml}</div>
+
+
+
+
+    <div class="weeks">
+
+    ${weeksHtml}
+
+    </div>
+
+
+
+
   </div>`;
+
+
+
 }
 
 // apri/chiudi un blocco settimana: tocca solo le classi CSS (niente renderActive,
 // sennò si perderebbe subito lo scroll), e ricorda lo stato aperto/chiuso per quando si
 // ridisegna la pagina altre volte
-function toggleWeek(btn, key){
+function toggleWeek(btn, key, weekIdx){
+
   const nowCollapsed = btn.classList.toggle('collapsed');
+
   btn.nextElementSibling.classList.toggle('collapsed');
+
   collapsedMap[key] = nowCollapsed;
+
   saveCollapsed();
+
 }
+
 
 function updateName(exi, val){
   state.days[activeDayIdx].esercizi[exi].nome = val;
@@ -689,7 +1145,18 @@ function linkedExerciseCard(exA, exiA, exB, exiB, accent){
   const weeks = Array.from({length:nWeeks}, (_,i)=>i);
   const weeksHtml = weeks.map(w=>{
     const wkey = activeDayIdx+"_"+exiA+"_"+w;
-    const isCollapsed = (wkey in collapsedMap) ? !!collapsedMap[wkey] : (w !== 0);
+    const isCurrentWeek = w === state.currentWeek;
+
+const isPastWeek = w < state.currentWeek;
+
+const isFutureWeek = w > state.currentWeek;
+
+
+const isCollapsed = 
+  (wkey in collapsedMap)
+  ? !!collapsedMap[wkey]
+  : !isCurrentWeek;
+
     const weekDone = !!(exA.weekDone && exA.weekDone[w]);
     const weekSkipped = !!(exA.weekSkipped && exA.weekSkipped[w]);
     const maxShown = !!(exA.maxShown && exA.maxShown[w]);
@@ -733,10 +1200,7 @@ function linkedExerciseCard(exA, exiA, exB, exiB, accent){
         </div>
       </div>`;
     }
-    return `<div class="week-block">
-      <button class="week-toggle ${isCollapsed?'collapsed':''} ${weekDone?'done':''} ${weekSkipped?'skipped':''}" style="background:${accent.d}" onclick="toggleWeek(this,'${wkey}')">
-        <span>SETTIMANA ${w+1}${weekSkipped?' — saltata':''}</span><span class="chev">▾</span>
-      </button>
+    return `
       <div class="week-body ${isCollapsed?'collapsed':''}">
         <input class="week-note" placeholder="nota settimana (facoltativo)" value="${escapeAttr((exA.weekNote && exA.weekNote[w]) ?? '')}" onchange="updateWeekNote(${exiA},${w},this.value);updateWeekNote(${exiB},${w},this.value)">
         <div class="meta-row"><span class="meta-label">Recupero</span><div class="combo-wrap"><input class="meta-input" placeholder="—" value="${escapeAttr(exA.recupero[w]??'')}" oninput="onComboInput(this,'recuperi')" onfocus="onComboFocus(this,'recuperi')" onchange="updateMeta(${exiA},'recupero',${w},this.value);updateMeta(${exiB},'recupero',${w},this.value)"></div><button class="recupero-play" onclick="startTimerFromRow(this)">▶</button></div>

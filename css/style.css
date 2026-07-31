@@ -389,6 +389,58 @@ body.flash{background:var(--amber) !important;}
 .modal-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:800;font-size:14px;color:var(--green);position:sticky;top:0;background:var(--panel2);}
 .modal-head button{background:none;border:none;color:var(--muted);font-size:17px;padding:2px 6px;}
 .modal-body{padding:14px;}
+.finish-modal{
+  max-width:420px;
+  text-align:center;
+}
+
+
+.finish-title{
+  font-size:30px;
+  font-weight:900;
+  margin-bottom:12px;
+}
+
+
+.finish-subtitle{
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:18px;
+}
+
+
+.finish-message{
+  line-height:1.6;
+  opacity:.9;
+  margin-bottom:24px;
+}
+
+
+.finish-next-day{
+  font-size:14px;
+  opacity:.7;
+  margin-bottom:8px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+
+.finish-day-name{
+  font-size:34px;
+  font-weight:900;
+  margin-bottom:28px;
+}
+
+
+.finish-buttons{
+  display:flex;
+  gap:12px;
+}
+
+
+.finish-buttons button{
+  flex:1;
+}
 .hist-chip-wrap{position:relative;display:inline-flex;align-items:center;}
 .hist-chip-wrap:has(.hist-del) .hist-chip{padding-right:28px;}
 .hist-del{position:absolute;right:3px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--red);font-size:12px;font-weight:800;padding:4px 6px;}
@@ -475,4 +527,104 @@ body.flash{background:var(--amber) !important;}
   100%{
     background-position:0% 50%;
   }
+}
+
+.workout-pop{
+  position:fixed;
+  left:50%;
+  top:45%;
+  transform:translate(-50%,0);
+  font-size:20px;
+  font-weight:900;
+  color:#fff;
+  pointer-events:none;
+  z-index:9999;
+  text-shadow:0 0 20px rgba(255,255,255,.5);
+}
+.training-order-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin:20px 0;
+}
+
+
+.training-order-item{
+
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  width:100%;
+  padding:14px;
+
+  border-radius:12px;
+
+  border:1px solid var(--border);
+
+  background:var(--card);
+
+  color:white;
+
+  font-size:16px;
+
+  cursor:pointer;
+
+}
+
+
+.training-order-item.selected{
+
+  border-color:var(--green);
+
+}
+
+
+.order-number{
+
+  width:28px;
+  height:28px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:50%;
+
+  background:#222;
+
+  flex-shrink:0;
+
+}
+
+
+.training-order-item.selected .order-number{
+
+  background:var(--green);
+
+  color:#000;
+
+  font-weight:bold;
+
+}
+/* SETTIMANA CORRENTE */
+.week-toggle.current-week{
+  border:3px solid var(--green) !important;
+  box-shadow:0 0 18px rgba(0,255,100,0.35) !important;
+  font-weight:800;
+  transform:scale(1.02);
+}
+
+
+/* SETTIMANA COMPLETATA */
+.week-toggle.completed-week{
+  opacity:.55;
+  filter:grayscale(.4);
+}
+
+
+/* SETTIMANA FUTURA */
+.week-toggle.future-week{
+  opacity:.35;
+  filter:grayscale(.7);
 }

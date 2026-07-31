@@ -56,7 +56,15 @@ function maxWeightEverLifted(){
 // scarto in giorni tra gli ultimi due allenamenti registrati (0 se non c'e'
 // abbastanza storico): usato per rilevare un "ritorno" dopo una pausa lunga
 function daysSinceLastGap(){
-  const dates = Object.keys(calendarLog).filter(k=>calendarLog[k] && calendarLog[k].length).sort();
+const startKey = state.programStartDate || mostRecentMondayKey();
+
+const dates = Object.keys(calendarLog)
+  .filter(k =>
+    k >= startKey &&
+    calendarLog[k] &&
+    calendarLog[k].length
+  )
+  .sort();
   if(dates.length<2) return 0;
   const last = new Date(dates[dates.length-1]+'T00:00:00');
   const prev = new Date(dates[dates.length-2]+'T00:00:00');

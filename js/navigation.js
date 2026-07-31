@@ -1,5 +1,6 @@
 let activeDayIdx = 0;
 let activeFirstAnimation = true;
+let selectedTrainingOrder = [];
 // ---------------- POSIZIONE ATTIVA (giorno + esercizio) ----------------
 // ricorda in che giorno/esercizio ero rimasto, per riaprire il file esattamente li'
 const ACTIVE_POS_KEY = "scheda_wo18_active_pos_v1";
@@ -201,34 +202,231 @@ function selectDay(i){
   renderActive();
 }
 
+function askSwitchTrainingDay(newIdx, oldIdx){
+
+  const newDay = state.days[newIdx];
+  const oldDay = state.days[oldIdx];
+
+
+  if(!confirm(
+`Vuoi fare "${newDay.name}" al posto di "${oldDay.name}"?
+
+OK = sposta ${oldDay.name} dopo ${newDay.name}
+Annulla = fai solo questo allenamento`
+  )){
+    
+    state.currentTrainingDayIdx = newIdx;
+    saveState();
+    renderHome();
+    return;
+
+  }
+
+
+  const order = [...state.days];
+
+  const moved = order.splice(oldIdx,1)[0];
+
+  const insertPosition = order.findIndex(d=>d.name===newDay.name);
+
+  order.splice(insertPosition+1,0,moved);
+
+
+  state.weekOrder = order.map(d=>state.days.indexOf(d));
+
+  state.currentTrainingDayIdx = newIdx;
+
+
+  saveState();
+
+  renderDayTabs();
+  renderHome();
+
+}
+
+function confirmSwitchTrainingDay(newIdx, oldIdx){
+
+  const newDay = state.days[newIdx];
+  const oldDay = state.days[oldIdx];
+
+
+  const choice = confirm(
+`Oggi era previsto "${oldDay.name}".
+
+Vuoi fare "${newDay.name}" oggi?
+
+OK = cambia allenamento di oggi
+Annulla = continua con quello previsto`
+  );
+
+
+  if(!choice){
+    renderActive();
+    return;
+  }
+
+
+  state.currentTrainingDayIdx = newIdx;
+
+  selectedTrainingOrder = [newIdx];
+
+
+  state.trainingQueue =
+    state.days
+    .map((_,i)=>i)
+    .filter(i=>i!==newIdx);
+
+
+  saveState();
+
+
+  openTrainingOrderModal();
+
+}
 
 // ---------------- FINE GIORNO DI ALLENAMENTO ----------------
 
 
 function logWorkoutDay(dayIdx){
 
+  console.log("LOG WORKOUT CHIAMATA", dayIdx, state.days[dayIdx].name);
+
   const day = state.days[dayIdx];
 
   if(!day) return;
 
-  const a = dayAccent(day,dayIdx);
+
+  const a = dayAccent(day, dayIdx);
   const key = todayKey();
 
-  if(!calendarLog[key]) calendarLog[key]=[];
+
+  // storico allenamenti
+  if(!calendarLog[key]){
+    calendarLog[key] = [];
+  }
+
 
   calendarLog[key].push({
-    name:day.name,
-    color:a.c
+    name: day.name,
+    color: a.c
   });
+
 
   saveCalendarLog();
 
+
+
+  // data inizio programma
   if(!state.programStartDate){
+
     state.programStartDate = key;
-    saveState();
+
   }
 
+
+
+  // giorni completati nella settimana corrente
+  if(!state.completedTrainingDays){
+
+    state.completedTrainingDays = [];
+
+  }
+
+
+  if(!state.completedTrainingDays.includes(dayIdx)){
+
+    state.completedTrainingDays.push(dayIdx);
+
+  }
+
+
+
+  // aggiorna la coda allenamenti
+  updateTrainingQueueAfterComplete(dayIdx);
+
+
+
+  // controllo fine settimana
+  const weekCompleted =
+    state.completedTrainingDays.length === state.days.length;
+
+console.log("CHECK SETTIMANA", {
+  completati: state.completedTrainingDays,
+  totali: state.days.length,
+  weekCompleted: weekCompleted,
+  currentWeek: state.currentWeek
+});
+
+
+  if(weekCompleted){
+
+    advanceProgramWeek();
+
+  }
+
+
+
   checkAchievements();
+
+
+  saveState();
+
+}
+
+
+function updateTrainingQueueAfterComplete(dayIdx){
+
+  const totalDays = state.days.length;
+
+  if(!state.trainingQueue || state.trainingQueue.length === 0){
+
+    state.trainingQueue = [];
+
+    for(let i = 0; i < totalDays; i++){
+      if(i !== dayIdx){
+        state.trainingQueue.push(i);
+      }
+    }
+
+  } else {
+
+    state.trainingQueue =
+      state.trainingQueue.filter(i => i !== dayIdx);
+
+  }
+
+
+  if(state.trainingQueue.length > 0){
+
+    state.currentTrainingDayIdx = state.trainingQueue[0];
+
+  }
+  else{
+
+    state.currentTrainingDayIdx = null;
+
+
+    // settimana completata
+    advanceProgramWeek();
+
+  }
+
+
+  saveState();
+
+}
+
+function advanceProgramWeek(){
+
+  const maxWeek = (state.weeksPerBlock || 4) - 1;
+
+
+  if(state.currentWeek < maxWeek){
+
+    state.currentWeek++;
+
+  }
+
 }
 
 
@@ -366,48 +564,8 @@ function finishDay(){
 
   const day = state.days[activeDayIdx];
 
-
-  if(!confirm(`Segnare "${day.name}" come terminato oggi?`))
-    return;
-
-
-  if(!allExercisesClosed(day)){
-
-    if(!confirm(
-      "Alcuni esercizi non risultano completati o saltati. Vuoi comunque passare alla settimana successiva?"
-    )){
-      return;
-    }
-
-  }
-
-
-  discardReorderIfPending();
-
-  logWorkoutDay(activeDayIdx);
-
-  forceNextWeekForDay(activeDayIdx);
-
-
-  activeDayIdx =
-    (activeDayIdx+1) % state.days.length;
-
-
-  activeExerciseIdx=null;
-
-  saveActivePos();
-
-
-  workoutInProgress=false;
-
-  saveWorkoutInProgress();
-
-
-  renderDayTabs();
-
-  renderActive();
-
-  showHome();
+  openFinishWorkoutModal(activeDayIdx);
 
 }
+
 
