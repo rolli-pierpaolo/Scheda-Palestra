@@ -14,17 +14,80 @@ input, textarea, [contenteditable]{-webkit-user-select:text; -moz-user-select:te
 html,body{margin:0;padding:0;background:var(--bg-black);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
 body{padding-bottom:70px;}
 /* ---------------- BARRA IN ALTO + TAB ALLENAMENTO/STORICO/GIORNI ---------------- */
-.topbar{position:sticky;top:0;z-index:20;background:#000;border-bottom:2px solid var(--green);padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;}
+.topbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:#000;
+    border-bottom:2px solid var(--green);
+    padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;
+   text-align:center;
+   }
+
 .topbar h1{
-    margin:0;
-    font-size:16px;
-    letter-spacing:.5px;
-    color:var(--green);
-    font-weight:800;
-    text-align:center;
-    text-transform:uppercase;
-    transition:font-size .15s;
+  margin:0;
+  font-size:16px;
+  letter-spacing:.5px;
+  font-weight:900;
+  text-align:center;
+  text-transform:uppercase;
+  transition:font-size .15s;
+
+  background:linear-gradient(
+    90deg,
+    var(--green) 0%,
+    var(--green) 40%,
+    #dfff70 48%,
+    #ffffff 50%,
+    #dfff70 52%,
+    var(--green) 60%,
+    var(--green) 100%
+  );
+
+  background-size:300% 100%;
+  background-position:var(--shine) center;
+
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+
+  --shine:-200%;
 }
+
+
+/*@keyframes titleGlow{
+
+    0%{
+        text-shadow:
+            0 0 8px rgba(154,205,50,.20),
+            0 0 16px rgba(154,205,50,.10);
+    }
+
+    50%{
+        text-shadow:
+            0 0 18px rgba(154,205,50,.85),
+            0 0 36px rgba(154,205,50,.55),
+            0 0 54px rgba(154,205,50,.30);
+    }
+
+    100%{
+        text-shadow:
+            0 0 8px rgba(154,205,50,.20),
+            0 0 16px rgba(154,205,50,.10);
+    }
+
+}
+
+
+
+
+body.on-home .topbar h1{
+    font-size:28px;
+    letter-spacing:1px;
+}
+
+
+
 
 body.on-home .topbar h1{
     font-size:30px;
@@ -324,25 +387,3 @@ body.flash{background:var(--amber) !important;}
 .days-label{flex:0 0 66px;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;}
 .days-row .combo-wrap .meta-input{text-align:left;color:var(--text);font-weight:700;}
 
-@keyframes titleGlow{
-
-    0%{
-        text-shadow:
-            0 0 5px rgba(154,205,50,.3),
-            0 0 10px rgba(154,205,50,.2);
-    }
-
-    50%{
-        text-shadow:
-            0 0 15px rgba(154,205,50,.8),
-            0 0 30px rgba(154,205,50,.5),
-            0 0 45px rgba(154,205,50,.3);
-    }
-
-    100%{
-        text-shadow:
-            0 0 5px rgba(154,205,50,.3),
-            0 0 10px rgba(154,205,50,.2);
-    }
-
-}
