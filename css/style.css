@@ -153,8 +153,13 @@ main{padding:12px;}
 .home-suggested-name{display:block;font-size:24px;font-weight:900;color:#0D0D0D;text-transform:uppercase;margin-top:4px;letter-spacing:.5px;}
 .home-days-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
 .home-days-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
-.home-day-btn{padding:18px 8px;border-radius:14px;border:2px solid var(--accent,var(--green));background:var(--panel2);color:var(--text);font-size:14px;font-weight:800;text-align:center;text-transform:uppercase;}
+.home-day-btn{padding:12px 8px;border-radius:12px;border:2px solid var(--accent,var(--green));background:var(--panel2);color:var(--text);font-size:12px;font-weight:800;text-align:center;text-transform:uppercase;}
 .home-day-btn:active{background:var(--accent,var(--green));color:#0D0D0D;}
+/* completato: sfondo tinto col colore del giorno (trasparente), bordo che resta acceso */
+.home-day-btn.completed{background:color-mix(in srgb, var(--accent, var(--green)) 32%, transparent);border-color:var(--accent,var(--green));}
+/* corrente: leggero glow statico gia' da CSS, l'effetto "respiro" (scala + glow
+   pulsante) lo fa GSAP in home.js appena la card e' in pagina */
+.home-day-btn.active-training{box-shadow:0 0 10px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
 .home-total-stat{text-align:center;font-size:13px;font-weight:700;color:var(--muted);}
 /* ---------------- SCHEDA ESERCIZIO (nome, note, blocchi settimana) ---------------- */
 .card{background:var(--panel2);border-radius:12px;margin-bottom:14px;overflow:hidden;border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));}
