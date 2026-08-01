@@ -231,6 +231,11 @@ main{padding:12px;}
 .meta-label{width:70px;flex:0 0 70px;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;}
 .meta-input{flex:1 1 auto;min-width:0;width:100%;background:#000;border:1px solid var(--line);color:var(--accent,var(--green));font-size:12px;text-align:center;border-radius:6px;padding:8px 4px;box-sizing:border-box;}
 .meta-input.schema{color:var(--text);font-weight:400;}
+/* Recupero e Sets x Reps affiancati sulla stessa riga invece di due righe
+   intere una sopra l'altra: stesso spazio verticale di una singola riga */
+.meta-row-combined{gap:6px;}
+.meta-group{display:flex;align-items:center;gap:4px;flex:1 1 0;min-width:0;}
+.meta-row-combined .meta-label.small{width:auto;flex:0 0 auto;font-size:9px;}
 .sets-wrap{width:100%;}
 /* griglia comune a ogni riga serie: numero romano, colonna kg, colonna rip.
    la stessa griglia viene riusata dalla riga "max" per restare allineata */
@@ -238,7 +243,9 @@ main{padding:12px;}
    una riga e l'altra): con 4 settimane * piu' serie erano ingombranti senza
    un vero motivo, i numeri restano leggibili lo stesso */
 .set-row{display:grid;grid-template-columns:20px minmax(0,1fr) minmax(0,1fr);gap:5px;margin-bottom:3px;align-items:center;width:100%;}
-.set-label{font-size:10px;color:var(--muted);font-weight:700;text-align:center;}
+/* colore del giorno invece del grigio muto: lega di piu' i numeri di serie al
+   resto della card, ormai colorata per giorno ovunque */
+.set-label{font-size:10px;color:var(--accent,var(--green));font-weight:700;text-align:center;}
 .set-input{background:#fff;color:#141414;border:none;border-radius:6px;padding:5px 2px;font-size:13px;font-weight:700;text-align:center;width:100%;min-width:0;box-sizing:border-box;}
 .set-input::placeholder{color:#999;font-weight:400;}
 .kg-wrap{display:flex;align-items:stretch;gap:3px;min-width:0;}
@@ -301,7 +308,10 @@ main{padding:12px;}
 .backup-row{display:flex;flex-wrap:wrap;gap:8px;padding:14px;}
 .backup-row .add-ex{flex:1 1 140px;}
 .add-ex.small2{padding:10px;font-size:12px;margin-top:0;}
-.del-ex{background:none;border:none;color:var(--red);font-size:11px;font-weight:700;padding:6px 12px;float:right;}
+/* stessa forma "pulsante icona" di .chart-btn (prima era testo "Elimina" nudo,
+   l'unico con l'etichetta scritta per esteso tra icone pure): solo il colore
+   rosso lo distingue come azione distruttiva */
+.del-ex{background:none;border:1px solid var(--red);color:var(--red);font-size:12px;padding:4px 8px;border-radius:6px;float:right;margin-left:6px;}
 /* ---------------- TAB STORICO (elenco WO archiviati) ---------------- */
 .hist-list-row{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;}
 .hist-list{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:8px;}
@@ -315,6 +325,13 @@ main{padding:12px;}
 .hist-card .ex-name{font-weight:800;font-size:14px;color:var(--text);border:none;padding:10px 12px 2px;}
 .hist-card .schema-line{font-size:11px;color:var(--muted);padding:0 12px 8px;}
 .footer-note{text-align:center;color:var(--muted);font-size:10px;padding:20px 20px 30px;line-height:1.5;}
+/* avviso "giorno diverso dal previsto": banner sottile invece di testo nudo
+   (non aveva CSS dedicato), sotto il primo esercizio invece che in cima a
+   tutta la pagina, dove affollerebbe la zona subito sotto l'header sticky */
+.switch-training-box{background:var(--panel2);border:1px solid var(--amber);border-radius:10px;padding:9px 12px;margin:0 0 14px;text-align:center;}
+.switch-training-title{font-size:11px;font-weight:800;color:var(--amber);letter-spacing:.3px;text-transform:uppercase;}
+.switch-training-sub{font-size:12px;color:var(--muted);margin:3px 0 8px;}
+.switch-training-box .add-ex{width:fit-content;margin:0 auto;padding:8px 14px;font-size:12px;}
 .empty-day{text-align:center;padding:48px 20px;}
 .empty-day-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;}
 .empty-day-sub{font-size:13px;color:var(--muted);}
@@ -392,7 +409,7 @@ body.flash{background:var(--amber) !important;}
 .combo-empty{padding:10px 12px;font-size:12px;color:var(--muted);font-style:italic;}
 .savebar b{color:var(--green);}
 /* ---------------- RECORD PERSONALI: badge sulla scheda + toast di festeggiamento ---------------- */
-.pr-badge{margin:4px 0 2px;font-size:11px;font-weight:800;color:var(--amber);}
+.pr-badge{margin:4px 0 2px;font-size:11px;font-weight:800;color:var(--amber);text-shadow:0 0 8px rgba(232,151,28,.55);}
 .pr-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--green);color:#0D0D0D;padding:10px 18px;border-radius:20px;font-weight:800;font-size:13px;z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.45);text-align:center;max-width:80%;}
 .pr-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 /* notifica "esercizio completato": stesso schema del pr-toast ma piu' piccola,

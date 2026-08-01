@@ -43,15 +43,20 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   
   // gli esercizi "collegati" (super set/jump set, vedi piu' sotto) vengono
   // renderizzati insieme in un'unica card: quello che segue nell'array (il
-  // partner) va saltato qui, e' gia' incluso dentro linkedExerciseCard
+  // partner) va saltato qui, e' gia' incluso dentro linkedExerciseCard.
+  // la prima card viene tenuta separata cosi' l'avviso "giorno diverso dal
+  // previsto" puo' comparire SOTTO di essa invece che in cima a tutta la
+  // pagina, dove affollerebbe la zona appena sotto l'header sticky
+  let firstCardHtml = '';
   let cardsHtml = '';
   for(let exi=0; exi<day.esercizi.length; exi++){
     const ex = day.esercizi[exi];
     if(ex.linkGroupId && day.esercizi[exi-1] && day.esercizi[exi-1].linkGroupId===ex.linkGroupId) continue;
     const partnerExi = (ex.linkGroupId && day.esercizi[exi+1] && day.esercizi[exi+1].linkGroupId===ex.linkGroupId) ? exi+1 : null;
-    cardsHtml += partnerExi!==null ? linkedExerciseCard(ex, exi, day.esercizi[partnerExi], partnerExi, a) : exerciseCard(ex, exi, a);
+    const html = partnerExi!==null ? linkedExerciseCard(ex, exi, day.esercizi[partnerExi], partnerExi, a) : exerciseCard(ex, exi, a);
+    if(!firstCardHtml) firstCardHtml = html; else cardsHtml += html;
   }
-  main.innerHTML = switchTrainingDay + emptyState + cardsHtml +
+  main.innerHTML = emptyState + firstCardHtml + switchTrainingDay + cardsHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -477,53 +482,34 @@ function exerciseCard(ex, exi, accent){
 
 
 
-      <div class="meta-row">
+      <div class="meta-row meta-row-combined">
 
-        <span class="meta-label">Recupero</span>
+        <div class="meta-group">
+          <span class="meta-label small">Rec.</span>
+          <div class="combo-wrap">
+            <input class="meta-input"
+            ${isReadOnlyWeek?'disabled':''}
+            placeholder="—"
+            value="${escapeAttr(ex.recupero[w]??'')}"
+            oninput="onComboInput(this,'recuperi')"
+            onfocus="onComboFocus(this,'recuperi')"
+            onchange="updateMeta(${exi},'recupero',${w},this.value)">
+          </div>
+          <button class="recupero-play"
+          onclick="startTimerFromRow(this)">
+          ▶
+          </button>
+        </div>
 
-
-        
-
-<div class="combo-wrap">
-
-<input class="meta-input"
-${isReadOnlyWeek?'disabled':''}
-placeholder="—"
-value="${escapeAttr(ex.recupero[w]??'')}"
-oninput="onComboInput(this,'recuperi')"
-onfocus="onComboFocus(this,'recuperi')"
-onchange="updateMeta(${exi},'recupero',${w},this.value)">
-</div>
-
-
-        <button class="recupero-play"
-        onclick="startTimerFromRow(this)">
-        ▶
-        </button>
-
-
-      </div>
-
-
-
-
-      <div class="meta-row">
-
-
-        <span class="meta-label">Sets x Reps</span>
-
-
-        <input class="meta-input schema"
-        ${isReadOnlyWeek?'disabled':''}
-        value="${escapeAttr(ex.schema[w]??'')}"
-        onchange="updateMeta(${exi},'schema',${w},this.value)">
-
-
+        <div class="meta-group">
+          <span class="meta-label small">Serie</span>
+          <input class="meta-input schema"
+          ${isReadOnlyWeek?'disabled':''}
+          value="${escapeAttr(ex.schema[w]??'')}"
+          onchange="updateMeta(${exi},'schema',${w},this.value)">
+        </div>
 
       </div>
-
-
-
 
       <div class="sets-wrap">
 
@@ -652,9 +638,7 @@ onchange="updateMeta(${exi},'recupero',${w},this.value)">
     <div class="card-head">
 
 
-      <button class="del-ex" onclick="deleteExercise(${exi})">
-      Elimina
-      </button>
+      <button class="del-ex" onclick="deleteExercise(${exi})" title="Elimina esercizio">🗑️</button>
 
 
 
@@ -1267,42 +1251,34 @@ const isCollapsed =
     value="${escapeAttr((exA.weekNote && exA.weekNote[w]) ?? '')}"
     onchange="updateWeekNote(${exiA},${w},this.value);updateWeekNote(${exiB},${w},this.value)">
 
-    <div class="meta-row">
+    <div class="meta-row meta-row-combined">
 
-      <span class="meta-label">Recupero</span>
-
-      <div class="combo-wrap">
-
-        <input class="meta-input"
-        placeholder="—"
-        value="${escapeAttr(exA.recupero[w]??'')}"
-        oninput="onComboInput(this,'recuperi')"
-        onfocus="onComboFocus(this,'recuperi')"
-        onchange="updateMeta(${exiA},'recupero',${w},this.value);updateMeta(${exiB},'recupero',${w},this.value)">
-
+      <div class="meta-group">
+        <span class="meta-label small">Rec.</span>
+        <div class="combo-wrap">
+          <input class="meta-input"
+          placeholder="—"
+          value="${escapeAttr(exA.recupero[w]??'')}"
+          oninput="onComboInput(this,'recuperi')"
+          onfocus="onComboFocus(this,'recuperi')"
+          onchange="updateMeta(${exiA},'recupero',${w},this.value);updateMeta(${exiB},'recupero',${w},this.value)">
+        </div>
+        <button class="recupero-play"
+        onclick="startTimerFromRow(this)">
+        ▶
+        </button>
       </div>
 
-      <button class="recupero-play"
-      onclick="startTimerFromRow(this)">
-      ▶
-      </button>
-
-    </div>
-
-
-    <div class="meta-row">
-
-      <span class="meta-label">Sets x Reps</span>
-
-      <div class="combo-wrap">
-
-        <input class="meta-input schema"
-        placeholder="—"
-        value="${escapeAttr(exA.schema[w]??'')}"
-        oninput="onComboInput(this,'schemi')"
-        onfocus="onComboFocus(this,'schemi')"
-        onchange="updateMeta(${exiA},'schema',${w},this.value);updateMeta(${exiB},'schema',${w},this.value)">
-
+      <div class="meta-group">
+        <span class="meta-label small">Serie</span>
+        <div class="combo-wrap">
+          <input class="meta-input schema"
+          placeholder="—"
+          value="${escapeAttr(exA.schema[w]??'')}"
+          oninput="onComboInput(this,'schemi')"
+          onfocus="onComboFocus(this,'schemi')"
+          onchange="updateMeta(${exiA},'schema',${w},this.value);updateMeta(${exiB},'schema',${w},this.value)">
+        </div>
       </div>
 
     </div>
@@ -1387,7 +1363,7 @@ const isCollapsed =
   <div class="card linked-group" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
     <div class="linked-pair-frame">
       <div class="card-head linked-head compact">
-        <button class="del-ex" onclick="deleteExercise(${exiA})">Elimina</button>
+        <button class="del-ex" onclick="deleteExercise(${exiA})" title="Elimina esercizio">🗑️</button>
         <button class="chart-btn" onclick="openChart(${exiA})" title="Grafico progressione">📈</button>
         <button class="chart-btn" onclick="openPlateCalc(${exiA})" title="Calcola dischi bilanciere">🏋️</button>
         <div class="name-row"><div class="combo-wrap"><textarea class="ex-name" rows="1" placeholder="Seleziona esercizio..." oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)" onfocus="onComboFocus(this,'esercizi')" onchange="updateName(${exiA},this.value)">${escapeHtml(exA.nome??'')}</textarea></div></div>
@@ -1396,7 +1372,7 @@ const isCollapsed =
       </div>
       <button class="link-type-divider" onclick="openLinkPicker(${exiA})" title="Gestisci collegamento"><span class="link-type-pill" style="background:${accent.d}">⚡ ${typeLabel} <span class="link-type-manage">🔗 gestisci</span></span></button>
       <div class="card-head linked-head compact">
-        <button class="del-ex" onclick="deleteExercise(${exiB})">Elimina</button>
+        <button class="del-ex" onclick="deleteExercise(${exiB})" title="Elimina esercizio">🗑️</button>
         <button class="chart-btn" onclick="openChart(${exiB})" title="Grafico progressione">📈</button>
         <button class="chart-btn" onclick="openPlateCalc(${exiB})" title="Calcola dischi bilanciere">🏋️</button>
         <div class="name-row"><div class="combo-wrap"><textarea class="ex-name" rows="1" placeholder="Seleziona esercizio..." oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)" onfocus="onComboFocus(this,'esercizi')" onchange="updateName(${exiB},this.value)">${escapeHtml(exB.nome??'')}</textarea></div></div>
