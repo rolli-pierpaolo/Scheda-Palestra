@@ -352,14 +352,18 @@ const total = weekly.total;
   const coveredIdx = new Set([...(state.completedTrainingDays||[]), ...(state.trainingQueue||[])]);
   const missingIdx = state.days.map((_,i)=>i).filter(i=>!coveredIdx.has(i));
   const orderedDayIdx = [...(state.completedTrainingDays||[]), ...(state.trainingQueue||[]), ...missingIdx];
-  const dayButtons = orderedDayIdx.map(i=>{
+  // non piu' cliccabili: servono solo a mostrare a colpo d'occhio l'ordine
+  // reale di esecuzione (che puo' cambiare tramite "Pianifica i prossimi
+  // allenamenti", vedi openTrainingOrderModal in animations.js) - per iniziare
+  // un allenamento si passa dal bottone "giorno suggerito" o dal tab Allenamento
+  const dayButtons = orderedDayIdx.map((i,pos)=>{
     const d = state.days[i];
     if(!d) return '';
     const a = dayAccent(d,i);
     const isCompleted = (state.completedTrainingDays||[]).includes(i);
     const isCurrent = !isCompleted && state.currentTrainingDayIdx === i;
-    const cls = ['home-day-btn', isCompleted?'completed':'', isCurrent?'active-training':''].filter(Boolean).join(' ');
-    return `<button class="${cls}" style="--accent:${a.c}" onclick="startDayFromHome(${i})">${escapeHtml(d.name)}</button>`;
+    const cls = ['home-day-card', isCompleted?'completed':'', isCurrent?'active-training':''].filter(Boolean).join(' ');
+    return `<div class="${cls}" style="--accent:${a.c}"><span class="home-day-order">${pos+1}</span>${escapeHtml(d.name)}</div>`;
   }).join('');
   const motivation = suggestedDay ? pickMotivationalPhrase(suggestedIdx) : '';
   const suggestedHtml = suggestedDay ? `
@@ -373,7 +377,7 @@ const total = weekly.total;
   ontouchend="this.classList.remove('pressed')"
   onclick="startDayFromHome(${suggestedIdx})">
 <span class="home-suggested-name accent-shine">${escapeHtml(suggestedDay.name)}</span></button>
-    ${motivation ? `<div class="home-motivation">${escapeHtml(motivation)}</div>` : ''}` : '';
+    ${motivation ? `<div class="home-motivation accent-shine" style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}">${escapeHtml(motivation)}</div>` : ''}` : '';
   el.innerHTML = `
     <div class="home-hero">
       <div class="home-block-week">SETTIMANA ${blockWeek} DI ${state.weeksPerBlock||4}</div>
@@ -396,13 +400,21 @@ const total = weekly.total;
   });
   // effetto "respiro" sulla card del giorno corrente: scala su, torna giu',
   // glow morbido, in loop finche' resta il giorno corrente
-  gsap.to(".home-day-btn.active-training", {
+  gsap.to(".home-day-card.active-training", {
     scale: 1.06,
     boxShadow: "0 0 16px 3px var(--accent, var(--green))",
     duration: 1.1,
     repeat: -1,
     yoyo: true,
     ease: "sine.inOut"
+  });
+  // entrata della frase motivazionale: pop leggero invece di comparire di scatto
+  gsap.from(".home-motivation", {
+    opacity: 0,
+    y: 12,
+    scale: .96,
+    duration: .6,
+    ease: "back.out(1.6)"
   });
 }
 }
