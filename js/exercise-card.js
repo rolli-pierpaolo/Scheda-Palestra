@@ -59,9 +59,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
      ${finishBtn}
      <button class="add-ex" style="margin-top:10px;border-color:var(--amber);color:var(--amber);" onclick="archiveAndReset()">📦 Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
     autoGrowAllExNames();
-    document.querySelectorAll('.ex-comment').forEach(t=>{
-  autoGrowTextarea(t);
-});
+    autoGrowAllExComments();
 
   if(typeof gsap !== "undefined" && activeFirstAnimation){
   activeFirstAnimation = false;
