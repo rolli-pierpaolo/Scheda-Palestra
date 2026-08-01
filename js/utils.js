@@ -17,6 +17,14 @@ function autoGrowTextarea(el){
 function autoGrowAllExNames(){
   document.querySelectorAll('#viewActive .ex-name').forEach(autoGrowTextarea);
 }
+// stesso principio per le note/tecnica (.ex-comment): serve lo stesso richiamo
+// da showView() quando la vista diventa visibile, altrimenti sugli esercizi
+// collegati (super set/jump set) lo spazio nota resta calcolato a zero finche'
+// non si cambia giorno e si torna indietro (renderActive() gira mentre la
+// vista e' ancora display:none al primo ingresso in Allenamento)
+function autoGrowAllExComments(){
+  document.querySelectorAll('#viewActive .ex-comment').forEach(autoGrowTextarea);
+}
 // i campi kg/rip usano inputmode="decimal"/"numeric" cosi' di default si apre
 // la tastiera solo numeri (piu' comoda per la maggior parte degli inserimenti),
 // ma a volte serve poter scrivere anche lettere/simboli (es. "fallimento"):
