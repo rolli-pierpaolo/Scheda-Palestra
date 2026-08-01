@@ -346,9 +346,20 @@ const total = weekly.total;
 
   const monthlyCount = computeMonthlyWorkoutsCount();
   const blockWeek = computeCurrentBlockWeek();
-  const dayButtons = state.days.map((d,i)=>{
+  // ordine di esecuzione: prima i giorni gia' fatti questa settimana (nell'ordine
+  // in cui sono stati fatti), poi quelli ancora da fare secondo trainingQueue;
+  // eventuali giorni non coperti da nessuno dei due (es. appena aggiunti) in coda
+  const coveredIdx = new Set([...(state.completedTrainingDays||[]), ...(state.trainingQueue||[])]);
+  const missingIdx = state.days.map((_,i)=>i).filter(i=>!coveredIdx.has(i));
+  const orderedDayIdx = [...(state.completedTrainingDays||[]), ...(state.trainingQueue||[]), ...missingIdx];
+  const dayButtons = orderedDayIdx.map(i=>{
+    const d = state.days[i];
+    if(!d) return '';
     const a = dayAccent(d,i);
-    return `<button class="home-day-btn" style="--accent:${a.c}" onclick="startDayFromHome(${i})">${escapeHtml(d.name)}</button>`;
+    const isCompleted = (state.completedTrainingDays||[]).includes(i);
+    const isCurrent = !isCompleted && state.currentTrainingDayIdx === i;
+    const cls = ['home-day-btn', isCompleted?'completed':'', isCurrent?'active-training':''].filter(Boolean).join(' ');
+    return `<button class="${cls}" style="--accent:${a.c}" onclick="startDayFromHome(${i})">${escapeHtml(d.name)}</button>`;
   }).join('');
   const motivation = suggestedDay ? pickMotivationalPhrase(suggestedIdx) : '';
   const suggestedHtml = suggestedDay ? `
@@ -382,6 +393,16 @@ const total = weekly.total;
     duration: 0.8,
     snap: { innerText: 1 },
     ease: "power2.out"
+  });
+  // effetto "respiro" sulla card del giorno corrente: scala su, torna giu',
+  // glow morbido, in loop finche' resta il giorno corrente
+  gsap.to(".home-day-btn.active-training", {
+    scale: 1.06,
+    boxShadow: "0 0 16px 3px var(--accent, var(--green))",
+    duration: 1.1,
+    repeat: -1,
+    yoyo: true,
+    ease: "sine.inOut"
   });
 }
 }
