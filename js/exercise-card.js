@@ -15,48 +15,33 @@ function renderActive(){
   const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">↕️ Modifica ordine</button>` : '';
 const finishBtn = day.esercizi.length>0 ? `<button class="finish-day-btn" style="--accent:${a.c}" onclick="openFinishWorkoutModal(${activeDayIdx})"><span class="accent-shine">✅ Giorno di allenamento terminato!</span></button>` : '';  const suggestedIdx = computeSuggestedDayIdx();
 
-const switchTrainingDay = 
+// piccolo banner pulsante invece del box grande di prima: deve vedersi
+// SUBITO entrando nel giorno diverso da quello previsto, ma senza occupare
+// spazio vero - tutto il banner e' cliccabile, un solo tocco per cambiare
+const switchTrainingDay =
 activeDayIdx !== suggestedIdx
 ?
 `
-<div class="switch-training-box">
-
-  <div class="switch-training-title">
-    ⚠️ Giorno diverso dal previsto
-  </div>
-
-  <div class="switch-training-sub">
-    Oggi era previsto:
-    <b>${escapeHtml(state.days[suggestedIdx].name)}</b>
-  </div>
-
-<button class="add-ex"
+<button class="switch-training-pill"
 onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
-  🏋️ Fai ${escapeHtml(day.name)} oggi
+  ⚠️ Previsto: ${escapeHtml(state.days[suggestedIdx].name)} — tocca per fare ${escapeHtml(day.name)} oggi
 </button>
-
-</div>
 `
 :
 '';
-  
-  
+
+
   // gli esercizi "collegati" (super set/jump set, vedi piu' sotto) vengono
   // renderizzati insieme in un'unica card: quello che segue nell'array (il
-  // partner) va saltato qui, e' gia' incluso dentro linkedExerciseCard.
-  // la prima card viene tenuta separata cosi' l'avviso "giorno diverso dal
-  // previsto" puo' comparire SOTTO di essa invece che in cima a tutta la
-  // pagina, dove affollerebbe la zona appena sotto l'header sticky
-  let firstCardHtml = '';
+  // partner) va saltato qui, e' gia' incluso dentro linkedExerciseCard
   let cardsHtml = '';
   for(let exi=0; exi<day.esercizi.length; exi++){
     const ex = day.esercizi[exi];
     if(ex.linkGroupId && day.esercizi[exi-1] && day.esercizi[exi-1].linkGroupId===ex.linkGroupId) continue;
     const partnerExi = (ex.linkGroupId && day.esercizi[exi+1] && day.esercizi[exi+1].linkGroupId===ex.linkGroupId) ? exi+1 : null;
-    const html = partnerExi!==null ? linkedExerciseCard(ex, exi, day.esercizi[partnerExi], partnerExi, a) : exerciseCard(ex, exi, a);
-    if(!firstCardHtml) firstCardHtml = html; else cardsHtml += html;
+    cardsHtml += partnerExi!==null ? linkedExerciseCard(ex, exi, day.esercizi[partnerExi], partnerExi, a) : exerciseCard(ex, exi, a);
   }
-  main.innerHTML = emptyState + firstCardHtml + switchTrainingDay + cardsHtml +
+  main.innerHTML = switchTrainingDay + emptyState + cardsHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
