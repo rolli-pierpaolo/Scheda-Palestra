@@ -1201,28 +1201,153 @@ const isCollapsed =
       </div>`;
     }
     return `
-      <div class="week-body ${isCollapsed?'collapsed':''}">
-        <input class="week-note" placeholder="nota settimana (facoltativo)" value="${escapeAttr((exA.weekNote && exA.weekNote[w]) ?? '')}" onchange="updateWeekNote(${exiA},${w},this.value);updateWeekNote(${exiB},${w},this.value)">
-        <div class="meta-row"><span class="meta-label">Recupero</span><div class="combo-wrap"><input class="meta-input" placeholder="—" value="${escapeAttr(exA.recupero[w]??'')}" oninput="onComboInput(this,'recuperi')" onfocus="onComboFocus(this,'recuperi')" onchange="updateMeta(${exiA},'recupero',${w},this.value);updateMeta(${exiB},'recupero',${w},this.value)"></div><button class="recupero-play" onclick="startTimerFromRow(this)">▶</button></div>
-        <div class="meta-row"><span class="meta-label">Sets x Reps</span><div class="combo-wrap"><input class="meta-input schema" placeholder="—" value="${escapeAttr(exA.schema[w]??'')}" oninput="onComboInput(this,'schemi')" onfocus="onComboFocus(this,'schemi')" onchange="updateMeta(${exiA},'schema',${w},this.value);updateMeta(${exiB},'schema',${w},this.value)"></div></div>
-        <div class="sets-wrap">${setsHtml}</div>
-        ${maxRowHtml}
-        <div class="set-btns">
-          <button class="max-toggle" onclick="toggleMax(${exiA},${w});toggleMax(${exiB},${w})">${maxShown?'nascondi max':'max'}</button>
-          <div class="week-done-wrap">
-            <span class="week-done-label">completata / saltata:</span>
-            <div class="week-status-btns">
-              <button class="week-done-btn ${weekDone?'checked':''}" onclick="toggleWeekDone(${exiA},${w});toggleWeekDone(${exiB},${w})" title="Segna settimana completata">✓</button>
-              <button class="week-skip-btn ${weekSkipped?'checked':''}" onclick="toggleWeekSkipped(${exiA},${w});toggleWeekSkipped(${exiB},${w})" title="Segna settimana saltata">⏭</button>
-            </div>
-          </div>
-          <div class="set-btns-right">
-            <button class="add-ex small" onclick="addSet(${exiA},${w});addSet(${exiB},${w})">+ serie</button>
-            <button class="add-ex small danger" onclick="removeSet(${exiA},${w});removeSet(${exiB},${w})">− serie</button>
-          </div>
-        </div>
+
+<div class="week-block">
+
+  <button class="week-toggle
+  ${isCollapsed?'collapsed':''}
+  ${weekDone?'done':''}
+  ${weekSkipped?'skipped':''}
+  ${isCurrentWeek?'current-week':''}
+  ${isPastWeek?'completed-week':''}
+  ${isFutureWeek?'future-week':''}"
+  style="background:${accent.d}"
+  onclick="toggleWeek(this,'${wkey}',${w})">
+
+    <span>
+
+    ${
+      isPastWeek
+      ? '✓ '
+      : isCurrentWeek
+        ? '🔥 '
+        : '🔒 '
+    }
+
+    SETTIMANA ${w+1}${weekSkipped?' — saltata':''}
+
+    </span>
+
+    <span class="chev">▾</span>
+
+  </button>
+
+
+  <div class="week-body ${isCollapsed?'collapsed':''}">
+
+    <input class="week-note"
+    placeholder="nota settimana (facoltativo)"
+    value="${escapeAttr((exA.weekNote && exA.weekNote[w]) ?? '')}"
+    onchange="updateWeekNote(${exiA},${w},this.value);updateWeekNote(${exiB},${w},this.value)">
+
+    <div class="meta-row">
+
+      <span class="meta-label">Recupero</span>
+
+      <div class="combo-wrap">
+
+        <input class="meta-input"
+        placeholder="—"
+        value="${escapeAttr(exA.recupero[w]??'')}"
+        oninput="onComboInput(this,'recuperi')"
+        onfocus="onComboFocus(this,'recuperi')"
+        onchange="updateMeta(${exiA},'recupero',${w},this.value);updateMeta(${exiB},'recupero',${w},this.value)">
+
       </div>
-    </div>`;
+
+      <button class="recupero-play"
+      onclick="startTimerFromRow(this)">
+      ▶
+      </button>
+
+    </div>
+
+
+    <div class="meta-row">
+
+      <span class="meta-label">Sets x Reps</span>
+
+      <div class="combo-wrap">
+
+        <input class="meta-input schema"
+        placeholder="—"
+        value="${escapeAttr(exA.schema[w]??'')}"
+        oninput="onComboInput(this,'schemi')"
+        onfocus="onComboFocus(this,'schemi')"
+        onchange="updateMeta(${exiA},'schema',${w},this.value);updateMeta(${exiB},'schema',${w},this.value)">
+
+      </div>
+
+    </div>
+
+    <div class="sets-wrap">
+
+      ${setsHtml}
+
+    </div>
+
+    ${maxRowHtml}
+
+    <div class="set-btns">
+
+      <button class="max-toggle"
+      onclick="toggleMax(${exiA},${w});toggleMax(${exiB},${w})">
+
+        ${maxShown?'nascondi max':'max'}
+
+      </button>
+
+      <div class="week-done-wrap">
+
+        <span class="week-done-label">
+        completata / saltata:
+        </span>
+
+        <div class="week-status-btns">
+
+          <button class="week-done-btn ${weekDone?'checked':''}"
+          onclick="toggleWeekDone(${exiA},${w});toggleWeekDone(${exiB},${w})">
+
+          ✓
+
+          </button>
+
+          <button class="week-skip-btn ${weekSkipped?'checked':''}"
+          onclick="toggleWeekSkipped(${exiA},${w});toggleWeekSkipped(${exiB},${w})">
+
+          ⏭
+
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="set-btns-right">
+
+        <button class="add-ex small"
+        onclick="addSet(${exiA},${w});addSet(${exiB},${w})">
+
+        + serie
+
+        </button>
+
+        <button class="add-ex small danger"
+        onclick="removeSet(${exiA},${w});removeSet(${exiB},${w})">
+
+        − serie
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+`;
   }).join('');
 
   const recordA = getRecordForExercise(exA.nome);
