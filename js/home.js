@@ -398,10 +398,16 @@ const total = weekly.total;
     snap: { innerText: 1 },
     ease: "power2.out"
   });
-  // effetto "respiro" sulla card del giorno corrente: scala su, torna giu',
-  // glow morbido, in loop finche' resta il giorno corrente
+  // effetto "respiro" sulla card del giorno corrente: leggermente piu' grande
+  // delle altre gia' da ferma (scale 1.04 fisso), poi scala su/giu' intorno a
+  // quella base, con glow morbido, in loop finche' resta il giorno corrente.
+  // killTweensOf prima di ripartire: renderHome() puo' girare piu' volte (ogni
+  // volta che si torna alla Home), senza and si accumulerebbero tween vecchi
+  // sugli elementi ricreati ogni volta da zero con innerHTML
+  gsap.killTweensOf(".home-day-card.active-training");
+  gsap.set(".home-day-card.active-training", { scale: 1.04 });
   gsap.to(".home-day-card.active-training", {
-    scale: 1.06,
+    scale: 1.08,
     boxShadow: "0 0 16px 3px var(--accent, var(--green))",
     duration: 1.1,
     repeat: -1,

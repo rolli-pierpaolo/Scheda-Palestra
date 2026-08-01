@@ -57,7 +57,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
        ${reorderBtn}
      </div>
      ${finishBtn}
-     <button class="add-ex" style="margin-top:10px;border-color:var(--amber);color:var(--amber);" onclick="archiveAndReset()">📦 Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
+     <button class="archive-btn" onclick="archiveAndReset()">📦 Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
     autoGrowAllExNames();
     autoGrowAllExComments();
 
