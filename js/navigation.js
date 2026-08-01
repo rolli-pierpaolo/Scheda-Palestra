@@ -289,8 +289,6 @@ Annulla = continua con quello previsto`
 
 function logWorkoutDay(dayIdx){
 
-  console.log("LOG WORKOUT CHIAMATA", dayIdx, state.days[dayIdx].name);
-
   const day = state.days[dayIdx];
 
   if(!day) return;
@@ -350,14 +348,6 @@ function logWorkoutDay(dayIdx){
   const weekCompleted =
     state.completedTrainingDays.length === state.days.length;
 
-console.log("CHECK SETTIMANA", {
-  completati: state.completedTrainingDays,
-  totali: state.days.length,
-  weekCompleted: weekCompleted,
-  currentWeek: state.currentWeek
-});
-
-
   if(weekCompleted){
 
     advanceProgramWeek();
@@ -416,19 +406,18 @@ function updateTrainingQueueAfterComplete(dayIdx){
 
 }
 
-function advanceProgramWeek(){
-
-  const maxWeek = (state.weeksPerBlock || 4) - 1;
-
-
-  if(state.currentWeek < maxWeek){
-
-    state.currentWeek++;
-
-  }
-
+// elenco dei giorni gia' completati questa settimana: usata da
+// openTrainingOrderModal (js/animations.js) per sapere quali giorni sono
+// gia' "bloccati" nella lista di pianificazione
+function getWeeklyCompletedDays(){
+  return state.completedTrainingDays || [];
 }
 
+// nota: advanceProgramWeek() vive in js/animations.js (versione piu' completa,
+// tiene traccia anche di completedWeeks) - non ridefinirla anche qui: due
+// funzioni con lo stesso nome in file diversi si sovrascrivono silenziosamente
+// (vince l'ultimo script caricato), facile perdere di vista quale sia quella
+// vera
 
 function openNextWeekForDay(dayIdx){
 
