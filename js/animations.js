@@ -530,6 +530,13 @@ if(weekFinished){
 
 function advanceProgramWeek(){
 
+  // idempotente: viene chiamata da piu' punti diversi per lo stesso evento
+  // "settimana finita" (updateTrainingQueueAfterComplete, logWorkoutDay,
+  // confirmFinishWorkout). Se i giorni completati non sono (piu') al completo
+  // non fa nulla, cosi' le chiamate ripetute per lo stesso completamento non
+  // fanno avanzare la settimana piu' di una volta
+  if((state.completedTrainingDays||[]).length < state.days.length) return;
+
   const maxWeek = (state.weeksPerBlock || 4) - 1;
 
 
