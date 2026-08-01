@@ -441,7 +441,7 @@ function exerciseCard(ex, exi, accent){
       ${isCompletedWeek?'completed-week':''}
       ${isFutureWeek?'future-week':''}"
       style="background:${accent.d}"
-      onclick="toggleWeek(this,'${wkey}',${w})">
+      ${isFutureWeek ? `ondblclick="toggleWeek(this,'${wkey}',${w})"` : `onclick="toggleWeek(this,'${wkey}',${w})"`}>
 
 
         <span>
@@ -644,7 +644,8 @@ onchange="updateMeta(${exi},'recupero',${w},this.value)">
 
   return `
 
-
+  <div class="ex-card-wrap" style="--accent:${accent.c}">
+  <div class="ex-sticky-header">${escapeHtml(ex.nome||'Esercizio')}</div>
   <div class="card" data-exi="${exi}" style="--accent:${accent.c}">
 
 
@@ -728,6 +729,7 @@ onchange="updateComment(${exi},this.value)">${escapeHtml(ex.commento || '')}
 
 
 
+  </div>
   </div>`;
 
 
@@ -789,6 +791,14 @@ function updateSet(exi, w, si, field, val, recordPeso){
       celebratePR();
       bumpAchievCounter('prCount');
       checkAchievements();
+    }
+  }
+  // scrivere le rip nell'ultima serie della settimana e' di solito il segnale
+  // che quella settimana e' finita: lo chiediamo subito invece di aspettare
+  // che l'utente vada a cercare il tasto "completata" a parte
+  if(field==='rip' && String(val||'').trim()!=='' && si===ex.sets[w].length-1 && !(ex.weekDone && ex.weekDone[w])){
+    if(confirm(`Hai finito "${ex.nome||'questo esercizio'}" per questa settimana?`)){
+      toggleWeekDone(exi, w);
     }
   }
 }
@@ -862,13 +872,32 @@ function toggleWeekDone(exi, w){
   }
   saveState();
   renderActive();
-  if(nowDone) checkAchievements();
+  if(nowDone){
+    checkAchievements();
+    if(ex.weekDone.every(Boolean)) celebrateExerciseDone(ex.nome);
+  }
   const next = nextCardIndex(exi);
   if(nowDone && state.days[activeDayIdx].esercizi[next]){
     activeExerciseIdx = next;
     saveActivePos();
     setTimeout(()=>trySnapToActiveExercise(true), 250);
   }
+}
+// notifica piccola e discreta (non il festeggiamento vistoso di un PR) quando
+// TUTTE le settimane di un esercizio risultano completate: dura pochissimo,
+// serve solo a confermare "questo esercizio e' finito per il blocco intero"
+function celebrateExerciseDone(name){
+  let el = document.getElementById('exDoneToast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'exDoneToast';
+    el.className = 'ex-done-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = `✓ ${name||'Esercizio'} completato`;
+  el.classList.add('show');
+  clearTimeout(window._exDoneToastTimer);
+  window._exDoneToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 1100);
 }
 // "saltata" e' per le settimane che non farai apposta (infortunio, imprevisto):
 // diversamente da una settimana lasciata vuota per caso, questa resta distinguibile
@@ -1210,7 +1239,7 @@ const isCollapsed =
   ${isPastWeek?'completed-week':''}
   ${isFutureWeek?'future-week':''}"
   style="background:${accent.d}"
-  onclick="toggleWeek(this,'${wkey}',${w})">
+  ${isFutureWeek ? `ondblclick="toggleWeek(this,'${wkey}',${w})"` : `onclick="toggleWeek(this,'${wkey}',${w})"`}>
 
     <span>
 
@@ -1353,7 +1382,9 @@ const isCollapsed =
   const prBadgeA = recordA ? `<div class="pr-badge">🏆 Record: ${escapeHtml(String(recordA.peso))} kg${recordA.rip? ' × '+escapeHtml(String(recordA.rip)) : ''}</div>` : '';
   const prBadgeB = recordB ? `<div class="pr-badge">🏆 Record: ${escapeHtml(String(recordB.peso))} kg${recordB.rip? ' × '+escapeHtml(String(recordB.rip)) : ''}</div>` : '';
 
-  return `<div class="card linked-group" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
+  return `<div class="ex-card-wrap" style="--accent:${accent.c}">
+  <div class="ex-sticky-header">${escapeHtml(exA.nome||'Esercizio')} + ${escapeHtml(exB.nome||'Esercizio')}</div>
+  <div class="card linked-group" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
     <div class="linked-pair-frame">
       <div class="card-head linked-head compact">
         <button class="del-ex" onclick="deleteExercise(${exiA})">Elimina</button>
@@ -1374,6 +1405,7 @@ const isCollapsed =
       </div>
     </div>
     <div class="weeks">${weeksHtml}</div>
+  </div>
   </div>`;
 }
 

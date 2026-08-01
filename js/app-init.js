@@ -9,6 +9,17 @@ if('storage' in navigator && navigator.storage.persist && localStorage.getItem('
     try{ localStorage.setItem('scheda_wo18_storage_persist_asked_v1','1'); }catch(e){}
   });
 }
+// altezza reale della topbar (varia da telefono a telefono per via della
+// tacca/isola dinamica, env(safe-area-inset-top)): usata per posizionare
+// l'header sticky del nome esercizio esattamente sotto, senza sovrapporsi ne'
+// lasciare uno spazio vuoto. Ricalcolata anche al resize (rotazione schermo)
+function updateTopbarHeightVar(){
+  const el = document.querySelector('.topbar');
+  if(el) document.documentElement.style.setProperty('--topbar-h', el.offsetHeight + 'px');
+}
+updateTopbarHeightVar();
+window.addEventListener('resize', updateTopbarHeightVar);
+
 loadState();
 loadActivePos();
 loadAchievements();
