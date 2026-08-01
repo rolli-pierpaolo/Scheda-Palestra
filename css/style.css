@@ -251,8 +251,12 @@ main{padding:12px;}
    peso visivo delle altre azioni secondarie - stesso trattamento (bordo pieno
    nel colore del giorno, glow, testo shine) gia' usato per il giorno
    suggerito in Home, cosi' il linguaggio visivo resta coerente */
-.finish-day-btn{display:block;width:100%;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:12px;padding:16px;margin-top:18px;font-size:15px;font-weight:900;text-align:center;box-shadow:0 0 16px 1px color-mix(in srgb, var(--accent, var(--green)) 40%, transparent);}
+/* centrale invece che a tutta larghezza, leggermente piu' piccolo di prima -
+   resta comunque il piu' grande dei due bottoni in fondo (vedi .archive-btn) */
+.finish-day-btn{display:block;width:fit-content;margin:18px auto 0;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:12px;padding:12px 22px;font-size:14px;font-weight:900;text-align:center;box-shadow:0 0 16px 1px color-mix(in srgb, var(--accent, var(--green)) 40%, transparent);}
 .finish-day-btn:active{box-shadow:0 0 22px 3px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);}
+/* "Archivia": piccolo e centrale, il meno importante dei due bottoni finali */
+.archive-btn{display:block;width:fit-content;margin:10px auto 0;background:var(--panel);border:1px dashed var(--amber);color:var(--amber);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:700;text-align:center;}
 /* riga extra per segnare un tentativo "fuori scheda" (es. un max singolo):
    riusa .set-row per restare allineata alle colonne kg/rip, ma con caselle
    piu' piccole (60%, vedi .max-input) e spinte a destra */
