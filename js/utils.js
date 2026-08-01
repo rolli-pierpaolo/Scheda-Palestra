@@ -1,3 +1,14 @@
+// TODO: sostituisci con il link del tuo modulo (Google Form o simile) prima
+// di usare il tasto "Lascia un feedback" - vuoto di proposito, niente email
+// scritta nel codice visto che la repo e' pubblica su GitHub
+const FEEDBACK_FORM_URL = "";
+function openFeedbackForm(){
+  if(!FEEDBACK_FORM_URL){
+    alert('Link al modulo feedback non ancora configurato (FEEDBACK_FORM_URL in js/utils.js).');
+    return;
+  }
+  window.open(FEEDBACK_FORM_URL, '_blank', 'noopener');
+}
 function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 // per infilare un nome dentro una stringa JS tra apici singoli scritta a mano
 // in un onclick="...('...')" : nomi con un apostrofo (es. "SLDL (TI TORMENTERA')",

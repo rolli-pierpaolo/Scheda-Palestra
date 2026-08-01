@@ -69,10 +69,18 @@ function trySnapToActiveExercise(force){
   // quello che ora e' "il secondo" della coppia, che non ha un suo data-exi
   const card = document.querySelector('#viewActive .card[data-exi="'+activeExerciseIdx+'"], #viewActive .card[data-exi2="'+activeExerciseIdx+'"]');
   if(!card) return;
-  const title = card.querySelector('.name-row') || card;
+  // il nome esercizio resta sempre visibile grazie all'header sticky (vedi
+  // .ex-sticky-header), quindi non serve piu' allineare in cima alla card:
+  // ci si allinea direttamente alla settimana CORRENTE, quella su cui si sta
+  // davvero lavorando. Fallback sul nome/card intera se per qualche motivo la
+  // settimana corrente non si trova (es. tutte le settimane gia' finite)
+  const wrap = card.closest('.ex-card-wrap') || card;
+  const currentWeekBtn = card.querySelector('.week-toggle.current-week');
+  const title = (currentWeekBtn && currentWeekBtn.closest('.week-block')) || card.querySelector('.name-row') || card;
   const rect = title.getBoundingClientRect();
   const topbar = document.querySelector('.topbar');
-  const offset = (topbar ? topbar.getBoundingClientRect().height : 0) + 14;
+  const stickyHeader = wrap.querySelector('.ex-sticky-header');
+  const offset = (topbar ? topbar.getBoundingClientRect().height : 0) + (stickyHeader ? stickyHeader.getBoundingClientRect().height : 0) + 14;
   const target = window.scrollY + rect.top - offset;
   if(force){
     window.scrollTo({top: Math.max(0,target), behavior:'smooth'});
