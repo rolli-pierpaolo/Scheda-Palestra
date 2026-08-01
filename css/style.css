@@ -148,18 +148,24 @@ main{padding:12px;}
 
 .home-progress-sub{font-size:13px;font-weight:700;color:var(--text);margin-top:8px;text-transform:uppercase;letter-spacing:.5px;}
 .home-suggested-btn{display:block;width:100%;background:var(--accent,var(--green));border:none;border-radius:16px;padding:18px 14px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
-.home-motivation{text-align:center;font-size:16px;font-weight:800;color:var(--text);font-style:italic;margin:0 6px 34px;opacity:.95;line-height:1.35;}
+.home-motivation{text-align:center;font-size:19px;font-weight:900;margin:0 8px 34px;line-height:1.3;letter-spacing:.2px;text-transform:uppercase;}
 .home-suggested-label{display:block;font-size:11px;font-weight:800;letter-spacing:1.5px;color:#0D0D0D;opacity:.7;}
 .home-suggested-name{display:block;font-size:24px;font-weight:900;color:#0D0D0D;text-transform:uppercase;margin-top:4px;letter-spacing:.5px;}
 .home-days-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
-.home-days-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
-.home-day-btn{padding:12px 8px;border-radius:12px;border:2px solid var(--accent,var(--green));background:var(--panel2);color:var(--text);font-size:12px;font-weight:800;text-align:center;text-transform:uppercase;}
-.home-day-btn:active{background:var(--accent,var(--green));color:#0D0D0D;}
+/* verticali (non piu' griglia 2 colonne): in colonna si legge subito l'ordine
+   di esecuzione dall'alto in basso, cosa che con 2 colonne non era ovvia */
+.home-days-grid{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:24px;}
+/* non piu' un bottone (non sono cliccabili): solo indicatori dell'ordine e
+   dello stato di ogni giorno. Centrali ma strette (non a tutta larghezza),
+   la larghezza segue il contenuto invece di riempire la riga */
+.home-day-card{display:flex;align-items:center;justify-content:center;gap:10px;width:auto;min-width:150px;max-width:75%;padding:10px 20px;border-radius:12px;border:2px solid var(--accent,var(--green));background:var(--panel2);color:var(--text);font-size:13px;font-weight:800;text-transform:uppercase;}
+.home-day-order{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:1px solid var(--accent,var(--green));display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent,var(--green));}
 /* completato: sfondo tinto col colore del giorno (trasparente), bordo che resta acceso */
-.home-day-btn.completed{background:color-mix(in srgb, var(--accent, var(--green)) 32%, transparent);border-color:var(--accent,var(--green));}
+.home-day-card.completed{background:color-mix(in srgb, var(--accent, var(--green)) 32%, transparent);border-color:var(--accent,var(--green));}
+.home-day-card.completed .home-day-order{background:var(--accent,var(--green));color:#0D0D0D;border-color:var(--accent,var(--green));}
 /* corrente: leggero glow statico gia' da CSS, l'effetto "respiro" (scala + glow
    pulsante) lo fa GSAP in home.js appena la card e' in pagina */
-.home-day-btn.active-training{box-shadow:0 0 10px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
+.home-day-card.active-training{box-shadow:0 0 10px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
 .home-total-stat{text-align:center;font-size:13px;font-weight:700;color:var(--muted);}
 /* ---------------- SCHEDA ESERCIZIO (nome, note, blocchi settimana) ---------------- */
 .card{background:var(--panel2);border-radius:12px;margin-bottom:14px;overflow:hidden;border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));}
