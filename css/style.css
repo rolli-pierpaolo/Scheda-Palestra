@@ -618,10 +618,12 @@ body.flash{background:var(--amber) !important;}
   font-weight:bold;
 
 }
-/* SETTIMANA CORRENTE */
+/* SETTIMANA CORRENTE: stile "fluo" ma nel colore del giorno (--accent, impostato
+   sulla card), non piu' sempre verde fisso - cosi' risalta la settimana senza
+   stonare col resto della card quando il giorno ha un colore diverso */
 .week-toggle.current-week{
-  border:3px solid var(--green) !important;
-  box-shadow:0 0 18px rgba(0,255,100,0.35) !important;
+  border:3px solid var(--accent, var(--green)) !important;
+  box-shadow:0 0 18px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent) !important;
   font-weight:800;
   transform:scale(1.02);
 }
