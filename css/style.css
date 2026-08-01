@@ -325,13 +325,14 @@ main{padding:12px;}
 .hist-card .ex-name{font-weight:800;font-size:14px;color:var(--text);border:none;padding:10px 12px 2px;}
 .hist-card .schema-line{font-size:11px;color:var(--muted);padding:0 12px 8px;}
 .footer-note{text-align:center;color:var(--muted);font-size:10px;padding:20px 20px 30px;line-height:1.5;}
-/* avviso "giorno diverso dal previsto": banner sottile invece di testo nudo
-   (non aveva CSS dedicato), sotto il primo esercizio invece che in cima a
-   tutta la pagina, dove affollerebbe la zona subito sotto l'header sticky */
-.switch-training-box{background:var(--panel2);border:1px solid var(--amber);border-radius:10px;padding:9px 12px;margin:0 0 14px;text-align:center;}
-.switch-training-title{font-size:11px;font-weight:800;color:var(--amber);letter-spacing:.3px;text-transform:uppercase;}
-.switch-training-sub{font-size:12px;color:var(--muted);margin:3px 0 8px;}
-.switch-training-box .add-ex{width:fit-content;margin:0 auto;padding:8px 14px;font-size:12px;}
+/* avviso "giorno diverso dal previsto": piccola pillola rossa pulsante, ben
+   visibile appena si entra nel giorno, ma minuscola - tutta cliccabile, un
+   solo tocco per cambiare, niente piu' box grande con titolo/sottotitolo/bottone */
+.switch-training-pill{display:block;width:fit-content;max-width:92%;margin:0 auto 10px;background:rgba(192,57,43,.18);border:1px solid var(--red);color:var(--text);border-radius:20px;padding:5px 12px;font-size:10px;font-weight:700;text-align:center;line-height:1.3;animation:switchPillPulse 1.6s ease-in-out infinite;}
+@keyframes switchPillPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.5);}
+  50%{box-shadow:0 0 8px 3px rgba(192,57,43,.5);}
+}
 .empty-day{text-align:center;padding:48px 20px;}
 .empty-day-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;}
 .empty-day-sub{font-size:13px;color:var(--muted);}
