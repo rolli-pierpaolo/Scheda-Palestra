@@ -13,7 +13,7 @@ function renderActive(){
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
   const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">↕️ Modifica ordine</button>` : '';
-const finishBtn = day.esercizi.length>0 ? `<button class="add-ex" style="margin-top:18px;border-color:var(--green);color:var(--green);font-size:15px;" onclick="openFinishWorkoutModal(${activeDayIdx})">✅ Giorno di allenamento terminato!</button>` : '';  const suggestedIdx = computeSuggestedDayIdx();
+const finishBtn = day.esercizi.length>0 ? `<button class="finish-day-btn" style="--accent:${a.c}" onclick="openFinishWorkoutModal(${activeDayIdx})"><span class="accent-shine">✅ Giorno di allenamento terminato!</span></button>` : '';  const suggestedIdx = computeSuggestedDayIdx();
 
 const switchTrainingDay = 
 activeDayIdx !== suggestedIdx

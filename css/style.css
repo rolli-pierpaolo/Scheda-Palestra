@@ -247,6 +247,12 @@ main{padding:12px;}
 .stepper{flex:0 0 22px;width:22px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:5px;font-size:15px;font-weight:800;padding:0;line-height:1;}
 .stepper:active{background:var(--accent,var(--green));color:#0D0D0D;}
 .add-ex{display:block;width:100%;background:var(--panel);border:2px dashed var(--line);color:var(--muted);padding:12px;border-radius:10px;font-size:13px;font-weight:700;margin-top:4px;}
+/* "Giorno terminato": e' il CTA piu' importante della sessione, merita piu'
+   peso visivo delle altre azioni secondarie - stesso trattamento (bordo pieno
+   nel colore del giorno, glow, testo shine) gia' usato per il giorno
+   suggerito in Home, cosi' il linguaggio visivo resta coerente */
+.finish-day-btn{display:block;width:100%;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:12px;padding:16px;margin-top:18px;font-size:15px;font-weight:900;text-align:center;box-shadow:0 0 16px 1px color-mix(in srgb, var(--accent, var(--green)) 40%, transparent);}
+.finish-day-btn:active{box-shadow:0 0 22px 3px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);}
 /* riga extra per segnare un tentativo "fuori scheda" (es. un max singolo):
    riusa .set-row per restare allineata alle colonne kg/rip, ma con caselle
    piu' piccole (60%, vedi .max-input) e spinte a destra */
@@ -277,8 +283,18 @@ main{padding:12px;}
 /* scoped a .set-btns cosi' non tocca altri bottoni "add-ex small" nel resto della pagina */
 .set-btns .add-ex.small{flex:none;width:auto;padding:5px 10px;font-size:10px;margin-top:0;border-width:1px;border-style:solid;}
 .add-ex.danger{color:var(--red);border-color:var(--red);}
+/* ---------------- TAB STORICO: sezioni distinte invece di un unico elenco ----
+   ----------------
+   prima backup/impostazioni/storico erano un'unica lista di bottoni
+   tratteggiati, tutti uguali: si perdeva la distinzione tra "sto guardando
+   dati passati", "sto facendo un backup" e "sto cambiando un'impostazione".
+   Ora ogni gruppo vive dentro un pannello con bordo/sfondo proprio, con
+   un'etichetta sopra a dire di cosa si tratta */
+.hist-section-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;padding:16px 12px 6px;}
+.hist-panel{background:var(--panel2);border:1px solid var(--line);border-radius:12px;margin:0 12px;overflow:hidden;}
+.hist-panel-browse{padding:2px 0 8px;}
 /* ---------------- BACKUP / IMPOSTAZIONI GIORNI (solo tab Storico) ---------------- */
-.backup-row{display:flex;flex-wrap:wrap;gap:8px;padding:16px 12px 0; margin-bottom: 40px;}
+.backup-row{display:flex;flex-wrap:wrap;gap:8px;padding:14px;}
 .backup-row .add-ex{flex:1 1 140px;}
 .add-ex.small2{padding:10px;font-size:12px;margin-top:0;}
 .del-ex{background:none;border:none;color:var(--red);font-size:11px;font-weight:700;padding:6px 12px;float:right;}
@@ -455,7 +471,7 @@ body.flash{background:var(--amber) !important;}
 .hist-chip-wrap{position:relative;display:inline-flex;align-items:center;}
 .hist-chip-wrap:has(.hist-del) .hist-chip{padding-right:28px;}
 .hist-del{position:absolute;right:3px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--red);font-size:12px;font-weight:800;padding:4px 6px;}
-.settings-row{padding:10px 12px 0;}
+.settings-row{padding:14px;display:flex;flex-direction:column;gap:8px;}
 .days-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .day-color-input{width:34px;height:34px;padding:0;border:1px solid var(--line);border-radius:6px;background:none;flex:0 0 auto;}
 .del-day-btn{background:none;border:none;color:var(--red);font-size:15px;font-weight:800;padding:4px 6px;flex:0 0 auto;}
