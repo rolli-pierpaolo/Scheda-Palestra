@@ -1,7 +1,4 @@
-// TODO: sostituisci con il link del tuo modulo (Google Form o simile) prima
-// di usare il tasto "Lascia un feedback" - vuoto di proposito, niente email
-// scritta nel codice visto che la repo e' pubblica su GitHub
-const FEEDBACK_FORM_URL = "";
+const FEEDBACK_FORM_URL = "https://forms.gle/sjQnNHYtPJqRnG119";
 function openFeedbackForm(){
   if(!FEEDBACK_FORM_URL){
     alert('Link al modulo feedback non ancora configurato (FEEDBACK_FORM_URL in js/utils.js).');
