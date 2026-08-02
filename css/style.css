@@ -494,6 +494,15 @@ body.flash{background:var(--amber) !important;}
 .finish-buttons button{
   flex:1;
 }
+.onb-title{font-size:20px;font-weight:900;margin-bottom:4px;}
+.onb-intro{font-size:13px;opacity:.75;line-height:1.5;margin-bottom:16px;}
+.onb-tips{display:flex;flex-direction:column;gap:12px;}
+.onb-tip{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--row-dark);}
+.onb-tip-icon{font-size:20px;flex:0 0 auto;line-height:1;}
+.onb-tip-title{font-weight:800;font-size:13px;margin-bottom:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.onb-tip-text{font-size:12px;opacity:.8;line-height:1.45;}
+.onb-tip-new{border-color:var(--green);box-shadow:0 0 0 1px var(--green),0 0 14px rgba(154,205,50,.25);}
+.onb-new-badge{background:var(--green);color:#0d0d0d;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;padding:2px 6px;border-radius:20px;}
 .hist-chip-wrap{position:relative;display:inline-flex;align-items:center;}
 .hist-chip-wrap:has(.hist-del) .hist-chip{padding-right:28px;}
 .hist-del{position:absolute;right:3px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--red);font-size:12px;font-weight:800;padding:4px 6px;}
