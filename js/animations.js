@@ -523,6 +523,7 @@ if(weekFinished){
     showHome();
 
     animateWorkoutComplete();
+    vibrate([50,60,50,60,150]);
 
   },250);
 

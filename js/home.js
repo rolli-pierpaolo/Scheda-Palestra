@@ -386,6 +386,7 @@ const total = weekly.total;
   <span id="homeProgressCount" class="accent-shine">0</span>
   <span class="home-progress-of">/${total}</span>
 </div>
+    <div class="home-progress-bar-wrap" style="--accent:${progressAccent}"><div class="home-progress-bar-fill" id="homeProgressBar" style="width:0%"></div></div>
     ${suggestedHtml}
     <div class="home-days-label">I tuoi giorni</div>
     <div class="home-days-grid">${dayButtons}</div>
@@ -396,6 +397,13 @@ const total = weekly.total;
     innerText: done,
     duration: 0.8,
     snap: { innerText: 1 },
+    ease: "power2.out"
+  });
+  // stessa progressione del numero, ma visiva: la barra sotto rende il rapporto
+  // fatti/totale leggibile a colpo d'occhio, non serve piu' calcolarlo a mente
+  gsap.to("#homeProgressBar", {
+    width: total>0 ? (done/total*100)+'%' : '0%',
+    duration: 0.8,
     ease: "power2.out"
   });
   // effetto "respiro" sulla card del giorno corrente: leggermente piu' grande

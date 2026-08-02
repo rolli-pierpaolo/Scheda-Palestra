@@ -9,6 +9,31 @@ function openFeedbackForm(){
   }
   window.open(FEEDBACK_FORM_URL, '_blank', 'noopener');
 }
+// vibrazione breve su azioni chiave (spunta settimana, obiettivo sbloccato,
+// giorno terminato): silenziosa se il dispositivo/browser non la supporta
+// (es. iOS Safari, che non implementa la Vibration API - stesso limite gia'
+// noto per il timer di recupero, vedi js/timer.js)
+function vibrate(pattern){
+  if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
+}
+// auto-avanzamento del focus dal campo kg al campo rip della stessa riga: le
+// tastiere numeriche (inputmode decimal/numeric) di solito non hanno un tasto
+// "avanti", quindi qui si usa una piccola pausa dopo l'ultimo tasto premuto -
+// se dopo quella pausa il focus e' ancora sul campo kg (l'utente non e' gia'
+// passato oltre da solo) si salta al campo successivo della riga
+function scheduleAutoAdvance(input){
+  clearTimeout(input._advanceTimer);
+  if(!input.value) return;
+  input._advanceTimer = setTimeout(()=>{
+    if(document.activeElement !== input) return;
+    const row = input.closest('.set-row, .linked-sub-row');
+    if(!row) return;
+    const fields = row.querySelectorAll('.set-input:not(.max-input)');
+    const idx = Array.prototype.indexOf.call(fields, input);
+    const next = fields[idx+1];
+    if(next) next.focus();
+  }, 700);
+}
 function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 // per infilare un nome dentro una stringa JS tra apici singoli scritta a mano
 // in un onclick="...('...')" : nomi con un apostrofo (es. "SLDL (TI TORMENTERA')",
