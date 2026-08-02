@@ -23,13 +23,35 @@ function animateSuggestedWorkout(){
 
   btn.classList.add("glow");
 
-  gsap.from(btn,{
-    opacity:0,
-    y:20,
-    scale:.95,
-    duration:.7,
-    ease:"back.out(1.7)"
-  });
+  // killTweensOf: showView('home') puo' richiamare questa funzione piu' volte
+  // (ogni volta che si torna alla Home), altrimenti si accumulerebbero piu'
+  // loop infiniti sullo stesso bottone
+  gsap.killTweensOf(btn);
+
+  gsap.fromTo(btn,
+    { opacity:0, y:20, scale:.95 },
+    {
+      opacity:1,
+      y:0,
+      scale:1,
+      duration:.7,
+      ease:"back.out(1.7)",
+      onComplete(){
+        // il "respiro" (stessa logica che prima era sulla card del giorno
+        // corrente, vedi renderHome in js/home.js) parte solo DOPO l'entrata,
+        // mai in contemporanea: altrimenti le due animazioni si contenderebbero
+        // la stessa proprieta' "scale" sullo stesso elemento
+        gsap.to(btn, {
+          scale:1.045,
+          boxShadow:"0 0 22px 5px var(--accent, var(--green))",
+          duration:1.1,
+          repeat:-1,
+          yoyo:true,
+          ease:"sine.inOut"
+        });
+      }
+    }
+  );
 
 }
 

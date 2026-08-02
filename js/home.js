@@ -406,22 +406,15 @@ const total = weekly.total;
     duration: 0.8,
     ease: "power2.out"
   });
-  // effetto "respiro" sulla card del giorno corrente: leggermente piu' grande
-  // delle altre gia' da ferma (scale 1.04 fisso), poi scala su/giu' intorno a
-  // quella base, con glow morbido, in loop finche' resta il giorno corrente.
+  // la card del giorno corrente resta leggermente piu' grande delle altre gia'
+  // da ferma (scale 1.04 fisso), ma non "respira" piu' - quel movimento e'
+  // passato al bottone grande cliccabile qui sopra (vedi animateSuggestedWorkout
+  // in js/animations.js), che e' quello su cui si tocca davvero per iniziare.
   // killTweensOf prima di ripartire: renderHome() puo' girare piu' volte (ogni
-  // volta che si torna alla Home), senza and si accumulerebbero tween vecchi
-  // sugli elementi ricreati ogni volta da zero con innerHTML
+  // volta che si torna alla Home), senza si accumulerebbero tween vecchi sugli
+  // elementi ricreati ogni volta da zero con innerHTML
   gsap.killTweensOf(".home-day-card.active-training");
   gsap.set(".home-day-card.active-training", { scale: 1.04 });
-  gsap.to(".home-day-card.active-training", {
-    scale: 1.08,
-    boxShadow: "0 0 16px 3px var(--accent, var(--green))",
-    duration: 1.1,
-    repeat: -1,
-    yoyo: true,
-    ease: "sine.inOut"
-  });
   // entrata della frase motivazionale: pop leggero invece di comparire di scatto
   gsap.from(".home-motivation", {
     opacity: 0,
