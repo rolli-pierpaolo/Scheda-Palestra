@@ -145,10 +145,21 @@ function loadState(){
       for(let i = 0; i < state.currentWeek; i++) state.completedWeeks.push(i);
     }
   }
-  // giorno allenamento corrente
-  if(state.currentTrainingDayIdx === undefined) state.currentTrainingDayIdx = null;
-  // coda allenamenti
-  if(!state.trainingQueue) state.trainingQueue = (state.days || []).map((_,i)=>i);
+  // coda allenamenti: un array VUOTO e' un valore legittimo in JS (quindi
+  // "truthy", !state.trainingQueue da solo non lo intercetta) ma qui non lo
+  // e' mai se ci sono giorni definiti - succedeva con un bug ormai risolto in
+  // updateTrainingQueueAfterComplete (finire l'ultimo giorno della settimana
+  // svuotava la coda senza mai ripopolarla), ma chi ha gia' i dati salvati
+  // rotti da prima del fix resterebbe con nessun giorno "corrente" per
+  // sempre se non si ripara anche qui, al caricamento
+  if(!state.trainingQueue || (state.trainingQueue.length===0 && state.days.length>0)){
+    state.trainingQueue = state.days.map((_,i)=>i);
+    state.currentTrainingDayIdx = state.trainingQueue.length ? state.trainingQueue[0] : null;
+  } else if(state.currentTrainingDayIdx===undefined || state.currentTrainingDayIdx===null || !state.days[state.currentTrainingDayIdx]){
+    // giorno allenamento corrente mancante o non piu' valido (es. un giorno
+    // e' stato eliminato): si ripiega sul primo della coda
+    state.currentTrainingDayIdx = state.trainingQueue.length ? state.trainingQueue[0] : null;
+  }
 
   try{
     const rawc = localStorage.getItem(COLLAPSE_KEY);
