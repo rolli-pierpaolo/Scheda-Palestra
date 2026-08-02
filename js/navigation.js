@@ -120,6 +120,7 @@ function showView(v){
 
   document.getElementById('tabActiveBtn').classList.toggle('active', v==='active');
   document.getElementById('tabHistBtn').classList.toggle('active', v==='hist');
+  document.getElementById('tabHomeBtn').classList.toggle('active', v==='home');
 
   document.body.classList.toggle('on-home', v==='home');
 if(v === 'home'){
