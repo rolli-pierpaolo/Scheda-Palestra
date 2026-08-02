@@ -402,11 +402,14 @@ function updateTrainingQueueAfterComplete(dayIdx){
   }
   else{
 
-    state.currentTrainingDayIdx = null;
-
-
-    // settimana completata
+    // settimana completata: si avanza (azzera anche completedTrainingDays)
+    // e si fa ripartire subito la coda per la settimana nuova, altrimenti
+    // trainingQueue restava vuota e currentTrainingDayIdx restava null per
+    // sempre - nessuna card risultava piu' "quella corrente" da far lampeggiare
+    // in Home, anche dopo aver ricominciato davvero a allenarsi
     advanceProgramWeek();
+    state.trainingQueue = state.days.map((_,i)=>i);
+    state.currentTrainingDayIdx = state.trainingQueue.length ? state.trainingQueue[0] : null;
 
   }
 
