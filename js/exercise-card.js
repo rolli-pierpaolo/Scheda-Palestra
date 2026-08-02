@@ -303,6 +303,7 @@ function exerciseCard(ex, exi, accent){
           ${isReadOnlyWeek?'disabled':''}
           ondblclick="toggleFieldKeyboard(this)"
           onblur="resetFieldKeyboard(this)"
+          oninput="scheduleAutoAdvance(this)"
           inputmode="decimal"
           placeholder="${kgPlaceholder}"
           value="${escapeAttr(s.peso ?? '')}"
@@ -537,6 +538,7 @@ function exerciseCard(ex, exi, accent){
 
 
           <button class="week-done-btn ${weekDone?'checked':''}"
+          data-exi="${exi}" data-w="${w}"
           ${isReadOnlyWeek?'disabled':''}
           onclick="toggleWeekDone(${exi},${w})">
 
@@ -842,6 +844,8 @@ function toggleWeekDone(exi, w){
   saveState();
   renderActive();
   if(nowDone){
+    vibrate(15);
+    pulseWeekDoneBtn(exi, w);
     checkAchievements();
     if(ex.weekDone.every(Boolean)) celebrateExerciseDone(ex.nome);
   }
@@ -851,6 +855,17 @@ function toggleWeekDone(exi, w){
     saveActivePos();
     setTimeout(()=>trySnapToActiveExercise(true), 250);
   }
+}
+// piccolo pop quando si spunta una settimana come completata: il cambio di
+// stato (bordo/colore via CSS ".checked") resta istantaneo, qui si aggiunge
+// solo un rimbalzo dopo il re-render - renderActive() ricrea il bottone da
+// zero, quindi il tween va fatto DOPO, sul bottone nuovo, non su quello appena
+// distrutto (un tween sull'elemento vecchio non avrebbe piu' alcun effetto visibile)
+function pulseWeekDoneBtn(exi, w){
+  if(typeof gsap === "undefined") return;
+  const btn = document.querySelector(`.week-done-btn[data-exi="${exi}"][data-w="${w}"]`);
+  if(!btn) return;
+  gsap.fromTo(btn, {scale:1.5}, {scale:1, duration:.35, ease:"back.out(3)"});
 }
 // notifica piccola e discreta (non il festeggiamento vistoso di un PR) quando
 // TUTTE le settimane di un esercizio risultano completate: dura pochissimo,
@@ -1128,7 +1143,7 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
         <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
         <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
       </div>
-      <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="${kgPlaceholder}" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+      <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" oninput="scheduleAutoAdvance(this)" inputmode="decimal" placeholder="${kgPlaceholder}" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
     </div>
     <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">`;
 }
@@ -1294,6 +1309,7 @@ const isCollapsed =
         <div class="week-status-btns">
 
           <button class="week-done-btn ${weekDone?'checked':''}"
+          data-exi="${exiA}" data-w="${w}"
           onclick="toggleWeekDone(${exiA},${w});toggleWeekDone(${exiB},${w})">
 
           ✓

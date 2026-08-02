@@ -119,6 +119,19 @@ function showView(v){
 if(v === 'home'){
   animateSuggestedWorkout();
 }
+  // fade + leggero rialzo sulla vista che diventa visibile: il cambio vero e
+  // proprio resta il display toggle sincrono qui sopra (nessun timing da cui
+  // dipende il resto della funzione cambia), e' solo un'entrata piu' morbida
+  // al posto dello scatto secco
+  if(typeof gsap !== "undefined"){
+    const shownEl = v==='active' ? document.getElementById('viewActive')
+      : v==='hist' ? document.getElementById('viewHist')
+      : document.getElementById('viewHome');
+    if(shownEl){
+      gsap.killTweensOf(shownEl);
+      gsap.from(shownEl, {opacity:0, y:10, duration:.28, ease:"power2.out"});
+    }
+  }
   if(v==='active'){
     activeFirstAnimation = true;
 
@@ -181,6 +194,44 @@ window.addEventListener('resize', () => {
   lastViewportHeight = currentHeight;
 });
 
+
+// ---------------- SWIPE TRA ALLENAMENTO E STORICO ----------------
+// pensato per il telefono, come lo scroll magnetico qui sopra: su desktop non
+// c'e' un vero "swipe" col mouse, e li' il drag serve per altro (selezionare
+// testo), quindi resta disattivo
+function anyModalOpen(){
+  return Array.prototype.some.call(document.querySelectorAll('.modal-overlay'), el => el.style.display === 'flex');
+}
+let swipeStartX = null, swipeStartY = null, swipeStartTime = 0;
+function onTabSwipeStart(e){
+  if(isDesktopDevice()){ swipeStartX = null; return; }
+  const onActive = document.getElementById('viewActive').style.display !== 'none';
+  const onHist = document.getElementById('viewHist').style.display !== 'none';
+  if((!onActive && !onHist) || anyModalOpen()){ swipeStartX = null; return; }
+  // niente swipe se il tocco parte da una zona che scrolla gia' in orizzontale
+  // per conto suo (tab dei giorni), da uno stepper +/-, o da un campo di testo
+  // (dove trascinare serve a selezionare/spostare il cursore): altrimenti i due
+  // gesti confliggerebbero
+  if(e.target.closest('.day-tabs, .stepper-pair, input, textarea')){ swipeStartX = null; return; }
+  const t = e.touches[0];
+  swipeStartX = t.clientX; swipeStartY = t.clientY; swipeStartTime = Date.now();
+}
+function onTabSwipeEnd(e){
+  if(swipeStartX === null) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - swipeStartX;
+  const dy = t.clientY - swipeStartY;
+  const dt = Date.now() - swipeStartTime;
+  swipeStartX = null;
+  if(dt > 600) return; // troppo lento, non e' uno swipe deciso
+  if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy)*1.8) return; // poco orizzontale o troppo verticale
+  const onActive = document.getElementById('viewActive').style.display !== 'none';
+  const target = dx < 0 ? 'hist' : 'active'; // swipe a sinistra = avanti (Storico), a destra = indietro (Allenamento)
+  const current = onActive ? 'active' : 'hist';
+  if(target !== current) showView(target);
+}
+document.addEventListener('touchstart', onTabSwipeStart, {passive:true});
+document.addEventListener('touchend', onTabSwipeEnd, {passive:true});
 
 function renderDayTabs(){
 

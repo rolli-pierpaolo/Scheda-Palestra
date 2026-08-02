@@ -120,6 +120,7 @@ function revealAchievement(a){
   }
   el.innerHTML = `<div class="achiev-toast-icon">${a.icon}</div><div class="achiev-toast-text"><div class="achiev-toast-label">Obiettivo sbloccato!</div><div class="achiev-toast-name">${escapeHtml(a.title)}</div></div>`;
   el.classList.add('show');
+  vibrate([30,40,30,40,90]);
   clearTimeout(window._achievToastTimer);
   window._achievToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 3200);
   if(achievNotificationsEnabled && typeof Notification!=='undefined' && Notification.permission==='granted' && 'serviceWorker' in navigator){
