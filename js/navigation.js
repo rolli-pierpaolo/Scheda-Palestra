@@ -105,7 +105,13 @@ function showView(v){
     return;
   }
 
-  if(v!=='active') discardReorderIfPending();
+  if(v!=='active'){
+    discardReorderIfPending();
+    const floatBtn = document.getElementById('floatingFinishBtn');
+    if(floatBtn) floatBtn.style.display = 'none';
+  } else if(!reorderMode){
+    updateFloatingFinishBtn();
+  }
 
   document.getElementById('viewActive').style.display = v==='active' ? '' : 'none';
   document.getElementById('dayTabsActive').style.display = v==='active' ? '' : 'none';

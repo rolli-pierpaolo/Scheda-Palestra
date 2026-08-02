@@ -31,6 +31,7 @@ const COLLAPSE_KEY = "scheda_wo18_collapsed_v1";
 const STORICO_KEY = "scheda_wo18_storico_extra_v1";
 const LISTS_KEY = "scheda_wo18_extra_lists_v1";
 const DELETED_STORICO_KEY = "scheda_wo18_deleted_storico_v1";
+const STORICO_DATES_KEY = "scheda_wo18_storico_dates_v1";
 const CALENDAR_LOG_KEY = "scheda_wo18_calendar_log_v1";
 const EXERCISE_GROUPS_KEY = "scheda_wo18_exercise_groups_v1";
 const DELETED_ESERCIZI_KEY = "scheda_wo18_deleted_esercizi_v1";
@@ -40,6 +41,14 @@ let collapsedMap = {};
 let storicoExtra = {};
 let extraLists = {esercizi:[], recuperi:[], schemi:[], giorni:[]};
 let deletedStorico = [];
+// data (YYYY-MM-DD) in cui ogni blocco e' stato archiviato, chiave = stesso
+// titolo usato in storicoExtra: serve solo a mostrare "quando" in Storico,
+// se manca (blocchi archiviati prima che questo campo esistesse) semplicemente
+// non si mostra nessuna data per quella voce, niente di rotto
+let storicoDates = {};
+function saveStoricoDates(){
+  localStorage.setItem(STORICO_DATES_KEY, JSON.stringify(storicoDates));
+}
 // gruppo muscolare per esercizio (chiave = nome in minuscolo, per non dipendere
 // da maiuscole/minuscole): DATA.gruppiEsercizi sono i valori di base spediti con
 // l'app, exerciseGroups sono le correzioni/aggiunte fatte dall'utente, che vincono
@@ -177,6 +186,10 @@ function loadState(){
     const rawd = localStorage.getItem(DELETED_STORICO_KEY);
     if(rawd) deletedStorico = JSON.parse(rawd);
   }catch(e){ deletedStorico = []; }
+  try{
+    const rawsd = localStorage.getItem(STORICO_DATES_KEY);
+    if(rawsd) storicoDates = JSON.parse(rawsd);
+  }catch(e){ storicoDates = {}; }
   try{
     const rawcal = localStorage.getItem(CALENDAR_LOG_KEY);
     if(rawcal) calendarLog = JSON.parse(rawcal);

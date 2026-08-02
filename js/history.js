@@ -17,7 +17,12 @@ function renderHistList(){
   el.innerHTML = titles.map(t=>{
     const safe = String(t).replace(/'/g,"\\'");
     const delBtn = histEditMode ? `<button class="hist-del" onclick="event.stopPropagation();deleteHistEntry('${safe}')" title="Elimina">\u2715</button>` : '';
-    return `<span class="hist-chip-wrap"><button class="hist-chip ${t===histActive?'active':''}" onclick="selectHist('${safe}')">${escapeHtml(t)}</button>${delBtn}</span>`;
+    // la data manca per i blocchi archiviati prima che storicoDates esistesse:
+    // in quel caso il sottotitolo semplicemente non compare, invece di mostrare
+    // una data finta o un placeholder confuso
+    const dateKey = storicoDates[t];
+    const dateHtml = dateKey ? `<span class="hist-chip-date">${formatDateItalian(dateKey)}</span>` : '';
+    return `<span class="hist-chip-wrap"><button class="hist-chip ${t===histActive?'active':''}" onclick="selectHist('${safe}')">${escapeHtml(t)}${dateHtml}</button>${delBtn}</span>`;
   }).join('');
 }
 function selectHist(t){

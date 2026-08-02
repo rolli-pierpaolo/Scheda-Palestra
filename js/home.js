@@ -380,17 +380,19 @@ const total = weekly.total;
     ${motivation ? `<div class="home-motivation accent-shine" style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}">${escapeHtml(motivation)}</div>` : ''}` : '';
   el.innerHTML = `
     <div class="home-hero">
-      <div class="home-block-week">SETTIMANA ${blockWeek} DI ${state.weeksPerBlock||4}</div>
-      <div class="home-progress-label">GIORNO</div>
-<div class="home-progress-num" style="--accent:${progressAccent}">
-  <span id="homeProgressCount" class="accent-shine">0</span>
-  <span class="home-progress-of">/${total}</span>
-</div>
-    <div class="home-progress-bar-wrap" style="--accent:${progressAccent}"><div class="home-progress-bar-fill" id="homeProgressBar" style="width:0%"></div></div>
+      <div class="home-progress-module">
+        <div class="home-block-week">SETTIMANA ${blockWeek} DI ${state.weeksPerBlock||4}</div>
+        <div class="home-progress-label">GIORNO</div>
+        <div class="home-progress-num" style="--accent:${progressAccent}">
+          <span id="homeProgressCount" class="accent-shine">0</span>
+          <span class="home-progress-of">/${total}</span>
+        </div>
+        <div class="home-progress-bar-wrap" style="--accent:${progressAccent}"><div class="home-progress-bar-fill" id="homeProgressBar" style="width:0%"></div></div>
+        <div class="home-total-stat">🔥 ${monthlyCount} allenamenti completati questo mese</div>
+      </div>
     ${suggestedHtml}
     <div class="home-days-label">I tuoi giorni</div>
     <div class="home-days-grid">${dayButtons}</div>
-    <div class="home-total-stat">🔥 ${monthlyCount} allenamenti completati questo mese</div>
   `;
   if(typeof gsap !== "undefined"){
   gsap.to("#homeProgressCount", {
