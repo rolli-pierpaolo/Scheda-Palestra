@@ -388,11 +388,11 @@ const total = weekly.total;
           <span class="home-progress-of">/${total}</span>
         </div>
         <div class="home-progress-bar-wrap" style="--accent:${progressAccent}"><div class="home-progress-bar-fill" id="homeProgressBar" style="width:0%"></div></div>
-        <div class="home-total-stat">🔥 ${monthlyCount} allenamenti completati questo mese</div>
       </div>
     ${suggestedHtml}
     <div class="home-days-label">I tuoi giorni</div>
     <div class="home-days-grid">${dayButtons}</div>
+    <div class="home-total-stat">🔥 ${monthlyCount} allenamenti completati questo mese</div>
   `;
   if(typeof gsap !== "undefined"){
   gsap.to("#homeProgressCount", {
