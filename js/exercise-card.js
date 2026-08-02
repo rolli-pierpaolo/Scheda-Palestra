@@ -1,8 +1,24 @@
+// stato del bottone flottante "Giorno terminato" (vedi css .floating-finish-btn):
+// funzione a parte invece che solo dentro renderActive(), perche' showView()
+// deve poterlo ricalcolare anche quando si torna sulla tab Allenamento SENZA
+// un vero re-render (es. dal tab in alto) - senza questo, il bottone poteva
+// restare nascosto dall'ultima volta che si era su Home/Storico
+function updateFloatingFinishBtn(){
+  const floatBtn = document.getElementById('floatingFinishBtn');
+  if(!floatBtn) return;
+  const day = state.days[activeDayIdx];
+  if(!day){ floatBtn.style.display = 'none'; return; }
+  const showFloat = day.esercizi.length>0 && allExercisesClosed(day);
+  floatBtn.style.display = showFloat ? '' : 'none';
+  floatBtn.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
+}
 function renderActive(){
   const day = state.days[activeDayIdx];
   const a = dayAccent(day, activeDayIdx);
   const main = document.getElementById('viewActive');
   if(reorderMode){
+    const floatBtn = document.getElementById('floatingFinishBtn');
+    if(floatBtn) floatBtn.style.display = 'none';
     main.innerHTML = renderReorderList(day);
     return;
   }
@@ -50,6 +66,8 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
      <button class="archive-btn" onclick="archiveAndReset()">📦 Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
     autoGrowAllExNames();
     autoGrowAllExComments();
+
+  updateFloatingFinishBtn();
 
   if(typeof gsap !== "undefined" && activeFirstAnimation){
   activeFirstAnimation = false;
@@ -180,6 +198,8 @@ function archiveAndReset(){
 
   storicoExtra[archiveName.trim()] = JSON.parse(JSON.stringify(state.days));
   saveStorico();
+  storicoDates[archiveName.trim()] = todayKey();
+  saveStoricoDates();
   checkAchievements(); // va fatto ORA: valuta anche "zero settimane saltate" sul blocco appena archiviato, prima che state venga azzerato qui sotto
 
   const newDays = state.days.map(d => ({
@@ -516,18 +536,6 @@ function exerciseCard(ex, exi, accent){
 
 
 
-        <button class="max-toggle"
-        ${isReadOnlyWeek?'disabled':''}
-        onclick="toggleMax(${exi},${w})">
-
-        ${maxShown?'nascondi max':'max'}
-
-        </button>
-
-
-
-
-
         <div class="week-done-wrap">
 
 
@@ -559,8 +567,15 @@ function exerciseCard(ex, exi, accent){
 
         </div>
 
+        <div class="set-btns-secondary">
 
+          <button class="max-toggle"
+          ${isReadOnlyWeek?'disabled':''}
+          onclick="toggleMax(${exi},${w})">
 
+          ${maxShown?'nascondi max':'max'}
+
+          </button>
 
 
         <div class="set-btns-right">
@@ -586,6 +601,8 @@ function exerciseCard(ex, exi, accent){
           </button>
 
 
+
+        </div>
 
         </div>
 
@@ -629,19 +646,19 @@ function exerciseCard(ex, exi, accent){
 
 
 
-      <button class="chart-btn" onclick="openChart(${exi})">
+      <button class="chart-btn" onclick="openChart(${exi})" title="Grafico progressione">
       📈
       </button>
 
 
 
-      <button class="chart-btn" onclick="openPlateCalc(${exi})">
+      <button class="chart-btn" onclick="openPlateCalc(${exi})" title="Calcola dischi bilanciere">
       🏋️
       </button>
 
 
 
-      <button class="chart-btn" onclick="openLinkPicker(${exi})">
+      <button class="chart-btn" onclick="openLinkPicker(${exi})" title="Collega esercizio (super set / jump set)">
       🔗
       </button>
 
@@ -1293,13 +1310,6 @@ const isCollapsed =
 
     <div class="set-btns">
 
-      <button class="max-toggle"
-      onclick="toggleMax(${exiA},${w});toggleMax(${exiB},${w})">
-
-        ${maxShown?'nascondi max':'max'}
-
-      </button>
-
       <div class="week-done-wrap">
 
         <span class="week-done-label">
@@ -1327,21 +1337,32 @@ const isCollapsed =
 
       </div>
 
-      <div class="set-btns-right">
+      <div class="set-btns-secondary">
 
-        <button class="add-ex small"
-        onclick="addSet(${exiA},${w});addSet(${exiB},${w})">
+        <button class="max-toggle"
+        onclick="toggleMax(${exiA},${w});toggleMax(${exiB},${w})">
 
-        + serie
-
-        </button>
-
-        <button class="add-ex small danger"
-        onclick="removeSet(${exiA},${w});removeSet(${exiB},${w})">
-
-        − serie
+          ${maxShown?'nascondi max':'max'}
 
         </button>
+
+        <div class="set-btns-right">
+
+          <button class="add-ex small"
+          onclick="addSet(${exiA},${w});addSet(${exiB},${w})">
+
+          + serie
+
+          </button>
+
+          <button class="add-ex small danger"
+          onclick="removeSet(${exiA},${w});removeSet(${exiB},${w})">
+
+          − serie
+
+          </button>
+
+        </div>
 
       </div>
 

@@ -111,15 +111,19 @@ main{padding:12px;}
 /* ---------------- HOME ---------------- */
 #viewHome{padding:20px 16px 30px;}
 .home-hero{text-align:center;padding:18px 10px 22px;}
-.home-block-week{font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--green);margin-bottom:10px;}
-.home-progress-label{font-size:12px;font-weight:800;letter-spacing:2px;color:var(--muted);}
+/* eyebrow, numero, barra e statistica mensile accorpati in un unico modulo
+   compatto invece di 4 blocchi separati con margini propri: stessa
+   informazione, meno "muro di testo" impilato */
+.home-progress-module{margin-bottom:6px;}
+.home-block-week{font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--green);margin-bottom:6px;}
+.home-progress-label{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--muted);}
 .home-progress-num{
-  font-size:72px;
+  font-size:58px;
   font-weight:900;
   margin-left: 1px;
   color:var(--accent,var(--green));
   line-height:1;
-  margin-top:6px;
+  margin-top:2px;
   text-shadow:0 0 24px rgba(0,0,0,.35);
 }
 
@@ -128,14 +132,14 @@ main{padding:12px;}
   font-weight:700;
   color:rgb(255, 255, 255);
   opacity:.9;
-  margin-left:-20px;
+  margin-left:-16px;
   letter-spacing:.5px;
   vertical-align:baseline;
 }
 
 
 .home-progress-sub{font-size:13px;font-weight:700;color:var(--text);margin-top:8px;text-transform:uppercase;letter-spacing:.5px;}
-.home-progress-bar-wrap{width:100%;max-width:220px;height:8px;border-radius:20px;background:var(--row-dark);border:1px solid var(--line);margin:8px auto 4px;overflow:hidden;}
+.home-progress-bar-wrap{width:100%;max-width:220px;height:8px;border-radius:20px;background:var(--row-dark);border:1px solid var(--line);margin:6px auto 8px;overflow:hidden;}
 .home-progress-bar-fill{height:100%;border-radius:20px;background:var(--accent,var(--green));box-shadow:0 0 10px 1px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);width:0%;}
 .home-suggested-btn{display:block;width:100%;background:var(--accent,var(--green));border:none;border-radius:16px;padding:18px 14px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
 .home-motivation{text-align:center;font-size:19px;font-weight:900;margin:0 8px 34px;line-height:1.3;letter-spacing:.2px;text-transform:uppercase;}
@@ -284,15 +288,14 @@ main{padding:12px;}
 .week-status-btns{display:flex;gap:22px;}
 .week-skip-btn{flex:0 0 auto;width:24px;height:24px;padding:0;background:var(--panel);border:1px solid var(--amber-dark);border-radius:5px;color:var(--muted);font-size:11px;font-weight:800;line-height:1;}
 .week-skip-btn.checked{background:var(--amber);border-color:var(--amber);color:#0D0D0D;}
-/* "max" a sinistra, +/- serie tenuti insieme a destra */
-/* stessa griglia di .set-row (etichetta/kg/rip): cosi' il quadratino di
-   completamento si puo' centrare esattamente sul confine tra kg e rip,
-   allineato alle colonne sopra invece che al centro della riga intera */
-.set-btns{display:grid;grid-template-columns:22px minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:center;margin-top:2px;}
-.max-toggle{grid-column:1/3;justify-self:start;}
-.week-done-wrap{grid-column:2/4;justify-self:center;display:flex;flex-direction:column;align-items:center;gap:2px;}
+/* riga 1: completata/saltata (l'azione che conta davvero, in evidenza).
+   riga 2 (.set-btns-secondary): max + aggiungi/rimuovi serie, azioni di
+   configurazione secondarie, tenute insieme sotto e meno in vista */
+.set-btns{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+.week-done-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;}
 .week-done-label{font-size:8px;color:var(--muted);opacity:.6;text-align:center;}
-.set-btns-right{grid-column:2/4;justify-self:end;display:flex;gap:6px;}
+.set-btns-secondary{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.set-btns-right{display:flex;gap:6px;}
 /* scoped a .set-btns cosi' non tocca altri bottoni "add-ex small" nel resto della pagina */
 .set-btns .add-ex.small{flex:none;width:auto;padding:5px 10px;font-size:10px;margin-top:0;border-width:1px;border-style:solid;}
 .add-ex.danger{color:var(--red);border-color:var(--red);}
@@ -304,8 +307,13 @@ main{padding:12px;}
    Ora ogni gruppo vive dentro un pannello con bordo/sfondo proprio, con
    un'etichetta sopra a dire di cosa si tratta */
 .hist-section-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;padding:16px 12px 6px;}
-.hist-panel{background:var(--panel2);border:1px solid var(--line);border-radius:12px;margin:0 12px;overflow:hidden;}
-.hist-panel-browse{padding:2px 0 8px;}
+.hist-panel{background:var(--panel2);border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));border-radius:12px;margin:0 12px;overflow:hidden;}
+/* stesso linguaggio visivo delle card esercizio (bordo superiore colorato):
+   ogni sezione di Storico ha il suo colore, cosi' la pagina non e' piu' una
+   lista piatta di pannelli tutti identici */
+.hist-panel-browse{--accent:var(--green);padding:2px 0 8px;}
+.backup-row{--accent:var(--steel);}
+.settings-row{--accent:var(--amber);}
 /* ---------------- BACKUP / IMPOSTAZIONI GIORNI (solo tab Storico) ---------------- */
 .backup-row{display:flex;flex-wrap:wrap;gap:8px;padding:14px;}
 .backup-row .add-ex{flex:1 1 140px;}
@@ -319,8 +327,10 @@ main{padding:12px;}
 .hist-list{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:8px;}
 .hist-edit-btn{flex-shrink:0;width:auto;}
 .hist-edit-btn.active{background:var(--green);color:#0D0D0D;border-color:var(--green);}
-.hist-chip{padding:8px 14px;border-radius:20px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:700;}
+.hist-chip{padding:8px 14px;border-radius:20px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:1px;}
 .hist-chip.active{background:var(--amber);color:#0D0D0D;border-color:var(--amber);}
+.hist-chip-date{font-size:9px;font-weight:600;opacity:.65;letter-spacing:.2px;}
+.hist-chip.active .hist-chip-date{opacity:.75;}
 .hist-week{font-size:11px;color:var(--muted);margin-bottom:4px;}
 .hist-week-skipped{font-style:italic;opacity:.7;}
 .hist-set{display:inline-block;background:#000;border-radius:5px;padding:3px 6px;margin:2px;font-size:11px;color:var(--text);border:1px solid var(--line);}
@@ -397,6 +407,10 @@ main{padding:12px;}
 .timer-bar button{background:rgba(0,0,0,.2);border:none;color:#0D0D0D;width:26px;height:26px;border-radius:13px;font-weight:800;}
 .timer-bar.done{background:var(--red);color:#fff;}
 .timer-bar.done button{color:#fff;}
+/* compare solo quando TUTTI gli esercizi del giorno risultano completati o
+   saltati (vedi allExercisesClosed in js/navigation.js): un accesso rapido al
+   tasto "Giorno terminato" senza dover scrollare fino in fondo alla pagina */
+.floating-finish-btn{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:30px;padding:10px 18px;font-size:12px;font-weight:900;z-index:19;box-shadow:0 6px 20px rgba(0,0,0,.5);white-space:nowrap;}
 body.flash{background:var(--amber) !important;}
 .recupero-play{flex:0 0 30px;width:30px;height:100%;background:var(--panel);border:1px solid var(--line);border-radius:6px;color:var(--accent,var(--green));font-size:13px;}
 .name-row{display:flex;align-items:center;gap:6px;}
@@ -508,7 +522,7 @@ body.flash{background:var(--amber) !important;}
 .hist-chip-wrap{position:relative;display:inline-flex;align-items:center;}
 .hist-chip-wrap:has(.hist-del) .hist-chip{padding-right:28px;}
 .hist-del{position:absolute;right:3px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--red);font-size:12px;font-weight:800;padding:4px 6px;}
-.settings-row{padding:14px;display:flex;flex-direction:column;gap:8px;}
+.settings-row{padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .days-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .day-color-input{width:34px;height:34px;padding:0;border:1px solid var(--line);border-radius:6px;background:none;flex:0 0 auto;}
 .del-day-btn{background:none;border:none;color:var(--red);font-size:15px;font-weight:800;padding:4px 6px;flex:0 0 auto;}
