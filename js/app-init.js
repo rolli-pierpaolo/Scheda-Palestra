@@ -50,3 +50,9 @@ if(workoutInProgress){
 } else {
   showHome();
 }
+
+// guida rapida: si mostra da sola solo se ci sono consigli mai visti (prima
+// apertura, o funzioni nuove aggiunte dopo l'ultima volta). Il piccolo ritardo
+// la fa comparire sopra la vista gia' scelta sopra, invece che "sbattere" in
+// faccia prima ancora che la pagina sia visibile
+setTimeout(()=>{ maybeShowOnboarding(); }, 300);
