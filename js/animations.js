@@ -125,7 +125,11 @@ function openFinishWorkoutModal(dayIdx){
 
   if(!day) return;
 
-const incomplete = false;
+// prima era fissa a false (il ramo "ATTENZIONE" qui sotto non poteva mai
+// scattare, qualunque cosa mancasse): allExercisesClosed guarda la vera
+// settimana corrente del programma (state.currentWeek) su ogni esercizio,
+// la stessa gia' usata dal bottone flottante "Giorno terminato"
+const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
 
   const accent = dayAccent(day, dayIdx).c;
 

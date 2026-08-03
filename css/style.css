@@ -241,7 +241,7 @@ main{padding:12px;}
    intere una sopra l'altra: stesso spazio verticale di una singola riga */
 .meta-row-combined{gap:6px;}
 .meta-group{display:flex;align-items:center;gap:4px;flex:1 1 0;min-width:0;}
-.meta-row-combined .meta-label.small{width:auto;flex:0 0 auto;font-size:9px;}
+.meta-row-combined .meta-label.small{width:auto;flex:0 0 auto;font-size:11px;}
 .sets-wrap{width:100%;}
 /* griglia comune a ogni riga serie: numero romano, colonna kg, colonna rip.
    la stessa griglia viene riusata dalla riga "max" per restare allineata */
@@ -293,7 +293,7 @@ main{padding:12px;}
    configurazione secondarie, tenute insieme sotto e meno in vista */
 .set-btns{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
 .week-done-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.week-done-label{font-size:8px;color:var(--muted);opacity:.6;text-align:center;}
+.week-done-label{font-size:11px;color:var(--muted);opacity:.7;text-align:center;}
 .set-btns-secondary{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .set-btns-right{display:flex;gap:6px;}
 /* scoped a .set-btns cosi' non tocca altri bottoni "add-ex small" nel resto della pagina */
