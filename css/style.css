@@ -239,6 +239,10 @@ main{padding:12px;}
 /* ---------------- BLOCCO SETTIMANA (recupero, schema, righe serie) ---------------- */
 .week-block{border:1px solid var(--line);border-radius:8px;margin-top:8px;overflow:hidden;width:100%;}
 .week-toggle{width:100%;background:var(--accent-dark,var(--green-dark));color:var(--text);border:none;padding:8px 10px;font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;box-sizing:border-box;}
+/* schema (es. "4x8") della settimana appena segnata completata: si vede a
+   colpo d'occhio cosa si e' fatto senza dover aprire il blocco - piu' piccolo
+   e trasparente di "SETTIMANA X" per non competere con l'informazione principale */
+.week-toggle-schema{font-size:10px;font-weight:700;opacity:.7;text-transform:none;}
 .week-toggle .chev{transition:transform .15s;}
 .week-toggle.collapsed .chev{transform:rotate(-90deg);}
 /* settimana segnata come completata: intestazione leggermente piu' scura
