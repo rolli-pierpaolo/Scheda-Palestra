@@ -346,12 +346,16 @@ const total = weekly.total;
 
   const monthlyCount = computeMonthlyWorkoutsCount();
   const blockWeek = computeCurrentBlockWeek();
-  // ordine di esecuzione: prima i giorni gia' fatti questa settimana (nell'ordine
-  // in cui sono stati fatti), poi quelli ancora da fare secondo trainingQueue;
-  // eventuali giorni non coperti da nessuno dei due (es. appena aggiunti) in coda
+  // ordine di esecuzione: prima quelli ancora da fare secondo trainingQueue
+  // (in testa quello corrente, che e' trainingQueue[0]), poi quelli gia' fatti
+  // questa settimana; eventuali giorni non coperti da nessuno dei due (es.
+  // appena aggiunti) in coda. PRIMA era il contrario (completati in testa) ma
+  // cosi' il giorno che tocca fare ORA finiva in fondo alla lista non appena si
+  // erano gia' completati altri giorni della settimana - confuso, si vuole
+  // vedere subito in cima cosa manca da fare, non cosa e' gia' passato
   const coveredIdx = new Set([...(state.completedTrainingDays||[]), ...(state.trainingQueue||[])]);
   const missingIdx = state.days.map((_,i)=>i).filter(i=>!coveredIdx.has(i));
-  const orderedDayIdx = [...(state.completedTrainingDays||[]), ...(state.trainingQueue||[]), ...missingIdx];
+  const orderedDayIdx = [...(state.trainingQueue||[]), ...(state.completedTrainingDays||[]), ...missingIdx];
   // non piu' cliccabili: servono solo a mostrare a colpo d'occhio l'ordine
   // reale di esecuzione (che puo' cambiare tramite "Pianifica i prossimi
   // allenamenti", vedi openTrainingOrderModal in animations.js) - per iniziare
