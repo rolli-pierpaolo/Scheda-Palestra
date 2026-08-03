@@ -326,6 +326,20 @@ function pickMotivationalPhrase(dayIdx){
   const dayIndex = Math.floor(Date.now() / 86400000);
   return pool[dayIndex % pool.length];
 }
+// tutte le frasi finiscono con una di queste 4 emoji: invece di riscrivere a
+// mano le 150 e passa righe qui sopra, si stacca l'emoji finale a runtime e si
+// sostituisce con l'icona SVG corrispondente - il testo resta quello scritto,
+// solo la punteggiatura finale cambia forma
+function splitMotivation(phrase){
+  // flag "u" obbligatorio: senza, la classe di caratteri [...] con emoji fuori
+  // dal BMP (rappresentate da coppie di surrogati in UTF-16) si spezza in
+  // singole meta' di coppia invece di riconoscere l'emoji intera - il replace
+  // silenziosamente non trovava mai un match
+  const m = /\s*([🔥💥💪🦵])\s*$/u.exec(phrase);
+  if(!m) return { text: phrase, icon: '' };
+  const iconMap = { '🔥':ICON_FLAME, '💥':ICON_LIGHTNING, '💪':ICON_PLATE, '🦵':ICON_PLATE };
+  return { text: phrase.slice(0, m.index).trim(), icon: iconMap[m[1]] || '' };
+}
 function renderHome(){
 
   const el = document.getElementById('viewHome');
@@ -374,7 +388,7 @@ const total = weekly.total;
     const cls = ['home-day-card', isCompleted?'completed':'', isCurrent?'active-training':''].filter(Boolean).join(' ');
     return `<div class="${cls}" style="--accent:${a.c}"><span class="home-day-order">${pos+1}</span>${escapeHtml(d.name)}</div>`;
   }).join('');
-  const motivation = suggestedDay ? pickMotivationalPhrase(suggestedIdx) : '';
+  const motivationSplit = suggestedDay ? splitMotivation(pickMotivationalPhrase(suggestedIdx)) : null;
   const suggestedHtml = suggestedDay ? `
  <button 
   class="home-suggested-btn"
@@ -386,7 +400,7 @@ const total = weekly.total;
   ontouchend="this.classList.remove('pressed')"
   onclick="startDayFromHome(${suggestedIdx})">
 <span class="home-suggested-name accent-shine">${escapeHtml(suggestedDay.name)}</span></button>
-    ${motivation ? `<div class="home-motivation accent-shine" style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}">${escapeHtml(motivation)}</div>` : ''}` : '';
+    ${motivationSplit ? `<div class="home-motivation" style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}"><span class="accent-shine">${escapeHtml(motivationSplit.text)}</span> ${motivationSplit.icon}</div>` : ''}` : '';
   el.innerHTML = `
     <div class="home-hero">
       <div class="home-progress-module">
@@ -401,7 +415,7 @@ const total = weekly.total;
     ${suggestedHtml}
     <div class="home-days-label">I tuoi giorni</div>
     <div class="home-days-grid">${dayButtons}</div>
-    <div class="home-total-stat">🔥 ${monthlyCount} allenamenti completati questo mese</div>
+    <div class="home-total-stat">${ICON_FLAME} ${monthlyCount} allenamenti completati questo mese</div>
   `;
   if(typeof gsap !== "undefined"){
   gsap.to("#homeProgressCount", {

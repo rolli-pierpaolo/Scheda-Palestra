@@ -75,20 +75,20 @@ function anyWeekSkippedInActiveState(){
 }
 
 const ACHIEVEMENTS = [
-  { id:'primo_allenamento', icon:'🎬', title:'Si comincia!', desc:'Hai registrato il tuo primo allenamento.', check: () => totalWorkoutsLogged() >= 1 },
-  { id:'prima_settimana', icon:'✅', title:'Prima tacca', desc:'Hai segnato la tua prima settimana come completata.', check: () => (state.days||[]).some(d=>(d.esercizi||[]).some(ex=>(ex.weekDone||[]).some(Boolean))) },
-  { id:'dieci_allenamenti', icon:'🔟', title:'In doppia cifra', desc:'10 allenamenti registrati in totale.', check: () => totalWorkoutsLogged() >= 10 },
-  { id:'cinquanta_allenamenti', icon:'🥉', title:'Costanza di ferro', desc:'50 allenamenti registrati in totale.', check: () => totalWorkoutsLogged() >= 50 },
-  { id:'cento_allenamenti', icon:'🥇', title:'Veterano', desc:'100 allenamenti registrati in totale.', check: () => totalWorkoutsLogged() >= 100 },
-  { id:'primo_record', icon:'🏆', title:'Primo record', desc:'Hai battuto il tuo primo record personale.', check: () => achievCounters.prCount >= 1 },
-  { id:'dieci_record', icon:'🏆', title:'Cacciatore di record', desc:'Hai battuto 10 record personali in totale.', check: () => achievCounters.prCount >= 10 },
-  { id:'tre_cifre', icon:'💪', title:'Tre cifre', desc:'Hai sollevato almeno 100kg in un esercizio.', check: () => maxWeightEverLifted() >= 100 },
-  { id:'settimana_completa', icon:'🗓️', title:'Settimana completa', desc:'Hai fatto tutti i giorni della tua scheda in una sola settimana.', check: () => { const p = computeWeeklyProgress(); return p.total>1 && p.done>=p.total; } },
-  { id:'super_set', icon:'🔗', title:'Combo esercizi', desc:'Hai collegato due esercizi in un super set o jump set.', check: () => achievCounters.linkCount >= 1 },
-  { id:'collezionista', icon:'📚', title:'Collezionista', desc:'Hai aggiunto un esercizio nuovo alla libreria.', check: () => (extraLists.esercizi||[]).length >= 1 },
-  { id:'blocco_completato', icon:'📦', title:'Blocco completato', desc:'Hai archiviato un blocco di allenamento e ne hai iniziato uno nuovo.', check: () => Object.keys(getStorico()).length >= 1 },
-  { id:'zero_saltate', icon:'💯', title:'Nessuna scusa', desc:'Hai completato un blocco senza saltare nessuna settimana.', check: () => { const has = (state.days||[]).some(d=>(d.esercizi||[]).some(ex=>(ex.weekDone||[]).some(Boolean))); return has && !anyWeekSkippedInActiveState(); } },
-  { id:'bentornato', icon:'🔄', title:'Bentornato', desc:"Sei tornato ad allenarti dopo una pausa di almeno 10 giorni.", check: () => daysSinceLastGap() >= 10 },
+  { id:'primo_allenamento', icon:ICON_FLAG, title:'Si comincia!', desc:'Hai registrato il tuo primo allenamento.', check: () => totalWorkoutsLogged() >= 1 },
+  { id:'prima_settimana', icon:ICON_CHECK, title:'Prima tacca', desc:'Hai segnato la tua prima settimana come completata.', check: () => (state.days||[]).some(d=>(d.esercizi||[]).some(ex=>(ex.weekDone||[]).some(Boolean))) },
+  { id:'dieci_allenamenti', icon:ICON_STAR, title:'In doppia cifra', desc:'10 allenamenti registrati in totale.', check: () => totalWorkoutsLogged() >= 10 },
+  { id:'cinquanta_allenamenti', icon:ICON_TROPHY, title:'Costanza di ferro', desc:'50 allenamenti registrati in totale.', check: () => totalWorkoutsLogged() >= 50 },
+  { id:'cento_allenamenti', icon:ICON_TROPHY, title:'Veterano', desc:'100 allenamenti registrati in totale.', check: () => totalWorkoutsLogged() >= 100 },
+  { id:'primo_record', icon:ICON_TROPHY, title:'Primo record', desc:'Hai battuto il tuo primo record personale.', check: () => achievCounters.prCount >= 1 },
+  { id:'dieci_record', icon:ICON_TROPHY, title:'Cacciatore di record', desc:'Hai battuto 10 record personali in totale.', check: () => achievCounters.prCount >= 10 },
+  { id:'tre_cifre', icon:ICON_PLATE, title:'Tre cifre', desc:'Hai sollevato almeno 100kg in un esercizio.', check: () => maxWeightEverLifted() >= 100 },
+  { id:'settimana_completa', icon:ICON_CALENDAR, title:'Settimana completa', desc:'Hai fatto tutti i giorni della tua scheda in una sola settimana.', check: () => { const p = computeWeeklyProgress(); return p.total>1 && p.done>=p.total; } },
+  { id:'super_set', icon:ICON_LINK, title:'Combo esercizi', desc:'Hai collegato due esercizi in un super set o jump set.', check: () => achievCounters.linkCount >= 1 },
+  { id:'collezionista', icon:ICON_BOOK, title:'Collezionista', desc:'Hai aggiunto un esercizio nuovo alla libreria.', check: () => (extraLists.esercizi||[]).length >= 1 },
+  { id:'blocco_completato', icon:ICON_ARCHIVE, title:'Blocco completato', desc:'Hai archiviato un blocco di allenamento e ne hai iniziato uno nuovo.', check: () => Object.keys(getStorico()).length >= 1 },
+  { id:'zero_saltate', icon:ICON_TARGET, title:'Nessuna scusa', desc:'Hai completato un blocco senza saltare nessuna settimana.', check: () => { const has = (state.days||[]).some(d=>(d.esercizi||[]).some(ex=>(ex.weekDone||[]).some(Boolean))); return has && !anyWeekSkippedInActiveState(); } },
+  { id:'bentornato', icon:ICON_CYCLE, title:'Bentornato', desc:"Sei tornato ad allenarti dopo una pausa di almeno 10 giorni.", check: () => daysSinceLastGap() >= 10 },
 ];
 
 // idempotente: si puo' chiamare quante volte si vuole, sblocca solo cio' che
@@ -163,7 +163,7 @@ function openAchievements(){
     if(unlocked){
       return `<div class="achiev-row unlocked"><div class="achiev-icon">${a.icon}</div><div class="achiev-info"><div class="achiev-title">${escapeHtml(a.title)}</div><div class="achiev-desc">${escapeHtml(a.desc)}</div></div></div>`;
     }
-    return `<div class="achiev-row locked"><div class="achiev-icon">🔒</div><div class="achiev-info"><div class="achiev-title">???</div><div class="achiev-desc">Obiettivo ancora da scoprire</div></div></div>`;
+    return `<div class="achiev-row locked"><div class="achiev-icon">${ICON_LOCK}</div><div class="achiev-info"><div class="achiev-title">???</div><div class="achiev-desc">Obiettivo ancora da scoprire</div></div></div>`;
   }).join('');
   const count = Object.keys(unlockedAchievements).length;
   document.getElementById('achievCount').textContent = `${count}/${ACHIEVEMENTS.length} sbloccati`;

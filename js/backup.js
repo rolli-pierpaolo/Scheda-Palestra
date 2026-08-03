@@ -154,7 +154,7 @@ function showAutoBackupToast(){
     el.className = 'pr-toast';
     document.body.appendChild(el);
   }
-  el.textContent = "💾 Backup automatico di oggi salvato";
+  el.innerHTML = ICON_DISK + " Backup automatico di oggi salvato";
   el.classList.add('show');
   clearTimeout(window._autoBackupToastTimer);
   window._autoBackupToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2600);

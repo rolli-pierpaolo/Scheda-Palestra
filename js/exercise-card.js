@@ -29,7 +29,7 @@ function renderActive(){
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
   const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>` : '';
-const finishBtn = day.esercizi.length>0 ? `<button class="finish-day-btn" style="--accent:${a.c}" onclick="openFinishWorkoutModal(${activeDayIdx})"><span class="accent-shine">✅ Giorno di allenamento terminato!</span></button>` : '';  const suggestedIdx = computeSuggestedDayIdx();
+const finishBtn = day.esercizi.length>0 ? `<button class="finish-day-btn" style="--accent:${a.c}" onclick="openFinishWorkoutModal(${activeDayIdx})">${ICON_CHECK} <span class="accent-shine">Giorno di allenamento terminato!</span></button>` : '';  const suggestedIdx = computeSuggestedDayIdx();
 
 // piccolo banner pulsante invece del box grande di prima: deve vedersi
 // SUBITO entrando nel giorno diverso da quello previsto, ma senza occupare
@@ -40,7 +40,7 @@ activeDayIdx !== suggestedIdx
 `
 <button class="switch-training-pill"
 onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
-  ⚠️ Previsto: ${escapeHtml(state.days[suggestedIdx].name)} — tocca per fare ${escapeHtml(day.name)} oggi
+  ${ICON_WARNING} Previsto: ${escapeHtml(state.days[suggestedIdx].name)} — tocca per fare ${escapeHtml(day.name)} oggi
 </button>
 `
 :
@@ -63,7 +63,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
        ${reorderBtn}
      </div>
      ${finishBtn}
-     <button class="archive-btn" onclick="archiveAndReset()">📦 Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
+     <button class="archive-btn" onclick="archiveAndReset()">${ICON_ARCHIVE} Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
     autoGrowAllExNames();
     autoGrowAllExComments();
 
@@ -165,7 +165,7 @@ function renderReorderList(day){
     </div>`;
   }).join('');
   const btn = reorderDirty
-    ? `<button class="add-ex small2" style="border-color:var(--green);color:var(--green);" onclick="confirmReorderOrder()">✅ Conferma nuovo ordine</button>`
+    ? `<button class="add-ex small2" style="border-color:var(--green);color:var(--green);" onclick="confirmReorderOrder()">${ICON_CHECK} Conferma nuovo ordine</button>`
     : `<button class="add-ex small2" onclick="toggleReorderMode()">${ICON_CLOSE} Chiudi modifica ordine</button>`;
   return `<div class="reorder-banner">Tocca le frecce per spostare un esercizio, poi conferma</div>${rows}${btn}`;
 }
@@ -459,11 +459,11 @@ function exerciseCard(ex, exi, accent){
 
         ${
   isCompletedWeek
-  ? '✓ '
+  ? ICON_CHECK+' '
   : isCurrentWeek
-    ? '🔥 '
+    ? ICON_FLAME+' '
     : isFutureWeek
-      ? '🔒 '
+      ? ICON_LOCK+' '
       : ''
 }
 
@@ -550,7 +550,7 @@ function exerciseCard(ex, exi, accent){
           ${isReadOnlyWeek?'disabled':''}
           onclick="toggleWeekDone(${exi},${w})">
 
-          ✓
+          ${ICON_CHECK}
 
           </button>
 
@@ -626,7 +626,7 @@ function exerciseCard(ex, exi, accent){
 
 
   const prBadge = record 
-  ? `<div class="pr-badge">🏆 Record: ${escapeHtml(String(record.peso))} kg${record.rip?' × '+escapeHtml(String(record.rip)):''}</div>`
+  ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(record.peso))} kg${record.rip?' × '+escapeHtml(String(record.rip)):''}</div>`
   : '';
 
 
@@ -797,11 +797,11 @@ function askWeekDoneConfirm(exi, w, exName){
   weekDoneConfirmTarget = {exi, w};
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
   document.getElementById('weekDoneModalBody').innerHTML = `
-    <div class="finish-title" style="font-size:22px;">✅ Settimana finita?</div>
+    <div class="finish-title" style="font-size:22px;">${ICON_CHECK} Settimana finita?</div>
     <div class="finish-subtitle" style="font-size:14px;">Hai finito "${escapeHtml(exName||'questo esercizio')}" per questa settimana?</div>
     <div class="finish-buttons">
       <button class="add-ex small2" onclick="closeWeekDoneConfirm(false)">No, non ancora</button>
-      <button class="add-ex small2" style="border-color:var(--green);color:var(--green);" onclick="closeWeekDoneConfirm(true)">Sì, fatta ✓</button>
+      <button class="add-ex small2" style="border-color:var(--green);color:var(--green);" onclick="closeWeekDoneConfirm(true)">Sì, fatta ${ICON_CHECK}</button>
     </div>
   `;
   const modal = document.getElementById('weekDoneModal');
@@ -926,7 +926,7 @@ function celebrateExerciseDone(name){
     el.className = 'ex-done-toast';
     document.body.appendChild(el);
   }
-  el.textContent = `✓ ${name||'Esercizio'} completato`;
+  el.innerHTML = `${ICON_CHECK} ${escapeHtml(name||'Esercizio')} completato`;
   el.classList.add('show');
   clearTimeout(window._exDoneToastTimer);
   window._exDoneToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 1100);
@@ -1277,10 +1277,10 @@ const isCollapsed =
 
     ${
       isPastWeek
-      ? '✓ '
+      ? ICON_CHECK+' '
       : isCurrentWeek
-        ? '🔥 '
-        : '🔒 '
+        ? ICON_FLAME+' '
+        : ICON_LOCK+' '
     }
 
     SETTIMANA ${w+1}${weekSkipped?' — saltata':''}
@@ -1353,7 +1353,7 @@ const isCollapsed =
           data-exi="${exiA}" data-w="${w}"
           onclick="toggleWeekDone(${exiA},${w});toggleWeekDone(${exiB},${w})">
 
-          ✓
+          ${ICON_CHECK}
 
           </button>
 
@@ -1408,8 +1408,8 @@ const isCollapsed =
 
   const recordA = getRecordForExercise(exA.nome);
   const recordB = getRecordForExercise(exB.nome);
-  const prBadgeA = recordA ? `<div class="pr-badge">🏆 Record: ${escapeHtml(String(recordA.peso))} kg${recordA.rip? ' × '+escapeHtml(String(recordA.rip)) : ''}</div>` : '';
-  const prBadgeB = recordB ? `<div class="pr-badge">🏆 Record: ${escapeHtml(String(recordB.peso))} kg${recordB.rip? ' × '+escapeHtml(String(recordB.rip)) : ''}</div>` : '';
+  const prBadgeA = recordA ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(recordA.peso))} kg${recordA.rip? ' × '+escapeHtml(String(recordA.rip)) : ''}</div>` : '';
+  const prBadgeB = recordB ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(recordB.peso))} kg${recordB.rip? ' × '+escapeHtml(String(recordB.rip)) : ''}</div>` : '';
 
   return `<div class="ex-card-wrap" style="--accent:${accent.c}">
   <div class="ex-sticky-header">${escapeHtml(exA.nome||'Esercizio')} + ${escapeHtml(exB.nome||'Esercizio')}</div>
@@ -1423,7 +1423,7 @@ const isCollapsed =
         ${prBadgeA}
         <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiA},this.value)">${escapeHtml(exA.commento??'')}</textarea>
       </div>
-      <button class="link-type-divider" onclick="openLinkPicker(${exiA})" title="Gestisci collegamento"><span class="link-type-pill" style="background:${accent.d}">⚡ ${typeLabel} <span class="link-type-manage">🔗 gestisci</span></span></button>
+      <button class="link-type-divider" onclick="openLinkPicker(${exiA})" title="Gestisci collegamento"><span class="link-type-pill" style="background:${accent.d}">${ICON_LIGHTNING} ${typeLabel} <span class="link-type-manage">${ICON_LINK} gestisci</span></span></button>
       <div class="card-head linked-head compact">
         <button class="del-ex" onclick="deleteExercise(${exiB})" title="Elimina esercizio">${ICON_TRASH}</button>
         <button class="chart-btn" onclick="openChart(${exiB})" title="Grafico progressione">${ICON_CHART}</button>

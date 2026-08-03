@@ -105,7 +105,7 @@ function renderCalendarEdit(key){
     <div class="cal-editor-date">${formatDateItalian(key)}</div>
     <div class="cal-editor-hint">Tocca i giorni allenati in questa data, poi conferma</div>
     <div class="cal-editor-list">${rows}</div>
-    <button class="add-ex" style="margin-top:14px;border-color:var(--green);color:var(--green);" onclick="confirmCalendarDay()">✅ Conferma</button>
+    <button class="add-ex" style="margin-top:14px;border-color:var(--green);color:var(--green);" onclick="confirmCalendarDay()">${ICON_CHECK} Conferma</button>
     <button class="add-ex small2" style="margin-top:8px;" onclick="closeCalendarDayView()">← Annulla</button>
   </div>`;
 }
@@ -133,7 +133,7 @@ function renderCalendar(){
     cells += `<div class="cal-cell ${key===todayK?'today':''}" onclick="openCalendarDay('${key}')"><span class="cal-daynum">${d}</span><div class="cal-dots">${dots}</div></div>`;
   }
   const recent7 = countRecentWorkoutDays(7);
-  body.innerHTML = `<div class="cal-stats">🔥 Ultimi 7 giorni: <b>${recent7}</b> allenamenti · Questo mese: <b>${monthCount}</b></div>
+  body.innerHTML = `<div class="cal-stats">${ICON_FLAME} Ultimi 7 giorni: <b>${recent7}</b> allenamenti · Questo mese: <b>${monthCount}</b></div>
     <div class="cal-header">
       <button onclick="shiftCalendarMonth(-1)">‹</button>
       <span>${CAL_MONTH_NAMES[month]} ${year}</span>
