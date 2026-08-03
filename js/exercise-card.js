@@ -785,10 +785,41 @@ function updateSet(exi, w, si, field, val, recordPeso){
   // che quella settimana e' finita: lo chiediamo subito invece di aspettare
   // che l'utente vada a cercare il tasto "completata" a parte
   if(field==='rip' && String(val||'').trim()!=='' && si===ex.sets[w].length-1 && !(ex.weekDone && ex.weekDone[w])){
-    if(confirm(`Hai finito "${ex.nome||'questo esercizio'}" per questa settimana?`)){
-      toggleWeekDone(exi, w);
-    }
+    askWeekDoneConfirm(exi, w, ex.nome);
   }
+}
+// modale dell'app al posto del confirm() nativo del browser: quello di sistema
+// non segue lo stile dell'app ed e' capitato apparisse ancora con la tastiera
+// aperta sopra, illeggibile - qui si chiude prima la tastiera (blur) e si apre
+// un modale vero, sempre visibile e leggibile
+let weekDoneConfirmTarget = null;
+function askWeekDoneConfirm(exi, w, exName){
+  weekDoneConfirmTarget = {exi, w};
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  document.getElementById('weekDoneModalBody').innerHTML = `
+    <div class="finish-title" style="font-size:22px;">✅ Settimana finita?</div>
+    <div class="finish-subtitle" style="font-size:14px;">Hai finito "${escapeHtml(exName||'questo esercizio')}" per questa settimana?</div>
+    <div class="finish-buttons">
+      <button class="add-ex small2" onclick="closeWeekDoneConfirm(false)">No, non ancora</button>
+      <button class="add-ex small2" style="border-color:var(--green);color:var(--green);" onclick="closeWeekDoneConfirm(true)">Sì, fatta ✓</button>
+    </div>
+  `;
+  const modal = document.getElementById('weekDoneModal');
+  // il blur() sopra puo' impiegare un istante a far richiudere la tastiera:
+  // il piccolo ritardo evita che il modale si apra ancora mentre la vista si
+  // sta ridimensionando, che lo farebbe comparire storto/troppo in alto
+  setTimeout(()=>{
+    modal.style.display = 'flex';
+    if(typeof gsap !== 'undefined'){
+      gsap.fromTo('#weekDoneModal .finish-modal', {y:40,opacity:0,scale:.95}, {y:0,opacity:1,scale:1,duration:.35,ease:'back.out(1.5)'});
+    }
+  }, 150);
+}
+function closeWeekDoneConfirm(confirmed){
+  document.getElementById('weekDoneModal').style.display = 'none';
+  const target = weekDoneConfirmTarget;
+  weekDoneConfirmTarget = null;
+  if(confirmed && target) toggleWeekDone(target.exi, target.w);
 }
 function stepSet(exi, w, si, delta, btn){
   const ex = state.days[activeDayIdx].esercizi[exi];

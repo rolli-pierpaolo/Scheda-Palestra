@@ -581,41 +581,24 @@ function forceNextWeekForDay(dayIdx){
 }
 
 
+// usata dal bottone flottante "Giorno terminato" (vedi updateFloatingFinishBtn
+// in js/exercise-card.js): controlla la VERA settimana corrente del programma
+// (state.currentWeek), la stessa che usa exerciseCard() per decidere cosa
+// mostrare aperto. Prima si inferiva una "settimana corrente" per esercizio
+// cercando l'ultimo indice segnato fatto/saltato: a inizio settimana nuova,
+// prima di toccare qualsiasi esercizio, quell'indice restava fermo
+// sull'ultima settimana GIA' completata (es. la 1), che risultava "chiusa"
+// per definizione - il bottone compariva subito, anche senza aver ancora
+// fatto nulla della settimana vera
 function allExercisesClosed(day){
-
+  const w = state.currentWeek || 0;
   return day.esercizi.every(ex=>{
-
-
-    const nWeeks =
-      (ex.recupero && ex.recupero.length) ||
-      state.weeksPerBlock ||
-      4;
-
-
-    if(!ex.weekDone)
-      ex.weekDone = new Array(nWeeks).fill(false);
-
-
-    if(!ex.weekSkipped)
-      ex.weekSkipped = new Array(nWeeks).fill(false);
-
-
-    let currentWeek=0;
-
-
-    for(let i=0;i<nWeeks;i++){
-
-      if(ex.weekDone[i] || ex.weekSkipped[i]){
-        currentWeek=i;
-      }
-
-    }
-
-
-    return ex.weekDone[currentWeek] || ex.weekSkipped[currentWeek];
-
+    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+    if(!ex.weekDone) ex.weekDone = new Array(nWeeks).fill(false);
+    if(!ex.weekSkipped) ex.weekSkipped = new Array(nWeeks).fill(false);
+    if(w >= nWeeks) return true; // esercizio con meno settimane del blocco corrente: gia' "esaurito"
+    return ex.weekDone[w] || ex.weekSkipped[w];
   });
-
 }
 
 

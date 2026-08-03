@@ -16,7 +16,7 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v0.95</span>
+  <span class="app-version" id="appVersion">v0.96</span>
   <h1>Logbook</h1>
 </div>
 <div id="dayTabsActive" class="day-tabs" style="display:none;"></div>
@@ -132,6 +132,13 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
   <div class="modal-box">
     <div class="modal-head"><span>Guida</span><button onclick="closeOnboarding()">✕</button></div>
     <div id="onboardingBody" class="modal-body"></div>
+  </div>
+</div>
+
+
+<div id="weekDoneModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box finish-modal">
+    <div id="weekDoneModalBody"></div>
   </div>
 </div>
 
