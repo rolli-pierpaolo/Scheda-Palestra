@@ -97,14 +97,9 @@ function autoGrowTextarea(el){
 function autoGrowAllExNames(){
   document.querySelectorAll('#viewActive .ex-name').forEach(autoGrowTextarea);
 }
-// stesso principio per le note/tecnica (.ex-comment): serve lo stesso richiamo
-// da showView() quando la vista diventa visibile, altrimenti sugli esercizi
-// collegati (super set/jump set) lo spazio nota resta calcolato a zero finche'
-// non si cambia giorno e si torna indietro (renderActive() gira mentre la
-// vista e' ancora display:none al primo ingresso in Allenamento)
-function autoGrowAllExComments(){
-  document.querySelectorAll('#viewActive .ex-comment').forEach(autoGrowTextarea);
-}
+// le note/tecnica (.ex-comment) NON si allargano piu' col contenuto: restano
+// piccole finche' non ci si clicca sopra (vedi :focus in css/style.css),
+// niente piu' bisogno di ricalcolarle dopo ogni render
 // stesso principio per il campo "Serie" (schema): prima era un input a riga
 // singola che tagliava gli schemi scritti lunghi, ora e' una textarea con
 // riga propria che cresce con il testo, stessa logica di nome/note
