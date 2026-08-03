@@ -28,7 +28,7 @@ function renderActive(){
       <div class="empty-day-title">Nessun esercizio ancora</div>
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
-  const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">↕️ Modifica ordine</button>` : '';
+  const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>` : '';
 const finishBtn = day.esercizi.length>0 ? `<button class="finish-day-btn" style="--accent:${a.c}" onclick="openFinishWorkoutModal(${activeDayIdx})"><span class="accent-shine">✅ Giorno di allenamento terminato!</span></button>` : '';  const suggestedIdx = computeSuggestedDayIdx();
 
 // piccolo banner pulsante invece del box grande di prima: deve vedersi
@@ -166,7 +166,7 @@ function renderReorderList(day){
   }).join('');
   const btn = reorderDirty
     ? `<button class="add-ex small2" style="border-color:var(--green);color:var(--green);" onclick="confirmReorderOrder()">✅ Conferma nuovo ordine</button>`
-    : `<button class="add-ex small2" onclick="toggleReorderMode()">✕ Chiudi modifica ordine</button>`;
+    : `<button class="add-ex small2" onclick="toggleReorderMode()">${ICON_CLOSE} Chiudi modifica ordine</button>`;
   return `<div class="reorder-banner">Tocca le frecce per spostare un esercizio, poi conferma</div>${rows}${btn}`;
 }
 

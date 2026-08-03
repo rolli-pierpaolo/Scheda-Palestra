@@ -8,7 +8,7 @@ function openDaysModal(){
       <span class="days-label">Giorno ${i+1}</span>
       <div class="combo-wrap"><input class="meta-input" value="${escapeAttr(d.name)}" oninput="onComboInput(this,'giorni')" onfocus="onComboFocus(this,'giorni')" onchange="renameDay(${i},this.value)"></div>
       <input type="color" class="day-color-input" value="${a.c}" title="Colore del giorno" onchange="updateDayColor(${i},this.value)">
-      <button class="del-day-btn" onclick="deleteDay(${i})" title="Elimina giorno">✕</button>
+      <button class="del-day-btn" onclick="deleteDay(${i})" title="Elimina giorno">${ICON_TRASH}</button>
     </div>`;
  }).join('')
 + '<button class="add-ex small2" style="margin-top:6px;" onclick="addDay()">+ Aggiungi giorno</button>'
