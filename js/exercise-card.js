@@ -66,6 +66,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
      <button class="archive-btn" onclick="archiveAndReset()">${ICON_ARCHIVE} Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
     autoGrowAllExNames();
     autoGrowAllExComments();
+    autoGrowAllExSchema();
 
   updateFloatingFinishBtn();
 
@@ -488,6 +489,14 @@ function exerciseCard(ex, exi, accent){
 
 
 
+      <div class="meta-row-schema">
+        <span class="meta-label small">Serie</span>
+        <textarea class="meta-input schema" rows="1"
+        ${isReadOnlyWeek?'disabled':''}
+        oninput="autoGrowTextarea(this)"
+        onchange="updateMeta(${exi},'schema',${w},this.value)">${escapeHtml(ex.schema[w]??'')}</textarea>
+      </div>
+
       <div class="meta-row meta-row-combined">
 
         <div class="meta-group">
@@ -505,14 +514,6 @@ function exerciseCard(ex, exi, accent){
           onclick="startTimerFromRow(this)">
           ▶
           </button>
-        </div>
-
-        <div class="meta-group">
-          <span class="meta-label small">Serie</span>
-          <input class="meta-input schema"
-          ${isReadOnlyWeek?'disabled':''}
-          value="${escapeAttr(ex.schema[w]??'')}"
-          onchange="updateMeta(${exi},'schema',${w},this.value)">
         </div>
 
       </div>
@@ -1346,6 +1347,16 @@ const isCollapsed =
     value="${escapeAttr((exA.weekNote && exA.weekNote[w]) ?? '')}"
     onchange="updateWeekNote(${exiA},${w},this.value);updateWeekNote(${exiB},${w},this.value)">
 
+    <div class="meta-row-schema">
+      <span class="meta-label small">Serie</span>
+      <div class="combo-wrap">
+        <textarea class="meta-input schema" rows="1"
+        oninput="onComboInput(this,'schemi');autoGrowTextarea(this)"
+        onfocus="onComboFocus(this,'schemi')"
+        onchange="updateMeta(${exiA},'schema',${w},this.value);updateMeta(${exiB},'schema',${w},this.value)">${escapeHtml(exA.schema[w]??'')}</textarea>
+      </div>
+    </div>
+
     <div class="meta-row meta-row-combined">
 
       <div class="meta-group">
@@ -1362,18 +1373,6 @@ const isCollapsed =
         onclick="startTimerFromRow(this)">
         ▶
         </button>
-      </div>
-
-      <div class="meta-group">
-        <span class="meta-label small">Serie</span>
-        <div class="combo-wrap">
-          <input class="meta-input schema"
-          placeholder="—"
-          value="${escapeAttr(exA.schema[w]??'')}"
-          oninput="onComboInput(this,'schemi')"
-          onfocus="onComboFocus(this,'schemi')"
-          onchange="updateMeta(${exiA},'schema',${w},this.value);updateMeta(${exiB},'schema',${w},this.value)">
-        </div>
       </div>
 
     </div>
