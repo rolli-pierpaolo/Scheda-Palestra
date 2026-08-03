@@ -6,6 +6,15 @@ function openFeedbackForm(){
   }
   window.open(FEEDBACK_FORM_URL, '_blank', 'noopener');
 }
+// icone SVG in linea (stroke="currentColor": prendono da sole il colore del
+// bottone che le contiene, niente CSS in piu' da coordinare) al posto delle
+// emoji sui bottoni funzionali della card esercizio - stesso stile a linee
+// dell'icona Home nella barra di navigazione, cosi' l'app ha un set coerente
+// invece di dipendere da come ogni telefono disegna le emoji
+const ICON_TRASH = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 7 H20"/><path d="M9 7 V4.5 A1 1 0 0 1 10 3.5 H14 A1 1 0 0 1 15 4.5 V7"/><path d="M6 7 L7 20 A1 1 0 0 0 8 21 H16 A1 1 0 0 0 17 20 L18 7"/><path d="M10 11 V17"/><path d="M14 11 V17"/></svg>';
+const ICON_CHART = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 20 V4"/><path d="M4 20 H20"/><path d="M6.5 15 L11 10.5 L14 13.5 L19 7.5"/></svg>';
+const ICON_PLATE = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>';
+const ICON_LINK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M10 14 L14 10"/><path d="M8.5 15.5 L6.5 17.5 A3 3 0 0 1 2.5 13.5 L5.5 10.5 A3 3 0 0 1 9.5 10.5"/><path d="M15.5 8.5 L17.5 6.5 A3 3 0 0 1 21.5 10.5 L18.5 13.5 A3 3 0 0 1 14.5 13.5"/></svg>';
 // vibrazione breve su azioni chiave (spunta settimana, obiettivo sbloccato,
 // giorno terminato): silenziosa se il dispositivo/browser non la supporta
 // (es. iOS Safari, che non implementa la Vibration API - stesso limite gia'
