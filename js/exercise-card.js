@@ -635,7 +635,7 @@ function exerciseCard(ex, exi, accent){
   return `
 
   <div class="ex-card-wrap" style="--accent:${accent.c}">
-  <div class="ex-sticky-header">${escapeHtml(ex.nome||'Esercizio')}</div>
+  <div class="ex-sticky-header" id="stickyHeader-${exi}" ondblclick="startEditStickyName(${exi})">${escapeHtml(ex.nome||'Esercizio')}</div>
   <div class="card" data-exi="${exi}" style="--accent:${accent.c}">
 
 
@@ -661,29 +661,6 @@ function exerciseCard(ex, exi, accent){
       <button class="chart-btn" onclick="openLinkPicker(${exi})" title="Collega esercizio (super set / jump set)">
       ${ICON_LINK}
       </button>
-
-
-
-
-    <div class="name-row">
-
-<div class="combo-wrap">
-
-<textarea 
-class="ex-name"
-rows="1"
-placeholder="Seleziona esercizio..."
-oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)"
-onfocus="onComboFocus(this,'esercizi')"
-onchange="updateName(${exi},this.value)">
-${escapeHtml(ex.nome??'')}
-</textarea>
-
-</div>
-
-</div>
-
-
 
 
       ${prBadge}
@@ -743,6 +720,76 @@ function toggleWeek(btn, key, weekIdx){
 function updateName(exi, val){
   state.days[activeDayIdx].esercizi[exi].nome = val;
   saveState();
+}
+// ---------------- MODIFICA NOME DALL'HEADER STICKY ----------------
+// il campo nome dentro la card era ridondante con l'header sticky (che resta
+// visibile scorrendo, quindi e' gia' piu' comodo): la modifica vera e propria
+// vive solo qui ora. Un solo tocco non fa nulla apposta (per non aprirla per
+// sbaglio scrollando o toccando l'header), serve il doppio tocco - stessa
+// logica gia' usata per le settimane future (vedi week-toggle.future-week)
+function startEditStickyName(exi){
+  const ex = state.days[activeDayIdx].esercizi[exi];
+  const header = document.getElementById('stickyHeader-'+exi);
+  if(!header || !ex) return;
+  header.classList.add('editing');
+  header.innerHTML = `<div class="combo-wrap"><textarea class="ex-sticky-name-input" rows="1"
+    oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)"
+    onfocus="onComboFocus(this,'esercizi')"
+    onblur="finishEditStickyName(${exi})"
+    onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome??'')}</textarea></div>`;
+  const ta = header.querySelector('textarea');
+  ta.focus();
+  const len = ta.value.length; ta.setSelectionRange(len,len);
+}
+// il salvataggio vero lo fa gia' l'onchange (updateName): qui si torna solo
+// alla scritta statica, rileggendo il nome aggiornato dallo stato
+function finishEditStickyName(exi){
+  const header = document.getElementById('stickyHeader-'+exi);
+  if(!header) return;
+  header.classList.remove('editing');
+  const ex = state.days[activeDayIdx].esercizi[exi];
+  header.textContent = (ex && ex.nome) || 'Esercizio';
+}
+// stessa idea per gli esercizi collegati, ma con tre righe (esercizio A / tipo
+// di collegamento / esercizio B) invece del vecchio "A + B" su una riga sola:
+// qui il doppio tocco serve anche a capire QUALE dei due si sta modificando,
+// mostrandoli entrambi con un campo a testa invece di dover indovinare da che
+// meta' del testo si e' toccato
+function startEditLinkedSticky(exiA, exiB){
+  const day = state.days[activeDayIdx];
+  const exA = day.esercizi[exiA], exB = day.esercizi[exiB];
+  const header = document.getElementById('stickyHeaderLinked-'+exiA);
+  if(!header || !exA || !exB) return;
+  const typeLabel = exA.linkType === 'jumpset' ? 'Jump set' : 'Super set';
+  header.classList.add('editing');
+  header.innerHTML = `
+    <div class="combo-wrap"><textarea class="ex-sticky-name-input" rows="1"
+      oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)"
+      onfocus="onComboFocus(this,'esercizi')"
+      onchange="updateName(${exiA},this.value)">${escapeHtml(exA.nome??'')}</textarea></div>
+    <button class="ex-sticky-linktype-btn" onclick="openLinkPicker(${exiA})">${typeLabel}</button>
+    <div class="combo-wrap"><textarea class="ex-sticky-name-input" rows="1"
+      oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)"
+      onfocus="onComboFocus(this,'esercizi')"
+      onchange="updateName(${exiB},this.value)">${escapeHtml(exB.nome??'')}</textarea></div>
+    <button class="ex-sticky-confirm-btn" onclick="finishEditLinkedSticky(${exiA},${exiB})">${ICON_CHECK} Conferma</button>
+  `;
+}
+// niente onblur qui apposta: passare dal primo campo al secondo (o al bottone
+// del tipo di collegamento) farebbe scattare il blur del primo prima ancora
+// di aver finito - si chiude solo quando si preme davvero "Conferma"
+function finishEditLinkedSticky(exiA, exiB){
+  const header = document.getElementById('stickyHeaderLinked-'+exiA);
+  if(!header) return;
+  header.classList.remove('editing');
+  renderStickyLinkedDisplay(header, exiA, exiB);
+}
+function renderStickyLinkedDisplay(header, exiA, exiB){
+  const day = state.days[activeDayIdx];
+  const exA = day.esercizi[exiA], exB = day.esercizi[exiB];
+  if(!exA || !exB) return;
+  const typeLabel = exA.linkType === 'jumpset' ? 'Jump set' : 'Super set';
+  header.innerHTML = `<div class="ex-sticky-line">${escapeHtml(exA.nome||'Esercizio')}</div><div class="ex-sticky-line ex-sticky-linktype">${escapeHtml(typeLabel)}</div><div class="ex-sticky-line">${escapeHtml(exB.nome||'Esercizio')}</div>`;
 }
 function updateComment(exi, val){
   state.days[activeDayIdx].esercizi[exi].commento = val;
@@ -1412,14 +1459,17 @@ const isCollapsed =
   const prBadgeB = recordB ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(recordB.peso))} kg${recordB.rip? ' × '+escapeHtml(String(recordB.rip)) : ''}</div>` : '';
 
   return `<div class="ex-card-wrap" style="--accent:${accent.c}">
-  <div class="ex-sticky-header">${escapeHtml(exA.nome||'Esercizio')} + ${escapeHtml(exB.nome||'Esercizio')}</div>
+  <div class="ex-sticky-header linked" id="stickyHeaderLinked-${exiA}" ondblclick="startEditLinkedSticky(${exiA},${exiB})">
+    <div class="ex-sticky-line">${escapeHtml(exA.nome||'Esercizio')}</div>
+    <div class="ex-sticky-line ex-sticky-linktype">${typeLabel}</div>
+    <div class="ex-sticky-line">${escapeHtml(exB.nome||'Esercizio')}</div>
+  </div>
   <div class="card linked-group" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
     <div class="linked-pair-frame">
       <div class="card-head linked-head compact">
         <button class="del-ex" onclick="deleteExercise(${exiA})" title="Elimina esercizio">${ICON_TRASH}</button>
         <button class="chart-btn" onclick="openChart(${exiA})" title="Grafico progressione">${ICON_CHART}</button>
         <button class="chart-btn" onclick="openPlateCalc(${exiA})" title="Calcola dischi bilanciere">${ICON_PLATE}</button>
-        <div class="name-row"><div class="combo-wrap"><textarea class="ex-name" rows="1" placeholder="Seleziona esercizio..." oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)" onfocus="onComboFocus(this,'esercizi')" onchange="updateName(${exiA},this.value)">${escapeHtml(exA.nome??'')}</textarea></div></div>
         ${prBadgeA}
         <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiA},this.value)">${escapeHtml(exA.commento??'')}</textarea>
       </div>
@@ -1428,7 +1478,6 @@ const isCollapsed =
         <button class="del-ex" onclick="deleteExercise(${exiB})" title="Elimina esercizio">${ICON_TRASH}</button>
         <button class="chart-btn" onclick="openChart(${exiB})" title="Grafico progressione">${ICON_CHART}</button>
         <button class="chart-btn" onclick="openPlateCalc(${exiB})" title="Calcola dischi bilanciere">${ICON_PLATE}</button>
-        <div class="name-row"><div class="combo-wrap"><textarea class="ex-name" rows="1" placeholder="Seleziona esercizio..." oninput="onComboInput(this,'esercizi');autoGrowTextarea(this)" onfocus="onComboFocus(this,'esercizi')" onchange="updateName(${exiB},this.value)">${escapeHtml(exB.nome??'')}</textarea></div></div>
         ${prBadgeB}
         <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiB},this.value)">${escapeHtml(exB.commento??'')}</textarea>
       </div>
