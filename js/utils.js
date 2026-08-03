@@ -105,6 +105,12 @@ function autoGrowAllExNames(){
 function autoGrowAllExComments(){
   document.querySelectorAll('#viewActive .ex-comment').forEach(autoGrowTextarea);
 }
+// stesso principio per il campo "Serie" (schema): prima era un input a riga
+// singola che tagliava gli schemi scritti lunghi, ora e' una textarea con
+// riga propria che cresce con il testo, stessa logica di nome/note
+function autoGrowAllExSchema(){
+  document.querySelectorAll('#viewActive .meta-input.schema').forEach(autoGrowTextarea);
+}
 // i campi kg/rip usano inputmode="decimal"/"numeric" cosi' di default si apre
 // la tastiera solo numeri (piu' comoda per la maggior parte degli inserimenti),
 // ma a volte serve poter scrivere anche lettere/simboli (es. "fallimento"):

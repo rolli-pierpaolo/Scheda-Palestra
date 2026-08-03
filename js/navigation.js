@@ -146,6 +146,7 @@ if(v === 'home'){
 
     autoGrowAllExNames();
     autoGrowAllExComments();
+    autoGrowAllExSchema();
 
   } else {
     releaseWakeLock();
