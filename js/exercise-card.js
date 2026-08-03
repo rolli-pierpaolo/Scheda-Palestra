@@ -467,7 +467,7 @@ function exerciseCard(ex, exi, accent){
       : ''
 }
 
-        SETTIMANA ${w+1}${weekSkipped?' — saltata':''}
+        SETTIMANA ${w+1}${weekSkipped?' — saltata':''}${weekDone && ex.schema[w] ? ` <span class="week-toggle-schema">(${escapeHtml(ex.schema[w])})</span>` : ''}
 
         </span>
 
@@ -833,8 +833,11 @@ function updateSet(exi, w, si, field, val, recordPeso){
   }
   // scrivere le rip nell'ultima serie della settimana e' di solito il segnale
   // che quella settimana e' finita: lo chiediamo subito invece di aspettare
-  // che l'utente vada a cercare il tasto "completata" a parte
-  if(field==='rip' && String(val||'').trim()!=='' && si===ex.sets[w].length-1 && !(ex.weekDone && ex.weekDone[w])){
+  // che l'utente vada a cercare il tasto "completata" a parte. Non se ha
+  // aperto il riquadro "max" per questa settimana: vuol dire che vuole ancora
+  // registrare un tentativo di massimale, non ha finito per davvero
+  const maxOpenHere = ex.maxShown && ex.maxShown[w];
+  if(field==='rip' && String(val||'').trim()!=='' && si===ex.sets[w].length-1 && !(ex.weekDone && ex.weekDone[w]) && !maxOpenHere){
     askWeekDoneConfirm(exi, w, ex.nome);
   }
 }
@@ -846,9 +849,12 @@ let weekDoneConfirmTarget = null;
 function askWeekDoneConfirm(exi, w, exName){
   weekDoneConfirmTarget = {exi, w};
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  // titolo con settimana + nome esercizio ben in vista (prima diceva solo
+  // "Settimana finita?", il nome stava solo nel sottotitolo piu' piccolo e
+  // sembrava riferirsi a tutto l'allenamento invece che a questo esercizio)
   document.getElementById('weekDoneModalBody').innerHTML = `
-    <div class="finish-title" style="font-size:22px;">${ICON_CHECK} Settimana finita?</div>
-    <div class="finish-subtitle" style="font-size:14px;">Hai finito "${escapeHtml(exName||'questo esercizio')}" per questa settimana?</div>
+    <div class="finish-title" style="font-size:20px;">${ICON_CHECK} Settimana ${w+1} di "${escapeHtml(exName||'questo esercizio')}"</div>
+    <div class="finish-subtitle" style="font-size:14px;">Segnarla come completata?</div>
     <div class="finish-buttons">
       <button class="add-ex small2" onclick="closeWeekDoneConfirm(false)">No, non ancora</button>
       <button class="add-ex small2" style="border-color:var(--green);color:var(--green);" onclick="closeWeekDoneConfirm(true)">Sì, fatta ${ICON_CHECK}</button>
@@ -869,7 +875,14 @@ function closeWeekDoneConfirm(confirmed){
   document.getElementById('weekDoneModal').style.display = 'none';
   const target = weekDoneConfirmTarget;
   weekDoneConfirmTarget = null;
-  if(confirmed && target) toggleWeekDone(target.exi, target.w);
+  if(!confirmed || !target) return;
+  toggleWeekDone(target.exi, target.w);
+  // esercizi collegati: il bottone "completata" manuale segna sempre ENTRAMBI
+  // insieme (vedi linkedExerciseCard) - se si scriveva nel secondo dei due il
+  // partner restava non segnato, e la casella visualizzata (che legge lo
+  // stato del primo) sembrava non essersi spuntata anche confermando "si'"
+  const partner = findLinkedPartner(target.exi);
+  if(partner) toggleWeekDone(partner.exi, target.w);
 }
 function stepSet(exi, w, si, delta, btn){
   const ex = state.days[activeDayIdx].esercizi[exi];
@@ -1333,7 +1346,7 @@ const isCollapsed =
         : ICON_LOCK+' '
     }
 
-    SETTIMANA ${w+1}${weekSkipped?' — saltata':''}
+    SETTIMANA ${w+1}${weekSkipped?' — saltata':''}${weekDone && exA.schema[w] ? ` <span class="week-toggle-schema">(${escapeHtml(exA.schema[w])})</span>` : ''}
 
     </span>
 
