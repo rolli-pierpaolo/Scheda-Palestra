@@ -79,7 +79,7 @@ function animateWorkoutComplete(){
 
   el.innerHTML = `
     <div class="workout-pop">
-       +1 WORKOUT COMPLETATO! 🔥
+       +1 WORKOUT COMPLETATO! ${ICON_FLAME}
     </div>
   `;
 
@@ -141,14 +141,10 @@ const incomplete = false;
 
   body.innerHTML = `
 
-    <div class="finish-title">
-  ${
-    incomplete
-    ? "⚠️ ATTENZIONE"
-    : "🏆 GRANDE!"
-  }
-</div>
-
+    <div class="finish-title-row">
+      ${incomplete ? ICON_WARNING : ICON_TROPHY}
+      <span class="finish-title-text">${incomplete ? "Attenzione" : "Grande!"}</span>
+    </div>
 
 <div class="finish-subtitle">
   ${
@@ -158,21 +154,11 @@ const incomplete = false;
   }
 </div>
 
-
-    <div class="finish-day-name" style="color:${accent}">
-      ${escapeHtml(day.name)}
+    <div class="finish-day-transition">
+      <span class="finish-day-pill" style="--accent:${accent}">${escapeHtml(day.name)}</span>
+      <span class="finish-arrow">→</span>
+      <span class="finish-day-pill" style="--accent:${nextAccent}">${escapeHtml(nextDay.name)}</span>
     </div>
-
-
-    <div class="finish-next-day">
-      PROSSIMO GIORNO
-    </div>
-
-
-    <div class="finish-day-name" style="color:${nextAccent}">
-      ${escapeHtml(nextDay.name)}
-    </div>
-
 
     <div class="finish-buttons">
 
@@ -248,16 +234,16 @@ function openTrainingOrderModal(){
     body.innerHTML = `
 
       <div class="finish-title">
-        🔄 Pianifica i prossimi allenamenti
+        ${ICON_CYCLE} Pianifica i prossimi allenamenti
       </div>
 
 
       <div class="finish-subtitle">
 
-  Hai completato 
+  Hai completato
   <b>${completedDays.length}/${state.days.length}</b> allenamenti questa settimana.<br><br>
 
-  I giorni già completati sono bloccati ✅<br>
+  I giorni già completati sono bloccati ${ICON_CHECK}<br>
   Tocca i prossimi allenamenti per scegliere l'ordine.
 
 </div>
@@ -290,7 +276,7 @@ function openTrainingOrderModal(){
                 ${escapeHtml(day.name)}
               </span>
 
-              ✅
+              ${ICON_CHECK}
 
             </div>
 
@@ -359,12 +345,12 @@ ${
 
 ${
   selectedTrainingOrder.length === 0
-    ? '☝️ Seleziona l’ordine'
+    ? ICON_POINT+' Seleziona l’ordine'
     :
   selectedTrainingOrder.length !== remainingDays.length
-    ? `☝️ Ancora ${remainingDays.length - selectedTrainingOrder.length} da scegliere`
+    ? `${ICON_POINT} Ancora ${remainingDays.length - selectedTrainingOrder.length} da scegliere`
     :
-    '✅ Conferma ordine'
+    ICON_CHECK+' Conferma ordine'
 }
 
 </button>

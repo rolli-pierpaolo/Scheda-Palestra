@@ -40,6 +40,19 @@ const ICON_REORDER = svgIcon('<path d="M8 4 L8 20"/><path d="M5 7 L8 4 L11 7"/><
 const ICON_CHECK = svgIcon('<path d="M5 12.5 L10 17.5 L19 6.5"/>');
 const ICON_BELL = svgIcon('<path d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18.5 H4 Z"/><path d="M10 20.5 A2 2 0 0 0 14 20.5"/>');
 const ICON_BELL_OFF = svgIcon('<path d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18.5 H4 Z"/><path d="M10 20.5 A2 2 0 0 0 14 20.5"/><path d="M4 4 L20 20"/>');
+// terza tornata: badge obiettivi, toast/festeggiamenti, indicatori settimana
+const ICON_FLAG = svgIcon('<path d="M6 3 V21"/><path d="M6 4 H16 L13.5 7.5 L16 11 H6"/>');
+const ICON_STAR = svgIcon('<path d="M12 3 L14.6 9 L21 9.6 L16.2 13.8 L17.6 20 L12 16.7 L6.4 20 L7.8 13.8 L3 9.6 L9.4 9 Z"/>');
+const ICON_TROPHY = svgIcon('<path d="M7 4 H17 V8 A5 5 0 0 1 7 8 Z"/><path d="M7 5 H4.5 A2.5 2.5 0 0 0 7 9.5"/><path d="M17 5 H19.5 A2.5 2.5 0 0 1 17 9.5"/><path d="M12 13 V17"/><path d="M9 20 H15"/><path d="M10 17 H14 L14.5 20 H9.5 Z"/>');
+const ICON_CYCLE = svgIcon('<path d="M5 12 A7 7 0 0 1 18.5 8"/><path d="M15.5 5 L18.5 8 L21 5.5"/><path d="M19 12 A7 7 0 0 1 5.5 16"/><path d="M8.5 19 L5.5 16 L3 18.5"/>');
+const ICON_LOCK = svgIcon('<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11 V7.5 A4 4 0 0 1 16 7.5 V11"/>');
+const ICON_WARNING = svgIcon('<path d="M12 4 L21 19 H3 Z"/><path d="M12 10 V14"/><circle cx="12" cy="16.7" r="0.9" fill="currentColor" stroke="none"/>');
+const ICON_FLAME = svgIcon('<path d="M12 2 C12 2 6 9 6 13.5 A6 6 0 0 0 18 13.5 C18 11 16.5 9.5 15.8 9 C16 11 14 12 14 10 C14 7.5 15 6 12 2 Z"/>');
+const ICON_LIGHTNING = svgIcon('<path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z"/>');
+const ICON_POINT = svgIcon('<circle cx="12" cy="12" r="8.5"/><path d="M12 8 V13"/><circle cx="12" cy="16" r="0.9" fill="currentColor" stroke="none"/>');
+// stessa identica forma della casetta gia' in HTML nella barra di navigazione:
+// costante qui solo per poterla riusare anche dentro le stringhe JS (guida)
+const ICON_HOME = svgIcon('<path d="M4 11 L12 4 L20 11 V20 H4 Z"/><path d="M9.5 20 V13 H14.5 V20"/>');
 // vibrazione breve su azioni chiave (spunta settimana, obiettivo sbloccato,
 // giorno terminato): silenziosa se il dispositivo/browser non la supporta
 // (es. iOS Safari, che non implementa la Vibration API - stesso limite gia'
