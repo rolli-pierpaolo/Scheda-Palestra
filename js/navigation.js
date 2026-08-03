@@ -30,7 +30,24 @@ function trackActiveExercise(e){
   }
 }
 document.getElementById('viewActive').addEventListener('focusin', trackActiveExercise);
-document.getElementById('viewActive').addEventListener('pointerdown', trackActiveExercise);
+// pointerdown da solo scattava anche quando il dito toccava per sbaglio una
+// card diversa proprio nell'istante in cui iniziava uno scroll: quella card
+// diventava "attiva" senza che l'utente volesse davvero interagirci, e poi lo
+// scroll magnetico ce lo riportava sopra. Ora si aspetta il pointerup e si
+// controlla che il dito non si sia spostato (un vero tocco fermo, tipo su uno
+// stepper o la spunta, non l'inizio di un trascinamento/scroll)
+let _pdX = null, _pdY = null, _pdTarget = null;
+document.getElementById('viewActive').addEventListener('pointerdown', (e)=>{
+  _pdX = e.clientX; _pdY = e.clientY; _pdTarget = e.target;
+}, {passive:true});
+document.getElementById('viewActive').addEventListener('pointerup', (e)=>{
+  if(_pdX === null) return;
+  const dx = Math.abs(e.clientX - _pdX), dy = Math.abs(e.clientY - _pdY);
+  const target = _pdTarget;
+  _pdX = null; _pdY = null; _pdTarget = null;
+  if(dx > 10 || dy > 10) return;
+  trackActiveExercise({target});
+}, {passive:true});
 
 // ---------------- SCROLL "MAGNETICO" SULL'ESERCIZIO ATTIVO ----------------
 // se sto lavorando su un esercizio e scrollo per sbaglio di poco, quando smetto
