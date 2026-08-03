@@ -145,7 +145,6 @@ if(v === 'home'){
     requestWakeLock();
 
     autoGrowAllExNames();
-    autoGrowAllExComments();
     autoGrowAllExSchema();
 
   } else {

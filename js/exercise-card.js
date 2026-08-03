@@ -65,7 +65,6 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
      ${finishBtn}
      <button class="archive-btn" onclick="archiveAndReset()">${ICON_ARCHIVE} Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
     autoGrowAllExNames();
-    autoGrowAllExComments();
     autoGrowAllExSchema();
 
   updateFloatingFinishBtn();
@@ -491,29 +490,33 @@ function exerciseCard(ex, exi, accent){
 
       <div class="meta-row-schema">
         <span class="meta-label small">Serie</span>
-        <textarea class="meta-input schema" rows="1"
-        ${isReadOnlyWeek?'disabled':''}
-        oninput="autoGrowTextarea(this);autoWidthSchema(this)"
-        onchange="updateMeta(${exi},'schema',${w},this.value)">${escapeHtml(ex.schema[w]??'')}</textarea>
+        <div class="meta-field-center">
+          <textarea class="meta-input schema" rows="1"
+          ${isReadOnlyWeek?'disabled':''}
+          oninput="autoGrowTextarea(this);autoWidthSchema(this)"
+          onchange="updateMeta(${exi},'schema',${w},this.value)">${escapeHtml(ex.schema[w]??'')}</textarea>
+        </div>
       </div>
 
       <div class="meta-row meta-row-combined">
 
         <div class="meta-group">
           <span class="meta-label small">Rec.</span>
-          <div class="combo-wrap">
-            <input class="meta-input"
-            ${isReadOnlyWeek?'disabled':''}
-            placeholder="—"
-            value="${escapeAttr(ex.recupero[w]??'')}"
-            oninput="onComboInput(this,'recuperi')"
-            onfocus="onComboFocus(this,'recuperi')"
-            onchange="updateMeta(${exi},'recupero',${w},this.value)">
+          <div class="meta-field-center">
+            <div class="combo-wrap">
+              <input class="meta-input"
+              ${isReadOnlyWeek?'disabled':''}
+              placeholder="—"
+              value="${escapeAttr(ex.recupero[w]??'')}"
+              oninput="onComboInput(this,'recuperi')"
+              onfocus="onComboFocus(this,'recuperi')"
+              onchange="updateMeta(${exi},'recupero',${w},this.value)">
+            </div>
+            <button class="recupero-play"
+            onclick="startTimerFromRow(this)">
+            ▶
+            </button>
           </div>
-          <button class="recupero-play"
-          onclick="startTimerFromRow(this)">
-          ▶
-          </button>
         </div>
 
       </div>
@@ -671,11 +674,10 @@ function exerciseCard(ex, exi, accent){
 
       
 
-<textarea 
+<textarea
 class="ex-comment"
-rows="2"
+rows="1"
 placeholder="Note / tecnica (facoltativo)"
-oninput="autoGrowTextarea(this)"
 onchange="updateComment(${exi},this.value)">${escapeHtml(ex.commento || '')}
 </textarea>
 
@@ -1349,11 +1351,13 @@ const isCollapsed =
 
     <div class="meta-row-schema">
       <span class="meta-label small">Serie</span>
-      <div class="combo-wrap">
-        <textarea class="meta-input schema" rows="1"
-        oninput="onComboInput(this,'schemi');autoGrowTextarea(this);autoWidthSchema(this)"
-        onfocus="onComboFocus(this,'schemi')"
-        onchange="updateMeta(${exiA},'schema',${w},this.value);updateMeta(${exiB},'schema',${w},this.value)">${escapeHtml(exA.schema[w]??'')}</textarea>
+      <div class="meta-field-center">
+        <div class="combo-wrap">
+          <textarea class="meta-input schema" rows="1"
+          oninput="onComboInput(this,'schemi');autoGrowTextarea(this);autoWidthSchema(this)"
+          onfocus="onComboFocus(this,'schemi')"
+          onchange="updateMeta(${exiA},'schema',${w},this.value);updateMeta(${exiB},'schema',${w},this.value)">${escapeHtml(exA.schema[w]??'')}</textarea>
+        </div>
       </div>
     </div>
 
@@ -1361,18 +1365,20 @@ const isCollapsed =
 
       <div class="meta-group">
         <span class="meta-label small">Rec.</span>
-        <div class="combo-wrap">
-          <input class="meta-input"
-          placeholder="—"
-          value="${escapeAttr(exA.recupero[w]??'')}"
-          oninput="onComboInput(this,'recuperi')"
-          onfocus="onComboFocus(this,'recuperi')"
-          onchange="updateMeta(${exiA},'recupero',${w},this.value);updateMeta(${exiB},'recupero',${w},this.value)">
+        <div class="meta-field-center">
+          <div class="combo-wrap">
+            <input class="meta-input"
+            placeholder="—"
+            value="${escapeAttr(exA.recupero[w]??'')}"
+            oninput="onComboInput(this,'recuperi')"
+            onfocus="onComboFocus(this,'recuperi')"
+            onchange="updateMeta(${exiA},'recupero',${w},this.value);updateMeta(${exiB},'recupero',${w},this.value)">
+          </div>
+          <button class="recupero-play"
+          onclick="startTimerFromRow(this)">
+          ▶
+          </button>
         </div>
-        <button class="recupero-play"
-        onclick="startTimerFromRow(this)">
-        ▶
-        </button>
       </div>
 
     </div>

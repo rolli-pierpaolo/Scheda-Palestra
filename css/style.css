@@ -195,7 +195,8 @@ main{padding:12px;}
 /* nota facoltativa: stessa idea minimale della nota-settimana (niente sfondo
    scuro, che raddoppiava la sensazione di "due esercizi separati"), ma senza
    riga tratteggiata: dentro alla cornice unica non serve un'altra divisione */
-.linked-head.compact .ex-comment.compact{background:transparent;border:none;border-radius:0;color:var(--muted);font-style:italic;font-size:11px;padding:2px 2px 4px;margin-top:1px;min-height:0;resize:none;}
+.linked-head.compact .ex-comment.compact{background:transparent;border:none;border-radius:0;color:var(--muted);font-style:italic;font-size:11px;padding:2px 2px 4px;margin-top:1px;min-height:0;height:16px;resize:none;overflow:hidden;box-sizing:border-box;transition:height .15s ease;}
+.linked-head.compact .ex-comment.compact:focus{height:46px;overflow:auto;background:var(--row-dark);border-radius:4px;padding:5px 6px;}
 .linked-head.compact .pr-badge{margin:2px 0 0;}
 /* tipo di collegamento (super set/jump set): una sottile riga colorata (stesso
    colore dell'accent/bordo della card) che attraversa tutta la larghezza, con
@@ -225,7 +226,11 @@ main{padding:12px;}
 .ex-name{width:100%;display:block;background:transparent;color:var(--text);font-size:12px;font-weight:700;font-family:inherit;border:1px dashed var(--line);border-radius:8px;padding:5px 8px;margin-top:2px;resize:none;overflow:hidden;line-height:1.3;transition:background .15s, border-color .15s;}
 .ex-name:focus{background:var(--row-dark);border:1px solid var(--accent,var(--green));outline:none;}
 .ex-name::placeholder{color:var(--muted);font-weight:600;}
-.ex-comment{width:100%;background:var(--row-dark);border:none;color:var(--muted);font-style:italic;font-size:12px;padding:8px 10px;margin-top:6px;border-radius:6px;resize:vertical;min-height:30px;}
+/* piccola di default (solo un accenno di riga): si espande per scriverci solo
+   quando ci si clicca/tocca sopra, e torna piccola appena si esce dal campo -
+   niente piu' spazio occupato in continuazione per una nota magari breve */
+.ex-comment{width:100%;background:var(--row-dark);border:none;color:var(--muted);font-style:italic;font-size:11px;padding:5px 8px;margin-top:6px;border-radius:6px;resize:none;height:22px;min-height:22px;overflow:hidden;box-sizing:border-box;transition:height .15s ease;}
+.ex-comment:focus{height:56px;min-height:56px;overflow:auto;}
 /* nota per singola settimana: molto piu' minimale della nota/tecnica dell'esercizio,
    una riga sola, sfondo trasparente, solo un filo sottile sotto invece di un box vero */
 .week-note{width:100%;background:transparent;border:none;border-bottom:1px dashed var(--line);color:var(--muted);font-style:italic;font-size:11px;padding:2px 1px 5px;margin-bottom:8px;}
@@ -248,12 +253,14 @@ main{padding:12px;}
 .meta-label{width:70px;flex:0 0 70px;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;}
 .meta-input{flex:1 1 auto;min-width:0;width:100%;background:#000;border:1px solid var(--line);color:var(--accent,var(--green));font-size:12px;text-align:center;border-radius:6px;padding:8px 4px;box-sizing:border-box;}
 .meta-input.schema{color:var(--text);font-weight:400;}
-/* Recupero da solo sulla sua riga (prima condivideva la riga con Serie): gli
-   serviva solo meta' riga in due, ora che e' da solo non deve allungarsi a
-   riempire tutta la larghezza della card - resta compatto e centrato */
-.meta-row-combined{gap:6px;justify-content:center;}
+/* Serie e Recupero: etichetta fissa a sinistra (stessa posizione per
+   entrambe le righe, si allineano una sopra l'altra), il campo vero e proprio
+   centrato nello spazio che resta - cosi' se si allarga (Serie, seguendo il
+   testo) cresce in entrambe le direzioni invece che solo verso destra */
+.meta-field-center{flex:1 1 auto;display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;}
+.meta-row-combined{gap:6px;}
 .meta-group{display:flex;align-items:center;gap:4px;flex:1 1 0;min-width:0;}
-.meta-row-combined .meta-group{flex:0 0 auto;}
+.meta-row-combined .meta-group{flex:1 1 auto;}
 .meta-row-combined .combo-wrap{flex:0 0 auto;}
 .meta-row-combined .combo-wrap .meta-input{width:90px;flex:0 0 90px;}
 .meta-row-combined .meta-label.small{width:auto;flex:0 0 auto;font-size:11px;}
@@ -265,6 +272,7 @@ main{padding:12px;}
    la crescita in altezza di autoGrowTextarea, stessa logica di nome/note */
 .meta-row-schema{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;width:100%;}
 .meta-row-schema .meta-label.small{width:auto;flex:0 0 auto;font-size:11px;padding-top:8px;}
+.meta-row-schema .meta-field-center{align-items:flex-start;}
 .meta-row-schema .combo-wrap{flex:0 1 auto;min-width:0;max-width:100%;}
 .meta-row-schema .meta-input.schema{width:auto;max-width:100%;flex:0 1 auto;text-align:left;resize:none;overflow:hidden;min-height:34px;}
 .sets-wrap{width:100%;}
