@@ -493,7 +493,7 @@ function exerciseCard(ex, exi, accent){
         <span class="meta-label small">Serie</span>
         <textarea class="meta-input schema" rows="1"
         ${isReadOnlyWeek?'disabled':''}
-        oninput="autoGrowTextarea(this)"
+        oninput="autoGrowTextarea(this);autoWidthSchema(this)"
         onchange="updateMeta(${exi},'schema',${w},this.value)">${escapeHtml(ex.schema[w]??'')}</textarea>
       </div>
 
@@ -1351,7 +1351,7 @@ const isCollapsed =
       <span class="meta-label small">Serie</span>
       <div class="combo-wrap">
         <textarea class="meta-input schema" rows="1"
-        oninput="onComboInput(this,'schemi');autoGrowTextarea(this)"
+        oninput="onComboInput(this,'schemi');autoGrowTextarea(this);autoWidthSchema(this)"
         onfocus="onComboFocus(this,'schemi')"
         onchange="updateMeta(${exiA},'schema',${w},this.value);updateMeta(${exiB},'schema',${w},this.value)">${escapeHtml(exA.schema[w]??'')}</textarea>
       </div>

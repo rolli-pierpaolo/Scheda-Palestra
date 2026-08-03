@@ -109,7 +109,19 @@ function autoGrowAllExComments(){
 // singola che tagliava gli schemi scritti lunghi, ora e' una textarea con
 // riga propria che cresce con il testo, stessa logica di nome/note
 function autoGrowAllExSchema(){
-  document.querySelectorAll('#viewActive .meta-input.schema').forEach(autoGrowTextarea);
+  document.querySelectorAll('#viewActive .meta-input.schema').forEach(el=>{
+    autoGrowTextarea(el);
+    autoWidthSchema(el);
+  });
+}
+// larghezza in "ch" (circa 1 carattere) invece che altezza: per uno schema
+// corto ("4x8") il campo resta piccolo come il Recupero qui sopra, invece di
+// occupare comunque tutta la riga. Solo se il testo supera la larghezza
+// disponibile (max-width:100% in CSS) va a capo, e li' entra in gioco la
+// crescita in altezza di autoGrowTextarea qui sopra
+function autoWidthSchema(el){
+  const len = (el.value || '').length;
+  el.style.width = Math.max(4, Math.min(len + 2, 40)) + 'ch';
 }
 // i campi kg/rip usano inputmode="decimal"/"numeric" cosi' di default si apre
 // la tastiera solo numeri (piu' comoda per la maggior parte degli inserimenti),

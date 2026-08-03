@@ -257,13 +257,16 @@ main{padding:12px;}
 .meta-row-combined .combo-wrap{flex:0 0 auto;}
 .meta-row-combined .combo-wrap .meta-input{width:90px;flex:0 0 90px;}
 .meta-row-combined .meta-label.small{width:auto;flex:0 0 auto;font-size:11px;}
-/* "Serie" sulla sua riga intera, sopra il recupero: prima era un input a riga
-   singola che tagliava gli schemi scritti lunghi, ora e' una textarea che
-   cresce col testo invece di nasconderlo */
+/* "Serie" sopra il recupero, sulla sua riga: prima era un input a riga
+   singola che tagliava gli schemi scritti lunghi. Ora e' largo solo quanto
+   serve al testo (autoWidthSchema in js/utils.js, in "ch" cosi' non deve
+   misurare pixel reali) invece di occupare sempre tutta la riga - solo
+   se il testo supera lo spazio disponibile va a capo, e li' entra in gioco
+   la crescita in altezza di autoGrowTextarea, stessa logica di nome/note */
 .meta-row-schema{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;width:100%;}
 .meta-row-schema .meta-label.small{width:auto;flex:0 0 auto;font-size:11px;padding-top:8px;}
-.meta-row-schema .combo-wrap{flex:1 1 auto;min-width:0;}
-.meta-row-schema .meta-input.schema{text-align:left;resize:none;overflow:hidden;min-height:34px;}
+.meta-row-schema .combo-wrap{flex:0 1 auto;min-width:0;max-width:100%;}
+.meta-row-schema .meta-input.schema{width:auto;max-width:100%;flex:0 1 auto;text-align:left;resize:none;overflow:hidden;min-height:34px;}
 .sets-wrap{width:100%;}
 /* griglia comune a ogni riga serie: numero romano, colonna kg, colonna rip.
    la stessa griglia viene riusata dalla riga "max" per restare allineata */
