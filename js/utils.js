@@ -15,6 +15,31 @@ const ICON_TRASH = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" 
 const ICON_CHART = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 20 V4"/><path d="M4 20 H20"/><path d="M6.5 15 L11 10.5 L14 13.5 L19 7.5"/></svg>';
 const ICON_PLATE = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>';
 const ICON_LINK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M10 14 L14 10"/><path d="M8.5 15.5 L6.5 17.5 A3 3 0 0 1 2.5 13.5 L5.5 10.5 A3 3 0 0 1 9.5 10.5"/><path d="M15.5 8.5 L17.5 6.5 A3 3 0 0 1 21.5 10.5 L18.5 13.5 A3 3 0 0 1 14.5 13.5"/></svg>';
+// seconda tornata: intestazioni/bottoni di Storico + chrome dei modali. Stessa
+// funzione svgIcon() per non ripetere gli attributi comuni ogni volta - il
+// "d" di ogni singolo path resta l'unica parte che cambia da icona a icona
+function svgIcon(inner, size){
+  size = size || 16;
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle">${inner}</svg>`;
+}
+const ICON_GEAR = svgIcon('<path d="M4 7 H14"/><circle cx="17" cy="7" r="2.3"/><path d="M10 12 H20"/><circle cx="7" cy="12" r="2.3"/><path d="M4 17 H14"/><circle cx="17" cy="17" r="2.3"/>');
+const ICON_DISK = svgIcon('<path d="M5 4.5 H16 L19 7.5 V19 A0.8 0.8 0 0 1 18.2 19.8 H5.8 A0.8 0.8 0 0 1 5 19 V4.5 Z"/><path d="M7.5 4.5 V9.5 H15 V4.5"/><path d="M8.5 13.5 H15.5 V19.5 H8.5 Z"/>');
+const ICON_ARCHIVE = svgIcon('<rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/>');
+const ICON_PENCIL = svgIcon('<path d="M4 20 L4.5 16.5 L15 6 A1.5 1.5 0 0 1 17 6 L18 7 A1.5 1.5 0 0 1 18 9 L7.5 19.5 Z"/><path d="M13.5 7.5 L16.5 10.5"/>');
+const ICON_DOWNLOAD = svgIcon('<path d="M12 4 V15"/><path d="M7 11 L12 16 L17 11"/><path d="M5 20 H19"/>');
+const ICON_SHARE = svgIcon('<path d="M12 15 V4"/><path d="M8 8 L12 4 L16 8"/><path d="M5 13 V19 A1 1 0 0 0 6 20 H18 A1 1 0 0 0 19 19 V13"/>');
+const ICON_UPLOAD = svgIcon('<path d="M12 20 V9"/><path d="M7 13 L12 8 L17 13"/><path d="M5 4 H19"/>');
+const ICON_FOLDER = svgIcon('<path d="M3.5 7 A1 1 0 0 1 4.5 6 H9.5 L11.5 8 H19.5 A1 1 0 0 1 20.5 9 V17.5 A1 1 0 0 1 19.5 18.5 H4.5 A1 1 0 0 1 3.5 17.5 Z"/>');
+const ICON_CALENDAR = svgIcon('<rect x="4" y="5.5" width="16" height="15" rx="1.5"/><path d="M4 10 H20"/><path d="M8 3.5 V7"/><path d="M16 3.5 V7"/>');
+const ICON_BOOK = svgIcon('<path d="M5 5 A1.5 1.5 0 0 1 6.5 3.5 H11 V20 H6.5 A1.5 1.5 0 0 1 5 18.5 Z"/><path d="M13 3.5 H17.5 A1.5 1.5 0 0 1 19 5 V18.5 A1.5 1.5 0 0 1 17.5 20 H13 Z"/>');
+const ICON_TARGET = svgIcon('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>');
+const ICON_QUESTION = svgIcon('<circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.3 A2.5 2.2 0 0 1 12 7.3 A2.5 2.2 0 0 1 14.5 9.3 C14.5 11 12 11 12 13.3"/><circle cx="12" cy="16.5" r="0.9" fill="currentColor" stroke="none"/>');
+const ICON_CHAT = svgIcon('<path d="M4 6 A1.5 1.5 0 0 1 5.5 4.5 H18.5 A1.5 1.5 0 0 1 20 6 V14 A1.5 1.5 0 0 1 18.5 15.5 H9 L5 19 V15.5 H5.5 A1.5 1.5 0 0 1 4 14 Z"/>');
+const ICON_CLOSE = svgIcon('<path d="M6 6 L18 18"/><path d="M18 6 L6 18"/>', 15);
+const ICON_REORDER = svgIcon('<path d="M8 4 L8 20"/><path d="M5 7 L8 4 L11 7"/><path d="M16 20 L16 4"/><path d="M13 17 L16 20 L19 17"/>');
+const ICON_CHECK = svgIcon('<path d="M5 12.5 L10 17.5 L19 6.5"/>');
+const ICON_BELL = svgIcon('<path d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18.5 H4 Z"/><path d="M10 20.5 A2 2 0 0 0 14 20.5"/>');
+const ICON_BELL_OFF = svgIcon('<path d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18.5 H4 Z"/><path d="M10 20.5 A2 2 0 0 0 14 20.5"/><path d="M4 4 L20 20"/>');
 // vibrazione breve su azioni chiave (spunta settimana, obiettivo sbloccato,
 // giorno terminato): silenziosa se il dispositivo/browser non la supporta
 // (es. iOS Safari, che non implementa la Vibration API - stesso limite gia'

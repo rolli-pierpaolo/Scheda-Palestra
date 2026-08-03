@@ -154,7 +154,7 @@ async function toggleAchievNotifications(){
 }
 function renderAchievNotifToggle(){
   const btn = document.getElementById('achievNotifToggleBtn');
-  if(btn) btn.textContent = achievNotificationsEnabled ? '🔔 Notifiche obiettivi: ON' : '🔕 Notifiche obiettivi: OFF';
+  if(btn) btn.innerHTML = achievNotificationsEnabled ? (ICON_BELL+' Notifiche obiettivi: ON') : (ICON_BELL_OFF+' Notifiche obiettivi: OFF');
 }
 function openAchievements(){
   const body = document.getElementById('achievBody');

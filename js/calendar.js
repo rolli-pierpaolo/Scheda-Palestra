@@ -90,7 +90,7 @@ function renderCalendarInfo(key){
     <div class="cal-editor-date">${formatDateItalian(key)}</div>
     <div class="cal-info-list">${chips}</div>
     <div class="cal-editor-actions">
-      <button class="add-ex small2" onclick="editCalendarDay()">✏️ Modifica</button>
+      <button class="add-ex small2" onclick="editCalendarDay()">${ICON_PENCIL} Modifica</button>
       <button class="add-ex small2" onclick="closeCalendarDayView()">← Torna al calendario</button>
     </div>
   </div>`;

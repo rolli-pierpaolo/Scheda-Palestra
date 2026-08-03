@@ -28,7 +28,7 @@ function renderExerciseRowsHtml(names, opts){
         <option value="" ${!group?'selected':''}>—</option>
         ${MUSCLE_GROUPS.map(g=>`<option value="${g}" ${group===g?'selected':''}>${escapeHtml(g)}</option>`).join('')}
       </select>` : (group ? `<span class="exlib-row-group">${escapeHtml(group)}</span>` : '');
-    const delBtn = opts.removable ? `<button class="exlib-row-del" onclick="event.stopPropagation();removeExerciseFromLibrary('${jsName}')" title="Rimuovi dalla libreria">✕</button>` : '';
+    const delBtn = opts.removable ? `<button class="exlib-row-del" onclick="event.stopPropagation();removeExerciseFromLibrary('${jsName}')" title="Rimuovi dalla libreria">${ICON_TRASH}</button>` : '';
     const clickAttr = opts.onRowClick ? ` onclick="${opts.onRowClick}('${jsName}')"` : '';
     const nameHtml = opts.editableName
       ? `<input class="exlib-row-name-input" value="${escapeAttr(name)}" onclick="event.stopPropagation()" onchange="renameLibraryExercise('${jsName}', this.value)">`
@@ -52,7 +52,7 @@ function openExerciseLibrary(){
   libraryFilterGroup = '';
   libraryEditMode = false;
   const btn = document.getElementById('libraryEditBtn');
-  if(btn) btn.textContent = '✏️';
+  if(btn) btn.innerHTML = ICON_PENCIL;
   renderExerciseLibrary();
   document.getElementById('libraryModal').style.display = 'flex';
 }
@@ -62,7 +62,7 @@ function closeExerciseLibrary(){
 function toggleLibraryEditMode(){
   libraryEditMode = !libraryEditMode;
   const btn = document.getElementById('libraryEditBtn');
-  if(btn) btn.textContent = libraryEditMode ? '✅' : '✏️';
+  if(btn) btn.innerHTML = libraryEditMode ? ICON_CHECK : ICON_PENCIL;
   renderExerciseLibrary();
 }
 // rinomina una voce della Libreria: se era "di base" (DATA) la nasconde
