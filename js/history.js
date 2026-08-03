@@ -8,7 +8,7 @@ let histEditMode = false;
 function toggleHistEdit(){
   histEditMode = !histEditMode;
   const btn = document.getElementById('histEditBtn');
-  if(btn){ btn.textContent = histEditMode ? '\u2705 Fatto' : '\u270f\ufe0f Modifica'; btn.classList.toggle('active', histEditMode); }
+  if(btn){ btn.innerHTML = histEditMode ? (ICON_CHECK+' Fatto') : (ICON_PENCIL+' Modifica'); btn.classList.toggle('active', histEditMode); }
   renderHistList();
 }
 function renderHistList(){

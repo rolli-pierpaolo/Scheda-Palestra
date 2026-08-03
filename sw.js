@@ -31,6 +31,9 @@ const CORE_ASSETS = [
   './js/exercise-library.js',
   './js/home.js',
   './js/achievements.js',
+  './js/onboarding.js',
+  './js/gsap.min.js',
+  './js/animations.js',
   './js/app-init.js',
 ];
 
