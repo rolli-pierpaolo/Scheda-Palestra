@@ -248,9 +248,14 @@ main{padding:12px;}
 .meta-label{width:70px;flex:0 0 70px;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;}
 .meta-input{flex:1 1 auto;min-width:0;width:100%;background:#000;border:1px solid var(--line);color:var(--accent,var(--green));font-size:12px;text-align:center;border-radius:6px;padding:8px 4px;box-sizing:border-box;}
 .meta-input.schema{color:var(--text);font-weight:400;}
-/* Recupero da solo sulla sua riga (prima condivideva la riga con Serie) */
-.meta-row-combined{gap:6px;}
+/* Recupero da solo sulla sua riga (prima condivideva la riga con Serie): gli
+   serviva solo meta' riga in due, ora che e' da solo non deve allungarsi a
+   riempire tutta la larghezza della card - resta compatto e centrato */
+.meta-row-combined{gap:6px;justify-content:center;}
 .meta-group{display:flex;align-items:center;gap:4px;flex:1 1 0;min-width:0;}
+.meta-row-combined .meta-group{flex:0 0 auto;}
+.meta-row-combined .combo-wrap{flex:0 0 auto;}
+.meta-row-combined .combo-wrap .meta-input{width:90px;flex:0 0 90px;}
 .meta-row-combined .meta-label.small{width:auto;flex:0 0 auto;font-size:11px;}
 /* "Serie" sulla sua riga intera, sopra il recupero: prima era un input a riga
    singola che tagliava gli schemi scritti lunghi, ora e' una textarea che
