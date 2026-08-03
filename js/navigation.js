@@ -72,11 +72,11 @@ function trySnapToActiveExercise(force){
   // il nome esercizio resta sempre visibile grazie all'header sticky (vedi
   // .ex-sticky-header), quindi non serve piu' allineare in cima alla card:
   // ci si allinea direttamente alla settimana CORRENTE, quella su cui si sta
-  // davvero lavorando. Fallback sul nome/card intera se per qualche motivo la
+  // davvero lavorando. Fallback sulla card intera se per qualche motivo la
   // settimana corrente non si trova (es. tutte le settimane gia' finite)
   const wrap = card.closest('.ex-card-wrap') || card;
   const currentWeekBtn = card.querySelector('.week-toggle.current-week');
-  const title = (currentWeekBtn && currentWeekBtn.closest('.week-block')) || card.querySelector('.name-row') || card;
+  const title = (currentWeekBtn && currentWeekBtn.closest('.week-block')) || card;
   const rect = title.getBoundingClientRect();
   const topbar = document.querySelector('.topbar');
   const stickyHeader = wrap.querySelector('.ex-sticky-header');
