@@ -270,7 +270,7 @@ main{padding:12px;}
 .meta-group{display:flex;align-items:center;gap:4px;flex:1 1 0;min-width:0;}
 .meta-row-combined .meta-group{flex:1 1 auto;}
 .meta-row-combined .combo-wrap{flex:0 0 auto;}
-.meta-row-combined .combo-wrap .meta-input{width:90px;flex:0 0 90px;}
+.meta-row-combined .combo-wrap .meta-input{width:90px;flex:0 0 90px;font-size:10px;}
 .meta-row-combined .meta-label.small{width:auto;flex:0 0 auto;font-size:11px;}
 /* "Serie" sopra il recupero, sulla sua riga: prima era un input a riga
    singola che tagliava gli schemi scritti lunghi. Ora e' largo solo quanto
@@ -282,7 +282,7 @@ main{padding:12px;}
 .meta-row-schema .meta-label.small{width:auto;flex:0 0 auto;font-size:11px;padding-top:8px;}
 .meta-row-schema .meta-field-center{align-items:flex-start;}
 .meta-row-schema .combo-wrap{flex:0 1 auto;min-width:0;max-width:100%;}
-.meta-row-schema .meta-input.schema{width:auto;max-width:100%;flex:0 1 auto;text-align:left;resize:none;overflow:hidden;min-height:34px;}
+.meta-row-schema .meta-input.schema{width:auto;max-width:100%;flex:0 1 auto;text-align:left;resize:none;overflow:hidden;min-height:34px;font-size:15px;font-weight:700;}
 .sets-wrap{width:100%;}
 /* griglia comune a ogni riga serie: numero romano, colonna kg, colonna rip.
    la stessa griglia viene riusata dalla riga "max" per restare allineata */
