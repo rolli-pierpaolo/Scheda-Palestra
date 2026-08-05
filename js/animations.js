@@ -161,7 +161,8 @@ const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
     <div class="finish-day-transition">
       <span class="finish-day-pill" style="--accent:${accent}">${escapeHtml(day.name)}</span>
       <span class="finish-arrow">→</span>
-      <span class="finish-day-pill" style="--accent:${nextAccent}">${escapeHtml(nextDay.name)}</span>
+      <button class="finish-day-pill finish-day-pill-next" style="--accent:${nextAccent}"
+      onclick="confirmFinishWorkout(${dayIdx})">${escapeHtml(nextDay.name)}</button>
     </div>
 
     <div class="finish-buttons">
