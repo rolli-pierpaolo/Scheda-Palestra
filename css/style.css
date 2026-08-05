@@ -11,6 +11,13 @@
    che si possono davvero modificare (input/textarea/contenteditable) */
 *{-webkit-user-select:none; -moz-user-select:none; user-select:none; -webkit-touch-callout:none;}
 input, textarea, [contenteditable]{-webkit-user-select:text; -moz-user-select:text; user-select:text; -webkit-touch-callout:default;}
+/* feedback al tocco su ogni bottone dell'app: un leggero "schiacciamento"
+   cosi' si sente subito che il tap e' stato registrato, anche prima che
+   succeda l'effetto vero e proprio. I pochi bottoni che usano gia' transform
+   per la propria posizione (es. centrati con translateX/Y) hanno una regola
+   propria piu' sotto che aggiunge scale() senza perdere il posizionamento */
+button{transition:transform .1s ease;}
+button:active{transform:scale(.96);}
 html,body{margin:0;padding:0;background:var(--bg-black);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
 /* spazio per lo stack fisso in fondo: barra di navigazione + savebar, cosi'
    il contenuto scrollato in fondo alla pagina non ci finisce mai sotto */
@@ -183,7 +190,7 @@ main{padding:12px;}
 .ex-sticky-name-input{width:100%;background:var(--row-dark);border:1px solid var(--accent,var(--green));border-radius:5px;color:var(--text);font-size:14.4px;font-weight:700;text-transform:none;letter-spacing:0;padding:4px 6px;resize:none;}
 .ex-sticky-linktype-btn{display:block;width:100%;background:none;border:1px dashed var(--accent,var(--green));border-radius:5px;color:var(--accent,var(--green));font-size:10px;font-weight:700;text-transform:none;padding:3px 8px;margin:3px 0;}
 .ex-sticky-confirm-btn{display:block;width:100%;background:var(--accent,var(--green));color:#0D0D0D;border:none;border-radius:5px;font-size:11px;font-weight:800;padding:5px 10px;margin-top:3px;}
-.card{background:var(--panel2);border-radius:12px;margin-bottom:14px;overflow:hidden;border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));}
+.card{background:var(--panel2);border-radius:12px;margin-bottom:14px;overflow:hidden;border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));box-shadow:0 4px 14px rgba(0,0,0,.35);}
 .card-head{padding:10px 12px 4px;}
 /* ---------------- SUPERSET / JUMP SET (esercizi collegati) ---------------- */
 .card.linked-group{border-top:1px solid var(--line);border-left:4px solid var(--accent,var(--green));}
@@ -255,8 +262,11 @@ main{padding:12px;}
 /* settimana segnata come "saltata apposta" (infortunio, imprevisto): sbiadita
    e col testo sbarrato, ben diversa sia da "completata" che da "non ancora fatta" */
 .week-toggle.skipped{opacity:.5;text-decoration:line-through;}
-.week-body{padding:8px;width:100%;box-sizing:border-box;}
-.week-body.collapsed{display:none;}
+/* apri/chiudi settimana animato invece di uno scatto secco: max-height con un
+   tetto abbondante (il contenuto vero non lo raggiunge mai) cosi' non serve
+   misurare l'altezza reale in JS, semplice transizione CSS */
+.week-body{padding:8px;width:100%;box-sizing:border-box;max-height:2000px;opacity:1;overflow:hidden;transition:max-height .22s ease, opacity .18s ease, padding .22s ease;}
+.week-body.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;}
 .meta-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;width:100%;}
 .meta-label{width:70px;flex:0 0 70px;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;}
 .meta-input{flex:1 1 auto;min-width:0;width:100%;background:#000;border:1px solid var(--line);color:var(--accent,var(--green));font-size:12px;text-align:center;border-radius:6px;padding:8px 4px;box-sizing:border-box;}
@@ -445,7 +455,8 @@ main{padding:12px;}
 /* compare solo quando TUTTI gli esercizi del giorno risultano completati o
    saltati (vedi allExercisesClosed in js/navigation.js): un accesso rapido al
    tasto "Giorno terminato" senza dover scrollare fino in fondo alla pagina */
-.floating-finish-btn{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:30px;padding:10px 18px;font-size:12px;font-weight:900;z-index:19;box-shadow:0 6px 20px rgba(0,0,0,.5);white-space:nowrap;}
+.floating-finish-btn{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:30px;padding:10px 18px;font-size:12px;font-weight:900;z-index:19;box-shadow:0 6px 20px rgba(0,0,0,.5);white-space:nowrap;transition:transform .1s ease;}
+.floating-finish-btn:active{transform:translateX(-50%) scale(.96);}
 /* ---------------- COMBOBOX (autocomplete su nome esercizio/recupero/schema/giorni) ---------------- */
 .combo-wrap{position:relative;flex:1 1 auto;min-width:0;}
 .combo-wrap .meta-input,.combo-wrap .ex-name{width:100%;}
@@ -555,6 +566,7 @@ main{padding:12px;}
 .hist-chip-wrap{position:relative;display:inline-flex;align-items:center;}
 .hist-chip-wrap:has(.hist-del) .hist-chip{padding-right:28px;}
 .hist-del{position:absolute;right:3px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--red);font-size:12px;font-weight:800;padding:4px 6px;}
+.hist-del:active{transform:translateY(-50%) scale(.9);}
 .settings-row{padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .days-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .day-color-input{width:34px;height:34px;padding:0;border:1px solid var(--line);border-radius:6px;background:none;flex:0 0 auto;}
