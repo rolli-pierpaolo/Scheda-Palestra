@@ -508,13 +508,18 @@ function confirmFinishWorkout(dayIdx){
 
   setTimeout(()=>{
 
+    // catturata PRIMA di logWorkoutDay: quella funzione puo' gia' far avanzare
+    // da sola state.currentWeek al suo interno (se questo era l'ultimo giorno
+    // mancante della settimana), quindi leggerla dopo chiuderebbe la
+    // settimana sbagliata (quella nuova invece di quella appena conclusa)
+    const finishedWeek = state.currentWeek;
+
     logWorkoutDay(dayIdx);
 
 const weekFinished =
 state.completedTrainingDays.length === state.days.length;
 
-
-forceNextWeekForDay(dayIdx);
+forceNextWeekForDay(dayIdx, finishedWeek);
 
 
 if(weekFinished){
