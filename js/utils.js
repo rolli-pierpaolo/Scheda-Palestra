@@ -49,6 +49,14 @@ const ICON_LOCK = svgIcon('<rect x="5" y="11" width="14" height="9" rx="1.5"/><p
 const ICON_WARNING = svgIcon('<path d="M12 4 L21 19 H3 Z"/><path d="M12 10 V14"/><circle cx="12" cy="16.7" r="0.9" fill="currentColor" stroke="none"/>');
 const ICON_FLAME = svgIcon('<path d="M12 2 C12 2 6 9 6 13.5 A6 6 0 0 0 18 13.5 C18 11 16.5 9.5 15.8 9 C16 11 14 12 14 10 C14 7.5 15 6 12 2 Z"/>');
 const ICON_LIGHTNING = svgIcon('<path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z"/>');
+// varianti a colori pieni delle stesse 3 forme, usate SOLO per l'icona finale
+// delle frasi motivazionali in Home (splitMotivation, in js/home.js): li'
+// l'utente le vuole colorate e "piene" invece che in tinta unita come il
+// resto dell'app - tutte le altre icone (bottoni, badge...) restano
+// outline/monocromatiche per coerenza col resto dell'interfaccia
+const ICON_FLAME_COLOR = '<svg viewBox="0 0 24 24" width="21" height="21" style="vertical-align:middle"><path d="M12 2 C12 2 6 9 6 13.5 A6 6 0 0 0 18 13.5 C18 11 16.5 9.5 15.8 9 C16 11 14 12 14 10 C14 7.5 15 6 12 2 Z" fill="#FF7A1A"/></svg>';
+const ICON_LIGHTNING_COLOR = '<svg viewBox="0 0 24 24" width="21" height="21" style="vertical-align:middle"><path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z" fill="#FFD400"/></svg>';
+const ICON_PLATE_COLOR = '<svg viewBox="0 0 24 24" width="21" height="21" style="vertical-align:middle"><circle cx="12" cy="12" r="8" fill="none" stroke="#FF3D7F" stroke-width="3"/><circle cx="12" cy="12" r="3" fill="#FF3D7F"/></svg>';
 const ICON_POINT = svgIcon('<circle cx="12" cy="12" r="8.5"/><path d="M12 8 V13"/><circle cx="12" cy="16" r="0.9" fill="currentColor" stroke="none"/>');
 // stessa identica forma della casetta gia' in HTML nella barra di navigazione:
 // costante qui solo per poterla riusare anche dentro le stringhe JS (guida)

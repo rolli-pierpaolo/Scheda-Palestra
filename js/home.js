@@ -337,7 +337,7 @@ function splitMotivation(phrase){
   // silenziosamente non trovava mai un match
   const m = /\s*([🔥💥💪🦵])\s*$/u.exec(phrase);
   if(!m) return { text: phrase, icon: '' };
-  const iconMap = { '🔥':ICON_FLAME, '💥':ICON_LIGHTNING, '💪':ICON_PLATE, '🦵':ICON_PLATE };
+  const iconMap = { '🔥':ICON_FLAME_COLOR, '💥':ICON_LIGHTNING_COLOR, '💪':ICON_PLATE_COLOR, '🦵':ICON_PLATE_COLOR };
   return { text: phrase.slice(0, m.index).trim(), icon: iconMap[m[1]] || '' };
 }
 function renderHome(){
