@@ -383,6 +383,8 @@ const DATA = {
     "Pulley barra presa ampiezza spalle - simula rematore": "Schiena",
     "Affondi bulgari con manubrio": "Quadricipiti",
     "French press barra cavo basso panca 15*": "Tricipiti",
-    "Lat pulldown": "Schiena"
+    "Lat pulldown": "Schiena",
+    "Croci ai cavi panca a 30° 1 sec peak": "Petto",
+    "Crunch al cavo 2sec peak": "Addominali"
   }
 };

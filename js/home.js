@@ -126,18 +126,6 @@ function computeCurrentBlockWeek(){
   return Math.min(current, total);
 
 }
-// gruppi muscolari allenati nel giorno suggerito (in ordine di comparsa negli
-// esercizi), usata per scegliere una frase motivazionale in tema
-function computeSuggestedDayMuscleGroups(dayIdx){
-  const day = state.days[dayIdx];
-  if(!day) return [];
-  const groups = [];
-  (day.esercizi||[]).forEach(ex=>{
-    const g = getExerciseGroup(ex.nome);
-    if(g && !groups.includes(g)) groups.push(g);
-  });
-  return groups;
-}
 const MUSCLE_MOTIVATION = {
   'Petto': [
     "Spingi quel petto, cazzo, le vene devono scoppiare! 🔥",
@@ -316,15 +304,15 @@ const DEFAULT_MOTIVATION = [
   "Muoviti! Presentati e fai lavorare il sangue, forza! 💪",
   "Dai, piccoli passi, grande trasformazione, senza scuse! 💥",
 ];
-// stabile per tutto il giorno (non cambia a ogni render, non usa Math.random)
-// e ruota in sequenza sul pool del gruppo scelto invece di un hash: cosi' non
-// si ripete mai la stessa frase due giorni di fila (torna a capo solo dopo
-// aver fatto vedere tutte le altre del pool)
-function pickMotivationalPhrase(dayIdx){
-  const groups = computeSuggestedDayMuscleGroups(dayIdx);
-  const pool = (groups.length && MUSCLE_MOTIVATION[groups[0]]) ? MUSCLE_MOTIVATION[groups[0]] : DEFAULT_MOTIVATION;
+// generica apposta (non piu' per gruppo muscolare): quelle specifiche per
+// distretto ora si vedono gia' sui singoli esercizi (vedi computeProgressionHint
+// in js/utils.js), qui in Home ripeterle sarebbe ridondante - stabile per
+// tutto il giorno (non cambia a ogni render, non usa Math.random), ruota in
+// sequenza cosi' non si ripete mai la stessa frase due giorni di fila (torna
+// a capo solo dopo aver fatto vedere tutte le altre del pool)
+function pickMotivationalPhrase(){
   const dayIndex = Math.floor(Date.now() / 86400000);
-  return pool[dayIndex % pool.length];
+  return DEFAULT_MOTIVATION[dayIndex % DEFAULT_MOTIVATION.length];
 }
 // tutte le frasi finiscono con una di queste 4 emoji: invece di riscrivere a
 // mano le 150 e passa righe qui sopra, si stacca l'emoji finale a runtime e si
