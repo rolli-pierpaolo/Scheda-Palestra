@@ -82,7 +82,9 @@ function loadApp(){
       get DATA(){ return DATA; },
       get weekDoneConfirmTarget(){ return weekDoneConfirmTarget; }, set weekDoneConfirmTarget(v){ weekDoneConfirmTarget = v; },
       get activeDayIdx(){ return activeDayIdx; }, set activeDayIdx(v){ activeDayIdx = v; },
-      get workoutInProgress(){ return workoutInProgress; }, set workoutInProgress(v){ workoutInProgress = v; }
+      get workoutInProgress(){ return workoutInProgress; }, set workoutInProgress(v){ workoutInProgress = v; },
+      get PROGRESSION_MOTIVATION_PESO(){ return PROGRESSION_MOTIVATION_PESO; },
+      get PROGRESSION_MOTIVATION_REP(){ return PROGRESSION_MOTIVATION_REP; }
     };
   `;
   window.document.head.appendChild(bridgeScript);
