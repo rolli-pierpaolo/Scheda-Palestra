@@ -554,6 +554,10 @@ main{padding:12px;}
 .finish-buttons button{
   flex:1;
 }
+/* l'unico bottone che fa davvero qualcosa di irreversibile (passa al giorno
+   dopo): pieno e acceso, ben diverso dal pallido "Annulla" - cosi' l'occhio
+   ci va prima che sui pill sopra (che restano solo un'etichetta, non cliccabili) */
+.finish-confirm-btn{background:var(--accent,var(--green));border:none;color:#0D0D0D;padding:14px;border-radius:10px;font-size:14px;font-weight:900;box-shadow:0 4px 16px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
 .onb-title{font-size:20px;font-weight:900;margin-bottom:4px;}
 .onb-intro{font-size:13px;opacity:.75;line-height:1.5;margin-bottom:16px;}
 .onb-tips{display:flex;flex-direction:column;gap:12px;}
