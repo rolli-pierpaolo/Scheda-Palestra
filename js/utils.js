@@ -93,31 +93,34 @@ function pickFromPool(pool, seed){
   for(let i=0;i<seed.length;i++){ hash = (hash*31 + seed.charCodeAt(i)) >>> 0; }
   return pool[hash % pool.length];
 }
-// suggerimento di progressione (solo per la settimana CORRENTE non ancora
-// iniziata): guarda la MIGLIOR serie della settimana scorsa e suggerisce una
-// direzione (piu' peso o piu' ripetizioni) - MAI il numero di ripetizioni
-// fatte la volta scorsa: vederlo scritto potrebbe influenzare a farne
-// apposta di meno per "eguagliarlo" invece di superarlo (richiesta esplicita
-// dell'utente, per non condizionarsi mentalmente mentre si allena).
-// La frase di base viene dal pool motivazionale del GRUPPO MUSCOLARE di
+// frase motivazionale per la settimana CORRENTE non ancora conclusa: SEMPRE
+// presente a prescindere dai dati delle settimane vecchie (anche alla primissima
+// settimana in assoluto, dove non c'e' proprio nulla prima) - i dati passati
+// servono solo per aggiungere un breve suggerimento di direzione in piu' (piu'
+// peso o piu' ripetizioni) quando ci sono, MAI per decidere se mostrare la
+// frase o no. La base viene dal pool motivazionale del GRUPPO MUSCOLARE di
 // QUESTO esercizio (vedi MUSCLE_MOTIVATION/getExerciseGroup) - non ha senso
-// una frase sul petto mentre stai facendo gambe - con solo un breve suffisso
-// per la direzione (mai numeri, stesso principio di prima)
+// una frase sul petto mentre stai facendo gambe. Il suffisso di direzione non
+// rivela mai il numero di ripetizioni fatte la volta scorsa: vederlo scritto
+// potrebbe influenzare a farne apposta di meno per "eguagliarlo" invece di
+// superarlo (richiesta esplicita dell'utente)
 function computeProgressionHint(ex, w){
-  if(w <= 0) return null;
-  const prevSets = (ex.sets && ex.sets[w-1]) || [];
-  let best = null;
-  prevSets.forEach(s=>{
-    const p = parseFloat(String(s.peso).replace(',','.'));
-    const r = parseFloat(String(s.rip).replace(',','.'));
-    if(isNaN(p) || p<=0 || isNaN(r) || r<=0) return;
-    if(!best || p>best.p || (p===best.p && r>best.r)) best = {p, r};
-  });
-  if(!best) return null;
+  if(w < 0) return null;
   const group = getExerciseGroup(ex.nome);
   const pool = (group && MUSCLE_MOTIVATION[group]) ? MUSCLE_MOTIVATION[group] : DEFAULT_MOTIVATION;
   const base = splitMotivation(pickFromPool(pool, (ex.nome||'')+'_'+w));
-  const suffix = best.r >= 10 ? " Stavolta carica un filo di più!" : " Stavolta spremi una rip in più!";
+  let suffix = '';
+  if(w > 0){
+    const prevSets = (ex.sets && ex.sets[w-1]) || [];
+    let best = null;
+    prevSets.forEach(s=>{
+      const p = parseFloat(String(s.peso).replace(',','.'));
+      const r = parseFloat(String(s.rip).replace(',','.'));
+      if(isNaN(p) || p<=0 || isNaN(r) || r<=0) return;
+      if(!best || p>best.p || (p===best.p && r>best.r)) best = {p, r};
+    });
+    if(best) suffix = best.r >= 10 ? " Stavolta carica un filo di più!" : " Stavolta spremi una rip in più!";
+  }
   return { text: base.text + suffix, icon: base.icon };
 }
 function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
