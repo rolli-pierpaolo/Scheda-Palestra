@@ -11,6 +11,15 @@
    che si possono davvero modificare (input/textarea/contenteditable) */
 *{-webkit-user-select:none; -moz-user-select:none; user-select:none; -webkit-touch-callout:none;}
 input, textarea, [contenteditable]{-webkit-user-select:text; -moz-user-select:text; user-select:text; -webkit-touch-callout:default;}
+/* contorno di focus visibile e coerente per chi naviga a tastiera (:focus-visible
+   non scatta al tocco/click col mouse, solo con Tab, quindi non aggiunge
+   "rumore" visivo su telefono): il colore accento dell'app invece del blu di
+   default del browser, che su questo sfondo scuro rischiava di essere poco
+   leggibile o incoerente da browser a browser */
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible{
+  outline: 2px solid var(--accent, var(--green));
+  outline-offset: 2px;
+}
 /* feedback al tocco su ogni bottone dell'app: un leggero "schiacciamento"
    cosi' si sente subito che il tap e' stato registrato, anche prima che
    succeda l'effetto vero e proprio. I pochi bottoni che usano gia' transform

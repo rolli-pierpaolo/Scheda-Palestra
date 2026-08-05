@@ -35,6 +35,7 @@ const CORE_ASSETS = [
   './js/onboarding.js',
   './js/gsap.min.js',
   './js/animations.js',
+  './js/accessibility.js',
   './js/app-init.js',
 ];
 
