@@ -195,6 +195,22 @@ test('computeExerciseTrend aggrega volume e 1RM stimato su mesi archiviati + set
   assert.ok(oneRMPoints.length === 2 && oneRMPoints[1].value > 0);
 });
 
+test('computeHomeVolumeTrend confronta due settimane gia\' concluse, non "questo mese contro il precedente" mentre e\' ancora a meta\'', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 2,
+    days: [{ name:'Push', esercizi: [{
+      nome: 'Panca', sets: [[{peso:60,rip:8}], [{peso:66,rip:8}], [], []]
+    }]}]
+  };
+  const trend = window.computeHomeVolumeTrend();
+  assert.ok(trend, 'con 2 settimane concluse (indici 0 e 1) deve dare un risultato');
+  assert.strictEqual(trend.pct, 10, '(66*8 - 60*8) / (60*8) = +10%');
+
+  window.__bridge.state.currentWeek = 1;
+  assert.strictEqual(window.computeHomeVolumeTrend(), null, 'con una sola settimana conclusa non c\'e\' ancora un confronto onesto da fare');
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){
