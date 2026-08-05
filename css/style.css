@@ -245,6 +245,10 @@ main{padding:12px;}
 /* nota per singola settimana: molto piu' minimale della nota/tecnica dell'esercizio,
    una riga sola, sfondo trasparente, solo un filo sottile sotto invece di un box vero */
 .week-note{width:100%;background:transparent;border:none;border-bottom:1px dashed var(--line);color:var(--muted);font-style:italic;font-size:11px;padding:2px 1px 5px;margin-bottom:8px;}
+/* suggerimento di progressione: mai un numero legato alla volta scorsa (vedi
+   computeProgressionHint in js/utils.js), solo una direzione da seguire */
+.progression-hint{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--accent,var(--green));background:color-mix(in srgb, var(--accent, var(--green)) 12%, transparent);border-radius:6px;padding:6px 8px;margin-bottom:8px;}
+.progression-hint svg{flex:0 0 auto;width:14px;height:14px;}
 .week-note::placeholder{color:var(--muted);opacity:.6;}
 .weeks{padding:0 12px 10px;}
 /* ---------------- BLOCCO SETTIMANA (recupero, schema, righe serie) ---------------- */
@@ -358,6 +362,8 @@ main{padding:12px;}
    Ora ogni gruppo vive dentro un pannello con bordo/sfondo proprio, con
    un'etichetta sopra a dire di cosa si tratta */
 .hist-section-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;padding:16px 12px 6px;}
+.trends-section-label{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+.trends-record{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--text);background:var(--row-dark);border-radius:8px;padding:8px 10px;margin-bottom:14px;}
 .hist-panel{background:var(--panel2);border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));border-radius:12px;margin:0 12px;overflow:hidden;}
 /* stesso linguaggio visivo delle card esercizio (bordo superiore colorato):
    ogni sezione di Storico ha il suo colore, cosi' la pagina non e' piu' una

@@ -73,6 +73,7 @@ function loadApp(){
       get state(){ return state; }, set state(v){ state = v; },
       get collapsedMap(){ return collapsedMap; }, set collapsedMap(v){ collapsedMap = v; },
       get storicoExtra(){ return storicoExtra; }, set storicoExtra(v){ storicoExtra = v; },
+      get storicoDates(){ return storicoDates; }, set storicoDates(v){ storicoDates = v; },
       get deletedStorico(){ return deletedStorico; }, set deletedStorico(v){ deletedStorico = v; },
       get calendarLog(){ return calendarLog; }, set calendarLog(v){ calendarLog = v; },
       get extraLists(){ return extraLists; }, set extraLists(v){ extraLists = v; },

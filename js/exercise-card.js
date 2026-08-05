@@ -486,7 +486,7 @@ function exerciseCard(ex, exi, accent){
       value="${escapeAttr((ex.weekNote && ex.weekNote[w]) ?? '')}"
       onchange="updateWeekNote(${exi},${w},this.value)">
 
-
+      ${isCurrentWeek && !weekDone && !weekSkipped ? (()=>{ const hint = computeProgressionHint(ex, w); return hint ? `<div class="progression-hint">${ICON_LIGHTNING} ${hint}</div>` : ''; })() : ''}
 
       <div class="meta-row-schema">
         <span class="meta-label small">Serie</span>
@@ -1357,6 +1357,8 @@ const isCollapsed =
     placeholder="nota settimana (facoltativo)"
     value="${escapeAttr((exA.weekNote && exA.weekNote[w]) ?? '')}"
     onchange="updateWeekNote(${exiA},${w},this.value);updateWeekNote(${exiB},${w},this.value)">
+
+    ${isCurrentWeek && !weekDone && !weekSkipped ? (()=>{ const hint = computeProgressionHint(exA, w); return hint ? `<div class="progression-hint">${ICON_LIGHTNING} ${hint}</div>` : ''; })() : ''}
 
     <div class="meta-row-schema">
       <span class="meta-label small">Serie</span>

@@ -16,7 +16,7 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.2</span>
+  <span class="app-version" id="appVersion">v1.3</span>
   <h1>Logbook</h1>
 </div>
 <div id="dayTabsActive" class="day-tabs" style="display:none;"></div>
@@ -50,6 +50,7 @@
     <button class="add-ex small2" onclick="openCalendar()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><rect x="4" y="5.5" width="16" height="15" rx="1.5"/><path d="M4 10 H20"/><path d="M8 3.5 V7"/><path d="M16 3.5 V7"/></svg> Calendario</button>
     <button class="add-ex small2" onclick="openExerciseLibrary()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 5 A1.5 1.5 0 0 1 6.5 3.5 H11 V20 H6.5 A1.5 1.5 0 0 1 5 18.5 Z"/><path d="M13 3.5 H17.5 A1.5 1.5 0 0 1 19 5 V18.5 A1.5 1.5 0 0 1 17.5 20 H13 Z"/></svg> Libreria esercizi</button>
     <button class="add-ex small2" onclick="openAchievements()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg> Obiettivi</button>
+    <button class="add-ex small2" onclick="openTrends()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 20 V4"/><path d="M4 20 H20"/><path d="M6.5 15 L11 10.5 L14 13.5 L19 7.5"/></svg> Andamenti</button>
     <button class="add-ex small2" onclick="openOnboarding()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.3 A2.5 2.2 0 0 1 12 7.3 A2.5 2.2 0 0 1 14.5 9.3 C14.5 11 12 11 12 13.3"/><circle cx="12" cy="16.5" r="0.9" fill="currentColor" stroke="none"/></svg> Guida rapida</button>
     <button class="add-ex small2" onclick="openFeedbackForm()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 6 A1.5 1.5 0 0 1 5.5 4.5 H18.5 A1.5 1.5 0 0 1 20 6 V14 A1.5 1.5 0 0 1 18.5 15.5 H9 L5 19 V15.5 H5.5 A1.5 1.5 0 0 1 4 14 Z"/></svg> Lascia un feedback</button>
   </div>
@@ -59,6 +60,12 @@
   <div class="modal-box">
     <div class="modal-head"><span id="chartTitle">Esercizio</span><button onclick="closeChart()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M6 6 L18 18"/><path d="M18 6 L6 18"/></svg></button></div>
     <div id="chartBody" class="modal-body"></div>
+  </div>
+</div>
+<div id="trendsModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeTrends()">
+  <div class="modal-box">
+    <div class="modal-head"><span>Andamenti</span><button onclick="closeTrends()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M6 6 L18 18"/><path d="M18 6 L6 18"/></svg></button></div>
+    <div id="trendsBody" class="modal-body"></div>
   </div>
 </div>
 <div id="daysModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this) closeDaysModal()">
@@ -185,6 +192,7 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/combobox.js"></script>      <!-- autocomplete su nome esercizio/recupero/schema/giorni -->
 <script src="js/records.js"></script>       <!-- record personali (PR) -->
 <script src="js/chart.js"></script>         <!-- grafico di progressione -->
+<script src="js/trends.js"></script>        <!-- dashboard andamenti su tutta la cronologia -->
 <script src="js/backup.js"></script>        <!-- esporta/importa backup, manuale e automatico -->
 <script src="js/utils.js"></script>         <!-- escape html, altezza automatica delle textarea -->
 <script src="js/navigation.js"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
