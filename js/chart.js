@@ -60,7 +60,12 @@ function closeChart(){
 }
 
 // stesso oggetto usato sia dal backup manuale (Esporta backup) sia da quello
-// automatico giornaliero, cosi' restano sempre nello stesso formato importabile
+// automatico giornaliero, cosi' restano sempre nello stesso formato importabile.
+// schemaVersion non e' ancora usato per migrazioni (non serve finche' il
+// formato non cambia davvero), ma c'e' gia' pronto: se in futuro cambiasse la
+// forma di uno di questi campi, validateBackup (js/backup.js) puo' leggerlo
+// per capire come interpretare un backup vecchio invece di rifiutarlo e basta
+const BACKUP_SCHEMA_VERSION = 1;
 function buildBackupPayload(){
-  return { state, storicoExtra, collapsedMap, deletedStorico, calendarLog, extraLists, exerciseGroups, deletedEsercizi, exportedAt: new Date().toISOString() };
+  return { schemaVersion: BACKUP_SCHEMA_VERSION, state, storicoExtra, collapsedMap, deletedStorico, calendarLog, extraLists, exerciseGroups, deletedEsercizi, exportedAt: new Date().toISOString() };
 }

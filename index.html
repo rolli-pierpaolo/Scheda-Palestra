@@ -16,7 +16,7 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.1</span>
+  <span class="app-version" id="appVersion">v1.2</span>
   <h1>Logbook</h1>
 </div>
 <div id="dayTabsActive" class="day-tabs" style="display:none;"></div>
@@ -179,6 +179,7 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 
 <!-- Logica divisa per argomento invece che in un unico file:-->
 
+<script src="js/error-boundary.js"></script> <!-- CARICATO PER PRIMO: intercetta errori anche negli script sotto -->
 <script src="js/data.js"></script>          <!-- esercizi/recuperi/schemi/scheda di base/storico -->
 <script src="js/state.js"></script>         <!-- colori dei giorni, chiavi di storage, caricamento stato -->
 <script src="js/combobox.js"></script>      <!-- autocomplete su nome esercizio/recupero/schema/giorni -->

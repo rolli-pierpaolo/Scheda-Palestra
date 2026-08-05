@@ -1,0 +1,11 @@
+{
+  "name": "logbook-tests",
+  "private": true,
+  "description": "Solo per i test automatici (vedi test/run.js) - l'app vera resta vanilla JS senza build step, questo package.json non la riguarda",
+  "scripts": {
+    "test": "node test/run.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  }
+}
