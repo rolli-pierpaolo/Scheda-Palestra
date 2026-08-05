@@ -14,6 +14,36 @@ function epley1RM(peso, rip){
   return peso * (1 + rip/30);
 }
 
+// volume totale (tutti gli esercizi di tutti i giorni) di UNA settimana del
+// blocco attivo - usata per l'assaggio di andamento in Home (vedi
+// computeHomeVolumeTrend piu' sotto)
+function computeWeekTotalVolume(w){
+  let vol = 0;
+  (state.days||[]).forEach(day=>{
+    (day.esercizi||[]).forEach(ex=>{
+      ((ex.sets && ex.sets[w]) || []).forEach(s=>{
+        const p = parseFloat(String(s.peso).replace(',','.'));
+        const r = parseFloat(String(s.rip).replace(',','.'));
+        if(!isNaN(p) && p>0 && !isNaN(r) && r>0) vol += p*r;
+      });
+    });
+  });
+  return vol;
+}
+
+// piccolo assaggio di "Andamenti" mostrato in Home: confronta l'ultima
+// settimana GIA' CONCLUSA con quella subito precedente (entrambe finite per
+// davvero) - apposta non "questo mese contro il precedente", che sarebbe un
+// confronto sbilanciato finche' il mese e' ancora a meta'
+function computeHomeVolumeTrend(){
+  const w = state.currentWeek || 0;
+  if(w < 2) return null; // servono almeno 2 settimane gia' concluse prima di questa
+  const lastVol = computeWeekTotalVolume(w-1);
+  const prevVol = computeWeekTotalVolume(w-2);
+  if(lastVol <= 0 || prevVol <= 0) return null;
+  return { pct: Math.round(((lastVol - prevVol) / prevVol) * 100) };
+}
+
 // tutti i "blocchi" (mesi) in ordine cronologico: quelli archiviati (via
 // getStorico, gia' in js/combobox.js) datati con storicoDates, piu' il
 // blocco ATTIVO per ultimo (sempre il piu' recente per definizione)

@@ -5,6 +5,18 @@
 let histActive = null;
 let histDayIdx = 0;
 let histEditMode = false;
+
+// le 3 sotto-sezioni del tab Storico (Cronologia/Strumenti/Dati, vedi
+// index.html): una alla volta, si riparte sempre da Cronologia ogni volta che
+// si entra nel tab - e' quella che si vuole vedere piu' spesso, le altre due
+// si toccano solo ogni tanto
+function showHistSection(section){
+  ['cronologia','strumenti','dati'].forEach(s=>{
+    const label = s.charAt(0).toUpperCase()+s.slice(1);
+    document.getElementById('histSection'+label).style.display = (s===section) ? '' : 'none';
+    document.getElementById('histSubTab'+label).classList.toggle('active', s===section);
+  });
+}
 function toggleHistEdit(){
   histEditMode = !histEditMode;
   const btn = document.getElementById('histEditBtn');

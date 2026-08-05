@@ -402,6 +402,11 @@ const total = weekly.total;
   onclick="startDayFromHome(${suggestedIdx})">
 <span class="home-suggested-name accent-shine">${escapeHtml(suggestedDay.name)}</span></button>
     ${motivationSplit ? `<div class="home-motivation" style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}"><span class="accent-shine">${escapeHtml(motivationSplit.text)}</span> ${motivationSplit.icon}</div>` : ''}` : '';
+  // piccolo assaggio della dashboard Andamenti direttamente in Home (invece
+  // di doverci entrare apposta da Storico > Strumenti): confronta le ultime
+  // due settimane gia' concluse, vedi computeHomeVolumeTrend in js/trends.js
+  const volumeTrend = computeHomeVolumeTrend();
+  const volumeTrendHtml = volumeTrend ? `<div class="home-volume-trend">${ICON_CHART} Volume settimana scorsa: <b>${volumeTrend.pct>=0?'+':''}${volumeTrend.pct}%</b> rispetto a quella prima</div>` : '';
   el.innerHTML = `
     <div class="home-hero">
       <div class="home-progress-module">
@@ -417,6 +422,7 @@ const total = weekly.total;
     <div class="home-days-label">I tuoi giorni</div>
     <div class="home-days-grid">${dayButtons}</div>
     <div class="home-total-stat">${ICON_FLAME} ${monthlyCount} allenamenti completati questo mese</div>
+    ${volumeTrendHtml}
   `;
   if(typeof gsap !== "undefined"){
   gsap.to("#homeProgressCount", {

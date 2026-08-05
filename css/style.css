@@ -181,6 +181,9 @@ main{padding:12px;}
 .home-day-card.empty{border-style:dashed;opacity:.65;}
 .home-day-empty-tag{flex:0 0 auto;font-size:9px;font-weight:800;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:5px;padding:1px 5px;letter-spacing:.03em;}
 .home-total-stat{text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:-8px;opacity:.85;}
+.home-volume-trend{display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:6px;}
+.home-volume-trend b{color:var(--green);}
+.home-volume-trend svg{flex:0 0 auto;width:13px;height:13px;}
 /* ---------------- SCHEDA ESERCIZIO (nome, note, blocchi settimana) ---------------- */
 /* .ex-card-wrap avvolge card + header sticky: la card ha overflow:hidden (per i
    bordi arrotondati), e position:sticky su un discendente di un elemento con
@@ -380,6 +383,16 @@ main{padding:12px;}
 .hist-panel-browse{--accent:var(--green);padding:2px 0 8px;}
 .backup-row{--accent:var(--steel);}
 .settings-row{--accent:var(--amber);}
+/* sotto-navigazione del tab Storico (Cronologia/Strumenti/Dati): stessa forma
+   a pillola di .day-tabs/.day-btn (gia' usata per i giorni), ma un contenitore
+   suo perche' qui non deve scorrere orizzontalmente ne' avere il padding
+   pensato per stare appena sotto la topbar */
+.hist-subnav{display:flex;gap:8px;padding:14px 12px 0;}
+.hist-subnav .day-btn{flex:1;text-align:center;}
+/* i due strumenti che si controllano piu' spesso (Andamenti, Obiettivi) si
+   fanno notare tra gli altri: pieni e col bordo acceso invece che tratteggiati
+   e grigi come il resto - una gerarchia visiva vera, non 7 bottoni identici */
+.tool-btn-featured{background:color-mix(in srgb, var(--green) 14%, var(--panel));border:2px solid var(--green);color:var(--green);font-weight:800;}
 /* ---------------- BACKUP / IMPOSTAZIONI GIORNI (solo tab Storico) ---------------- */
 .backup-row{display:flex;flex-wrap:wrap;gap:8px;padding:14px;}
 .backup-row .add-ex{flex:1 1 140px;}
