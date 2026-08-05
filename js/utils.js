@@ -55,8 +55,7 @@ const ICON_POINT = svgIcon('<circle cx="12" cy="12" r="8.5"/><path d="M12 8 V13"
 const ICON_HOME = svgIcon('<path d="M4 11 L12 4 L20 11 V20 H4 Z"/><path d="M9.5 20 V13 H14.5 V20"/>');
 // vibrazione breve su azioni chiave (spunta settimana, obiettivo sbloccato,
 // giorno terminato): silenziosa se il dispositivo/browser non la supporta
-// (es. iOS Safari, che non implementa la Vibration API - stesso limite gia'
-// noto per il timer di recupero, vedi js/timer.js)
+// (es. iOS Safari, che non implementa la Vibration API)
 function vibrate(pattern){
   if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
 }

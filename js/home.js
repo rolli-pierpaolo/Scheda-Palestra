@@ -385,8 +385,9 @@ const total = weekly.total;
     const a = dayAccent(d,i);
     const isCompleted = (state.completedTrainingDays||[]).includes(i);
     const isCurrent = !isCompleted && state.currentTrainingDayIdx === i;
-    const cls = ['home-day-card', isCompleted?'completed':'', isCurrent?'active-training':''].filter(Boolean).join(' ');
-    return `<div class="${cls}" style="--accent:${a.c}"><span class="home-day-order">${pos+1}</span>${escapeHtml(d.name)}</div>`;
+    const isEmpty = (d.esercizi||[]).length === 0;
+    const cls = ['home-day-card', isCompleted?'completed':'', isCurrent?'active-training':'', isEmpty?'empty':''].filter(Boolean).join(' ');
+    return `<div class="${cls}" style="--accent:${a.c}"><span class="home-day-order">${pos+1}</span>${escapeHtml(d.name)}${isEmpty?'<span class="home-day-empty-tag">vuoto</span>':''}</div>`;
   }).join('');
   const motivationSplit = suggestedDay ? splitMotivation(pickMotivationalPhrase(suggestedIdx)) : null;
   const suggestedHtml = suggestedDay ? `
