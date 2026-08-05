@@ -127,9 +127,12 @@ function maybeAutoBackup(){
   try{ last = parseInt(localStorage.getItem(AUTO_BACKUP_KEY),10) || 0; }catch(e){}
   if(Date.now() - last < 24*60*60*1000) return; // gia' fatto nelle ultime 24h
   try{
-    // avviso PRIMA di far comparire il file, altrimenti su telefono spunta un
-    // download misterioso senza spiegazione e non si capisce cos'e'
-    alert("📥 Sta per scaricarsi un file: e' il backup automatico di oggi (scheda-wo-backup.json). Non serve aprirlo, resta li' pronto se un giorno ti servisse ripristinare i dati.");
+    // niente piu' alert() prima: bloccava l'apertura dell'app finche' non si
+    // toccava "OK", ogni volta. Il download parte subito, il tocco di spiegazione
+    // resta solo nel piccolo avviso che sparisce da solo (showAutoBackupToast) -
+    // il download in se' il browser/telefono lo segnala comunque a modo suo
+    // (barra scaricamenti o notifica di sistema), nessuna pagina web puo'
+    // salvare un file del tutto invisibile: quella parte non dipende da noi
     const json = JSON.stringify(buildBackupPayload());
     downloadBackupFile(json, 'scheda-wo-backup.json');
     localStorage.setItem(AUTO_BACKUP_KEY, String(Date.now()));
