@@ -156,8 +156,8 @@ function renderReorderList(day){
   const blocks = computeExerciseBlocks(day);
   const lastBlockIdx = blocks.length-1;
   const rows = blocks.map((block, bi)=>{
-    const upBtn = bi>0 ? `<button class="reorder-arrow" onclick="moveExerciseBlock(${bi},-1)">▲</button>` : '';
-    const downBtn = bi<lastBlockIdx ? `<button class="reorder-arrow" onclick="moveExerciseBlock(${bi},1)">▼</button>` : '';
+    const upBtn = bi>0 ? `<button class="reorder-arrow" onclick="moveExerciseBlock(${bi},-1)" aria-label="Sposta su">▲</button>` : '';
+    const downBtn = bi<lastBlockIdx ? `<button class="reorder-arrow" onclick="moveExerciseBlock(${bi},1)" aria-label="Sposta giù">▼</button>` : '';
     const names = block.map(i=>escapeHtml(day.esercizi[i].nome || '(senza nome)')).join(' + ');
     return `<div class="reorder-row">
       <span class="reorder-name">${names}</span>
