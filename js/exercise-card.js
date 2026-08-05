@@ -594,32 +594,24 @@ function exerciseCard(ex, exi, accent){
 
         <div class="week-done-wrap">
 
+          <div class="week-status-col">
+            <span class="week-done-label">completata</span>
+            <button class="week-done-btn ${weekDone?'checked':''}"
+            data-exi="${exi}" data-w="${w}"
+            ${isReadOnlyWeek?'disabled':''}
+            onclick="toggleWeekDone(${exi},${w})">
+            ${ICON_CHECK}
+            </button>
+          </div>
 
-          <span class="week-done-label">
-          completata / saltata:
-          </span>
-
-
-
-          <button class="week-done-btn ${weekDone?'checked':''}"
-          data-exi="${exi}" data-w="${w}"
-          ${isReadOnlyWeek?'disabled':''}
-          onclick="toggleWeekDone(${exi},${w})">
-
-          ${ICON_CHECK}
-
-          </button>
-
-
-
-          <button class="week-skip-btn ${weekSkipped?'checked':''}"
-          ${isReadOnlyWeek?'disabled':''}
-          onclick="toggleWeekSkipped(${exi},${w})">
-
-          ⏭
-
-          </button>
-
+          <div class="week-status-col">
+            <span class="week-done-label">saltata</span>
+            <button class="week-skip-btn ${weekSkipped?'checked':''}"
+            ${isReadOnlyWeek?'disabled':''}
+            onclick="toggleWeekSkipped(${exi},${w})">
+            ⏭
+            </button>
+          </div>
 
         </div>
 
@@ -1458,27 +1450,21 @@ const isCollapsed =
 
       <div class="week-done-wrap">
 
-        <span class="week-done-label">
-        completata / saltata:
-        </span>
-
-        <div class="week-status-btns">
-
+        <div class="week-status-col">
+          <span class="week-done-label">completata</span>
           <button class="week-done-btn ${weekDone?'checked':''}"
           data-exi="${exiA}" data-w="${w}"
           onclick="toggleWeekDone(${exiA},${w});toggleWeekDone(${exiB},${w})">
-
           ${ICON_CHECK}
-
           </button>
+        </div>
 
+        <div class="week-status-col">
+          <span class="week-done-label">saltata</span>
           <button class="week-skip-btn ${weekSkipped?'checked':''}"
           onclick="toggleWeekSkipped(${exiA},${w});toggleWeekSkipped(${exiB},${w})">
-
           ⏭
-
           </button>
-
         </div>
 
       </div>
