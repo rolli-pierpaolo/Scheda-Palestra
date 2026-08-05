@@ -85,6 +85,27 @@ function scheduleAutoAdvance(input){
     if(next) next.focus();
   }, 700);
 }
+// suggerimento di progressione (solo per la settimana CORRENTE non ancora
+// iniziata): guarda la MIGLIOR serie della settimana scorsa e suggerisce una
+// direzione (piu' peso o piu' ripetizioni) - MAI il numero di ripetizioni
+// fatte la volta scorsa: vederlo scritto potrebbe influenzare a farne
+// apposta di meno per "eguagliarlo" invece di superarlo (richiesta esplicita
+// dell'utente, per non condizionarsi mentalmente mentre si allena)
+function computeProgressionHint(ex, w){
+  if(w <= 0) return null;
+  const prevSets = (ex.sets && ex.sets[w-1]) || [];
+  let best = null;
+  prevSets.forEach(s=>{
+    const p = parseFloat(String(s.peso).replace(',','.'));
+    const r = parseFloat(String(s.rip).replace(',','.'));
+    if(isNaN(p) || p<=0 || isNaN(r) || r<=0) return;
+    if(!best || p>best.p || (p===best.p && r>best.r)) best = {p, r};
+  });
+  if(!best) return null;
+  return best.r >= 10
+    ? "Prova ad aumentare leggermente il peso rispetto alla settimana scorsa."
+    : "Prova a fare qualche ripetizione in più rispetto alla settimana scorsa, a parità di peso.";
+}
 function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 // per infilare un nome dentro una stringa JS tra apici singoli scritta a mano
 // in un onclick="...('...')" : nomi con un apostrofo (es. "SLDL (TI TORMENTERA')",

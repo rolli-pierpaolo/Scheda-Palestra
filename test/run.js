@@ -157,6 +157,44 @@ test('validateBackup accetta un backup vero e rifiuta quelli corrotti con un mot
   assert.strictEqual(window.validateBackup({state:{days:[]}, storicoExtra:[1,2]}).valid, false, 'un campo del tipo sbagliato deve essere rifiutato');
 });
 
+test('computeProgressionHint suggerisce una direzione ma non rivela mai il numero di ripetizioni fatte prima', () => {
+  const window = loadApp();
+  const exMoltoRipetute = { sets: [[{peso:60, rip:12}], [], [], []] };
+  const hintPeso = window.computeProgressionHint(exMoltoRipetute, 1);
+  assert.ok(hintPeso, 'con tante ripetizioni la scorsa settimana deve suggerire qualcosa');
+  assert.ok(!/\d/.test(hintPeso), 'BUG: il suggerimento non deve contenere numeri (rivelerebbe indirettamente la performance precedente)');
+  assert.ok(hintPeso.toLowerCase().includes('peso'), 'con reps alte deve spingere verso piu\' peso');
+
+  const exPocheRipetute = { sets: [[{peso:60, rip:6}], [], [], []] };
+  const hintRip = window.computeProgressionHint(exPocheRipetute, 1);
+  assert.ok(hintRip.toLowerCase().includes('ripetiz'), 'con reps basse deve spingere verso piu\' ripetizioni');
+
+  assert.strictEqual(window.computeProgressionHint({sets:[[]]}, 0), null, 'settimana 0 non ha una settimana precedente con cui confrontarsi');
+  assert.strictEqual(window.computeProgressionHint({sets:[[],[]]}, 1), null, 'nessun dato la settimana scorsa -> nessun suggerimento');
+});
+
+test('computeExerciseTrend aggrega volume e 1RM stimato su mesi archiviati + settimane del blocco attivo', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    title: 'Attuale', weeksPerBlock: 4, currentWeek: 1,
+    days: [{ name:'Push', esercizi: [{
+      nome: 'Panca piana', sets: [[{peso:60,rip:8}], [], [], []]
+    }]}]
+  };
+  window.__bridge.storicoExtra = {
+    'WO 1': [{ name:'Push', esercizi: [{ nome:'Panca piana', sets: [[{peso:55,rip:8}],[{peso:57,rip:8}],[],[]] }] }]
+  };
+  window.__bridge.storicoDates = { 'WO 1': '2026-07-01' };
+  window.__bridge.deletedStorico = [];
+
+  const { volumePoints, oneRMPoints } = window.computeExerciseTrend('Panca piana');
+  assert.strictEqual(volumePoints.length, 2, 'un punto per il mese archiviato (aggregato) + uno per la settimana gia\' fatta nel blocco attivo');
+  assert.strictEqual(volumePoints[0].label, 'WO 1', 'il mese archiviato deve venire prima (piu\' vecchio) ed etichettato col suo nome');
+  assert.strictEqual(volumePoints[0].value, 55*8 + 57*8, 'il volume del mese archiviato somma TUTTE le sue settimane');
+  assert.strictEqual(volumePoints[1].label, 'Sett. 1', 'il blocco attivo mostra un punto per settimana, non uno aggregato');
+  assert.ok(oneRMPoints.length === 2 && oneRMPoints[1].value > 0);
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){
