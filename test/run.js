@@ -176,8 +176,20 @@ test('computeProgressionHint pesca dal pool motivazionale del GRUPPO MUSCOLARE d
   const poolDefaultTexts = window.__bridge.DEFAULT_MOTIVATION.map(p => window.splitMotivation(p).text);
   assert.ok(poolDefaultTexts.some(t => hintGenerico.text.startsWith(t)), 'senza un gruppo assegnato deve ripiegare sul pool generico, non rompersi');
 
-  assert.strictEqual(window.computeProgressionHint({sets:[[]]}, 0), null, 'settimana 0 non ha una settimana precedente con cui confrontarsi');
-  assert.strictEqual(window.computeProgressionHint({sets:[[],[]]}, 1), null, 'nessun dato la settimana scorsa -> nessun suggerimento');
+  // la frase motivazionale c'e' SEMPRE nella settimana corrente, a prescindere
+  // dai dati delle settimane vecchie - anche alla primissima settimana in
+  // assoluto (nessuna settimana precedente) o quando quella precedente non ha
+  // dati validi, deve comunque comparire una frase (solo senza il suggerimento
+  // extra di direzione, che li' non avrebbe nulla su cui basarsi)
+  const hintPrimaSettimana = window.computeProgressionHint({nome:'Esercizio nuovo', sets:[[]]}, 0);
+  assert.ok(hintPrimaSettimana, 'BUG: alla primissima settimana deve comunque esserci una frase motivazionale');
+  assert.ok(!hintPrimaSettimana.text.includes('Stavolta'), 'senza settimana precedente non deve avere il suffisso di direzione');
+
+  const hintSenzaDatiScorsi = window.computeProgressionHint({nome:'Esercizio B', sets:[[],[]]}, 1);
+  assert.ok(hintSenzaDatiScorsi, 'BUG: anche senza dati validi la settimana scorsa deve comunque esserci una frase motivazionale');
+  assert.ok(!hintSenzaDatiScorsi.text.includes('Stavolta'), 'senza dati validi la settimana scorsa non deve avere il suffisso di direzione');
+
+  assert.strictEqual(window.computeProgressionHint({sets:[[]]}, -1), null, 'una settimana negativa non ha senso');
 });
 
 test('computeExerciseTrend aggrega volume e 1RM stimato su mesi archiviati + settimane del blocco attivo', () => {
