@@ -83,8 +83,8 @@ function loadApp(){
       get weekDoneConfirmTarget(){ return weekDoneConfirmTarget; }, set weekDoneConfirmTarget(v){ weekDoneConfirmTarget = v; },
       get activeDayIdx(){ return activeDayIdx; }, set activeDayIdx(v){ activeDayIdx = v; },
       get workoutInProgress(){ return workoutInProgress; }, set workoutInProgress(v){ workoutInProgress = v; },
-      get PROGRESSION_MOTIVATION_PESO(){ return PROGRESSION_MOTIVATION_PESO; },
-      get PROGRESSION_MOTIVATION_REP(){ return PROGRESSION_MOTIVATION_REP; }
+      get MUSCLE_MOTIVATION(){ return MUSCLE_MOTIVATION; },
+      get DEFAULT_MOTIVATION(){ return DEFAULT_MOTIVATION; }
     };
   `;
   window.document.head.appendChild(bridgeScript);
