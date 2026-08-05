@@ -360,7 +360,11 @@ main{padding:12px;}
    circa lo stesso 60% di colonna che prima occupava la singola casella */
 .max-cell{display:flex;justify-content:flex-end;gap:3px;}
 .max-input{width:29%;flex:none;opacity:.85;padding:6px 2px;font-size:11px;}
-.max-toggle{background:none;border:none;color:var(--muted);font-size:10px;opacity:.55;padding:2px 4px;text-decoration:underline;text-underline-offset:2px;}
+/* prima era un link di testo sottolineato, minuscolo e sbiadito (opacity
+   .55) - facile da perdere in mezzo alla riga dei pulsanti serie. Ora e' un
+   vero quadratino col bordo, stesso trattamento visivo delle altre azioni
+   della card invece di sembrare quasi disattivato */
+.max-toggle{background:var(--panel);border:1.5px solid var(--accent,var(--green));border-radius:8px;color:var(--accent,var(--green));font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:6px 10px;min-height:34px;}
 /* piccolo riquadro minimale con la spunta: vuoto/trasparente se la settimana non
    e' ancora completata, verde pieno con la spunta visibile quando lo e' */
 .week-done-btn{flex:0 0 auto;width:24px;height:24px;padding:0;background:var(--panel);border:1px solid var(--green-dark);border-radius:5px;color:transparent;font-size:12px;font-weight:800;line-height:1;}

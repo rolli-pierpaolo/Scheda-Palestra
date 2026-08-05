@@ -157,17 +157,23 @@ test('validateBackup accetta un backup vero e rifiuta quelli corrotti con un mot
   assert.strictEqual(window.validateBackup({state:{days:[]}, storicoExtra:[1,2]}).valid, false, 'un campo del tipo sbagliato deve essere rifiutato');
 });
 
-test('computeProgressionHint suggerisce una direzione ma non rivela mai il numero di ripetizioni fatte prima', () => {
+test('computeProgressionHint suggerisce una frase motivazionale (stile Home) nella direzione giusta, mai il numero di ripetizioni fatte prima', () => {
   const window = loadApp();
-  const exMoltoRipetute = { sets: [[{peso:60, rip:12}], [], [], []] };
+  const exMoltoRipetute = { nome:'Panca', sets: [[{peso:60, rip:12}], [], [], []] };
   const hintPeso = window.computeProgressionHint(exMoltoRipetute, 1);
   assert.ok(hintPeso, 'con tante ripetizioni la scorsa settimana deve suggerire qualcosa');
-  assert.ok(!/\d/.test(hintPeso), 'BUG: il suggerimento non deve contenere numeri (rivelerebbe indirettamente la performance precedente)');
-  assert.ok(hintPeso.toLowerCase().includes('peso'), 'con reps alte deve spingere verso piu\' peso');
+  assert.ok(hintPeso.icon, 'deve avere un\'icona colorata, come le frasi motivazionali di Home');
+  assert.ok(!/\d/.test(hintPeso.text), 'BUG: il testo non deve contenere numeri (rivelerebbe indirettamente la performance precedente)');
+  // il testo del suggerimento e' la frase SENZA l'emoji finale (staccata da
+  // splitMotivation): verifico che la frase completa (testo + emoji) sia
+  // proprio una di quelle del pool "piu' peso", non una generica a caso
+  const poolPesoTexts = window.__bridge.PROGRESSION_MOTIVATION_PESO.map(p => window.splitMotivation(p).text);
+  assert.ok(poolPesoTexts.includes(hintPeso.text), 'con reps alte la frase deve venire dal pool "piu\' peso"');
 
-  const exPocheRipetute = { sets: [[{peso:60, rip:6}], [], [], []] };
+  const exPocheRipetute = { nome:'Panca', sets: [[{peso:60, rip:6}], [], [], []] };
   const hintRip = window.computeProgressionHint(exPocheRipetute, 1);
-  assert.ok(hintRip.toLowerCase().includes('ripetiz'), 'con reps basse deve spingere verso piu\' ripetizioni');
+  const poolRepTexts = window.__bridge.PROGRESSION_MOTIVATION_REP.map(p => window.splitMotivation(p).text);
+  assert.ok(poolRepTexts.includes(hintRip.text), 'con reps basse la frase deve venire dal pool "piu\' ripetizioni"');
 
   assert.strictEqual(window.computeProgressionHint({sets:[[]]}, 0), null, 'settimana 0 non ha una settimana precedente con cui confrontarsi');
   assert.strictEqual(window.computeProgressionHint({sets:[[],[]]}, 1), null, 'nessun dato la settimana scorsa -> nessun suggerimento');

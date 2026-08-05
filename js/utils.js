@@ -85,6 +85,36 @@ function scheduleAutoAdvance(input){
     if(next) next.focus();
   }, 700);
 }
+// stesso tono/stile delle frasi motivazionali di Home (vedi DEFAULT_MOTIVATION
+// in js/home.js), ma per la direzione da prendere in QUESTO esercizio: una
+// spinge a caricare di piu', l'altra a spremere qualche ripetizione extra.
+// Finiscono tutte con una delle 4 emoji che splitMotivation (js/home.js) sa
+// gia' trasformare nell'icona colorata corrispondente - stessa identica resa
+// visiva delle frasi di Home, invece di una frase piatta e generica
+const PROGRESSION_MOTIVATION_PESO = [
+  "Stavolta il ferro trema, carica un po' di più! 💪",
+  "Sali di peso, il tuo corpo è pronto a spingere oltre! 🔥",
+  "Più carico, stessa grinta: fatti sentire! 💥",
+  "Un pizzico di peso in più e cambi marcia! 🔥",
+  "Il prossimo salto di peso ha il tuo nome sopra! 💪",
+  "Spingi più forte, il ferro non si tira indietro da solo! 💥",
+];
+const PROGRESSION_MOTIVATION_REP = [
+  "Stavolta spremi qualche ripetizione in più, dai! 🦵",
+  "Un'altra rip, sempre una in più della volta scorsa! 💪",
+  "Il muscolo chiede ancora, dagliene una in più! 🔥",
+  "Spingi finché non ne senti una in più, forza! 💥",
+  "Oggi il numero sale, non fermarti prima! 🦵",
+  "Trova quella ripetizione extra che non sapevi di avere! 💪",
+];
+// hash minimo e stabile (non Math.random): la stessa frase resta la stessa
+// finche' non cambia il seed (esercizio+settimana), invece di saltare a caso
+// a ogni render - stesso principio di pickMotivationalPhrase in js/home.js
+function pickFromPool(pool, seed){
+  let hash = 0;
+  for(let i=0;i<seed.length;i++){ hash = (hash*31 + seed.charCodeAt(i)) >>> 0; }
+  return pool[hash % pool.length];
+}
 // suggerimento di progressione (solo per la settimana CORRENTE non ancora
 // iniziata): guarda la MIGLIOR serie della settimana scorsa e suggerisce una
 // direzione (piu' peso o piu' ripetizioni) - MAI il numero di ripetizioni
@@ -102,9 +132,9 @@ function computeProgressionHint(ex, w){
     if(!best || p>best.p || (p===best.p && r>best.r)) best = {p, r};
   });
   if(!best) return null;
-  return best.r >= 10
-    ? "Prova ad aumentare leggermente il peso rispetto alla settimana scorsa."
-    : "Prova a fare qualche ripetizione in più rispetto alla settimana scorsa, a parità di peso.";
+  const pool = best.r >= 10 ? PROGRESSION_MOTIVATION_PESO : PROGRESSION_MOTIVATION_REP;
+  const phrase = pickFromPool(pool, (ex.nome||'')+'_'+w);
+  return splitMotivation(phrase);
 }
 function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 // per infilare un nome dentro una stringa JS tra apici singoli scritta a mano

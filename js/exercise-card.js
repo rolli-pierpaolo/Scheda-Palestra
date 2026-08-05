@@ -542,7 +542,7 @@ function exerciseCard(ex, exi, accent){
       value="${escapeAttr((ex.weekNote && ex.weekNote[w]) ?? '')}"
       onchange="updateWeekNote(${exi},${w},this.value)">
 
-      ${isCurrentWeek && !weekDone && !weekSkipped ? (()=>{ const hint = computeProgressionHint(ex, w); return hint ? `<div class="progression-hint">${ICON_LIGHTNING} ${hint}</div>` : ''; })() : ''}
+      ${isCurrentWeek && !weekDone && !weekSkipped ? (()=>{ const hint = computeProgressionHint(ex, w); return hint ? `<div class="progression-hint">${escapeHtml(hint.text)} ${hint.icon}</div>` : ''; })() : ''}
 
       <div class="meta-row-schema">
         <span class="meta-label small">Serie</span>
@@ -681,7 +681,7 @@ function exerciseCard(ex, exi, accent){
 
 
 
-  const prBadge = record 
+  const prBadge = record
   ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(record.peso))} kg${record.rip?' × '+escapeHtml(String(record.rip)):''}</div>`
   : '';
 
@@ -1414,7 +1414,7 @@ const isCollapsed =
     value="${escapeAttr((exA.weekNote && exA.weekNote[w]) ?? '')}"
     onchange="updateWeekNote(${exiA},${w},this.value);updateWeekNote(${exiB},${w},this.value)">
 
-    ${isCurrentWeek && !weekDone && !weekSkipped ? (()=>{ const hint = computeProgressionHint(exA, w); return hint ? `<div class="progression-hint">${ICON_LIGHTNING} ${hint}</div>` : ''; })() : ''}
+    ${isCurrentWeek && !weekDone && !weekSkipped ? (()=>{ const hint = computeProgressionHint(exA, w); return hint ? `<div class="progression-hint">${escapeHtml(hint.text)} ${hint.icon}</div>` : ''; })() : ''}
 
     <div class="meta-row-schema">
       <span class="meta-label small">Serie</span>
