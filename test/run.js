@@ -157,23 +157,24 @@ test('validateBackup accetta un backup vero e rifiuta quelli corrotti con un mot
   assert.strictEqual(window.validateBackup({state:{days:[]}, storicoExtra:[1,2]}).valid, false, 'un campo del tipo sbagliato deve essere rifiutato');
 });
 
-test('computeProgressionHint suggerisce una frase motivazionale (stile Home) nella direzione giusta, mai il numero di ripetizioni fatte prima', () => {
+test('computeProgressionHint pesca dal pool motivazionale del GRUPPO MUSCOLARE dell\'esercizio, mai il numero di ripetizioni fatte prima', () => {
   const window = loadApp();
-  const exMoltoRipetute = { nome:'Panca', sets: [[{peso:60, rip:12}], [], [], []] };
+  window.__bridge.exerciseGroups = { 'panca piana': 'Petto' };
+  const exMoltoRipetute = { nome:'Panca piana', sets: [[{peso:60, rip:12}], [], [], []] };
   const hintPeso = window.computeProgressionHint(exMoltoRipetute, 1);
   assert.ok(hintPeso, 'con tante ripetizioni la scorsa settimana deve suggerire qualcosa');
   assert.ok(hintPeso.icon, 'deve avere un\'icona colorata, come le frasi motivazionali di Home');
   assert.ok(!/\d/.test(hintPeso.text), 'BUG: il testo non deve contenere numeri (rivelerebbe indirettamente la performance precedente)');
-  // il testo del suggerimento e' la frase SENZA l'emoji finale (staccata da
-  // splitMotivation): verifico che la frase completa (testo + emoji) sia
-  // proprio una di quelle del pool "piu' peso", non una generica a caso
-  const poolPesoTexts = window.__bridge.PROGRESSION_MOTIVATION_PESO.map(p => window.splitMotivation(p).text);
-  assert.ok(poolPesoTexts.includes(hintPeso.text), 'con reps alte la frase deve venire dal pool "piu\' peso"');
+  // la base della frase deve venire dal pool "Petto" (l'esercizio e' stato
+  // assegnato a quel gruppo sopra), non da un pool generico qualsiasi
+  const poolPettoTexts = window.__bridge.MUSCLE_MOTIVATION['Petto'].map(p => window.splitMotivation(p).text);
+  assert.ok(poolPettoTexts.some(t => hintPeso.text.startsWith(t)), 'la frase deve iniziare con una base presa dal pool "Petto", non generica');
+  assert.ok(hintPeso.text.toLowerCase().includes('carica'), 'con reps alte il suffisso deve spingere verso piu\' peso');
 
-  const exPocheRipetute = { nome:'Panca', sets: [[{peso:60, rip:6}], [], [], []] };
-  const hintRip = window.computeProgressionHint(exPocheRipetute, 1);
-  const poolRepTexts = window.__bridge.PROGRESSION_MOTIVATION_REP.map(p => window.splitMotivation(p).text);
-  assert.ok(poolRepTexts.includes(hintRip.text), 'con reps basse la frase deve venire dal pool "piu\' ripetizioni"');
+  const exSenzaGruppo = { nome:'Esercizio mai assegnato', sets: [[{peso:60, rip:6}], [], [], []] };
+  const hintGenerico = window.computeProgressionHint(exSenzaGruppo, 1);
+  const poolDefaultTexts = window.__bridge.DEFAULT_MOTIVATION.map(p => window.splitMotivation(p).text);
+  assert.ok(poolDefaultTexts.some(t => hintGenerico.text.startsWith(t)), 'senza un gruppo assegnato deve ripiegare sul pool generico, non rompersi');
 
   assert.strictEqual(window.computeProgressionHint({sets:[[]]}, 0), null, 'settimana 0 non ha una settimana precedente con cui confrontarsi');
   assert.strictEqual(window.computeProgressionHint({sets:[[],[]]}, 1), null, 'nessun dato la settimana scorsa -> nessun suggerimento');
