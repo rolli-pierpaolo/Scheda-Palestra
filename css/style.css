@@ -184,6 +184,21 @@ main{padding:12px;}
 .home-volume-trend{display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:6px;}
 .home-volume-trend b{color:var(--green);}
 .home-volume-trend svg{flex:0 0 auto;width:13px;height:13px;}
+/* barra di progresso del giorno (quanti esercizi della settimana corrente sono
+   gia' chiusi): la prima cosa che si vede entrando in un giorno, senza dover
+   scrollare fino in fondo o aspettare il bottone flottante "Giorno terminato"
+   (che compare solo a tutti finiti) */
+.day-progress-bar-wrap{padding:10px 4px 4px;}
+.day-progress-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
+.day-progress-track{width:100%;height:8px;border-radius:20px;background:var(--row-dark);border:1px solid var(--line);overflow:hidden;}
+.day-progress-fill{height:100%;border-radius:20px;background:var(--accent,var(--green));transition:width .4s ease;}
+/* indice rapido esercizi (solo giorni da 6+ esercizi/coppie): un salto diretto
+   invece di dover scrollare tutta la pagina per trovarne uno specifico -
+   quelli gia' chiusi si riempiono del colore del giorno, gli altri restano
+   solo un contorno */
+.ex-jump-index{display:flex;flex-wrap:wrap;gap:6px;padding:10px 4px;}
+.ex-jump-dot{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);font-size:11px;font-weight:800;}
+.ex-jump-dot.done{background:var(--accent,var(--green));border-color:var(--accent,var(--green));color:#0D0D0D;}
 /* ---------------- SCHEDA ESERCIZIO (nome, note, blocchi settimana) ---------------- */
 /* .ex-card-wrap avvolge card + header sticky: la card ha overflow:hidden (per i
    bordi arrotondati), e position:sticky su un discendente di un elemento con
