@@ -81,10 +81,18 @@ function trySnapToActiveExercise(force){
   // (a meno che non sia uno scroll forzato, es. avanzamento automatico al prossimo esercizio)
   const activeTag = document.activeElement && document.activeElement.tagName;
   if(!force && (activeTag === 'INPUT' || activeTag === 'TEXTAREA')) return;
+  // il bersaglio non e' piu' semplicemente "l'ultimo esercizio toccato"
+  // (activeExerciseIdx, che resta comunque il gate qui sopra per non scattare
+  // su uno scroll casuale prima di aver anche solo iniziato) ma il primo
+  // esercizio del giorno ancora da fare in ordine di esecuzione: cosi' se hai
+  // appena finito l'esercizio 1 e stai scrollando verso il 2 senza averci
+  // ancora toccato nulla, ti riporta comunque la' e non indietro sull'1
+  const targetExi = computeCurrentDoingExerciseIdx(activeDayIdx);
+  if(targetExi === null) return;
   // data-exi2 e' il partner in una coppia collegata (super set/jump set): un
   // riferimento salvato prima di collegare due esercizi potrebbe puntare a
   // quello che ora e' "il secondo" della coppia, che non ha un suo data-exi
-  const card = document.querySelector('#viewActive .card[data-exi="'+activeExerciseIdx+'"], #viewActive .card[data-exi2="'+activeExerciseIdx+'"]');
+  const card = document.querySelector('#viewActive .card[data-exi="'+targetExi+'"], #viewActive .card[data-exi2="'+targetExi+'"]');
   if(!card) return;
   // il nome esercizio resta sempre visibile grazie all'header sticky (vedi
   // .ex-sticky-header), quindi non serve piu' allineare in cima alla card:
@@ -611,6 +619,26 @@ function allExercisesClosed(day){
     if(w >= nWeeks) return true; // esercizio con meno settimane del blocco corrente: gia' "esaurito"
     return ex.weekDone[w] || ex.weekSkipped[w];
   });
+}
+
+// il primo esercizio del giorno (nell'ordine in cui sono elencati, cioe'
+// l'ordine di esecuzione) che non risulta ancora completato/saltato per la
+// settimana corrente - quello che si "sta svolgendo" ora. Se sono gia' tutti
+// fatti resta sull'ultimo, cosi' c'e' sempre un bersaglio valido per lo
+// scroll magnetico (vedi trySnapToActiveExercise) invece di uno sganciato
+// dall'esercizio davvero in corso
+function computeCurrentDoingExerciseIdx(dayIdx){
+  const day = state.days[dayIdx];
+  if(!day || !day.esercizi.length) return null;
+  const w = state.currentWeek || 0;
+  for(let i=0;i<day.esercizi.length;i++){
+    const ex = day.esercizi[i];
+    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+    if(w >= nWeeks) continue; // esaurito: non e' questo il punto dove sono rimasto
+    const done = (ex.weekDone && ex.weekDone[w]) || (ex.weekSkipped && ex.weekSkipped[w]);
+    if(!done) return i;
+  }
+  return day.esercizi.length - 1;
 }
 
 
