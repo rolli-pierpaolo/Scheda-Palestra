@@ -545,7 +545,15 @@ function openNextWeekForDay(dayIdx){
 }
 
 
-function forceNextWeekForDay(dayIdx){
+// richiude la settimana appena conclusa (solo per gli esercizi di QUESTO
+// giorno, non tutti gli altri giorni) e apre di default quella successiva -
+// "w" e' la vera settimana del programma (state.currentWeek, catturata da
+// confirmFinishWorkout PRIMA che possa gia' essere avanzata), non piu'
+// indovinata riscansionando weekDone/weekSkipped esercizio per esercizio:
+// quella scansione poteva individuare una settimana diversa da quella vera
+// del programma se un esercizio non era ancora stato toccato questa
+// settimana (stesso tipo di bug gia' risolto altrove in allExercisesClosed)
+function forceNextWeekForDay(dayIdx, w){
 
   const day = state.days[dayIdx];
 
@@ -569,24 +577,11 @@ function forceNextWeekForDay(dayIdx){
       ex.weekSkipped = new Array(nWeeks).fill(false);
 
 
+    if(w<nWeeks-1){
 
-    let currentWeek=0;
+      collapsedMap[dayIdx+"_"+exi+"_"+w]=true;
 
-
-    for(let i=0;i<nWeeks;i++){
-
-      if(ex.weekDone[i] || ex.weekSkipped[i]){
-        currentWeek=i;
-      }
-
-    }
-
-
-    if(currentWeek<nWeeks-1){
-
-      collapsedMap[dayIdx+"_"+exi+"_"+currentWeek]=true;
-
-      collapsedMap[dayIdx+"_"+exi+"_"+(currentWeek+1)]=false;
+      collapsedMap[dayIdx+"_"+exi+"_"+(w+1)]=false;
 
     }
 
