@@ -369,16 +369,18 @@ main{padding:12px;}
    e' ancora completata, verde pieno con la spunta visibile quando lo e' */
 .week-done-btn{flex:0 0 auto;width:24px;height:24px;padding:0;background:var(--panel);border:1px solid var(--green-dark);border-radius:5px;color:transparent;font-size:12px;font-weight:800;line-height:1;}
 .week-done-btn.checked{background:var(--green);border-color:var(--green);color:#0D0D0D;}
-/* gap largo apposta: i due bottoni segnano cose opposte (fatta/saltata), stare
-   troppo vicini fa scattare quello sbagliato con un tocco veloce */
-.week-status-btns{display:flex;gap:22px;}
 .week-skip-btn{flex:0 0 auto;width:24px;height:24px;padding:0;background:var(--panel);border:1px solid var(--amber-dark);border-radius:5px;color:var(--muted);font-size:11px;font-weight:800;line-height:1;}
 .week-skip-btn.checked{background:var(--amber);border-color:var(--amber);color:#0D0D0D;}
 /* riga 1: completata/saltata (l'azione che conta davvero, in evidenza).
    riga 2 (.set-btns-secondary): max + aggiungi/rimuovi serie, azioni di
    configurazione secondarie, tenute insieme sotto e meno in vista */
 .set-btns{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
-.week-done-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;}
+/* "completata" e "saltata" ognuna con la propria scritta sopra il proprio
+   quadratino, affiancate - non piu' un'unica etichetta "completata / saltata"
+   sopra i due bottoni. Gap largo apposta: i due bottoni segnano cose opposte,
+   stare troppo vicini fa scattare quello sbagliato con un tocco veloce */
+.week-done-wrap{display:flex;flex-direction:row;justify-content:center;gap:22px;}
+.week-status-col{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .week-done-label{font-size:11px;color:var(--muted);opacity:.7;text-align:center;}
 .set-btns-secondary{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .set-btns-right{display:flex;gap:6px;}
