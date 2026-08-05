@@ -177,7 +177,7 @@ main{padding:12px;}
    bordi arrotondati), e position:sticky su un discendente di un elemento con
    overflow:hidden non "aggancia" mai lo scroll della pagina - va tenuto fuori */
 .ex-card-wrap{position:relative;}
-.ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 12px;margin-bottom:4px;font-size:14.4px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 10px rgba(0,0,0,.35);}
+.ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 12px;margin-bottom:4px;font-size:14.4px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:normal;overflow:visible;text-overflow:clip;box-shadow:0 4px 10px rgba(0,0,0,.35);}
 /* esercizi collegati: tre righe impilate (esercizio A / tipo / esercizio B)
    invece del vecchio "A + B" su una riga, quindi qui l'header non tronca piu'
    con l'ellissi ne' resta su una riga sola */
