@@ -166,7 +166,7 @@ main{padding:12px;}
    bordi arrotondati), e position:sticky su un discendente di un elemento con
    overflow:hidden non "aggancia" mai lo scroll della pagina - va tenuto fuori */
 .ex-card-wrap{position:relative;}
-.ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 12px;margin-bottom:4px;font-size:12px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 10px rgba(0,0,0,.35);}
+.ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 12px;margin-bottom:4px;font-size:14.4px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 10px rgba(0,0,0,.35);}
 /* esercizi collegati: tre righe impilate (esercizio A / tipo / esercizio B)
    invece del vecchio "A + B" su una riga, quindi qui l'header non tronca piu'
    con l'ellissi ne' resta su una riga sola */
@@ -176,7 +176,7 @@ main{padding:12px;}
 /* modalita' modifica (doppio tocco): il campo/i campi prendono il posto della
    scritta, l'header stesso smette di troncare per lasciarli respirare */
 .ex-sticky-header.editing{white-space:normal;overflow:visible;text-overflow:clip;}
-.ex-sticky-name-input{width:100%;background:var(--row-dark);border:1px solid var(--accent,var(--green));border-radius:5px;color:var(--text);font-size:12px;font-weight:700;text-transform:none;letter-spacing:0;padding:4px 6px;resize:none;}
+.ex-sticky-name-input{width:100%;background:var(--row-dark);border:1px solid var(--accent,var(--green));border-radius:5px;color:var(--text);font-size:14.4px;font-weight:700;text-transform:none;letter-spacing:0;padding:4px 6px;resize:none;}
 .ex-sticky-linktype-btn{display:block;width:100%;background:none;border:1px dashed var(--accent,var(--green));border-radius:5px;color:var(--accent,var(--green));font-size:10px;font-weight:700;text-transform:none;padding:3px 8px;margin:3px 0;}
 .ex-sticky-confirm-btn{display:block;width:100%;background:var(--accent,var(--green));color:#0D0D0D;border:none;border-radius:5px;font-size:11px;font-weight:800;padding:5px 10px;margin-top:3px;}
 .card{background:var(--panel2);border-radius:12px;margin-bottom:14px;overflow:hidden;border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));}
@@ -223,7 +223,7 @@ main{padding:12px;}
    sticky (vedi .ex-sticky-header), questo campo serve solo per configurare
    l'esercizio (cambiarlo/rinominarlo, anche dentro un super set) quindi resta
    discreto finche' non ci si tocca sopra per modificarlo davvero */
-.ex-name{width:100%;display:block;background:transparent;color:var(--text);font-size:12px;font-weight:700;font-family:inherit;border:1px dashed var(--line);border-radius:8px;padding:5px 8px;margin-top:2px;resize:none;overflow:hidden;line-height:1.3;transition:background .15s, border-color .15s;}
+.ex-name{width:100%;display:block;background:transparent;color:var(--text);font-size:14.4px;font-weight:700;font-family:inherit;border:1px dashed var(--line);border-radius:8px;padding:5px 8px;margin-top:2px;resize:none;overflow:hidden;line-height:1.3;transition:background .15s, border-color .15s;}
 .ex-name:focus{background:var(--row-dark);border:1px solid var(--accent,var(--green));outline:none;}
 .ex-name::placeholder{color:var(--muted);font-weight:600;}
 /* piccola di default (solo un accenno di riga): si espande per scriverci solo
