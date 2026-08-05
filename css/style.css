@@ -160,6 +160,10 @@ main{padding:12px;}
 /* corrente: leggero glow statico gia' da CSS, l'effetto "respiro" (scala + glow
    pulsante) lo fa GSAP in home.js appena la card e' in pagina */
 .home-day-card.active-training{box-shadow:0 0 10px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
+/* giorno senza esercizi assegnati: bordo tratteggiato + etichetta, cosi' si
+   distingue a colpo d'occhio da un giorno pronto ma solo non ancora fatto */
+.home-day-card.empty{border-style:dashed;opacity:.65;}
+.home-day-empty-tag{flex:0 0 auto;font-size:9px;font-weight:800;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:5px;padding:1px 5px;letter-spacing:.03em;}
 .home-total-stat{text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:-8px;opacity:.85;}
 /* ---------------- SCHEDA ESERCIZIO (nome, note, blocchi settimana) ---------------- */
 /* .ex-card-wrap avvolge card + header sticky: la card ha overflow:hidden (per i
@@ -358,7 +362,7 @@ main{padding:12px;}
 /* stessa forma "pulsante icona" di .chart-btn (prima era testo "Elimina" nudo,
    l'unico con l'etichetta scritta per esteso tra icone pure): solo il colore
    rosso lo distingue come azione distruttiva */
-.del-ex{background:none;border:1px solid var(--red);color:var(--red);font-size:12px;padding:4px 8px;border-radius:6px;float:right;margin-left:6px;}
+.del-ex{background:none;border:1px solid var(--red);color:var(--red);font-size:12px;padding:8px;min-width:38px;min-height:38px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;float:right;margin-left:6px;}
 /* ---------------- TAB STORICO (elenco WO archiviati) ---------------- */
 .hist-list-row{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;}
 .hist-list{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:8px;}
@@ -438,18 +442,10 @@ main{padding:12px;}
 .exlib-group-select{flex:0 0 auto;background:#000;border:1px solid var(--line);color:var(--text);font-size:11px;border-radius:6px;padding:4px 2px;max-width:110px;}
 .exlib-row-del{flex:0 0 auto;background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:4px 8px;font-size:12px;}
 .savebar{position:fixed;bottom:calc(60px + env(safe-area-inset-bottom));left:0;right:0;background:#000;border-top:1px solid var(--line);padding:6px 14px;font-size:11px;color:var(--muted);text-align:center;z-index:20;}
-/* ---------------- BARRA TIMER DI RECUPERO (fissa in basso) ---------------- */
-.timer-bar{position:fixed;left:0;right:0;bottom:calc(88px + env(safe-area-inset-bottom));background:var(--amber);color:#0D0D0D;display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 14px;font-weight:800;z-index:21;}
-.timer-bar #timerClock{font-size:20px;font-variant-numeric:tabular-nums;}
-.timer-bar button{background:rgba(0,0,0,.2);border:none;color:#0D0D0D;width:26px;height:26px;border-radius:13px;font-weight:800;}
-.timer-bar.done{background:var(--red);color:#fff;}
-.timer-bar.done button{color:#fff;}
 /* compare solo quando TUTTI gli esercizi del giorno risultano completati o
    saltati (vedi allExercisesClosed in js/navigation.js): un accesso rapido al
    tasto "Giorno terminato" senza dover scrollare fino in fondo alla pagina */
-.floating-finish-btn{position:fixed;left:50%;bottom:calc(136px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:30px;padding:10px 18px;font-size:12px;font-weight:900;z-index:19;box-shadow:0 6px 20px rgba(0,0,0,.5);white-space:nowrap;}
-body.flash{background:var(--amber) !important;}
-.recupero-play{flex:0 0 30px;width:30px;height:100%;background:var(--panel);border:1px solid var(--line);border-radius:6px;color:var(--accent,var(--green));font-size:13px;}
+.floating-finish-btn{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:30px;padding:10px 18px;font-size:12px;font-weight:900;z-index:19;box-shadow:0 6px 20px rgba(0,0,0,.5);white-space:nowrap;}
 /* ---------------- COMBOBOX (autocomplete su nome esercizio/recupero/schema/giorni) ---------------- */
 .combo-wrap{position:relative;flex:1 1 auto;min-width:0;}
 .combo-wrap .meta-input,.combo-wrap .ex-name{width:100%;}
@@ -474,7 +470,7 @@ body.flash{background:var(--amber) !important;}
 .undo-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--panel2);border:1px solid var(--red);color:var(--text);padding:10px 16px;border-radius:20px;font-weight:700;font-size:13px;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;box-shadow:0 6px 20px rgba(0,0,0,.45);text-align:center;max-width:80%;display:flex;align-items:center;justify-content:center;gap:10px;}
 .undo-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
 .undo-toast button{background:none;border:none;color:var(--red);font-weight:800;text-decoration:underline;padding:2px 4px;font-size:13px;}
-.chart-btn{background:none;border:1px solid var(--line);color:var(--accent,var(--green));font-size:12px;padding:4px 8px;border-radius:6px;float:right;margin-left:6px;}
+.chart-btn{background:none;border:1px solid var(--line);color:var(--accent,var(--green));font-size:12px;padding:8px;min-width:38px;min-height:38px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;float:right;margin-left:6px;}
 /* ---------------- OBIETTIVI: toast di sblocco + lista nella modale ---------------- */
 .achiev-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--panel2);border:2px solid var(--green);color:var(--text);padding:10px 16px;border-radius:16px;z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.5);max-width:85%;display:flex;align-items:center;gap:10px;}
 .achiev-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}

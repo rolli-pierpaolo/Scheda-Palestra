@@ -16,7 +16,7 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v0.99</span>
+  <span class="app-version" id="appVersion">v1.1</span>
   <h1>Logbook</h1>
 </div>
 <div id="dayTabsActive" class="day-tabs" style="display:none;"></div>
@@ -37,17 +37,17 @@
   <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 4.5 H16 L19 7.5 V19 A0.8 0.8 0 0 1 18.2 19.8 H5.8 A0.8 0.8 0 0 1 5 19 V4.5 Z"/><path d="M7.5 4.5 V9.5 H15 V4.5"/><path d="M8.5 13.5 H15.5 V19.5 H8.5 Z"/></svg> Backup</div>
   <div class="hist-panel backup-row">
     <button class="add-ex small2" onclick="exportBackup()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M12 4 V15"/><path d="M7 11 L12 16 L17 11"/><path d="M5 20 H19"/></svg> Esporta backup</button>
-    <button class="add-ex small2" onclick="exportBackupFile()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 4.5 H16 L19 7.5 V19 A0.8 0.8 0 0 1 18.2 19.8 H5.8 A0.8 0.8 0 0 1 5 19 V4.5 Z"/><path d="M7.5 4.5 V9.5 H15 V4.5"/><path d="M8.5 13.5 H15.5 V19.5 H8.5 Z"/></svg> Salva backup su file</button>
+    <button class="add-ex small2" onclick="exportBackupFile()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 4.5 H16 L19 7.5 V19 A0.8 0.8 0 0 1 18.2 19.8 H5.8 A0.8 0.8 0 0 1 5 19 V4.5 Z"/><path d="M7.5 4.5 V9.5 H15 V4.5"/><path d="M8.5 13.5 H15.5 V19.5 H8.5 Z"/></svg> Salva su file</button>
     <button class="add-ex small2" onclick="shareBackup()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M12 15 V4"/><path d="M8 8 L12 4 L16 8"/><path d="M5 13 V19 A1 1 0 0 0 6 20 H18 A1 1 0 0 0 19 19 V13"/></svg> Condividi backup</button>
-    <button class="add-ex small2" onclick="importBackup()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M12 20 V9"/><path d="M7 13 L12 8 L17 13"/><path d="M5 4 H19"/></svg> Importa backup di testo</button>
+    <button class="add-ex small2" onclick="importBackup()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M12 20 V9"/><path d="M7 13 L12 8 L17 13"/><path d="M5 4 H19"/></svg> Importa testo</button>
     <button class="add-ex small2" onclick="document.getElementById('fileImportInput').click()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M3.5 7 A1 1 0 0 1 4.5 6 H9.5 L11.5 8 H19.5 A1 1 0 0 1 20.5 9 V17.5 A1 1 0 0 1 19.5 18.5 H4.5 A1 1 0 0 1 3.5 17.5 Z"/></svg> Importa backup Json da file</button>
     <input id="fileImportInput" type="file" accept="application/json,.json" style="display:none" onchange="importBackupFile(event)">
   </div>
 
   <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 7 H14"/><circle cx="17" cy="7" r="2.3"/><path d="M10 12 H20"/><circle cx="7" cy="12" r="2.3"/><path d="M4 17 H14"/><circle cx="17" cy="17" r="2.3"/></svg> Impostazioni</div>
   <div class="hist-panel settings-row">
-    <button class="add-ex small2" onclick="openDaysModal()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 7 H14"/><circle cx="17" cy="7" r="2.3"/><path d="M10 12 H20"/><circle cx="7" cy="12" r="2.3"/><path d="M4 17 H14"/><circle cx="17" cy="17" r="2.3"/></svg> Personalizza scheda allenamento attiva</button>
-    <button class="add-ex small2" onclick="openCalendar()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><rect x="4" y="5.5" width="16" height="15" rx="1.5"/><path d="M4 10 H20"/><path d="M8 3.5 V7"/><path d="M16 3.5 V7"/></svg> Calendario allenamenti</button>
+    <button class="add-ex small2" onclick="openDaysModal()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 7 H14"/><circle cx="17" cy="7" r="2.3"/><path d="M10 12 H20"/><circle cx="7" cy="12" r="2.3"/><path d="M4 17 H14"/><circle cx="17" cy="17" r="2.3"/></svg> Personalizza scheda</button>
+    <button class="add-ex small2" onclick="openCalendar()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><rect x="4" y="5.5" width="16" height="15" rx="1.5"/><path d="M4 10 H20"/><path d="M8 3.5 V7"/><path d="M16 3.5 V7"/></svg> Calendario</button>
     <button class="add-ex small2" onclick="openExerciseLibrary()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 5 A1.5 1.5 0 0 1 6.5 3.5 H11 V20 H6.5 A1.5 1.5 0 0 1 5 18.5 Z"/><path d="M13 3.5 H17.5 A1.5 1.5 0 0 1 19 5 V18.5 A1.5 1.5 0 0 1 17.5 20 H13 Z"/></svg> Libreria esercizi</button>
     <button class="add-ex small2" onclick="openAchievements()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg> Obiettivi</button>
     <button class="add-ex small2" onclick="openOnboarding()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.3 A2.5 2.2 0 0 1 12 7.3 A2.5 2.2 0 0 1 14.5 9.3 C14.5 11 12 11 12 13.3"/><circle cx="12" cy="16.5" r="0.9" fill="currentColor" stroke="none"/></svg> Guida rapida</button>
@@ -149,13 +149,6 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 </div>
 
 
-<div id="timerBar" class="timer-bar" style="display:none;">
-  <span id="timerLabel">Recupero</span>
-  <span id="timerClock">00:00</span>
-  <button onclick="stopTimer()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M6 6 L18 18"/><path d="M18 6 L6 18"/></svg></button>
-</div>
-
-
 <button id="floatingFinishBtn" class="floating-finish-btn" style="display:none;" onclick="openFinishWorkoutModal(activeDayIdx)">
   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 12.5 L10 17.5 L19 6.5"/></svg> <span class="accent-shine">Giorno terminato!</span>
 </button>
@@ -193,7 +186,6 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/chart.js"></script>         <!-- grafico di progressione -->
 <script src="js/backup.js"></script>        <!-- esporta/importa backup, manuale e automatico -->
 <script src="js/utils.js"></script>         <!-- escape html, altezza automatica delle textarea -->
-<script src="js/timer.js"></script>         <!-- timer di recupero -->
 <script src="js/navigation.js"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
 <script src="js/days-modal.js"></script>    <!-- modifica categorie giorni (nome/colore/aggiungi/elimina) -->
 <script src="js/exercise-card.js"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->

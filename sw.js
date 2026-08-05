@@ -21,7 +21,6 @@ const CORE_ASSETS = [
   './js/chart.js',
   './js/backup.js',
   './js/utils.js',
-  './js/timer.js',
   './js/navigation.js',
   './js/days-modal.js',
   './js/exercise-card.js',

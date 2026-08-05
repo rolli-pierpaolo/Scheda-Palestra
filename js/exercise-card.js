@@ -512,10 +512,6 @@ function exerciseCard(ex, exi, accent){
               onfocus="onComboFocus(this,'recuperi')"
               onchange="updateMeta(${exi},'recupero',${w},this.value)">
             </div>
-            <button class="recupero-play"
-            onclick="startTimerFromRow(this)">
-            ▶
-            </button>
           </div>
         </div>
 
@@ -1387,10 +1383,6 @@ const isCollapsed =
             onfocus="onComboFocus(this,'recuperi')"
             onchange="updateMeta(${exiA},'recupero',${w},this.value);updateMeta(${exiB},'recupero',${w},this.value)">
           </div>
-          <button class="recupero-play"
-          onclick="startTimerFromRow(this)">
-          ▶
-          </button>
         </div>
       </div>
 
