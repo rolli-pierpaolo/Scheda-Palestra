@@ -69,6 +69,41 @@ function applyBackup(backup){
   document.getElementById('histDayTabs').innerHTML = '';
   document.getElementById('histBody').innerHTML = '<div class="footer-note">Seleziona un WO storico qui sopra.</div>';
 }
+// controllo piu' serio di "c'e' backup.state.days": applyBackup usa gia'
+// "|| {}"/"|| []" per ogni sezione opzionale, quindi qui basta controllare che
+// QUELLO che c'e' abbia davvero la forma giusta - un campo del tipo sbagliato
+// (es. un array al posto di un oggetto) e' un segnale di corruzione piu'
+// forte di un campo assente, e prima passava inosservato fino a un crash
+// piu' avanti invece che con un messaggio chiaro subito
+function validateBackup(backup){
+  if(!backup || typeof backup !== 'object' || Array.isArray(backup)){
+    return { valid:false, reason:"il testo non contiene un backup valido." };
+  }
+  if(!backup.state || typeof backup.state !== 'object'){
+    return { valid:false, reason:"manca la scheda di allenamento (state)." };
+  }
+  if(!Array.isArray(backup.state.days)){
+    return { valid:false, reason:"manca l'elenco dei giorni di allenamento." };
+  }
+  for(const day of backup.state.days){
+    if(!day || typeof day !== 'object' || !Array.isArray(day.esercizi)){
+      return { valid:false, reason:"un giorno di allenamento nel backup non ha un elenco esercizi valido." };
+    }
+  }
+  const optionalObjectFields = ['storicoExtra','collapsedMap','calendarLog','exerciseGroups'];
+  for(const f of optionalObjectFields){
+    if(backup[f] !== undefined && (typeof backup[f] !== 'object' || Array.isArray(backup[f]))){
+      return { valid:false, reason:'il campo "'+f+'" del backup non ha il formato atteso.' };
+    }
+  }
+  const optionalArrayFields = ['deletedStorico','deletedEsercizi'];
+  for(const f of optionalArrayFields){
+    if(backup[f] !== undefined && !Array.isArray(backup[f])){
+      return { valid:false, reason:'il campo "'+f+'" del backup non ha il formato atteso.' };
+    }
+  }
+  return { valid:true };
+}
 function importBackup(){
   const txt = prompt("Incolla qui il testo del backup che avevi salvato:");
   if(!txt || !txt.trim()) return;
@@ -79,8 +114,9 @@ function importBackup(){
     alert("Testo non valido: assicurati di aver incollato tutto il backup.");
     return;
   }
-  if(!backup || !backup.state || !backup.state.days){
-    alert("Il testo incollato non sembra un backup valido.");
+  const check = validateBackup(backup);
+  if(!check.valid){
+    alert("Backup non valido: " + check.reason);
     return;
   }
   if(!confirm("Questo sovrascrivera' l'allenamento attivo, lo storico e lo stato delle settimane con quelli del backup. Continuare?")) return;
@@ -103,8 +139,9 @@ function importBackupFile(event){
       alert("File non valido: non sembra un backup JSON.");
       return;
     }
-    if(!backup || !backup.state || !backup.state.days){
-      alert("Il file scelto non sembra un backup valido.");
+    const check = validateBackup(backup);
+    if(!check.valid){
+      alert("File non valido: " + check.reason);
       return;
     }
     if(!confirm("Questo sovrascrivera' l'allenamento attivo, lo storico e lo stato delle settimane con quelli del backup. Continuare?")) return;

@@ -20,39 +20,48 @@ function updateTopbarHeightVar(){
 updateTopbarHeightVar();
 window.addEventListener('resize', updateTopbarHeightVar);
 
-loadState();
-loadActivePos();
-loadAchievements();
-maybeAutoBackup();
-updateTitles();
-renderDayTabs();
-renderActive();
-renderHistList();
-checkAchievements();
+// tutta l'inizializzazione vera e propria e' avvolta in un try/catch: se
+// qualcosa qui dentro esplode (il sospetto principale essendo HTML/JS
+// disallineati per via della cache, vedi js/error-boundary.js) l'app prova a
+// ripararsi da sola invece di restare rotta in silenzio con dati che
+// sembrano spariti mentre sono ancora li' in localStorage
+try{
+  loadState();
+  loadActivePos();
+  loadAchievements();
+  maybeAutoBackup();
+  updateTitles();
+  renderDayTabs();
+  renderActive();
+  renderHistList();
+  checkAchievements();
 
-initAnimations();
+  initAnimations();
 
-document.getElementById('histBody').innerHTML = '<div class="footer-note">Seleziona un WO storico qui sopra.</div>';
-// niente allenamento in corso (mai iniziato, o concluso con "Giorno terminato"):
-// si apre sulla Home invece che tornare dritti sulla scheda esercizi
-if(workoutInProgress){
-  showView('active');
-  requestWakeLock(); // si apre gia' sulla tab Allenamento, quindi il wake lock parte subito
-  if(activeExerciseIdx !== null && !isDesktopDevice()){
-    // si posiziona subito (senza animazione: e' l'apertura della pagina, non uno
-    // scroll fatto dall'utente); il piccolo ritardo lascia il tempo al browser di
-    // calcolare il layout della pagina appena renderizzata
-    setTimeout(()=>{
-      const card = document.querySelector('#viewActive .card[data-exi="'+activeExerciseIdx+'"], #viewActive .card[data-exi2="'+activeExerciseIdx+'"]');
-      if(card) card.scrollIntoView({block:'center'});
-    }, 120);
+  document.getElementById('histBody').innerHTML = '<div class="footer-note">Seleziona un WO storico qui sopra.</div>';
+  // niente allenamento in corso (mai iniziato, o concluso con "Giorno terminato"):
+  // si apre sulla Home invece che tornare dritti sulla scheda esercizi
+  if(workoutInProgress){
+    showView('active');
+    requestWakeLock(); // si apre gia' sulla tab Allenamento, quindi il wake lock parte subito
+    if(activeExerciseIdx !== null && !isDesktopDevice()){
+      // si posiziona subito (senza animazione: e' l'apertura della pagina, non uno
+      // scroll fatto dall'utente); il piccolo ritardo lascia il tempo al browser di
+      // calcolare il layout della pagina appena renderizzata
+      setTimeout(()=>{
+        const card = document.querySelector('#viewActive .card[data-exi="'+activeExerciseIdx+'"], #viewActive .card[data-exi2="'+activeExerciseIdx+'"]');
+        if(card) card.scrollIntoView({block:'center'});
+      }, 120);
+    }
+  } else {
+    showHome();
   }
-} else {
-  showHome();
-}
 
-// guida rapida: si mostra da sola solo se ci sono consigli mai visti (prima
-// apertura, o funzioni nuove aggiunte dopo l'ultima volta). Il piccolo ritardo
-// la fa comparire sopra la vista gia' scelta sopra, invece che "sbattere" in
-// faccia prima ancora che la pagina sia visibile
-setTimeout(()=>{ maybeShowOnboarding(); }, 300);
+  // guida rapida: si mostra da sola solo se ci sono consigli mai visti (prima
+  // apertura, o funzioni nuove aggiunte dopo l'ultima volta). Il piccolo ritardo
+  // la fa comparire sopra la vista gia' scelta sopra, invece che "sbattere" in
+  // faccia prima ancora che la pagina sia visibile
+  setTimeout(()=>{ maybeShowOnboarding(); }, 300);
+}catch(err){
+  attemptSelfHealOrShowBanner();
+}
