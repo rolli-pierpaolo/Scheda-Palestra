@@ -211,6 +211,25 @@ test('computeHomeVolumeTrend confronta due settimane gia\' concluse, non "questo
   assert.strictEqual(window.computeHomeVolumeTrend(), null, 'con una sola settimana conclusa non c\'e\' ancora un confronto onesto da fare');
 });
 
+test('computeDayProgress conta le coppie collegate come UN solo esercizio e usa la vera settimana corrente', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0,
+    days: [{ name:'Push', esercizi: [
+      { nome:'Ex1', recupero:['60s','60s','60s','60s'], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false] },
+      { nome:'Ex2A', linkGroupId:'g1', recupero:['60s','60s','60s','60s'], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false] },
+      { nome:'Ex2B', linkGroupId:'g1', recupero:['60s','60s','60s','60s'], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false] },
+      { nome:'Ex3', recupero:['60s','60s','60s','60s'], weekDone:[false,false,false,false], weekSkipped:[true,false,false,false] }
+    ]}]
+  };
+  const day = window.__bridge.state.days[0];
+  const progress = window.computeDayProgress(day);
+  assert.strictEqual(progress.total, 3, 'la coppia collegata (Ex2A+Ex2B) deve contare come UN solo esercizio, non due');
+  assert.strictEqual(progress.done, 2, 'Ex1 (fatto) + Ex3 (saltato, conta comunque come chiuso) = 2');
+  assert.strictEqual(progress.items.length, 3);
+  assert.strictEqual(progress.items[1].exi, 1, 'la voce della coppia punta al primo dei due indici (exi=1), non al partner');
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){

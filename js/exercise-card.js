@@ -12,6 +12,59 @@ function updateFloatingFinishBtn(){
   floatBtn.style.display = showFloat ? '' : 'none';
   floatBtn.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
 }
+// stesso conteggio degli esercizi "chiusi" gia' usato altrove (allExercisesClosed,
+// computeCurrentDoingExerciseIdx): una coppia collegata (super/jump set) conta
+// come UN solo esercizio, essendo un'unica card - qui pero' serve anche la
+// lista con l'indice di posizione (per l'indice rapido sotto)
+function computeDayProgress(day){
+  const w = state.currentWeek || 0;
+  let total = 0, done = 0;
+  const items = [];
+  for(let exi=0; exi<day.esercizi.length; exi++){
+    const ex = day.esercizi[exi];
+    if(ex.linkGroupId && day.esercizi[exi-1] && day.esercizi[exi-1].linkGroupId===ex.linkGroupId) continue;
+    total++;
+    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+    const isDone = w>=nWeeks || (ex.weekDone && ex.weekDone[w]) || (ex.weekSkipped && ex.weekSkipped[w]);
+    if(isDone) done++;
+    items.push({ exi, pos: total, isDone });
+  }
+  return { total, done, items };
+}
+// si vede SUBITO entrando nel giorno, senza dover scrollare fino in fondo o
+// aspettare che compaia il bottone flottante "Giorno terminato" (che scatta
+// solo a tutti finiti) - non e' sticky apposta: impilare un altro elemento
+// fisso sopra l'header sticky di ogni esercizio avrebbe richiesto ricalcolare
+// --topbar-h (vedi updateTopbarHeightVar in js/app-init.js) e rischiava
+// sovrapposizioni difficili da verificare in ogni caso reale
+function renderDayProgressBar(progress, accent){
+  if(progress.total===0) return '';
+  const pct = Math.round((progress.done/progress.total)*100);
+  return `<div class="day-progress-bar-wrap" style="--accent:${accent}">
+    <div class="day-progress-label">${progress.done} di ${progress.total} esercizi di questa settimana</div>
+    <div class="day-progress-track"><div class="day-progress-fill" style="width:${pct}%"></div></div>
+  </div>`;
+}
+// solo sui giorni lunghi (6+ esercizi/coppie): un salto diretto invece di
+// dover scrollare tutta la pagina per trovare un esercizio specifico
+function renderExerciseJumpIndex(progress, accent){
+  if(progress.total<6) return '';
+  const dots = progress.items.map(it =>
+    `<button class="ex-jump-dot ${it.isDone?'done':''}" style="--accent:${accent}" onclick="scrollToExerciseCard(${it.exi})" aria-label="Vai a esercizio ${it.pos}">${it.pos}</button>`
+  ).join('');
+  return `<div class="ex-jump-index">${dots}</div>`;
+}
+function scrollToExerciseCard(exi){
+  const card = document.querySelector('#viewActive .card[data-exi="'+exi+'"], #viewActive .card[data-exi2="'+exi+'"]');
+  if(!card) return;
+  const wrap = card.closest('.ex-card-wrap') || card;
+  const topbar = document.querySelector('.topbar');
+  const stickyHeader = wrap.querySelector('.ex-sticky-header');
+  const offset = (topbar ? topbar.getBoundingClientRect().height : 0) + (stickyHeader ? stickyHeader.getBoundingClientRect().height : 0) + 14;
+  const rect = card.getBoundingClientRect();
+  const target = window.scrollY + rect.top - offset;
+  window.scrollTo({top: Math.max(0,target), behavior:'smooth'});
+}
 function renderActive(){
   const day = state.days[activeDayIdx];
   const a = dayAccent(day, activeDayIdx);
@@ -57,7 +110,10 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
     const partnerExi = (ex.linkGroupId && day.esercizi[exi+1] && day.esercizi[exi+1].linkGroupId===ex.linkGroupId) ? exi+1 : null;
     cardsHtml += partnerExi!==null ? linkedExerciseCard(ex, exi, day.esercizi[partnerExi], partnerExi, a) : exerciseCard(ex, exi, a);
   }
-  main.innerHTML = switchTrainingDay + emptyState + cardsHtml +
+  const progress = computeDayProgress(day);
+  const progressBarHtml = renderDayProgressBar(progress, a.c);
+  const jumpIndexHtml = renderExerciseJumpIndex(progress, a.c);
+  main.innerHTML = progressBarHtml + jumpIndexHtml + switchTrainingDay + emptyState + cardsHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
