@@ -249,6 +249,30 @@ test('computeDayProgress conta le coppie collegate come UN solo esercizio e usa 
   assert.strictEqual(progress.items[1].exi, 1, 'la voce della coppia punta al primo dei due indici (exi=1), non al partner');
 });
 
+test('toggleWeekSkipped ha lo stesso "mood" di toggleWeekDone: avvia l\'allenamento, e un mix fatto/saltato chiude comunque esercizio e giorno', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.workoutInProgress = false;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0,
+    days: [{ name:'Push', esercizi: [
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
+    ]}]
+  };
+  window.toggleWeekSkipped(0, 0);
+  assert.strictEqual(window.__bridge.workoutInProgress, true, 'saltare una settimana deve avviare "allenamento in corso", come completarla');
+
+  const ex = window.__bridge.state.days[0].esercizi[0];
+  assert.strictEqual(ex.weekSkipped[0], true);
+
+  // chiude le altre settimane mescolando fatto/saltato
+  ex.weekDone[1] = true; ex.weekSkipped[2] = true; ex.weekDone[3] = true;
+  assert.strictEqual(window.exerciseFullyClosed(ex), true, 'fatta+saltata su tutte le settimane deve contare come esercizio chiuso, non solo tutto fatto');
+
+  const day = window.__bridge.state.days[0];
+  assert.strictEqual(window.allExercisesClosed(day), true, 'il giorno deve risultare chiuso (bottone "Giorno terminato") anche con un mix fatto/saltato');
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){

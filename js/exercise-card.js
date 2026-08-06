@@ -607,6 +607,7 @@ function exerciseCard(ex, exi, accent){
           <div class="week-status-col">
             <span class="week-done-label">saltata</span>
             <button class="week-skip-btn ${weekSkipped?'checked':''}"
+            data-exi="${exi}" data-w="${w}"
             ${isReadOnlyWeek?'disabled':''}
             onclick="toggleWeekSkipped(${exi},${w})">
             ⏭
@@ -982,6 +983,15 @@ function nextCardIndex(exi){
   if(ex && ex.linkGroupId && list[next] && list[next].linkGroupId===ex.linkGroupId) next++;
   return next;
 }
+// un esercizio e' "chiuso per il blocco" quando OGNI settimana risulta fatta
+// O saltata - saltare una settimana apposta (infortunio, imprevisto) conta
+// come chiuderla, non come lasciarla in sospeso: usata sia per il festeggiamento
+// di fine esercizio sotto, sia (indirettamente, vedi allExercisesClosed in
+// js/navigation.js) per far comparire il bottone "Giorno terminato"
+function exerciseFullyClosed(ex){
+  if(!ex.weekDone) return false;
+  return ex.weekDone.every((d,i) => d || (ex.weekSkipped && ex.weekSkipped[i]));
+}
 function toggleWeekDone(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.weekDone) ex.weekDone=new Array((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4).fill(false);
@@ -989,7 +999,7 @@ function toggleWeekDone(exi, w){
   ex.weekDone[w] = nowDone;
   // completata e saltata sono mutuamente esclusive: segnarne una toglie l'altra
   if(nowDone && ex.weekSkipped) ex.weekSkipped[w] = false;
- 
+
   // l'allenamento si considera "iniziato" solo quando si segna davvero
   // completata almeno una settimana, non solo toccando/guardando un campo
   if(nowDone && !workoutInProgress){
@@ -1002,7 +1012,7 @@ function toggleWeekDone(exi, w){
     vibrate(15);
     pulseWeekDoneBtn(exi, w);
     checkAchievements();
-    if(ex.weekDone.every(Boolean)) celebrateExerciseDone(ex.nome);
+    if(exerciseFullyClosed(ex)) celebrateExerciseDone(ex.nome);
   }
   const next = nextCardIndex(exi);
   if(nowDone && state.days[activeDayIdx].esercizi[next]){
@@ -1022,9 +1032,18 @@ function pulseWeekDoneBtn(exi, w){
   if(!btn) return;
   gsap.fromTo(btn, {scale:1.5}, {scale:1, duration:.35, ease:"back.out(3)"});
 }
+// stesso identico pop di pulseWeekDoneBtn ma sul bottone "saltata": segnare
+// una settimana come saltata apposta ha la stessa dignita' di segnarla fatta,
+// non deve sentirsi un'azione di serie B
+function pulseWeekSkipBtn(exi, w){
+  if(typeof gsap === "undefined") return;
+  const btn = document.querySelector(`.week-skip-btn[data-exi="${exi}"][data-w="${w}"]`);
+  if(!btn) return;
+  gsap.fromTo(btn, {scale:1.5}, {scale:1, duration:.35, ease:"back.out(3)"});
+}
 // notifica piccola e discreta (non il festeggiamento vistoso di un PR) quando
-// TUTTE le settimane di un esercizio risultano completate: dura pochissimo,
-// serve solo a confermare "questo esercizio e' finito per il blocco intero"
+// TUTTE le settimane di un esercizio risultano chiuse (fatte o saltate): dura
+// pochissimo, serve solo a confermare "questo esercizio e' finito per il blocco intero"
 function celebrateExerciseDone(name){
   let el = document.getElementById('exDoneToast');
   if(!el){
@@ -1040,15 +1059,35 @@ function celebrateExerciseDone(name){
 }
 // "saltata" e' per le settimane che non farai apposta (infortunio, imprevisto):
 // diversamente da una settimana lasciata vuota per caso, questa resta distinguibile
-// anche nello Storico (vedi renderHistBody in history.js) invece di sparire e basta
+// anche nello Storico (vedi renderHistBody in history.js) invece di sparire e basta.
+// Stesso "mood" di toggleWeekDone qui sopra (vibrazione, pop, controllo
+// obiettivi, avanzamento al prossimo esercizio): per l'app saltare di
+// proposito e' comunque chiudere la settimana, non un'azione minore
 function toggleWeekSkipped(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.weekSkipped) ex.weekSkipped=new Array((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4).fill(false);
   const nowSkipped = !ex.weekSkipped[w];
   ex.weekSkipped[w] = nowSkipped;
   if(nowSkipped && ex.weekDone) ex.weekDone[w] = false;
+
+  if(nowSkipped && !workoutInProgress){
+    workoutInProgress = true;
+    saveWorkoutInProgress();
+  }
   saveState();
   renderActive();
+  if(nowSkipped){
+    vibrate(15);
+    pulseWeekSkipBtn(exi, w);
+    checkAchievements();
+    if(exerciseFullyClosed(ex)) celebrateExerciseDone(ex.nome);
+  }
+  const next = nextCardIndex(exi);
+  if(nowSkipped && state.days[activeDayIdx].esercizi[next]){
+    activeExerciseIdx = next;
+    saveActivePos();
+    setTimeout(()=>trySnapToActiveExercise(true), 250);
+  }
 }
 function updateMax(exi, w, idx, field, val){
   const ex = state.days[activeDayIdx].esercizi[exi];
@@ -1462,6 +1501,7 @@ const isCollapsed =
         <div class="week-status-col">
           <span class="week-done-label">saltata</span>
           <button class="week-skip-btn ${weekSkipped?'checked':''}"
+          data-exi="${exiA}" data-w="${w}"
           onclick="toggleWeekSkipped(${exiA},${w});toggleWeekSkipped(${exiB},${w})">
           ⏭
           </button>
