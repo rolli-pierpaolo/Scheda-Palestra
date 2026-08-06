@@ -62,6 +62,10 @@ try{
   // la fa comparire sopra la vista gia' scelta sopra, invece che "sbattere" in
   // faccia prima ancora che la pagina sia visibile
   setTimeout(()=>{ maybeShowOnboarding(); }, 300);
+
+  // banner "installa app" (solo iOS Safari, non gia' installata): ritardo
+  // maggiore della guida rapida, cosi' non compaiono insieme sovrapposti
+  setTimeout(()=>{ maybeShowInstallBanner(); }, 900);
 }catch(err){
   attemptSelfHealOrShowBanner();
 }
