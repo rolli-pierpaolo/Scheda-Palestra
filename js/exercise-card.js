@@ -300,13 +300,29 @@ saveState();
 // completata (vedi toggleWeekDone/il quadratino con la spunta): se la
 // settimana precedente non e' stata completata, niente suggerimento, anche
 // se in una settimana ancora prima ci fossero gia' dei pesi
+// il valore della settimana scorsa va ripreso cosi' com'e' stato scritto,
+// non riparsato a numero: chi scrive "4,5p" ci mette apposta anche la lettera
+// (fallimento, presa, tecnica...) e perderla nel suggerimento farebbe perdere
+// anche il significato, non solo la formattazione
 function suggestNextWeight(ex, w, si){
   if(w===0) return null;
   if(!(ex.weekDone && ex.weekDone[w-1])) return null;
   const s = ex.sets && ex.sets[w-1] && ex.sets[w-1][si];
-  if(!s || s.peso===undefined || s.peso===null || String(s.peso).trim()==='') return null;
-  const p = parseFloat(String(s.peso).replace(',','.'));
-  return isNaN(p) ? null : Math.round(p*10)/10;
+  if(!s || s.peso===undefined || s.peso===null) return null;
+  const raw = String(s.peso).trim();
+  return raw==='' ? null : raw;
+}
+// stessa idea di suggestNextWeight ma per le righe "Max": se la settimana
+// scorsa il Max era compilato, la nuova settimana lo apre gia' con quel peso
+// come suggerimento (placeholder, non un valore vero e proprio finche' non lo
+// si conferma scrivendoci sopra)
+function suggestNextMaxWeight(ex, w, mi){
+  if(w===0) return null;
+  if(!(ex.weekDone && ex.weekDone[w-1])) return null;
+  const m = ex.maxExtra && ex.maxExtra[w-1] && ex.maxExtra[w-1][mi];
+  if(!m || m.peso===undefined || m.peso===null) return null;
+  const raw = String(m.peso).trim();
+  return raw==='' ? null : raw;
 }
 function exerciseCard(ex, exi, accent){
 
@@ -387,7 +403,11 @@ function exerciseCard(ex, exi, accent){
 
           <input class="set-input"
           ${isReadOnlyWeek?'disabled':''}
-          ondblclick="toggleFieldKeyboard(this)"
+          onpointerdown="onSetInputPointerDown(event,this)"
+          onpointermove="onSetInputPointerMove(event)"
+          onpointerup="onSetInputPointerCancel()"
+          onpointerleave="onSetInputPointerCancel()"
+          onpointercancel="onSetInputPointerCancel()"
           onblur="resetFieldKeyboard(this)"
           oninput="scheduleAutoAdvance(this)"
           inputmode="decimal"
@@ -402,7 +422,11 @@ function exerciseCard(ex, exi, accent){
 
         <input class="set-input"
         ${isReadOnlyWeek?'disabled':''}
-        ondblclick="toggleFieldKeyboard(this)"
+        onpointerdown="onSetInputPointerDown(event,this)"
+        onpointermove="onSetInputPointerMove(event)"
+        onpointerup="onSetInputPointerCancel()"
+        onpointerleave="onSetInputPointerCancel()"
+        onpointercancel="onSetInputPointerCancel()"
         onblur="resetFieldKeyboard(this)"
         inputmode="numeric"
         placeholder="rip"
@@ -445,7 +469,14 @@ function exerciseCard(ex, exi, accent){
 
     const maxShown = !!(ex.maxShown && ex.maxShown[w]);
 
-
+    const maxSuggested = [
+      (!maxPair[0].peso && maxPair[0].peso!==0) ? suggestNextMaxWeight(ex,w,0) : null,
+      (!maxPair[1].peso && maxPair[1].peso!==0) ? suggestNextMaxWeight(ex,w,1) : null
+    ];
+    const maxKgPlaceholder = [
+      maxSuggested[0]!==null ? ('ultimo: '+maxSuggested[0]) : 'max kg',
+      maxSuggested[1]!==null ? ('ultimo: '+maxSuggested[1]) : 'max kg'
+    ];
 
     const maxRowHtml = maxShown ? `
 
@@ -460,7 +491,14 @@ function exerciseCard(ex, exi, accent){
 
         <input class="set-input max-input"
         ${isReadOnlyWeek?'disabled':''}
-        placeholder="max kg"
+        onpointerdown="onSetInputPointerDown(event,this)"
+        onpointermove="onSetInputPointerMove(event)"
+        onpointerup="onSetInputPointerCancel()"
+        onpointerleave="onSetInputPointerCancel()"
+        onpointercancel="onSetInputPointerCancel()"
+        onblur="resetFieldKeyboard(this)"
+        inputmode="decimal"
+        placeholder="${maxKgPlaceholder[0]}"
         value="${escapeAttr(maxPair[0].peso??'')}"
         onchange="updateMax(${exi},${w},0,'peso',this.value)">
 
@@ -468,7 +506,14 @@ function exerciseCard(ex, exi, accent){
 
         <input class="set-input max-input"
         ${isReadOnlyWeek?'disabled':''}
-        placeholder="max kg"
+        onpointerdown="onSetInputPointerDown(event,this)"
+        onpointermove="onSetInputPointerMove(event)"
+        onpointerup="onSetInputPointerCancel()"
+        onpointerleave="onSetInputPointerCancel()"
+        onpointercancel="onSetInputPointerCancel()"
+        onblur="resetFieldKeyboard(this)"
+        inputmode="decimal"
+        placeholder="${maxKgPlaceholder[1]}"
         value="${escapeAttr(maxPair[1].peso??'')}"
         onchange="updateMax(${exi},${w},1,'peso',this.value)">
 
@@ -482,6 +527,13 @@ function exerciseCard(ex, exi, accent){
 
         <input class="set-input max-input"
         ${isReadOnlyWeek?'disabled':''}
+        onpointerdown="onSetInputPointerDown(event,this)"
+        onpointermove="onSetInputPointerMove(event)"
+        onpointerup="onSetInputPointerCancel()"
+        onpointerleave="onSetInputPointerCancel()"
+        onpointercancel="onSetInputPointerCancel()"
+        onblur="resetFieldKeyboard(this)"
+        inputmode="numeric"
         placeholder="max rip"
         value="${escapeAttr(maxPair[0].rip??'')}"
         onchange="updateMax(${exi},${w},0,'rip',this.value)">
@@ -490,6 +542,13 @@ function exerciseCard(ex, exi, accent){
 
         <input class="set-input max-input"
         ${isReadOnlyWeek?'disabled':''}
+        onpointerdown="onSetInputPointerDown(event,this)"
+        onpointermove="onSetInputPointerMove(event)"
+        onpointerup="onSetInputPointerCancel()"
+        onpointerleave="onSetInputPointerCancel()"
+        onpointercancel="onSetInputPointerCancel()"
+        onblur="resetFieldKeyboard(this)"
+        inputmode="numeric"
         placeholder="max rip"
         value="${escapeAttr(maxPair[1].rip??'')}"
         onchange="updateMax(${exi},${w},1,'rip',this.value)">
@@ -1455,9 +1514,9 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
         <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
         <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
       </div>
-      <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" oninput="scheduleAutoAdvance(this)" inputmode="decimal" placeholder="${kgPlaceholder}" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+      <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" oninput="scheduleAutoAdvance(this)" inputmode="decimal" placeholder="${kgPlaceholder}" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
     </div>
-    <input class="set-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">`;
+    <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">`;
 }
 // la card per una coppia collegata: stesso impianto di exerciseCard, ma con due
 // intestazioni (una per esercizio) e un'unica settimana condivisa, dove ogni
@@ -1506,19 +1565,22 @@ const isCollapsed =
     if(maxShown){
       const maxA = ((exA.maxExtra && exA.maxExtra[w]) || [])[0] || {};
       const maxB = ((exB.maxExtra && exB.maxExtra[w]) || [])[0] || {};
+      const maxAKgPh = (!maxA.peso && maxA.peso!==0 && suggestNextMaxWeight(exA,w,0)!==null) ? ('ultimo: '+suggestNextMaxWeight(exA,w,0)) : 'max kg';
+      const maxBKgPh = (!maxB.peso && maxB.peso!==0 && suggestNextMaxWeight(exB,w,0)!==null) ? ('ultimo: '+suggestNextMaxWeight(exB,w,0)) : 'max kg';
+      const pointerAttrs = `onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)"`;
       maxRowHtml = `<div class="linked-set-group">
         <div class="linked-set-wrap">
           <div class="set-label">max</div>
           <div class="linked-sub-rows">
             <div class="linked-sub-row">
               <span class="linked-tag" title="${escapeAttr(exA.nome||'')}">${escapeHtml(exA.nome||'—')}</span>
-              <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxA.peso??'')}" onchange="updateMax(${exiA},${w},0,'peso',this.value)">
-              <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxA.rip??'')}" onchange="updateMax(${exiA},${w},0,'rip',this.value)">
+              <input class="set-input max-input" ${pointerAttrs} inputmode="decimal" placeholder="${maxAKgPh}" value="${escapeAttr(maxA.peso??'')}" onchange="updateMax(${exiA},${w},0,'peso',this.value)">
+              <input class="set-input max-input" ${pointerAttrs} inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxA.rip??'')}" onchange="updateMax(${exiA},${w},0,'rip',this.value)">
             </div>
             <div class="linked-sub-row">
               <span class="linked-tag" title="${escapeAttr(exB.nome||'')}">${escapeHtml(exB.nome||'—')}</span>
-              <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="decimal" placeholder="max kg" value="${escapeAttr(maxB.peso??'')}" onchange="updateMax(${exiB},${w},0,'peso',this.value)">
-              <input class="set-input max-input" ondblclick="toggleFieldKeyboard(this)" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxB.rip??'')}" onchange="updateMax(${exiB},${w},0,'rip',this.value)">
+              <input class="set-input max-input" ${pointerAttrs} inputmode="decimal" placeholder="${maxBKgPh}" value="${escapeAttr(maxB.peso??'')}" onchange="updateMax(${exiB},${w},0,'peso',this.value)">
+              <input class="set-input max-input" ${pointerAttrs} inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxB.rip??'')}" onchange="updateMax(${exiB},${w},0,'rip',this.value)">
             </div>
           </div>
         </div>

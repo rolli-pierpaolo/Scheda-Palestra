@@ -410,6 +410,51 @@ test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare 
   assert.strictEqual(window.__bridge.state.days[0].esercizi.length, 1, 'aprire/chiudere il menu non deve toccare i dati');
 });
 
+test('advanceProgramWeek riporta avanti lo schema ("Serie") nella settimana nuova solo se e\' ancora vuota', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [0], completedWeeks: [],
+    days: [{
+      name: 'Giorno A',
+      esercizi: [{
+        nome: 'Ex A', recupero: ['60s','60s','60s','60s'],
+        schema: ['4x8 RM8', '', 'gia\' scritta a mano', ''],
+        weekDone: [true,false,false,false], weekSkipped: [false,false,false,false], sets: [[],[],[],[]]
+      }]
+    }]
+  };
+  window.advanceProgramWeek();
+  let ex = window.__bridge.state.days[0].esercizi[0];
+  assert.strictEqual(window.__bridge.state.currentWeek, 1, 'deve essere avanzata alla settimana 2');
+  assert.strictEqual(ex.schema[1], '4x8 RM8', 'la settimana 2, vuota, deve riprendere lo schema della settimana 1');
+
+  // avanzo ancora: la settimana 3 aveva GIA' un suo schema scritto a mano,
+  // non deve essere sovrascritto dalla cascata
+  window.__bridge.state.completedTrainingDays = [0];
+  window.__bridge.state.days[0].esercizi[0].weekDone[1] = true;
+  window.advanceProgramWeek();
+  ex = window.__bridge.state.days[0].esercizi[0];
+  assert.strictEqual(window.__bridge.state.currentWeek, 2);
+  assert.strictEqual(ex.schema[2], 'gia\' scritta a mano', 'BUG: non deve sovrascrivere uno schema gia\' compilato a mano');
+});
+
+test('suggestNextWeight/suggestNextMaxWeight ripropongono il testo esatto della settimana scorsa, lettere comprese', () => {
+  const window = loadApp();
+  const ex = {
+    weekDone: [true, false],
+    sets: [[{peso:'4,5p', rip:'8'}], []],
+    maxExtra: [[{peso:'22,5kg fallimento', rip:'3'}], []]
+  };
+  assert.strictEqual(window.suggestNextWeight(ex, 1, 0), '4,5p', 'BUG: la lettera "p" (peso a corpo libero/annotazione personale) non deve sparire dal suggerimento');
+  assert.strictEqual(window.suggestNextMaxWeight(ex, 1, 0), '22,5kg fallimento', 'anche il suggerimento del Max deve riportare il testo cosi\' com\'e\' stato scritto');
+
+  // settimana 0: non c'e' una settimana prima, nessun suggerimento
+  assert.strictEqual(window.suggestNextWeight(ex, 0, 0), null);
+  // settimana precedente non ancora segnata fatta: nessun suggerimento
+  const ex2 = { weekDone: [false], sets: [[{peso:'10', rip:'8'}]] };
+  assert.strictEqual(window.suggestNextWeight(ex2, 1, 0), null, 'se la settimana prima non e\' stata completata, non deve suggerire un peso non confermato');
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){
