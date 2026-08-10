@@ -125,7 +125,7 @@ function revealAchievement(a){
   window._achievToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 3200);
   if(achievNotificationsEnabled && typeof Notification!=='undefined' && Notification.permission==='granted' && 'serviceWorker' in navigator){
     navigator.serviceWorker.ready.then(reg=>{
-      reg.showNotification('🎯 Obiettivo sbloccato: '+a.title, { body:a.desc, icon:'logo.png', tag:'achiev-'+a.id });
+      reg.showNotification('🎯 Obiettivo sbloccato: '+a.title, { body:a.desc, icon:'icon-192.png', tag:'achiev-'+a.id });
     }).catch(()=>{});
   }
 }

@@ -694,7 +694,9 @@ function exerciseCard(ex, exi, accent){
   return `
 
   <div class="ex-card-wrap" style="--accent:${accent.c}">
-  <div class="ex-sticky-header ${cardCollapsed?'collapsed':''}" id="stickyHeader-${exi}" onclick="handleStickyHeaderClick(${exi})" ondblclick="startEditStickyName(${exi})">${escapeHtml(ex.nome||'Esercizio')}<span class="ex-collapse-chev">▾</span></div>
+  <div class="ex-sticky-header ${cardCollapsed?'collapsed':''}" id="stickyHeader-${exi}"
+  onpointerdown="onStickyPointerDown(event,${exi})" onpointermove="onStickyPointerMove(event)" onpointerup="onStickyPointerCancel()" onpointerleave="onStickyPointerCancel()" onpointercancel="onStickyPointerCancel()"
+  onclick="handleStickyHeaderClick(${exi})" ondblclick="startEditStickyName(${exi})">${escapeHtml(ex.nome||'Esercizio')}<span class="ex-collapse-chev">▾</span></div>
   <div class="card ${cardCollapsed?'ex-collapsed':''}" data-exi="${exi}" style="--accent:${accent.c}">
 
 
@@ -800,6 +802,10 @@ function toggleExerciseCollapse(exi){
 // la soglia) annulla il collasso e lascia fare tutto a ondblclick
 let stickyClickTimer = null;
 function handleStickyHeaderClick(exi){
+  // una pressione prolungata (menu contestuale, vedi sotto) finisce comunque
+  // con un pointerup/click nativo del browser: se e' gia' scattata lei, il
+  // click che segue va ignorato, non deve ANCHE aprire/chiudere la card
+  if(stickyGesture.longFired){ stickyGesture.longFired = false; return; }
   if(stickyClickTimer){
     clearTimeout(stickyClickTimer);
     stickyClickTimer = null;
@@ -809,6 +815,54 @@ function handleStickyHeaderClick(exi){
     stickyClickTimer = null;
     toggleExerciseCollapse(exi);
   }, 250);
+}
+// pressione prolungata sul nome esercizio: apre un menu contestuale con le
+// stesse azioni gia' nelle iconcine della card (Elimina, Grafico, Calcola
+// dischi, Collega) - piu' comodo da mirare col dito che 4 iconcine minuscole.
+// Solo sulla card SOLO (non su quella di una coppia collegata: li' le azioni
+// sono gia' sdoppiate su due righe separate, meno affollate, e "a quale dei
+// due esercizi si riferirebbe" sarebbe ambiguo per un solo gesto)
+let stickyGesture = { longTimer:null, startX:0, startY:0, longFired:false };
+function onStickyPointerDown(e, exi){
+  stickyGesture.startX = e.clientX;
+  stickyGesture.startY = e.clientY;
+  stickyGesture.longFired = false;
+  clearTimeout(stickyGesture.longTimer);
+  stickyGesture.longTimer = setTimeout(()=>{
+    stickyGesture.longFired = true;
+    const ex = state.days[activeDayIdx].esercizi[exi];
+    openExerciseContextMenu(exi, ex ? ex.nome : '');
+  }, 500);
+}
+function onStickyPointerMove(e){
+  const dx = Math.abs(e.clientX-stickyGesture.startX), dy = Math.abs(e.clientY-stickyGesture.startY);
+  if(dx>10 || dy>10) clearTimeout(stickyGesture.longTimer);
+}
+function onStickyPointerCancel(){
+  clearTimeout(stickyGesture.longTimer);
+}
+function openExerciseContextMenu(exi, exName){
+  closeExerciseContextMenu();
+  const el = document.createElement('div');
+  el.id = 'exContextMenu';
+  el.className = 'modal-overlay ex-context-overlay';
+  el.onclick = (e) => { if(e.target===el) closeExerciseContextMenu(); };
+  el.innerHTML = `
+    <div class="ex-context-sheet">
+      <div class="ex-context-title">${escapeHtml(exName||'Esercizio')}</div>
+      <button class="ex-context-action" onclick="closeExerciseContextMenu();openChart(${exi})">${ICON_CHART} Grafico progressione</button>
+      <button class="ex-context-action" onclick="closeExerciseContextMenu();openPlateCalc(${exi})">${ICON_PLATE} Calcola dischi bilanciere</button>
+      <button class="ex-context-action" onclick="closeExerciseContextMenu();openLinkPicker(${exi})">${ICON_LINK} Collega esercizio</button>
+      <button class="ex-context-action danger" onclick="closeExerciseContextMenu();deleteExercise(${exi})">${ICON_TRASH} Elimina esercizio</button>
+    </div>
+    <button class="ex-context-cancel" onclick="closeExerciseContextMenu()">Annulla</button>
+  `;
+  document.body.appendChild(el);
+  vibrate(20);
+}
+function closeExerciseContextMenu(){
+  const el = document.getElementById('exContextMenu');
+  if(el) el.remove();
 }
 
 

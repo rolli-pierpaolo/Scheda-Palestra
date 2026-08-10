@@ -58,6 +58,24 @@ window.addEventListener('scroll', function(){
   clearTimeout(scrollSnapTimer);
   scrollSnapTimer = setTimeout(trySnapToActiveExercise, 550);
 }, {passive:true});
+// "titolo grande" che si restringe scorrendo, come le app native iOS
+// (Impostazioni, Mail...): solo un cambio di classe qui, il resto lo fa la
+// transizione CSS gia' pronta su .topbar/.topbar h1. --topbar-h (l'altezza
+// usata per posizionare l'header sticky di ogni esercizio subito sotto,
+// vedi updateTopbarHeightVar in js/app-init.js) va ricalcolata quando la
+// topbar cambia altezza, altrimenti l'header sticky resterebbe posizionato
+// in base all'altezza vecchia - solo quando lo stato CAMBIA davvero (non a
+// ogni scroll), sia subito che a transizione finita (300ms dopo)
+let topbarScrolled = false;
+window.addEventListener('scroll', function(){
+  const scrolled = window.scrollY > 20;
+  if(scrolled === topbarScrolled) return;
+  topbarScrolled = scrolled;
+  const topbarEl = document.querySelector('.topbar');
+  if(topbarEl) topbarEl.classList.toggle('topbar-scrolled', scrolled);
+  updateTopbarHeightVar();
+  setTimeout(updateTopbarHeightVar, 300);
+}, {passive:true});
 // pensato per il telefono (il pollice puo' far scrollare per sbaglio mentre si
 // tiene in mano): su PC, dove lo scroll e' sempre volontario (mouse/tastiera),
 // un salto automatico della pagina e' solo fastidioso, quindi li' resta disattivo
