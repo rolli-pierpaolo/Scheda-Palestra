@@ -357,6 +357,36 @@ test('computeExerciseRepsAtSameWeight confronta le ripetizioni fatte allo stesso
   assert.strictEqual(points[1].value, 8, 'le rip a 60kg sono salite da 6 a 8: si vede il progresso a parita\' di peso');
 });
 
+test('le card esercizio partono chiuse tranne la prima non ancora fatta, e si richiudono da sole quando la si completa', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.collapsedMap = {};
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0,
+    days: [{ name:'Push', esercizi: [
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] },
+      { nome:'Ex B', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] },
+      { nome:'Ex C', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
+    ]}]
+  };
+
+  // di default, senza nessuna voce esplicita in collapsedMap: aperto solo il
+  // primo non ancora fatto (qui il primo in assoluto, exi 0), gli altri chiusi
+  assert.strictEqual(window.isExerciseCardCollapsed(0, 0), false, 'il primo esercizio deve partire aperto');
+  assert.strictEqual(window.isExerciseCardCollapsed(0, 1), true, 'gli altri devono partire chiusi');
+  assert.strictEqual(window.isExerciseCardCollapsed(0, 2), true);
+
+  // lo segno completato per la settimana corrente: deve richiudersi da solo,
+  // e il prossimo (Ex B) deve aprirsi da solo al posto suo
+  window.toggleWeekDone(0, 0);
+  assert.strictEqual(window.isExerciseCardCollapsed(0, 0), true, 'BUG: l\'esercizio appena completato deve richiudersi da solo');
+  assert.strictEqual(window.isExerciseCardCollapsed(0, 1), false, 'il prossimo esercizio deve aprirsi automaticamente al suo posto');
+
+  // un tocco manuale la apre/chiude a prescindere da tutto il resto
+  window.toggleExerciseCollapse(2);
+  assert.strictEqual(window.isExerciseCardCollapsed(0, 2), false, 'un tocco manuale deve poter aprire QUALSIASI esercizio, in qualsiasi ordine');
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){

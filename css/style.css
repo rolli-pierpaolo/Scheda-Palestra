@@ -204,7 +204,15 @@ main{padding:12px;}
    bordi arrotondati), e position:sticky su un discendente di un elemento con
    overflow:hidden non "aggancia" mai lo scroll della pagina - va tenuto fuori */
 .ex-card-wrap{position:relative;}
-.ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 12px;margin-bottom:4px;font-size:14.4px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:normal;overflow:visible;text-overflow:clip;box-shadow:0 4px 10px rgba(0,0,0,.35);}
+.ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 30px 6px 12px;margin-bottom:4px;font-size:14.4px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:normal;overflow:visible;text-overflow:clip;box-shadow:0 4px 10px rgba(0,0,0,.35);}
+/* un tocco sulla scritta apre/chiude la card sotto (vedi handleStickyHeaderClick
+   in js/exercise-card.js) - la freccina segue lo stato, ruotata quando chiusa */
+.ex-collapse-chev{position:absolute;right:10px;top:50%;transform:translateY(-50%);transition:transform .15s;pointer-events:none;}
+.ex-sticky-header.collapsed .ex-collapse-chev{transform:translateY(-50%) rotate(-90deg);}
+/* card chiusa: solo l'header sticky resta visibile, il contenuto sparisce
+   del tutto invece di restare nel documento occupando spazio - su un giorno
+   con tanti esercizi la pagina resta leggera */
+.card.ex-collapsed{display:none;}
 /* esercizi collegati: tre righe impilate (esercizio A / tipo / esercizio B)
    invece del vecchio "A + B" su una riga, quindi qui l'header non tronca piu'
    con l'ellissi ne' resta su una riga sola */
