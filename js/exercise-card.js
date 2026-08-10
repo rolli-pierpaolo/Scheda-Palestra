@@ -703,25 +703,7 @@ function exerciseCard(ex, exi, accent){
     <div class="card-head">
 
 
-      <button class="del-ex" onclick="deleteExercise(${exi})" title="Elimina esercizio">${ICON_TRASH}</button>
-
-
-
-      <button class="chart-btn" onclick="openChart(${exi})" title="Grafico progressione">
-      ${ICON_CHART}
-      </button>
-
-
-
-      <button class="chart-btn" onclick="openPlateCalc(${exi})" title="Calcola dischi bilanciere">
-      ${ICON_PLATE}
-      </button>
-
-
-
-      <button class="chart-btn" onclick="openLinkPicker(${exi})" title="Collega esercizio (super set / jump set)">
-      ${ICON_LINK}
-      </button>
+      <button class="ex-more-btn" onclick="openExerciseContextMenu(${exi}, '${escapeJs(ex.nome||'')}')" title="Altre azioni" aria-label="Altre azioni">${ICON_MORE}</button>
 
 
       ${prBadge}
@@ -1699,17 +1681,13 @@ const isCollapsed =
   <div class="card linked-group ${cardCollapsed?'ex-collapsed':''}" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
     <div class="linked-pair-frame">
       <div class="card-head linked-head compact">
-        <button class="del-ex" onclick="deleteExercise(${exiA})" title="Elimina esercizio">${ICON_TRASH}</button>
-        <button class="chart-btn" onclick="openChart(${exiA})" title="Grafico progressione">${ICON_CHART}</button>
-        <button class="chart-btn" onclick="openPlateCalc(${exiA})" title="Calcola dischi bilanciere">${ICON_PLATE}</button>
+        <button class="ex-more-btn" onclick="openExerciseContextMenu(${exiA}, '${escapeJs(exA.nome||'')}')" title="Altre azioni" aria-label="Altre azioni">${ICON_MORE}</button>
         ${prBadgeA}
         <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiA},this.value)">${escapeHtml(exA.commento??'')}</textarea>
       </div>
       <button class="link-type-divider" onclick="openLinkPicker(${exiA})" title="Gestisci collegamento"><span class="link-type-pill" style="background:${accent.d}">${ICON_LIGHTNING} ${typeLabel} <span class="link-type-manage">${ICON_LINK} gestisci</span></span></button>
       <div class="card-head linked-head compact">
-        <button class="del-ex" onclick="deleteExercise(${exiB})" title="Elimina esercizio">${ICON_TRASH}</button>
-        <button class="chart-btn" onclick="openChart(${exiB})" title="Grafico progressione">${ICON_CHART}</button>
-        <button class="chart-btn" onclick="openPlateCalc(${exiB})" title="Calcola dischi bilanciere">${ICON_PLATE}</button>
+        <button class="ex-more-btn" onclick="openExerciseContextMenu(${exiB}, '${escapeJs(exB.nome||'')}')" title="Altre azioni" aria-label="Altre azioni">${ICON_MORE}</button>
         ${prBadgeB}
         <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiB},this.value)">${escapeHtml(exB.commento??'')}</textarea>
       </div>
