@@ -15,6 +15,9 @@ const ICON_TRASH = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" 
 const ICON_CHART = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 20 V4"/><path d="M4 20 H20"/><path d="M6.5 15 L11 10.5 L14 13.5 L19 7.5"/></svg>';
 const ICON_PLATE = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>';
 const ICON_LINK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M10 14 L14 10"/><path d="M8.5 15.5 L6.5 17.5 A3 3 0 0 1 2.5 13.5 L5.5 10.5 A3 3 0 0 1 9.5 10.5"/><path d="M15.5 8.5 L17.5 6.5 A3 3 0 0 1 21.5 10.5 L18.5 13.5 A3 3 0 0 1 14.5 13.5"/></svg>';
+// "..." stile iOS: tre pallini pieni invece del solito bordo/tratto delle
+// altre icone di questo set, si legge meglio a quella dimensione minuscola
+const ICON_MORE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none"/></svg>';
 // seconda tornata: intestazioni/bottoni di Storico + chrome dei modali. Stessa
 // funzione svgIcon() per non ripetere gli attributi comuni ogni volta - il
 // "d" di ogni singolo path resta l'unica parte che cambia da icona a icona
