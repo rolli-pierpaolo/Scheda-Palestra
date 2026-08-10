@@ -328,6 +328,61 @@ function splitMotivation(phrase){
   const iconMap = { '🔥':ICON_FLAME_COLOR, '💥':ICON_LIGHTNING_COLOR, '💪':ICON_PLATE_COLOR, '🦵':ICON_PLATE_COLOR };
   return { text: phrase.slice(0, m.index).trim(), icon: iconMap[m[1]] || '' };
 }
+// gruppi muscolari con almeno un esercizio segnato COMPLETATO nella
+// settimana corrente (in qualsiasi giorno): solo "completata" conta come
+// muscolo davvero allenato, "saltata" no - stessa logica di ogni altro punto
+// dell'app che tratta weekDone come la fonte di verita' del lavoro fatto
+function computeWeeklyMuscleActivation(){
+  const w = state.currentWeek || 0;
+  const trained = new Set();
+  (state.days||[]).forEach(day => {
+    (day.esercizi||[]).forEach(ex => {
+      if(ex.weekDone && ex.weekDone[w]){
+        const g = getExerciseGroup(ex.nome);
+        if(g) trained.add(g);
+      }
+    });
+  });
+  return trained;
+}
+// due sagome stilizzate (non anatomiche: forme semplici coerenti con lo
+// stile a icone lineari del resto dell'app) invece di una sola, perche' dal
+// solo davanti non si vedono schiena/femorali/glutei e dal solo dietro non
+// si vedono petto/addominali - servono entrambe per coprire tutti i
+// MUSCLE_GROUPS che hanno senso su un corpo (cardio/altro restano testuali)
+const MUSCLE_MAP_REGIONS_FRONT = [
+  { group:'Spalle', shape:'<ellipse cx="20" cy="42" rx="12" ry="9"/><ellipse cx="60" cy="42" rx="12" ry="9"/>' },
+  { group:'Petto', shape:'<rect x="24" y="34" width="32" height="26" rx="10"/>' },
+  { group:'Addominali', shape:'<rect x="27" y="58" width="26" height="26" rx="8"/>' },
+  { group:'Bicipiti', shape:'<rect x="5" y="38" width="13" height="46" rx="6.5"/><rect x="62" y="38" width="13" height="46" rx="6.5"/>' },
+  { group:'Quadricipiti', shape:'<rect x="24" y="86" width="14" height="70" rx="7"/><rect x="42" y="86" width="14" height="70" rx="7"/>' }
+];
+const MUSCLE_MAP_REGIONS_BACK = [
+  { group:'Schiena', shape:'<rect x="22" y="34" width="36" height="54" rx="14"/>' },
+  { group:'Tricipiti', shape:'<rect x="5" y="38" width="13" height="46" rx="6.5"/><rect x="62" y="38" width="13" height="46" rx="6.5"/>' },
+  { group:'Glutei', shape:'<rect x="26" y="86" width="28" height="18" rx="9"/>' },
+  { group:'Femorali', shape:'<rect x="24" y="102" width="14" height="30" rx="7"/><rect x="42" y="102" width="14" height="30" rx="7"/>' },
+  { group:'Polpacci', shape:'<rect x="25" y="130" width="12" height="26" rx="6"/><rect x="43" y="130" width="12" height="26" rx="6"/>' }
+];
+const BODY_HEAD_NECK = '<ellipse cx="40" cy="16" rx="11" ry="12"/><rect x="35" y="24" width="10" height="10" rx="3"/>';
+function renderBodyFigure(regions, trained){
+  const regionsHtml = regions.map(r =>
+    `<g class="body-region${trained.has(r.group)?' trained':''}">${r.shape}</g>`
+  ).join('');
+  return `<svg viewBox="0 0 80 180" class="body-figure">${regionsHtml}<g class="body-region neutral">${BODY_HEAD_NECK}</g></svg>`;
+}
+function renderMuscleMap(accent){
+  const trained = computeWeeklyMuscleActivation();
+  const extras = ['Cardio','Altro'].filter(g=>trained.has(g));
+  return `<div class="home-muscle-map" style="--accent:${accent}">
+    <div class="home-muscle-map-label">Muscoli allenati questa settimana</div>
+    <div class="home-muscle-figures">
+      <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_FRONT, trained)}<span class="home-muscle-figure-caption">Davanti</span></div>
+      <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_BACK, trained)}<span class="home-muscle-figure-caption">Dietro</span></div>
+    </div>
+    ${extras.length ? `<div class="home-muscle-extras">+ ${extras.join(', ')}</div>` : ''}
+  </div>`;
+}
 function renderHome(){
 
   const el = document.getElementById('viewHome');
@@ -411,6 +466,7 @@ const total = weekly.total;
     <div class="home-days-grid">${dayButtons}</div>
     <div class="home-total-stat">${ICON_FLAME} ${monthlyCount} allenamenti completati questo mese</div>
     ${volumeTrendHtml}
+    ${renderMuscleMap(progressAccent)}
   `;
   if(typeof gsap !== "undefined"){
   gsap.to("#homeProgressCount", {
