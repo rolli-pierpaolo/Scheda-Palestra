@@ -30,7 +30,7 @@ button:active{transform:scale(.96);}
 html,body{margin:0;padding:0;background:var(--bg-black);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
 /* spazio per lo stack fisso in fondo: barra di navigazione + savebar, cosi'
    il contenuto scrollato in fondo alla pagina non ci finisce mai sotto */
-body{padding-bottom:calc(100px + env(safe-area-inset-bottom));}
+body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numeric:tabular-nums;}
 /* ---------------- BARRA IN ALTO + TAB ALLENAMENTO/STORICO/GIORNI ---------------- */
 .topbar{
     position:sticky;
