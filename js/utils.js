@@ -189,9 +189,10 @@ function autoWidthSchema(el){
 // i campi kg/rip usano inputmode="decimal"/"numeric" cosi' di default si apre
 // la tastiera solo numeri (piu' comoda per la maggior parte degli inserimenti),
 // ma a volte serve poter scrivere anche lettere/simboli (es. "fallimento"):
-// doppio tap sul campo passa alla tastiera intera, e torna in automatico a
-// quella numerica di default appena si esce dal campo (blur vero, non quello
-// interno usato per far ridisegnare la tastiera dal sistema operativo)
+// una pressione prolungata sul campo passa alla tastiera intera, e torna in
+// automatico a quella numerica di default appena si esce dal campo (blur
+// vero, non quello interno usato per far ridisegnare la tastiera dal sistema
+// operativo)
 function toggleFieldKeyboard(input){
   const dflt = input.dataset.defaultInputmode || input.getAttribute('inputmode') || 'decimal';
   input.dataset.defaultInputmode = dflt;
@@ -207,5 +208,29 @@ function resetFieldKeyboard(input){
     input.setAttribute('inputmode', input.dataset.defaultInputmode);
     delete input.dataset.defaultInputmode;
   }
+}
+// pressione prolungata invece del doppio tap: su mobile il doppio tap e'
+// spesso poco affidabile (due tocchi non abbastanza ravvicinati non vengono
+// riconosciuti come "dblclick" dal browser, quindi a volte semplicemente non
+// succede nulla) - stesso schema gia' usato per il menu contestuale sul nome
+// esercizio (vedi stickyGesture in exercise-card.js), qui su un gesture state
+// separato perche' agisce su un elemento diverso (il singolo campo kg/rip)
+let kbGesture = { timer:null, startX:0, startY:0 };
+function onSetInputPointerDown(e, input){
+  kbGesture.startX = e.clientX;
+  kbGesture.startY = e.clientY;
+  clearTimeout(kbGesture.timer);
+  kbGesture.timer = setTimeout(()=>{
+    kbGesture.timer = null;
+    vibrate(15);
+    toggleFieldKeyboard(input);
+  }, 450);
+}
+function onSetInputPointerMove(e){
+  const dx = Math.abs(e.clientX-kbGesture.startX), dy = Math.abs(e.clientY-kbGesture.startY);
+  if(dx>10 || dy>10) clearTimeout(kbGesture.timer);
+}
+function onSetInputPointerCancel(){
+  clearTimeout(kbGesture.timer);
 }
 

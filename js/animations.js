@@ -546,6 +546,26 @@ if(weekFinished){
 
 }
 
+// lo schema ("Serie") di solito resta identico settimana dopo settimana: se
+// la nuova settimana che si apre non ha ancora il suo schema, lo riprende
+// dall'ultima settimana precedente che ce l'aveva, invece di lasciarlo vuoto
+// da ridigitare da capo. Resta comunque un campo vero e modificabile solo
+// per quella settimana, non un placeholder fantasma
+function cascadeScheduleToWeek(newWeek){
+  state.days.forEach(day => {
+    (day.esercizi||[]).forEach(ex => {
+      if(!ex.schema || ex.schema[newWeek]===undefined) return;
+      if(String(ex.schema[newWeek]||'').trim() !== '') return;
+      for(let i=newWeek-1; i>=0; i--){
+        const prev = ex.schema[i];
+        if(prev && String(prev).trim() !== ''){
+          ex.schema[newWeek] = prev;
+          break;
+        }
+      }
+    });
+  });
+}
 function advanceProgramWeek(){
 
   // idempotente: viene chiamata da piu' punti diversi per lo stesso evento
@@ -577,6 +597,7 @@ function advanceProgramWeek(){
   if(state.currentWeek < maxWeek){
 
     state.currentWeek++;
+    cascadeScheduleToWeek(state.currentWeek);
 
   }
 
