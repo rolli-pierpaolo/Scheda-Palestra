@@ -40,7 +40,12 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));}
     border-bottom:2px solid var(--green);
     padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;
    text-align:center;
+   transition:padding .2s ease;
    }
+/* "titolo grande" che si restringe scorrendo (pattern nativo iOS): vedi il
+   listener in js/navigation.js, che cambia solo questa classe */
+.topbar.topbar-scrolled{padding-top:calc(env(safe-area-inset-top) + 4px);padding-bottom:4px;}
+.topbar.topbar-scrolled h1{font-size:12px;}
 
 .topbar h1{
   margin:0;
@@ -49,7 +54,7 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));}
   font-weight:900;
   text-align:center;
   text-transform:uppercase;
-  transition:font-size .15s;
+  transition:font-size .2s ease;
 
   background:linear-gradient(
     90deg,
@@ -562,8 +567,23 @@ main{padding:12px;}
 .achiev-title{font-weight:800;font-size:14px;}
 .achiev-desc{font-size:12px;color:var(--muted);margin-top:2px;}
 /* ---------------- MODALI (grafico progressione + categorie giorni) ---------------- */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;}
+/* sfondo sfocato dietro i modali (invece di solo scurito): l'effetto "vetro"
+   riconoscibile delle app native di qualita' (iOS, Notion...) - -webkit-
+   prefisso necessario per Safari/iOS, che e' anche la piattaforma di chi usa
+   davvero questa app */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;}
 .modal-box{background:var(--panel2);border:1px solid var(--line);border-radius:12px;max-width:360px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.5);}
+/* menu contestuale a pressione prolungata sul nome esercizio (vedi
+   openExerciseContextMenu in js/exercise-card.js): stile "action sheet"
+   nativo iOS, dal basso invece che centrato come gli altri modali - riusa
+   .modal-overlay (stesso sfondo sfocato) con l'allineamento cambiato */
+.ex-context-overlay{align-items:flex-end;padding:12px;gap:8px;flex-direction:column;}
+.ex-context-sheet{width:100%;max-width:360px;background:var(--panel2);border-radius:14px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.ex-context-title{padding:12px 14px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);text-align:center;border-bottom:1px solid var(--line);}
+.ex-context-action{display:flex;align-items:center;gap:10px;width:100%;padding:14px;background:none;border:none;border-bottom:1px solid var(--line);color:var(--text);font-size:14px;font-weight:700;text-align:left;}
+.ex-context-action:last-child{border-bottom:none;}
+.ex-context-action.danger{color:var(--red);}
+.ex-context-cancel{width:100%;max-width:360px;background:var(--panel2);border:none;border-radius:14px;padding:14px;color:var(--accent,var(--green));font-size:14px;font-weight:800;box-shadow:0 12px 40px rgba(0,0,0,.5);}
 .modal-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:800;font-size:14px;color:var(--green);position:sticky;top:0;background:var(--panel2);}
 .modal-head button{background:none;border:none;color:var(--muted);font-size:17px;padding:2px 6px;}
 .modal-body{padding:14px;}

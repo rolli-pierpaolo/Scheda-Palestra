@@ -387,6 +387,29 @@ test('le card esercizio partono chiuse tranne la prima non ancora fatta, e si ri
   assert.strictEqual(window.isExerciseCardCollapsed(0, 2), false, 'un tocco manuale deve poter aprire QUALSIASI esercizio, in qualsiasi ordine');
 });
 
+test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare i dati, con tutte e 4 le azioni', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0,
+    days: [{ name:'Push', esercizi: [
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
+    ]}]
+  };
+  assert.strictEqual(window.document.getElementById('exContextMenu'), null);
+
+  window.openExerciseContextMenu(0, 'Ex A');
+  const menu = window.document.getElementById('exContextMenu');
+  assert.ok(menu, 'deve apparire nel DOM');
+  assert.strictEqual(menu.querySelector('.ex-context-title').textContent.trim(), 'Ex A');
+  assert.strictEqual(menu.querySelectorAll('.ex-context-action').length, 4, 'Grafico, Calcola dischi, Collega, Elimina');
+  assert.ok(menu.querySelector('.ex-context-action.danger'), 'Elimina deve essere marcata come azione pericolosa');
+
+  window.closeExerciseContextMenu();
+  assert.strictEqual(window.document.getElementById('exContextMenu'), null, 'deve sparire completamente, non solo nascondersi');
+  assert.strictEqual(window.__bridge.state.days[0].esercizi.length, 1, 'aprire/chiudere il menu non deve toccare i dati');
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){
