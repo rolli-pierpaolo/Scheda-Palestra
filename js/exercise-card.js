@@ -55,6 +55,15 @@ function renderExerciseJumpIndex(progress, accent){
   return `<div class="ex-jump-index">${dots}</div>`;
 }
 function scrollToExerciseCard(exi){
+  // se la card e' chiusa e' display:none: prima la apro (stessa funzione
+  // usata dal tocco sull'header), altrimenti non avrebbe una posizione reale
+  // su cui scrollare. renderActive() la ricrea da zero, quindi la cerco di
+  // nuovo DOPO invece di tenere il riferimento vecchio
+  if(isExerciseCardCollapsed(activeDayIdx, exi)){
+    collapsedMap[activeDayIdx+"_"+exi+"_card"] = false;
+    saveCollapsed();
+    renderActive();
+  }
   const card = document.querySelector('#viewActive .card[data-exi="'+exi+'"], #viewActive .card[data-exi2="'+exi+'"]');
   if(!card) return;
   const wrap = card.closest('.ex-card-wrap') || card;
@@ -306,6 +315,7 @@ function exerciseCard(ex, exi, accent){
 
   const record = getRecordForExercise(ex.nome);
   const recordAttr = record ? record.peso : 'null';
+  const cardCollapsed = isExerciseCardCollapsed(activeDayIdx, exi);
 
 
   const weeksHtml = weeks.map(w=>{
@@ -684,8 +694,8 @@ function exerciseCard(ex, exi, accent){
   return `
 
   <div class="ex-card-wrap" style="--accent:${accent.c}">
-  <div class="ex-sticky-header" id="stickyHeader-${exi}" ondblclick="startEditStickyName(${exi})">${escapeHtml(ex.nome||'Esercizio')}</div>
-  <div class="card" data-exi="${exi}" style="--accent:${accent.c}">
+  <div class="ex-sticky-header ${cardCollapsed?'collapsed':''}" id="stickyHeader-${exi}" onclick="handleStickyHeaderClick(${exi})" ondblclick="startEditStickyName(${exi})">${escapeHtml(ex.nome||'Esercizio')}<span class="ex-collapse-chev">▾</span></div>
+  <div class="card ${cardCollapsed?'ex-collapsed':''}" data-exi="${exi}" style="--accent:${accent.c}">
 
 
     <div class="card-head">
@@ -762,6 +772,43 @@ function toggleWeek(btn, key, weekIdx){
 
   saveCollapsed();
 
+}
+
+// stesso principio del collasso per settimana qui sopra, ma un livello piu'
+// su: ogni CARD esercizio puo' essere chiusa o aperta. Di default resta
+// aperta solo quella su cui si sta davvero lavorando (vedi
+// computeCurrentDoingExerciseIdx in js/navigation.js), le altre partono
+// chiuse - su un giorno con tanti esercizi la pagina resta leggera invece di
+// scorrere tutto aperto. Riusa collapsedMap con una chiave diversa da quelle
+// delle settimane (suffisso "_card" non numerico, non puo' scontrarsi con un
+// indice di settimana vero)
+function isExerciseCardCollapsed(dayIdx, exi){
+  const key = dayIdx+"_"+exi+"_card";
+  if(key in collapsedMap) return !!collapsedMap[key];
+  return exi !== computeCurrentDoingExerciseIdx(dayIdx);
+}
+function toggleExerciseCollapse(exi){
+  const key = activeDayIdx+"_"+exi+"_card";
+  collapsedMap[key] = !isExerciseCardCollapsed(activeDayIdx, exi);
+  saveCollapsed();
+  renderActive();
+}
+// distingue un tocco singolo (apri/chiudi la card) da un doppio tocco
+// (rinomina l'esercizio, vedi startEditStickyName/startEditLinkedSticky piu'
+// sotto): senza questo, ogni doppio click farebbe scattare ANCHE il
+// collasso, non solo la rinomina - il secondo click arrivato in tempo (entro
+// la soglia) annulla il collasso e lascia fare tutto a ondblclick
+let stickyClickTimer = null;
+function handleStickyHeaderClick(exi){
+  if(stickyClickTimer){
+    clearTimeout(stickyClickTimer);
+    stickyClickTimer = null;
+    return;
+  }
+  stickyClickTimer = setTimeout(()=>{
+    stickyClickTimer = null;
+    toggleExerciseCollapse(exi);
+  }, 250);
 }
 
 
@@ -1019,6 +1066,13 @@ function toggleWeekDone(exi, w){
     workoutInProgress = true;
     saveWorkoutInProgress();
   }
+  // segnare completata la settimana che si sta davvero svolgendo oggi collassa
+  // da sola la card: quell'esercizio non serve piu' aperto, si passa al
+  // prossimo che si vuole fare (in ordine o no, vedi isExerciseCardCollapsed)
+  if(nowDone && w === state.currentWeek){
+    collapsedMap[activeDayIdx+"_"+exi+"_card"] = true;
+    saveCollapsed();
+  }
   saveState();
   renderActive();
   if(nowDone){
@@ -1031,6 +1085,12 @@ function toggleWeekDone(exi, w){
   if(nowDone && state.days[activeDayIdx].esercizi[next]){
     activeExerciseIdx = next;
     saveActivePos();
+    // forza aperto il prossimo anche se era stato chiuso a mano in precedenza
+    // (es. l'aveva sbirciato e richiuso): l'avanzamento automatico deve
+    // sempre atterrare su una card visibile, mai su una nascosta
+    collapsedMap[activeDayIdx+"_"+next+"_card"] = false;
+    saveCollapsed();
+    renderActive();
     setTimeout(()=>trySnapToActiveExercise(true), 250);
   }
 }
@@ -1087,6 +1147,12 @@ function toggleWeekSkipped(exi, w){
     workoutInProgress = true;
     saveWorkoutInProgress();
   }
+  // stesso principio di toggleWeekDone qui sopra: saltare di proposito la
+  // settimana di oggi collassa comunque la card, non e' un'azione minore
+  if(nowSkipped && w === state.currentWeek){
+    collapsedMap[activeDayIdx+"_"+exi+"_card"] = true;
+    saveCollapsed();
+  }
   saveState();
   renderActive();
   if(nowSkipped){
@@ -1099,6 +1165,9 @@ function toggleWeekSkipped(exi, w){
   if(nowSkipped && state.days[activeDayIdx].esercizi[next]){
     activeExerciseIdx = next;
     saveActivePos();
+    collapsedMap[activeDayIdx+"_"+next+"_card"] = false;
+    saveCollapsed();
+    renderActive();
     setTimeout(()=>trySnapToActiveExercise(true), 250);
   }
 }
@@ -1361,6 +1430,7 @@ function linkedExerciseCard(exA, exiA, exB, exiB, accent){
   const typeLabel = exA.linkType === 'jumpset' ? 'Jump set' : 'Super set';
   const nWeeks = (exA.recupero && exA.recupero.length) || state.weeksPerBlock || 4;
   const weeks = Array.from({length:nWeeks}, (_,i)=>i);
+  const cardCollapsed = isExerciseCardCollapsed(activeDayIdx, exiA);
   const weeksHtml = weeks.map(w=>{
     const wkey = activeDayIdx+"_"+exiA+"_"+w;
     const isCurrentWeek = w === state.currentWeek;
@@ -1566,12 +1636,13 @@ const isCollapsed =
   const prBadgeB = recordB ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(recordB.peso))} kg${recordB.rip? ' × '+escapeHtml(String(recordB.rip)) : ''}</div>` : '';
 
   return `<div class="ex-card-wrap" style="--accent:${accent.c}">
-  <div class="ex-sticky-header linked" id="stickyHeaderLinked-${exiA}" ondblclick="startEditLinkedSticky(${exiA},${exiB})">
+  <div class="ex-sticky-header linked ${cardCollapsed?'collapsed':''}" id="stickyHeaderLinked-${exiA}" onclick="handleStickyHeaderClick(${exiA})" ondblclick="startEditLinkedSticky(${exiA},${exiB})">
     <div class="ex-sticky-line">${escapeHtml(exA.nome||'Esercizio')}</div>
     <div class="ex-sticky-line ex-sticky-linktype">${typeLabel}</div>
     <div class="ex-sticky-line">${escapeHtml(exB.nome||'Esercizio')}</div>
+    <span class="ex-collapse-chev">▾</span>
   </div>
-  <div class="card linked-group" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
+  <div class="card linked-group ${cardCollapsed?'ex-collapsed':''}" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
     <div class="linked-pair-frame">
       <div class="card-head linked-head compact">
         <button class="del-ex" onclick="deleteExercise(${exiA})" title="Elimina esercizio">${ICON_TRASH}</button>
