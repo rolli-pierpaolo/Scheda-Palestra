@@ -501,6 +501,29 @@ test('updateThemeColor segue l\'accent del giorno in Allenamento, torna neutro s
   assert.notStrictEqual(meta.getAttribute('content'), '#0D0D0D', 'in Allenamento deve seguire l\'accent del giorno, non restare neutro');
 });
 
+test('computeWeeklyMuscleActivation conta solo i gruppi con un esercizio COMPLETATO nella settimana corrente', () => {
+  const window = loadApp();
+  window.__bridge.exerciseGroups = { 'panca piana':'Petto', 'squat':'Quadricipiti', 'rematore':'Schiena', 'corsa':'Cardio' };
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 1,
+    days: [
+      { name:'A', esercizi: [
+        { nome:'Panca piana', weekDone:[true,true,false,false] },   // completata in settimana 1 (indice 1): conta
+        { nome:'Squat', weekDone:[true,false,false,false] },        // completata solo in settimana 0: NON conta per la settimana 1
+        { nome:'Corsa', weekDone:[false,true,false,false] }         // completata in settimana 1: conta (extra, non sul corpo)
+      ]},
+      { name:'B', esercizi: [
+        { nome:'Rematore', weekSkipped:[false,true,false,false] }   // SALTATA, non completata: non deve contare
+      ]}
+    ]
+  };
+  const trained = window.computeWeeklyMuscleActivation();
+  assert.ok(trained.has('Petto'), 'Petto deve risultare allenato (Panca piana completata questa settimana)');
+  assert.ok(!trained.has('Quadricipiti'), 'BUG: Squat era completato la settimana scorsa, non questa');
+  assert.ok(!trained.has('Schiena'), 'BUG: una settimana saltata non deve contare come allenata');
+  assert.ok(trained.has('Cardio'), 'Cardio deve risultare tra gli extra');
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){

@@ -189,6 +189,19 @@ main{padding:12px;}
 .home-volume-trend{display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:6px;}
 .home-volume-trend b{color:var(--green);}
 .home-volume-trend svg{flex:0 0 auto;width:13px;height:13px;}
+/* mappa del corpo allenato: due sagome stilizzate (non anatomiche) che si
+   accendono nell'accent del giorno via classe .trained sulle sole regioni
+   gia' completate questa settimana - vedi renderMuscleMap in js/home.js */
+.home-muscle-map{margin-top:16px;}
+.home-muscle-map-label{text-align:center;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
+.home-muscle-figures{display:flex;justify-content:center;align-items:flex-start;gap:26px;}
+.home-muscle-figure-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.body-figure{width:66px;height:150px;}
+.body-region{fill:var(--row-dark);stroke:var(--line);stroke-width:1;transition:fill .4s ease;}
+.body-region.trained{fill:var(--accent,var(--green));}
+.body-region.neutral{fill:var(--panel2);stroke:var(--line);stroke-width:1;}
+.home-muscle-figure-caption{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;}
+.home-muscle-extras{text-align:center;font-size:10px;font-weight:700;color:var(--muted);margin-top:8px;}
 /* barra di progresso del giorno (quanti esercizi della settimana corrente sono
    gia' chiusi): la prima cosa che si vede entrando in un giorno, senza dover
    scrollare fino in fondo o aspettare il bottone flottante "Giorno terminato"
