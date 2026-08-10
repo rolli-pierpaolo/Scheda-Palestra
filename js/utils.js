@@ -93,6 +93,23 @@ function pickFromPool(pool, seed){
   for(let i=0;i<seed.length;i++){ hash = (hash*31 + seed.charCodeAt(i)) >>> 0; }
   return pool[hash % pool.length];
 }
+// piu' varianti apposta (prima era una singola frase fissa per direzione,
+// sempre identica: "leggeva sempre uguale", cosa giustamente segnalata come
+// stucchevole da rileggere esercizio dopo esercizio) - il seed usato per
+// scegliere il suffisso e' diverso da quello della frase base (vedi sotto),
+// cosi' le due cose non sono sempre "incollate" nella stessa combinazione
+const PROGRESSION_SUFFIX_PESO = [
+  " Stavolta carica un filo di più!",
+  " Oggi il ferro sale ancora!",
+  " Un gradino di peso in più, forza!",
+  " Stavolta punta più in alto col carico!",
+];
+const PROGRESSION_SUFFIX_REP = [
+  " Stavolta spremi una rip in più!",
+  " Oggi qualche ripetizione extra, dai!",
+  " Trova un'altra rip nelle gambe... o nelle braccia!",
+  " Stavolta il numero sale ancora!",
+];
 // frase motivazionale per la settimana CORRENTE non ancora conclusa: SEMPRE
 // presente a prescindere dai dati delle settimane vecchie (anche alla primissima
 // settimana in assoluto, dove non c'e' proprio nulla prima) - i dati passati
@@ -119,7 +136,10 @@ function computeProgressionHint(ex, w){
       if(isNaN(p) || p<=0 || isNaN(r) || r<=0) return;
       if(!best || p>best.p || (p===best.p && r>best.r)) best = {p, r};
     });
-    if(best) suffix = best.r >= 10 ? " Stavolta carica un filo di più!" : " Stavolta spremi una rip in più!";
+    if(best){
+      const suffixPool = best.r >= 10 ? PROGRESSION_SUFFIX_PESO : PROGRESSION_SUFFIX_REP;
+      suffix = pickFromPool(suffixPool, (ex.nome||'')+'_'+w+'_suffix');
+    }
   }
   return { text: base.text + suffix, icon: base.icon };
 }

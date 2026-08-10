@@ -81,14 +81,16 @@ function trySnapToActiveExercise(force){
   // (a meno che non sia uno scroll forzato, es. avanzamento automatico al prossimo esercizio)
   const activeTag = document.activeElement && document.activeElement.tagName;
   if(!force && (activeTag === 'INPUT' || activeTag === 'TEXTAREA')) return;
-  // il bersaglio non e' piu' semplicemente "l'ultimo esercizio toccato"
-  // (activeExerciseIdx, che resta comunque il gate qui sopra per non scattare
-  // su uno scroll casuale prima di aver anche solo iniziato) ma il primo
-  // esercizio del giorno ancora da fare in ordine di esecuzione: cosi' se hai
-  // appena finito l'esercizio 1 e stai scrollando verso il 2 senza averci
-  // ancora toccato nulla, ti riporta comunque la' e non indietro sull'1
-  const targetExi = computeCurrentDoingExerciseIdx(activeDayIdx);
-  if(targetExi === null) return;
+  // il bersaglio e' l'ultimo esercizio TOCCATO davvero (activeExerciseIdx) -
+  // NON il primo ancora da fare in ordine (era stato provato con
+  // computeCurrentDoingExerciseIdx, ma cosi' chi lavora fuori ordine - es.
+  // salta all'esercizio 4 senza aver ancora chiuso l'1 - si ritrovava lo
+  // scroll magnetico che lo tirava indietro sull'1 a ogni pausa, un
+  // "combattimento" avanti/indietro con l'utente). Il caso "ho appena finito
+  // l'esercizio 1 e scrollo verso il 2" resta gia' coperto SENZA bisogno di
+  // questo: toggleWeekDone/toggleWeekSkipped aggiornano gia' da soli
+  // activeExerciseIdx al prossimo esercizio appena segni completata/saltata
+  const targetExi = activeExerciseIdx;
   // data-exi2 e' il partner in una coppia collegata (super set/jump set): un
   // riferimento salvato prima di collegare due esercizi potrebbe puntare a
   // quello che ora e' "il secondo" della coppia, che non ha un suo data-exi

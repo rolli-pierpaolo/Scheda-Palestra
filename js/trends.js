@@ -124,6 +124,82 @@ function computeExerciseTrend(exerciseName){
   return { volumePoints, oneRMPoints };
 }
 
+// confronto "a parita' di peso": trova il peso usato piu' spesso in assoluto
+// per questo esercizio (la "moda", non il piu' recente - piu' robusto, un
+// singolo tentativo isolato non lo sposta) e per ogni periodo mostra la
+// MIGLIOR ripetizione fatta esattamente a quel peso. Un modo diverso di
+// leggere i progressi rispetto a volume/1RM: utile soprattutto sui
+// macchinari a incrementi fissi, dove il peso resta spesso lo stesso per
+// mesi e il vero progresso si vede nelle ripetizioni a parita' di carico
+function computeExerciseRepsAtSameWeight(exerciseName){
+  const key = String(exerciseName||'').trim().toLowerCase();
+  const blocks = getChronologicalBlocks();
+
+  const weightCounts = {};
+  blocks.forEach(block=>{
+    (block.days||[]).forEach(day=>{
+      (day.esercizi||[]).forEach(ex=>{
+        if(!ex || String(ex.nome||'').trim().toLowerCase()!==key) return;
+        (ex.sets||[]).forEach(weekSets=>{
+          (weekSets||[]).forEach(s=>{
+            const p = parseFloat(String(s.peso).replace(',','.'));
+            if(!isNaN(p) && p>0){
+              const k = p.toFixed(1);
+              weightCounts[k] = (weightCounts[k]||0)+1;
+            }
+          });
+        });
+      });
+    });
+  });
+  const weightKeys = Object.keys(weightCounts);
+  if(!weightKeys.length) return { referenceWeight: null, points: [] };
+  let referenceWeight = parseFloat(weightKeys[0]);
+  let bestCount = weightCounts[weightKeys[0]];
+  weightKeys.forEach(k=>{
+    if(weightCounts[k] > bestCount){ bestCount = weightCounts[k]; referenceWeight = parseFloat(k); }
+  });
+
+  const points = [];
+  blocks.forEach(block=>{
+    if(block.current){
+      const nWeeks = state.weeksPerBlock || 4;
+      for(let w=0; w<nWeeks; w++){
+        let bestRip = 0;
+        (block.days||[]).forEach(day=>{
+          (day.esercizi||[]).forEach(ex=>{
+            if(!ex || String(ex.nome||'').trim().toLowerCase()!==key) return;
+            ((ex.sets && ex.sets[w]) || []).forEach(s=>{
+              const p = parseFloat(String(s.peso).replace(',','.'));
+              const r = parseFloat(String(s.rip).replace(',','.'));
+              if(isNaN(p) || isNaN(r) || r<=0) return;
+              if(Math.abs(p-referenceWeight) < 0.05 && r>bestRip) bestRip = r;
+            });
+          });
+        });
+        if(bestRip>0) points.push({label:'Sett. '+(w+1), value:bestRip});
+      }
+    } else {
+      let bestRip = 0;
+      (block.days||[]).forEach(day=>{
+        (day.esercizi||[]).forEach(ex=>{
+          if(!ex || String(ex.nome||'').trim().toLowerCase()!==key) return;
+          (ex.sets||[]).forEach(weekSets=>{
+            (weekSets||[]).forEach(s=>{
+              const p = parseFloat(String(s.peso).replace(',','.'));
+              const r = parseFloat(String(s.rip).replace(',','.'));
+              if(isNaN(p) || isNaN(r) || r<=0) return;
+              if(Math.abs(p-referenceWeight) < 0.05 && r>bestRip) bestRip = r;
+            });
+          });
+        });
+      });
+      if(bestRip>0) points.push({label:block.name, value:bestRip});
+    }
+  });
+  return { referenceWeight, points };
+}
+
 let trendsSelectedExercise = null;
 
 function openTrends(){
@@ -149,6 +225,7 @@ function renderTrendsModal(names){
   }
   const options = names.map(n => `<option value="${escapeAttr(n)}" ${n===trendsSelectedExercise?'selected':''}>${escapeHtml(n)}</option>`).join('');
   const { volumePoints, oneRMPoints } = computeExerciseTrend(trendsSelectedExercise);
+  const { referenceWeight, points: sameWeightPoints } = computeExerciseRepsAtSameWeight(trendsSelectedExercise);
   const record = getRecordForExercise(trendsSelectedExercise);
   const recordHtml = record
     ? `<div class="trends-record">${ICON_TROPHY} Record attuale: <b>${escapeHtml(String(record.peso))} kg</b> x ${escapeHtml(String(record.rip))}</div>`
@@ -159,6 +236,9 @@ function renderTrendsModal(names){
   const rmHtml = oneRMPoints.length >= 2
     ? renderChartSVG(oneRMPoints)
     : '<div class="footer-note" style="padding:10px 0;">Non ci sono ancora abbastanza periodi con dati per la stima 1RM.</div>';
+  const sameWeightHtml = sameWeightPoints.length >= 2
+    ? renderChartSVG(sameWeightPoints)
+    : '<div class="footer-note" style="padding:10px 0;">Non ci sono ancora abbastanza periodi con dati a questo peso.</div>';
   body.innerHTML = `
     <select class="meta-input" style="margin-bottom:12px;" onchange="selectTrendsExercise(this.value)">${options}</select>
     ${recordHtml}
@@ -166,5 +246,7 @@ function renderTrendsModal(names){
     ${volHtml}
     <div class="trends-section-label" style="margin-top:16px;">Stima 1RM (formula di Epley)</div>
     ${rmHtml}
+    <div class="trends-section-label" style="margin-top:16px;">Ripetizioni a parità di peso${referenceWeight!==null ? ` (a ${referenceWeight} kg, il tuo carico più usato)` : ''}</div>
+    ${sameWeightHtml}
   `;
 }
