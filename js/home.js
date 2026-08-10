@@ -352,34 +352,66 @@ function computeWeeklyMuscleActivation(){
 // muscolari che si accendono singolarmente, invece delle forme fluttuanti
 // scollegate della prima versione
 const BODY_BASE_SHAPES =
-  '<ellipse cx="50" cy="13" rx="9.5" ry="11"/>' +
-  '<rect x="45.5" y="22" width="9" height="7" rx="2"/>' +
-  '<path d="M32,35 C32,28 39,26 50,26 C61,26 68,28 68,35 L66,60 C65,72 59,79 50,80 C41,79 35,72 34,60 Z"/>' +
-  '<rect x="16" y="32" width="13" height="28" rx="6.5"/><rect x="14" y="58" width="11" height="26" rx="5.5"/><ellipse cx="19" cy="88" rx="6" ry="6.5"/>' +
-  '<rect x="71" y="32" width="13" height="28" rx="6.5"/><rect x="75" y="58" width="11" height="26" rx="5.5"/><ellipse cx="81" cy="88" rx="6" ry="6.5"/>' +
-  '<rect x="36" y="80" width="14" height="38" rx="7"/><rect x="37" y="116" width="12" height="34" rx="6"/><ellipse cx="42" cy="153" rx="8.5" ry="5.5"/>' +
-  '<rect x="50" y="80" width="14" height="38" rx="7"/><rect x="51" y="116" width="12" height="34" rx="6"/><ellipse cx="58" cy="153" rx="8.5" ry="5.5"/>';
+  '<ellipse cx="50" cy="15" rx="9" ry="10.5"/>' +
+  '<path d="M44,24 L56,24 L57,31 L43,31 Z"/>' +
+  '<path d="M44,30 C36,30 27,33 26,40 C25,48 27,56 30,64 C31,70 34,76 38,80 L36,88 C36,91 39,93 42,93 L58,93 C61,93 64,91 64,88 L62,80 C66,76 69,70 70,64 C73,56 75,48 74,40 C73,33 64,30 56,30 Z"/>' +
+  '<path d="M27,33 C19,34 13,40 12,49 L10,84 C9,94 9,101 11,107 C12,111 16,113 19,113 C22,113 25,111 26,107 C27,101 26,94 26,87 L28,49 C29,41 29,35 27,33 Z"/>' +
+  '<path d="M73,33 C81,34 87,40 88,49 L90,84 C91,94 91,101 89,107 C88,111 84,113 81,113 C78,113 75,111 74,107 C73,101 74,94 74,87 L72,49 C71,41 71,35 73,33 Z"/>' +
+  // dita (sinistra): un piccolo ventaglio di 4 dita + pollice ruotati attorno
+  // al polso, invece della mano-blob tonda - e' il dettaglio che si nota di
+  // piu' in un riferimento anatomico e mancava del tutto prima
+  '<rect x="10" y="110" width="2.4" height="9" rx="1.2" transform="rotate(-18 11.2 110)"/>' +
+  '<rect x="13.5" y="112.5" width="2.4" height="9.5" rx="1.2" transform="rotate(-6 14.7 112.5)"/>' +
+  '<rect x="17.5" y="113" width="2.4" height="10" rx="1.2" transform="rotate(4 18.7 113)"/>' +
+  '<rect x="21.5" y="111" width="2.4" height="9" rx="1.2" transform="rotate(14 22.7 111)"/>' +
+  '<rect x="8.5" y="102" width="2.2" height="7.5" rx="1.1" transform="rotate(-40 9.6 102)"/>' +
+  '<path d="M38,88 C35,88 33,92 33,98 L33,124 C33,130 35,133 39,133 L47,133 C50,133 51,130 51,124 L51,98 C51,92 48,88 45,88 Z"/>' +
+  '<path d="M35,133 C34,133 33,137 33,142 L33,168 C33,174 35,178 39,178 L45,178 C48,178 49,174 49,168 L49,142 C49,137 47,133 45,133 Z"/>' +
+  '<ellipse cx="41" cy="184" rx="9" ry="5.5"/>' +
+  '<path d="M62,88 C65,88 67,92 67,98 L67,124 C67,130 65,133 61,133 L53,133 C50,133 49,130 49,124 L49,98 C49,92 52,88 55,88 Z"/>' +
+  '<path d="M65,133 C66,133 67,137 67,142 L67,168 C67,174 65,178 61,178 L55,178 C52,178 51,174 51,168 L51,142 C51,137 53,133 55,133 Z"/>' +
+  '<ellipse cx="59" cy="184" rx="9" ry="5.5"/>' +
+  // mano destra: stesse dita specchiate (x'=100-x-width, rotazione di segno opposto)
+  '<rect x="87.6" y="110" width="2.4" height="9" rx="1.2" transform="rotate(18 88.8 110)"/>' +
+  '<rect x="84.1" y="112.5" width="2.4" height="9.5" rx="1.2" transform="rotate(6 85.3 112.5)"/>' +
+  '<rect x="80.1" y="113" width="2.4" height="10" rx="1.2" transform="rotate(-4 81.3 113)"/>' +
+  '<rect x="76.1" y="111" width="2.4" height="9" rx="1.2" transform="rotate(-14 77.3 111)"/>' +
+  '<rect x="89.3" y="102" width="2.2" height="7.5" rx="1.1" transform="rotate(40 90.4 102)"/>';
+// linee sottili di definizione muscolare (sempre le stesse, non legate al
+// completato/non completato - decorazione fissa, come le venature del
+// riferimento anatomico) sovrapposte sopra le regioni colorate
+const BODY_DETAIL_FRONT =
+  '<path d="M33,36 Q50,32 67,36"/><path d="M50,38 L50,86"/>' +
+  '<path d="M17,44 Q13,58 17,72"/><path d="M83,44 Q87,58 83,72"/>' +
+  '<path d="M42,92 L42,130"/><path d="M58,92 L58,130"/>';
+const BODY_DETAIL_BACK =
+  '<path d="M50,30 L50,86"/><path d="M40,30 L50,40"/><path d="M60,30 L50,40"/>' +
+  '<path d="M36,46 Q41,60 39,80"/><path d="M64,46 Q59,60 61,80"/>' +
+  '<path d="M42,92 Q50,96 58,92"/><path d="M42,100 L42,130"/><path d="M58,100 L58,130"/>';
+// dimensioni riviste per riempire davvero la parte del corpo che occupano
+// (spalla/petto/addome/braccio/coscia), non piu' forme piccole che
+// galleggiavano dentro una sagoma molto piu' grande di loro
 const MUSCLE_MAP_REGIONS_FRONT = [
-  { group:'Spalle', shape:'<ellipse cx="24" cy="34" rx="9" ry="7"/><ellipse cx="76" cy="34" rx="9" ry="7"/>' },
-  { group:'Petto', shape:'<ellipse cx="43" cy="40" rx="7" ry="8"/><ellipse cx="57" cy="40" rx="7" ry="8"/>' },
-  { group:'Addominali', shape:'<rect x="45" y="52" width="4.5" height="6" rx="1.5"/><rect x="50.5" y="52" width="4.5" height="6" rx="1.5"/>' +
-    '<rect x="45" y="59" width="4.5" height="6" rx="1.5"/><rect x="50.5" y="59" width="4.5" height="6" rx="1.5"/>' +
-    '<rect x="45" y="66" width="4.5" height="6" rx="1.5"/><rect x="50.5" y="66" width="4.5" height="6" rx="1.5"/>' },
-  { group:'Bicipiti', shape:'<ellipse cx="22.5" cy="45" rx="5.5" ry="10"/><ellipse cx="77.5" cy="45" rx="5.5" ry="10"/>' },
-  { group:'Quadricipiti', shape:'<ellipse cx="43" cy="98" rx="5.5" ry="16"/><ellipse cx="57" cy="98" rx="5.5" ry="16"/>' }
+  { group:'Spalle', shape:'<ellipse cx="25" cy="42" rx="8" ry="7"/><ellipse cx="75" cy="42" rx="8" ry="7"/>' },
+  { group:'Petto', shape:'<ellipse cx="39" cy="46" rx="10" ry="11"/><ellipse cx="61" cy="46" rx="10" ry="11"/>' },
+  { group:'Addominali', shape:'<rect x="41" y="60" width="8" height="8" rx="2.2"/><rect x="51" y="60" width="8" height="8" rx="2.2"/>' +
+    '<rect x="41" y="69" width="8" height="8" rx="2.2"/><rect x="51" y="69" width="8" height="8" rx="2.2"/>' +
+    '<rect x="41" y="78" width="8" height="8" rx="2.2"/><rect x="51" y="78" width="8" height="8" rx="2.2"/>' },
+  { group:'Bicipiti', shape:'<ellipse cx="19" cy="51" rx="7" ry="13"/><ellipse cx="81" cy="51" rx="7" ry="13"/>' },
+  { group:'Quadricipiti', shape:'<ellipse cx="42" cy="108" rx="8.5" ry="21"/><ellipse cx="58" cy="108" rx="8.5" ry="21"/>' }
 ];
 const MUSCLE_MAP_REGIONS_BACK = [
-  { group:'Schiena', shape:'<path d="M37,30 Q37,27 42,27 L58,27 Q63,27 63,30 L61,60 Q59,74 50,76 Q41,74 39,60 Z"/>' },
-  { group:'Tricipiti', shape:'<ellipse cx="22.5" cy="45" rx="5.5" ry="10"/><ellipse cx="77.5" cy="45" rx="5.5" ry="10"/>' },
-  { group:'Glutei', shape:'<ellipse cx="43" cy="84" rx="8" ry="8"/><ellipse cx="57" cy="84" rx="8" ry="8"/>' },
-  { group:'Femorali', shape:'<ellipse cx="43" cy="104" rx="5.5" ry="14"/><ellipse cx="57" cy="104" rx="5.5" ry="14"/>' },
-  { group:'Polpacci', shape:'<ellipse cx="43" cy="132" rx="5" ry="14"/><ellipse cx="57" cy="132" rx="5" ry="14"/>' }
+  { group:'Schiena', shape:'<path d="M30,33 C29,37 32,43 36,47 L34,63 C33,74 37,82 42,88 L58,88 C63,82 67,74 66,63 L64,47 C68,43 71,37 70,33 C64,30 57,28 50,28 C43,28 36,30 30,33 Z"/>' },
+  { group:'Tricipiti', shape:'<ellipse cx="19" cy="51" rx="7" ry="13"/><ellipse cx="81" cy="51" rx="7" ry="13"/>' },
+  { group:'Glutei', shape:'<ellipse cx="42" cy="97" rx="9" ry="11"/><ellipse cx="58" cy="97" rx="9" ry="11"/>' },
+  { group:'Femorali', shape:'<ellipse cx="42" cy="120" rx="8.5" ry="16"/><ellipse cx="58" cy="120" rx="8.5" ry="16"/>' },
+  { group:'Polpacci', shape:'<ellipse cx="42" cy="153" rx="7.5" ry="21"/><ellipse cx="58" cy="153" rx="7.5" ry="21"/>' }
 ];
-function renderBodyFigure(regions, trained){
+function renderBodyFigure(regions, trained, detailLines){
   const regionsHtml = regions.map(r =>
     `<g class="body-region${trained.has(r.group)?' trained':''}">${r.shape}</g>`
   ).join('');
-  return `<svg viewBox="0 0 100 165" class="body-figure"><g class="body-base">${BODY_BASE_SHAPES}</g>${regionsHtml}</svg>`;
+  return `<svg viewBox="0 0 100 195" class="body-figure"><g class="body-base">${BODY_BASE_SHAPES}</g>${regionsHtml}<g class="body-detail">${detailLines}</g></svg>`;
 }
 function renderMuscleMap(accent){
   const trained = computeWeeklyMuscleActivation();
@@ -387,8 +419,8 @@ function renderMuscleMap(accent){
   return `<div class="home-muscle-map" style="--accent:${accent}">
     <div class="home-muscle-map-label">Muscoli</div>
     <div class="home-muscle-figures">
-      <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_FRONT, trained)}<span class="home-muscle-figure-caption">Davanti</span></div>
-      <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_BACK, trained)}<span class="home-muscle-figure-caption">Dietro</span></div>
+      <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_FRONT, trained, BODY_DETAIL_FRONT)}<span class="home-muscle-figure-caption">Davanti</span></div>
+      <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_BACK, trained, BODY_DETAIL_BACK)}<span class="home-muscle-figure-caption">Dietro</span></div>
     </div>
     ${extras.length ? `<div class="home-muscle-extras">+ ${extras.join(', ')}</div>` : ''}
   </div>`;

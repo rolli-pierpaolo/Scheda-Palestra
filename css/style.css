@@ -173,7 +173,7 @@ main{padding:12px;}
 /* i giorni e la mappa del corpo affiancati, non impilati: cosi' la mappa non
    allunga la pagina, occupa lo spazio orizzontale che c'e' gia' invece di
    aggiungerne altro in verticale - la home deve restare su una sola schermata */
-.home-middle-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:24px;}
+.home-middle-row{display:flex;align-items:stretch;gap:10px;margin-bottom:24px;}
 .home-days-col{flex:1;min-width:0;}
 /* non piu' un bottone (non sono cliccabili): solo indicatori dell'ordine e
    dello stato di ogni giorno. Centrali ma strette (non a tutta larghezza),
@@ -198,8 +198,10 @@ main{padding:12px;}
    muscolari sovrapposte che si accendono nell'accent del giorno via classe
    .trained solo su quelle gia' completate questa settimana) - vedi
    renderMuscleMap in js/home.js. Affiancata ai giorni (vedi .home-middle-row
-   sopra), quindi resta stretta: non e' un blocco a se' che allunga la pagina */
-.home-muscle-map{flex:0 0 auto;}
+   sopra), incorniciata come un modulo vero (stesso bordo/sfondo delle card
+   giorno accanto) e centrata in verticale sulla loro altezza, invece di
+   restare testo+svg buttati li' senza una cornice a farli sentire "casa" */
+.home-muscle-map{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:12px;padding:10px 12px;}
 .home-muscle-map-label{text-align:center;font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
 .home-muscle-figures{display:flex;justify-content:center;align-items:flex-start;gap:8px;}
 .home-muscle-figure-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;}
@@ -207,6 +209,10 @@ main{padding:12px;}
 .body-base{fill:#3c3f45;}
 .body-region{fill:rgba(255,255,255,.16);transition:fill .4s ease;}
 .body-region.trained{fill:var(--accent,var(--green));}
+/* venature muscolari fisse (non legate a completato/non completato, solo
+   decorazione) sovrapposte sopra le regioni colorate, per dare la stessa
+   "trama" del riferimento anatomico invece di forme piatte */
+.body-detail{fill:none;stroke:rgba(255,255,255,.22);stroke-width:.8;stroke-linecap:round;}
 .home-muscle-figure-caption{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.2px;}
 .home-muscle-extras{text-align:center;font-size:9px;font-weight:700;color:var(--muted);margin-top:6px;}
 /* barra di progresso del giorno (quanti esercizi della settimana corrente sono
