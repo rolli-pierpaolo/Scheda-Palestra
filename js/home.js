@@ -509,7 +509,7 @@ const total = weekly.total;
         <div class="home-days-label">I tuoi giorni</div>
         <div class="home-days-grid">${dayButtons}</div>
       </div>
-      ${renderMuscleMap(progressAccent)}
+      <div class="home-muscle-slot">${renderMuscleMap(progressAccent)}</div>
     </div>
     <div class="home-total-stat">${ICON_FLAME} ${monthlyCount} allenamenti completati questo mese</div>
     ${volumeTrendHtml}
@@ -536,7 +536,7 @@ const total = weekly.total;
   // volta che si torna alla Home), senza si accumulerebbero tween vecchi sugli
   // elementi ricreati ogni volta da zero con innerHTML
   gsap.killTweensOf(".home-day-card.active-training");
-  gsap.set(".home-day-card.active-training", { scale: 1.04 });
+  gsap.set(".home-day-card.active-training", { scale: 1.1 });
   // entrata della frase motivazionale: pop leggero invece di comparire di scatto
   gsap.from(".home-motivation", {
     opacity: 0,

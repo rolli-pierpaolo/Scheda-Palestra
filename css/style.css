@@ -131,7 +131,7 @@ body.on-home .topbar h1{
 main{padding:12px;}
 /* ---------------- HOME ---------------- */
 #viewHome{padding:20px 16px 30px;}
-.home-hero{text-align:center;padding:18px 10px 22px;}
+.home-hero{text-align:center;padding:14px 10px 16px;}
 /* eyebrow, numero, barra e statistica mensile accorpati in un unico modulo
    compatto invece di 4 blocchi separati con margini propri: stessa
    informazione, meno "muro di testo" impilato */
@@ -169,16 +169,21 @@ main{padding:12px;}
 .home-days-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
 /* verticali (non piu' griglia 2 colonne): in colonna si legge subito l'ordine
    di esecuzione dall'alto in basso, cosa che con 2 colonne non era ovvia */
-.home-days-grid{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.home-days-grid{display:flex;flex-direction:column;align-items:center;gap:6px;}
 /* i giorni e la mappa del corpo affiancati, non impilati: cosi' la mappa non
    allunga la pagina, occupa lo spazio orizzontale che c'e' gia' invece di
-   aggiungerne altro in verticale - la home deve restare su una sola schermata */
-.home-middle-row{display:flex;align-items:stretch;gap:10px;margin-bottom:24px;}
-.home-days-col{flex:1;min-width:0;}
+   aggiungerne altro in verticale - la home deve restare su una sola schermata.
+   Meta' e meta' (flex:1 su entrambi), ognuna centrata dentro la propria meta':
+   prima la colonna giorni prendeva tutto lo spazio restante e i suoi bottoni
+   restavano centrati solo nella SUA meta', molto piu' larga di quella della
+   mappa - il risultato era uno strano vuoto in mezzo e la mappa schiacciata
+   sul bordo destro, non un impaginato bilanciato */
+.home-middle-row{display:flex;align-items:stretch;gap:10px;margin-bottom:16px;}
+.home-days-col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;}
 /* non piu' un bottone (non sono cliccabili): solo indicatori dell'ordine e
    dello stato di ogni giorno. Centrali ma strette (non a tutta larghezza),
    la larghezza segue il contenuto invece di riempire la riga */
-.home-day-card{display:flex;align-items:center;justify-content:center;gap:10px;width:auto;min-width:150px;max-width:75%;padding:10px 20px;border-radius:12px;border:2px solid var(--accent,var(--green));background:var(--panel2);color:var(--text);font-size:13px;font-weight:800;text-transform:uppercase;}
+.home-day-card{display:flex;align-items:center;justify-content:center;gap:10px;width:auto;min-width:150px;max-width:75%;padding:8px 20px;border-radius:12px;border:2px solid var(--accent,var(--green));background:var(--panel2);color:var(--text);font-size:13px;font-weight:800;text-transform:uppercase;}
 .home-day-order{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:1px solid var(--accent,var(--green));display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent,var(--green));}
 /* completato: sfondo tinto col colore del giorno (trasparente), bordo che resta acceso */
 .home-day-card.completed{background:color-mix(in srgb, var(--accent, var(--green)) 32%, transparent);border-color:var(--accent,var(--green));}
@@ -201,6 +206,12 @@ main{padding:12px;}
    sopra), incorniciata come un modulo vero (stesso bordo/sfondo delle card
    giorno accanto) e centrata in verticale sulla loro altezza, invece di
    restare testo+svg buttati li' senza una cornice a farli sentire "casa" */
+/* meta' destra della riga (vedi .home-days-col sopra per il perche'): fa da
+   slot di uguale larghezza alla colonna giorni, e centra al suo interno la
+   card vera (.home-muscle-map, che resta stretta intorno al suo contenuto,
+   non stirata) - cosi' le due meta' sono bilanciate ma la cornice della
+   mappa non si allarga fino a diventare un riquadro vuoto */
+.home-muscle-slot{flex:1;display:flex;justify-content:center;align-items:stretch;}
 .home-muscle-map{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:12px;padding:10px 12px;}
 .home-muscle-map-label{text-align:center;font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
 .home-muscle-figures{display:flex;justify-content:center;align-items:flex-start;gap:8px;}
