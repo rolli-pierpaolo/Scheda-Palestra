@@ -34,16 +34,6 @@ function getRecordForExercise(name){
   return best;
 }
 function celebratePR(){
-  let el = document.getElementById('prToast');
-  if(!el){
-    el = document.createElement('div');
-    el.id = 'prToast';
-    el.className = 'pr-toast';
-    document.body.appendChild(el);
-  }
-  el.textContent = "\ud83c\udfc6 Nuovo record personale!";
-  el.classList.add('show');
-  clearTimeout(window._prToastTimer);
-  window._prToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2200);
+  showQuickToast("\ud83c\udfc6 Nuovo record personale!");
 }
 

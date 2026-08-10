@@ -18,6 +18,23 @@ const ICON_LINK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" s
 // "..." stile iOS: tre pallini pieni invece del solito bordo/tratto delle
 // altre icone di questo set, si legge meglio a quella dimensione minuscola
 const ICON_MORE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none"/></svg>';
+// piccolo avviso flottante generico (riusa lo stesso box/animazione del
+// festeggiamento PR, che in realta' non ha nulla di specifico al PR se non il
+// testo): comodo per qualsiasi conferma rapida senza dover creare un nuovo
+// elemento/stile per ognuna
+function showQuickToast(msg){
+  let el = document.getElementById('prToast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'prToast';
+    el.className = 'pr-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window._prToastTimer);
+  window._prToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2200);
+}
 // seconda tornata: intestazioni/bottoni di Storico + chrome dei modali. Stessa
 // funzione svgIcon() per non ripetere gli attributi comuni ogni volta - il
 // "d" di ogni singolo path resta l'unica parte che cambia da icona a icona

@@ -172,6 +172,7 @@ function showView(v){
     if(v === 'home'){
       animateSuggestedWorkout();
     }
+    updateThemeColor();
     // fade + leggero rialzo sulla vista che diventa visibile: il cambio vero e
     // proprio resta il display toggle sincrono qui sopra (nessun timing da cui
     // dipende il resto della funzione cambia), e' solo un'entrata piu' morbida
@@ -237,6 +238,26 @@ function releaseWakeLock(){
   if(wakeLock){
     wakeLock.release().catch(()=>{});
     wakeLock = null;
+  }
+}
+
+
+// ---------------- COLORE BARRA DI STATO (theme-color) ----------------
+// segue l'accent del giorno mentre si e' in Allenamento (variante scura,
+// per restare coerente con il tema scuro dell'app invece di un colore
+// acceso), torna neutro su Home/Storico. Ha effetto solo quando l'app gira
+// dentro Safari/Chrome (tab normale o barra degli indirizzi tintata): da
+// app installata a schermo intero su iOS la barra di stato segue invece
+// apple-mobile-web-app-status-bar-style, che supporta solo pochi stili
+// fissi e non un colore qualsiasi
+function updateThemeColor(){
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(!meta) return;
+  const onActive = document.getElementById('viewActive').style.display !== 'none';
+  if(onActive && state && state.days && state.days[activeDayIdx]){
+    meta.setAttribute('content', dayAccent(state.days[activeDayIdx], activeDayIdx).d);
+  } else {
+    meta.setAttribute('content', '#0D0D0D');
   }
 }
 
@@ -354,6 +375,7 @@ function selectDay(i){
   saveActivePos();
   renderDayTabs();
   renderActive();
+  updateThemeColor();
 }
 
 function askSwitchTrainingDay(newIdx, oldIdx){
