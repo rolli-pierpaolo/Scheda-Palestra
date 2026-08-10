@@ -345,37 +345,47 @@ function computeWeeklyMuscleActivation(){
   });
   return trained;
 }
-// due sagome stilizzate (non anatomiche: forme semplici coerenti con lo
-// stile a icone lineari del resto dell'app) invece di una sola, perche' dal
-// solo davanti non si vedono schiena/femorali/glutei e dal solo dietro non
-// si vedono petto/addominali - servono entrambe per coprire tutti i
-// MUSCLE_GROUPS che hanno senso su un corpo (cardio/altro restano testuali)
+// due sagome (davanti/dietro - servono entrambe, dal solo davanti non si
+// vedono schiena/femorali/glutei e viceversa) fatte di due livelli: un corpo
+// "base" sempre dello stesso colore (solo per dare la forma di una persona
+// intera - testa, tronco, braccia, gambe, mani, piedi) e sopra delle regioni
+// muscolari che si accendono singolarmente, invece delle forme fluttuanti
+// scollegate della prima versione
+const BODY_BASE_SHAPES =
+  '<ellipse cx="50" cy="13" rx="9.5" ry="11"/>' +
+  '<rect x="45.5" y="22" width="9" height="7" rx="2"/>' +
+  '<path d="M32,35 C32,28 39,26 50,26 C61,26 68,28 68,35 L66,60 C65,72 59,79 50,80 C41,79 35,72 34,60 Z"/>' +
+  '<rect x="16" y="32" width="13" height="28" rx="6.5"/><rect x="14" y="58" width="11" height="26" rx="5.5"/><ellipse cx="19" cy="88" rx="6" ry="6.5"/>' +
+  '<rect x="71" y="32" width="13" height="28" rx="6.5"/><rect x="75" y="58" width="11" height="26" rx="5.5"/><ellipse cx="81" cy="88" rx="6" ry="6.5"/>' +
+  '<rect x="36" y="80" width="14" height="38" rx="7"/><rect x="37" y="116" width="12" height="34" rx="6"/><ellipse cx="42" cy="153" rx="8.5" ry="5.5"/>' +
+  '<rect x="50" y="80" width="14" height="38" rx="7"/><rect x="51" y="116" width="12" height="34" rx="6"/><ellipse cx="58" cy="153" rx="8.5" ry="5.5"/>';
 const MUSCLE_MAP_REGIONS_FRONT = [
-  { group:'Spalle', shape:'<ellipse cx="20" cy="42" rx="12" ry="9"/><ellipse cx="60" cy="42" rx="12" ry="9"/>' },
-  { group:'Petto', shape:'<rect x="24" y="34" width="32" height="26" rx="10"/>' },
-  { group:'Addominali', shape:'<rect x="27" y="58" width="26" height="26" rx="8"/>' },
-  { group:'Bicipiti', shape:'<rect x="5" y="38" width="13" height="46" rx="6.5"/><rect x="62" y="38" width="13" height="46" rx="6.5"/>' },
-  { group:'Quadricipiti', shape:'<rect x="24" y="86" width="14" height="70" rx="7"/><rect x="42" y="86" width="14" height="70" rx="7"/>' }
+  { group:'Spalle', shape:'<ellipse cx="24" cy="34" rx="9" ry="7"/><ellipse cx="76" cy="34" rx="9" ry="7"/>' },
+  { group:'Petto', shape:'<ellipse cx="43" cy="40" rx="7" ry="8"/><ellipse cx="57" cy="40" rx="7" ry="8"/>' },
+  { group:'Addominali', shape:'<rect x="45" y="52" width="4.5" height="6" rx="1.5"/><rect x="50.5" y="52" width="4.5" height="6" rx="1.5"/>' +
+    '<rect x="45" y="59" width="4.5" height="6" rx="1.5"/><rect x="50.5" y="59" width="4.5" height="6" rx="1.5"/>' +
+    '<rect x="45" y="66" width="4.5" height="6" rx="1.5"/><rect x="50.5" y="66" width="4.5" height="6" rx="1.5"/>' },
+  { group:'Bicipiti', shape:'<ellipse cx="22.5" cy="45" rx="5.5" ry="10"/><ellipse cx="77.5" cy="45" rx="5.5" ry="10"/>' },
+  { group:'Quadricipiti', shape:'<ellipse cx="43" cy="98" rx="5.5" ry="16"/><ellipse cx="57" cy="98" rx="5.5" ry="16"/>' }
 ];
 const MUSCLE_MAP_REGIONS_BACK = [
-  { group:'Schiena', shape:'<rect x="22" y="34" width="36" height="54" rx="14"/>' },
-  { group:'Tricipiti', shape:'<rect x="5" y="38" width="13" height="46" rx="6.5"/><rect x="62" y="38" width="13" height="46" rx="6.5"/>' },
-  { group:'Glutei', shape:'<rect x="26" y="86" width="28" height="18" rx="9"/>' },
-  { group:'Femorali', shape:'<rect x="24" y="102" width="14" height="30" rx="7"/><rect x="42" y="102" width="14" height="30" rx="7"/>' },
-  { group:'Polpacci', shape:'<rect x="25" y="130" width="12" height="26" rx="6"/><rect x="43" y="130" width="12" height="26" rx="6"/>' }
+  { group:'Schiena', shape:'<path d="M37,30 Q37,27 42,27 L58,27 Q63,27 63,30 L61,60 Q59,74 50,76 Q41,74 39,60 Z"/>' },
+  { group:'Tricipiti', shape:'<ellipse cx="22.5" cy="45" rx="5.5" ry="10"/><ellipse cx="77.5" cy="45" rx="5.5" ry="10"/>' },
+  { group:'Glutei', shape:'<ellipse cx="43" cy="84" rx="8" ry="8"/><ellipse cx="57" cy="84" rx="8" ry="8"/>' },
+  { group:'Femorali', shape:'<ellipse cx="43" cy="104" rx="5.5" ry="14"/><ellipse cx="57" cy="104" rx="5.5" ry="14"/>' },
+  { group:'Polpacci', shape:'<ellipse cx="43" cy="132" rx="5" ry="14"/><ellipse cx="57" cy="132" rx="5" ry="14"/>' }
 ];
-const BODY_HEAD_NECK = '<ellipse cx="40" cy="16" rx="11" ry="12"/><rect x="35" y="24" width="10" height="10" rx="3"/>';
 function renderBodyFigure(regions, trained){
   const regionsHtml = regions.map(r =>
     `<g class="body-region${trained.has(r.group)?' trained':''}">${r.shape}</g>`
   ).join('');
-  return `<svg viewBox="0 0 80 180" class="body-figure">${regionsHtml}<g class="body-region neutral">${BODY_HEAD_NECK}</g></svg>`;
+  return `<svg viewBox="0 0 100 165" class="body-figure"><g class="body-base">${BODY_BASE_SHAPES}</g>${regionsHtml}</svg>`;
 }
 function renderMuscleMap(accent){
   const trained = computeWeeklyMuscleActivation();
   const extras = ['Cardio','Altro'].filter(g=>trained.has(g));
   return `<div class="home-muscle-map" style="--accent:${accent}">
-    <div class="home-muscle-map-label">Muscoli allenati questa settimana</div>
+    <div class="home-muscle-map-label">Muscoli</div>
     <div class="home-muscle-figures">
       <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_FRONT, trained)}<span class="home-muscle-figure-caption">Davanti</span></div>
       <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_BACK, trained)}<span class="home-muscle-figure-caption">Dietro</span></div>
@@ -462,11 +472,15 @@ const total = weekly.total;
         <div class="home-progress-bar-wrap" style="--accent:${progressAccent}"><div class="home-progress-bar-fill" id="homeProgressBar" style="width:0%"></div></div>
       </div>
     ${suggestedHtml}
-    <div class="home-days-label">I tuoi giorni</div>
-    <div class="home-days-grid">${dayButtons}</div>
+    <div class="home-middle-row">
+      <div class="home-days-col">
+        <div class="home-days-label">I tuoi giorni</div>
+        <div class="home-days-grid">${dayButtons}</div>
+      </div>
+      ${renderMuscleMap(progressAccent)}
+    </div>
     <div class="home-total-stat">${ICON_FLAME} ${monthlyCount} allenamenti completati questo mese</div>
     ${volumeTrendHtml}
-    ${renderMuscleMap(progressAccent)}
   `;
   if(typeof gsap !== "undefined"){
   gsap.to("#homeProgressCount", {
