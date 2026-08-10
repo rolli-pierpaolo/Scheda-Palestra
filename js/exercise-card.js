@@ -882,9 +882,22 @@ function updateSet(exi, w, si, field, val, recordPeso){
   // aperto il riquadro "max" per questa settimana: vuol dire che vuole ancora
   // registrare un tentativo di massimale, non ha finito per davvero
   const maxOpenHere = ex.maxShown && ex.maxShown[w];
-  if(field==='rip' && String(val||'').trim()!=='' && si===ex.sets[w].length-1 && !(ex.weekDone && ex.weekDone[w]) && !maxOpenHere){
-    askWeekDoneConfirm(exi, w, ex.nome);
+  const lastSetJustFilled = field==='rip' && String(val||'').trim()!=='' && si===ex.sets[w].length-1 && !(ex.weekDone && ex.weekDone[w]) && !maxOpenHere;
+  if(lastSetJustFilled){
+    // esercizio collegato (super/jump set): finire di scrivere il PRIMO dei
+    // due non basta, la conferma deve aspettare che anche il partner abbia
+    // l'ultima serie compilata - altrimenti scatta troppo presto, prima
+    // ancora di aver registrato il secondo esercizio della coppia
+    const partner = findLinkedPartner(exi);
+    const partnerReady = !partner || isLastSetOfWeekFilled(partner.ex, w);
+    if(partnerReady) askWeekDoneConfirm(exi, w, ex.nome);
   }
+}
+function isLastSetOfWeekFilled(ex, w){
+  const sets = ex.sets && ex.sets[w];
+  if(!sets || !sets.length) return false;
+  const last = sets[sets.length-1];
+  return !!(last && String(last.rip||'').trim() !== '');
 }
 // modale dell'app al posto del confirm() nativo del browser: quello di sistema
 // non segue lo stile dell'app ed e' capitato apparisse ancora con la tastiera

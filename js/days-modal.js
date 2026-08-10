@@ -20,12 +20,36 @@ function openDaysModal(){
     placeholder="Nome allenamento"
     onchange="updateWorkoutTitle(this.value)">
 </div>
+<div class="days-row">
+  <span class="days-label">Settimane</span>
+  <input class="meta-input" type="number" inputmode="numeric" min="${state.weeksPerBlock||4}" max="12"
+    value="${state.weeksPerBlock||4}"
+    onchange="handleExtendWeeksInput(this)">
+</div>
 `
-+ '<div class="footer-note" style="padding:12px 0 0;text-align:left;">Il nome scelto determina l\'etichetta della scheda per quel giorno; il colore puoi cambiarlo qui a fianco. Vale solo per il ciclo attivo.</div>';
++ '<div class="footer-note" style="padding:12px 0 0;text-align:left;">Il nome scelto determina l\'etichetta della scheda per quel giorno; il colore puoi cambiarlo qui a fianco. Le settimane si possono solo allungare da qui (mai accorciare, per non perdere quelle gia\' scritte) - per accorciarle archivia e inizia un nuovo blocco. Vale solo per il ciclo attivo.</div>';
   document.getElementById('daysModal').style.display = 'flex';
 }
 function closeDaysModal(){
   document.getElementById('daysModal').style.display = 'none';
+}
+function handleExtendWeeksInput(el){
+  const current = state.weeksPerBlock || 4;
+  const newTotal = parseInt(el.value, 10);
+  if(isNaN(newTotal) || newTotal <= current){
+    if(!isNaN(newTotal) && newTotal < current){
+      alert('Da qui il blocco si può solo allungare, non accorciare (si perderebbero le settimane già scritte). Per accorciarlo, archivia e inizia un nuovo blocco con meno settimane.');
+    }
+    el.value = current;
+    return;
+  }
+  if(!confirm(`Allungare il blocco attuale da ${current} a ${newTotal} settimane? Le settimane nuove partono vuote (schema e recupero copiati dall'ultima settimana, per comodità).`)){
+    el.value = current;
+    return;
+  }
+  extendWeeksPerBlock(newTotal);
+  renderActive();
+  openDaysModal();
 }
 function renameDay(i, val){
   val = (val||'').trim();

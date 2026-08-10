@@ -270,6 +270,42 @@ function ensureWeeksPerBlock(){
   saveState();
   return n;
 }
+// estende (mai riduce) il numero di settimane del blocco ATTUALMENTE in corso,
+// senza dover archiviare e ricominciare un blocco nuovo - utile se all'inizio
+// se ne sceglie uno troppo corto e a meta' ci si accorge di volerlo allungare.
+// Riusa resizeArr (gia' usata da archiveAndReset per lo stesso tipo di
+// ridimensionamento, li' pero' passando da un blocco chiuso a uno nuovo): le
+// settimane nuove ereditano l'ultimo schema/recupero gia' scritto (stessa
+// convenzione "a cascata" di updateMeta), il resto (fatta/saltata/serie/nota)
+// parte vuoto come qualsiasi settimana mai toccata
+function extendWeeksPerBlock(newTotal){
+  const current = state.weeksPerBlock || 4;
+  if(newTotal <= current) return false;
+  state.days.forEach(day=>{
+    day.esercizi.forEach(ex=>{
+      const lastSchema = ex.schema && ex.schema.length ? ex.schema[ex.schema.length-1] : '';
+      const lastRecupero = ex.recupero && ex.recupero.length ? ex.recupero[ex.recupero.length-1] : '';
+      ex.schema = resizeArr(ex.schema, newTotal, lastSchema);
+      ex.recupero = resizeArr(ex.recupero, newTotal, lastRecupero);
+      ex.weekNote = resizeArr(ex.weekNote, newTotal, '');
+      ex.weekDone = resizeArr(ex.weekDone, newTotal, false);
+      ex.weekSkipped = resizeArr(ex.weekSkipped, newTotal, false);
+      ex.maxShown = resizeArr(ex.maxShown, newTotal, false);
+      // niente resizeArr(arr, n, []) per sets/maxExtra: condividerebbe lo
+      // STESSO array vuoto tra tutte le settimane nuove (stesso motivo gia'
+      // documentato su emptySetsArr qui sopra) - ognuna ne vuole uno tutto suo
+      const newSets = [];
+      for(let i=0;i<newTotal;i++) newSets.push((ex.sets && ex.sets[i]) || []);
+      ex.sets = newSets;
+      const newMaxExtra = [];
+      for(let i=0;i<newTotal;i++) newMaxExtra.push((ex.maxExtra && ex.maxExtra[i]) || []);
+      ex.maxExtra = newMaxExtra;
+    });
+  });
+  state.weeksPerBlock = newTotal;
+  saveState();
+  return true;
+}
 function saveDeletedStorico(){
   localStorage.setItem(DELETED_STORICO_KEY, JSON.stringify(deletedStorico));
 }

@@ -169,7 +169,7 @@ test('computeProgressionHint pesca dal pool motivazionale del GRUPPO MUSCOLARE d
   // assegnato a quel gruppo sopra), non da un pool generico qualsiasi
   const poolPettoTexts = window.__bridge.MUSCLE_MOTIVATION['Petto'].map(p => window.splitMotivation(p).text);
   assert.ok(poolPettoTexts.some(t => hintPeso.text.startsWith(t)), 'la frase deve iniziare con una base presa dal pool "Petto", non generica');
-  assert.ok(hintPeso.text.toLowerCase().includes('carica'), 'con reps alte il suffisso deve spingere verso piu\' peso');
+  assert.ok(window.__bridge.PROGRESSION_SUFFIX_PESO.some(s => hintPeso.text.endsWith(s)), 'con reps alte il suffisso deve venire dal pool "piu\' peso", non una frase fissa sempre uguale');
 
   const exSenzaGruppo = { nome:'Esercizio mai assegnato', sets: [[{peso:60, rip:6}], [], [], []] };
   const hintGenerico = window.computeProgressionHint(exSenzaGruppo, 1);
@@ -183,11 +183,12 @@ test('computeProgressionHint pesca dal pool motivazionale del GRUPPO MUSCOLARE d
   // extra di direzione, che li' non avrebbe nulla su cui basarsi)
   const hintPrimaSettimana = window.computeProgressionHint({nome:'Esercizio nuovo', sets:[[]]}, 0);
   assert.ok(hintPrimaSettimana, 'BUG: alla primissima settimana deve comunque esserci una frase motivazionale');
-  assert.ok(!hintPrimaSettimana.text.includes('Stavolta'), 'senza settimana precedente non deve avere il suffisso di direzione');
+  const baseNuovoTexts = window.__bridge.DEFAULT_MOTIVATION.map(p => window.splitMotivation(p).text);
+  assert.ok(baseNuovoTexts.includes(hintPrimaSettimana.text), 'senza settimana precedente il testo deve essere ESATTAMENTE la base, senza nessun suffisso di direzione');
 
   const hintSenzaDatiScorsi = window.computeProgressionHint({nome:'Esercizio B', sets:[[],[]]}, 1);
   assert.ok(hintSenzaDatiScorsi, 'BUG: anche senza dati validi la settimana scorsa deve comunque esserci una frase motivazionale');
-  assert.ok(!hintSenzaDatiScorsi.text.includes('Stavolta'), 'senza dati validi la settimana scorsa non deve avere il suffisso di direzione');
+  assert.ok(baseNuovoTexts.includes(hintSenzaDatiScorsi.text), 'senza dati validi la settimana scorsa il testo deve essere ESATTAMENTE la base, senza suffisso');
 
   assert.strictEqual(window.computeProgressionHint({sets:[[]]}, -1), null, 'una settimana negativa non ha senso');
 });
@@ -271,6 +272,89 @@ test('toggleWeekSkipped ha lo stesso "mood" di toggleWeekDone: avvia l\'allename
 
   const day = window.__bridge.state.days[0];
   assert.strictEqual(window.allExercisesClosed(day), true, 'il giorno deve risultare chiuso (bottone "Giorno terminato") anche con un mix fatto/saltato');
+});
+
+test('updateSet non chiede "settimana completata?" su un esercizio collegato finche\' anche il partner non ha l\'ultima serie compilata', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0,
+    days: [{ name:'Upper', esercizi: [
+      { nome:'Ex A', linkGroupId:'g1', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[{peso:'',rip:''}],[],[],[]] },
+      { nome:'Ex B', linkGroupId:'g1', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[{peso:'',rip:''}],[],[],[]] }
+    ]}]
+  };
+  window.__bridge.weekDoneConfirmTarget = null;
+
+  // compila l'ultima (unica, qui) serie del PRIMO esercizio - il partner
+  // (Ex B) non ha ancora scritto nulla
+  window.updateSet(0, 0, 0, 'peso', '50');
+  window.updateSet(0, 0, 0, 'rip', '8');
+  assert.strictEqual(window.__bridge.weekDoneConfirmTarget, null, 'BUG: non deve chiedere conferma finche\' il partner (Ex B) non ha finito anche lui');
+
+  // ora compila anche il partner: SOLO ora deve scattare la conferma
+  window.updateSet(1, 0, 0, 'peso', '50');
+  window.updateSet(1, 0, 0, 'rip', '8');
+  // niente deepStrictEqual: l'oggetto viene creato dentro il "realm" della
+  // finestra jsdom, con un Object.prototype diverso da quello nativo di Node
+  // - stessa forma ma "strict" li considererebbe comunque diversi
+  const target = window.__bridge.weekDoneConfirmTarget;
+  assert.ok(target, 'con entrambi compilati deve finalmente chiedere conferma');
+  assert.strictEqual(target.exi, 1);
+  assert.strictEqual(target.w, 0);
+});
+
+test('extendWeeksPerBlock allunga (mai riduce) le settimane del blocco in corso, copiando avanti l\'ultimo schema/recupero', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    weeksPerBlock: 2, currentWeek: 0,
+    days: [{ name:'Push', esercizi: [
+      { nome:'Ex A', schema:['3x8','4x6'], recupero:['60s','90s'], weekNote:['',''], weekDone:[true,false], weekSkipped:[false,false], maxShown:[false,false],
+        sets:[[{peso:50,rip:8}],[]], maxExtra:[[],[]] }
+    ]}]
+  };
+  const ok = window.extendWeeksPerBlock(4);
+  assert.strictEqual(ok, true);
+  assert.strictEqual(window.__bridge.state.weeksPerBlock, 4);
+  const ex = window.__bridge.state.days[0].esercizi[0];
+  assert.strictEqual(ex.schema.length, 4);
+  assert.strictEqual(ex.schema[2], '4x6', 'le settimane nuove ereditano l\'ultimo schema scritto');
+  assert.strictEqual(ex.recupero[3], '90s', 'stesso principio per il recupero');
+  assert.strictEqual(ex.weekDone[2], false);
+  assert.strictEqual(ex.sets[0][0].peso, 50, 'le settimane gia\' scritte non devono essere toccate');
+  // niente deepStrictEqual: gli array vengono creati dentro il "realm" della
+  // finestra jsdom, con un Array.prototype diverso da quello nativo di Node
+  assert.strictEqual(ex.sets[2].length, 0, 'le settimane nuove partono con le serie vuote');
+
+  // due settimane nuove diverse non devono condividere lo stesso array (bug
+  // gia' visto altrove in questo codice quando si riempie con un valore
+  // condiviso invece che uno fresco per indice)
+  ex.sets[2].push({peso:99, rip:1});
+  assert.strictEqual(ex.sets[3].length, 0, 'BUG: le settimane nuove non devono condividere lo stesso array di serie');
+
+  const notOk = window.extendWeeksPerBlock(3); // <= attuale (4), non deve ridurre
+  assert.strictEqual(notOk, false);
+  assert.strictEqual(window.__bridge.state.weeksPerBlock, 4, 'non deve mai ridurre le settimane da qui');
+});
+
+test('computeExerciseRepsAtSameWeight confronta le ripetizioni fatte allo stesso peso (il piu\' usato) nel tempo', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    title:'Attuale', weeksPerBlock: 3, currentWeek: 2,
+    days: [{ name:'Push', esercizi: [{
+      nome:'Panca',
+      sets: [[{peso:60,rip:6}], [{peso:60,rip:8}], [{peso:65,rip:5}]]
+    }]}]
+  };
+  window.__bridge.storicoExtra = {};
+  window.__bridge.storicoDates = {};
+  window.__bridge.deletedStorico = [];
+
+  const { referenceWeight, points } = window.computeExerciseRepsAtSameWeight('Panca');
+  assert.strictEqual(referenceWeight, 60, '60kg e\' il peso usato piu\' spesso (2 volte contro 1)');
+  assert.strictEqual(points.length, 2, 'solo i periodi dove e\' stato usato ESATTAMENTE quel peso');
+  assert.strictEqual(points[0].value, 6);
+  assert.strictEqual(points[1].value, 8, 'le rip a 60kg sono salite da 6 a 8: si vede il progresso a parita\' di peso');
 });
 
 // ---------------- runner ----------------

@@ -84,7 +84,9 @@ function loadApp(){
       get activeDayIdx(){ return activeDayIdx; }, set activeDayIdx(v){ activeDayIdx = v; },
       get workoutInProgress(){ return workoutInProgress; }, set workoutInProgress(v){ workoutInProgress = v; },
       get MUSCLE_MOTIVATION(){ return MUSCLE_MOTIVATION; },
-      get DEFAULT_MOTIVATION(){ return DEFAULT_MOTIVATION; }
+      get DEFAULT_MOTIVATION(){ return DEFAULT_MOTIVATION; },
+      get PROGRESSION_SUFFIX_PESO(){ return PROGRESSION_SUFFIX_PESO; },
+      get PROGRESSION_SUFFIX_REP(){ return PROGRESSION_SUFFIX_REP; }
     };
   `;
   window.document.head.appendChild(bridgeScript);
