@@ -77,6 +77,7 @@ function scrollToExerciseCard(exi){
 function renderActive(){
   const day = state.days[activeDayIdx];
   const a = dayAccent(day, activeDayIdx);
+  updateThemeColor();
   const main = document.getElementById('viewActive');
   if(reorderMode){
     const floatBtn = document.getElementById('floatingFinishBtn');
@@ -882,6 +883,26 @@ function onStickyPointerMove(e){
 function onStickyPointerCancel(){
   clearTimeout(stickyGesture.longTimer);
 }
+// condivide il record dell'esercizio (o, se non c'e' ancora, solo il nome)
+// tramite il pannello di condivisione nativo del telefono - su desktop, dove
+// il Web Share API di solito non c'e', ripiega sul copiare il testo negli
+// appunti cosi' il bottone fa comunque qualcosa di utile invece di niente
+async function shareExercise(exi){
+  const ex = state.days[activeDayIdx] && state.days[activeDayIdx].esercizi[exi];
+  if(!ex) return;
+  const record = getRecordForExercise(ex.nome);
+  const text = record
+    ? `💪 ${ex.nome}: record personale ${record.peso}kg × ${record.rip||'?'} rip\nTracciato con Logbook`
+    : `🏋️ ${ex.nome} - allenamento tracciato con Logbook`;
+  if(navigator.share){
+    try{ await navigator.share({text}); }catch(e){} // annullare il pannello non e' un errore
+  } else if(navigator.clipboard && navigator.clipboard.writeText){
+    try{
+      await navigator.clipboard.writeText(text);
+      showQuickToast('Copiato negli appunti');
+    }catch(e){}
+  }
+}
 function openExerciseContextMenu(exi, exName){
   closeExerciseContextMenu();
   const el = document.createElement('div');
@@ -894,6 +915,7 @@ function openExerciseContextMenu(exi, exName){
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openChart(${exi})">${ICON_CHART} Grafico progressione</button>
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openPlateCalc(${exi})">${ICON_PLATE} Calcola dischi bilanciere</button>
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openLinkPicker(${exi})">${ICON_LINK} Collega esercizio</button>
+      <button class="ex-context-action" onclick="closeExerciseContextMenu();shareExercise(${exi})">${ICON_SHARE} Condividi</button>
       <button class="ex-context-action danger" onclick="closeExerciseContextMenu();deleteExercise(${exi})">${ICON_TRASH} Elimina esercizio</button>
     </div>
     <button class="ex-context-cancel" onclick="closeExerciseContextMenu()">Annulla</button>

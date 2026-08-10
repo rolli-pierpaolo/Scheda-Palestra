@@ -387,7 +387,7 @@ test('le card esercizio partono chiuse tranne la prima non ancora fatta, e si ri
   assert.strictEqual(window.isExerciseCardCollapsed(0, 2), false, 'un tocco manuale deve poter aprire QUALSIASI esercizio, in qualsiasi ordine');
 });
 
-test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare i dati, con tutte e 4 le azioni', () => {
+test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare i dati, con tutte e 5 le azioni', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
@@ -402,7 +402,7 @@ test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare 
   const menu = window.document.getElementById('exContextMenu');
   assert.ok(menu, 'deve apparire nel DOM');
   assert.strictEqual(menu.querySelector('.ex-context-title').textContent.trim(), 'Ex A');
-  assert.strictEqual(menu.querySelectorAll('.ex-context-action').length, 4, 'Grafico, Calcola dischi, Collega, Elimina');
+  assert.strictEqual(menu.querySelectorAll('.ex-context-action').length, 5, 'Grafico, Calcola dischi, Collega, Condividi, Elimina');
   assert.ok(menu.querySelector('.ex-context-action.danger'), 'Elimina deve essere marcata come azione pericolosa');
 
   window.closeExerciseContextMenu();
@@ -453,6 +453,52 @@ test('suggestNextWeight/suggestNextMaxWeight ripropongono il testo esatto della 
   // settimana precedente non ancora segnata fatta: nessun suggerimento
   const ex2 = { weekDone: [false], sets: [[{peso:'10', rip:'8'}]] };
   assert.strictEqual(window.suggestNextWeight(ex2, 1, 0), null, 'se la settimana prima non e\' stata completata, non deve suggerire un peso non confermato');
+});
+
+test('shareExercise costruisce il testo dal record (se c\'e\') e lo passa a navigator.share', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0,
+    days: [{ name:'Push', esercizi: [
+      { nome:'Panca piana', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[{peso:'82.5',rip:'5'}],[],[],[]] }
+    ]}]
+  };
+  let shared = null;
+  window.navigator.share = (data) => { shared = data; return Promise.resolve(); };
+  // shareExercise e' async, ma la chiamata a navigator.share() avviene nella
+  // parte sincrona del corpo (prima del primo await), quindi e' gia' visibile
+  // subito dopo la chiamata, senza dover attendere la promise restituita
+  window.shareExercise(0);
+  assert.ok(shared, 'deve chiamare navigator.share');
+  assert.ok(shared.text.includes('82.5kg'), 'deve includere il peso del record: ' + shared.text);
+  assert.ok(shared.text.includes('Panca piana'), 'deve includere il nome dell\'esercizio');
+
+  // senza Web Share API (tipico da desktop), ripiega sul copiare negli appunti
+  window.navigator.share = undefined;
+  let copied = null;
+  window.navigator.clipboard = { writeText: (t) => { copied = t; return Promise.resolve(); } };
+  window.shareExercise(0);
+  assert.ok(copied && copied.includes('Panca piana'), 'senza Web Share API deve ripiegare su clipboard.writeText');
+});
+
+test('updateThemeColor segue l\'accent del giorno in Allenamento, torna neutro su Home/Storico', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0,
+    days: [{ name:'Push', color:'#FF3D7F', esercizi: [] }]
+  };
+  const meta = window.document.querySelector('meta[name="theme-color"]');
+  assert.ok(meta, 'il tag meta theme-color deve esistere in index.html');
+
+  window.document.getElementById('viewActive').style.display = 'none';
+  window.updateThemeColor();
+  assert.strictEqual(meta.getAttribute('content'), '#0D0D0D', 'fuori da Allenamento deve restare sul colore neutro');
+
+  window.document.getElementById('viewActive').style.display = '';
+  window.updateThemeColor();
+  assert.notStrictEqual(meta.getAttribute('content'), '#0D0D0D', 'in Allenamento deve seguire l\'accent del giorno, non restare neutro');
 });
 
 // ---------------- runner ----------------
