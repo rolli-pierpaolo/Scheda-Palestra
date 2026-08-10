@@ -231,7 +231,7 @@ main{padding:12px;}
 .ex-sticky-linktype-btn{display:block;width:100%;background:none;border:1px dashed var(--accent,var(--green));border-radius:5px;color:var(--accent,var(--green));font-size:10px;font-weight:700;text-transform:none;padding:3px 8px;margin:3px 0;}
 .ex-sticky-confirm-btn{display:block;width:100%;background:var(--accent,var(--green));color:#0D0D0D;border:none;border-radius:5px;font-size:11px;font-weight:800;padding:5px 10px;margin-top:3px;}
 .card{background:var(--panel2);border-radius:12px;margin-bottom:14px;overflow:hidden;border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));box-shadow:0 4px 14px rgba(0,0,0,.35);}
-.card-head{padding:10px 12px 4px;}
+.card-head{padding:8px 12px 2px;}
 /* ---------------- SUPERSET / JUMP SET (esercizi collegati) ---------------- */
 .card.linked-group{border-top:1px solid var(--line);border-left:4px solid var(--accent,var(--green));}
 /* i due esercizi + il tipo di collegamento vivono dentro una sola cornice
@@ -280,7 +280,7 @@ main{padding:12px;}
 /* piccola di default (solo un accenno di riga): si espande per scriverci solo
    quando ci si clicca/tocca sopra, e torna piccola appena si esce dal campo -
    niente piu' spazio occupato in continuazione per una nota magari breve */
-.ex-comment{width:100%;background:var(--row-dark);border:none;color:var(--muted);font-style:italic;font-size:11px;padding:5px 8px;margin-top:6px;border-radius:6px;resize:none;height:22px;min-height:22px;overflow:hidden;box-sizing:border-box;transition:height .15s ease;}
+.ex-comment{width:100%;background:var(--row-dark);border:none;color:var(--muted);font-style:italic;font-size:11px;padding:5px 8px;margin-top:4px;border-radius:6px;resize:none;height:22px;min-height:22px;overflow:hidden;box-sizing:border-box;transition:height .15s ease;}
 .ex-comment:focus{height:56px;min-height:56px;overflow:auto;}
 /* nota per singola settimana: molto piu' minimale della nota/tecnica dell'esercizio,
    una riga sola, sfondo trasparente, solo un filo sottile sotto invece di un box vero */
@@ -292,13 +292,19 @@ main{padding:12px;}
 .week-note::placeholder{color:var(--muted);opacity:.6;}
 .weeks{padding:0 12px 10px;}
 /* ---------------- BLOCCO SETTIMANA (recupero, schema, righe serie) ---------------- */
-.week-block{border:1px solid var(--line);border-radius:8px;margin-top:8px;overflow:hidden;width:100%;}
-.week-toggle{width:100%;background:var(--accent-dark,var(--green-dark));color:var(--text);border:none;padding:8px 10px;font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;box-sizing:border-box;}
+.week-block{border:1px solid var(--line);border-radius:8px;margin-top:6px;overflow:hidden;width:100%;}
+.week-toggle{width:100%;background:var(--accent-dark,var(--green-dark));color:var(--text);border:none;padding:6px 10px;font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:8px;box-sizing:border-box;}
 /* schema (es. "4x8") della settimana appena segnata completata: si vede a
    colpo d'occhio cosa si e' fatto senza dover aprire il blocco - piu' piccolo
-   e trasparente di "SETTIMANA X" per non competere con l'informazione principale */
+   e trasparente di "SETTIMANA X" per non competere con l'informazione principale.
+   Troncata su una riga sola (invece di andare a capo) cosi' la barra non si
+   allunga in altezza quando lo schema e' lungo. */
 .week-toggle-schema{font-size:10px;font-weight:700;opacity:.7;text-transform:none;}
-.week-toggle .chev{transition:transform .15s;}
+/* l'intera etichetta ("SETTIMANA X" + schema) su una riga sola: senza questo,
+   con uno schema lungo il testo va a capo dentro al bottone e la barra si
+   allunga in altezza - qui invece tronca con "..." e resta sempre compatta */
+.week-toggle>span:not(.chev){white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 auto;text-align:left;}
+.week-toggle .chev{flex:0 0 auto;transition:transform .15s;}
 .week-toggle.collapsed .chev{transform:rotate(-90deg);}
 /* settimana segnata come completata: intestazione leggermente piu' scura
    delle altre, per distinguerla a colpo d'occhio senza aggiungere altro testo */
@@ -534,7 +540,7 @@ main{padding:12px;}
 .combo-empty{padding:10px 12px;font-size:12px;color:var(--muted);font-style:italic;}
 .savebar b{color:var(--green);}
 /* ---------------- RECORD PERSONALI: badge sulla scheda + toast di festeggiamento ---------------- */
-.pr-badge{margin:4px 0 2px;font-size:11px;font-weight:800;color:var(--amber);text-shadow:0 0 8px rgba(232,151,28,.55);}
+.pr-badge{margin:2px 0 2px;font-size:11px;font-weight:800;color:var(--amber);text-shadow:0 0 8px rgba(232,151,28,.55);}
 .pr-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--green);color:#0D0D0D;padding:10px 18px;border-radius:20px;font-weight:800;font-size:13px;z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.45);text-align:center;max-width:80%;}
 .pr-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 /* notifica "esercizio completato": stesso schema del pr-toast ma piu' piccola,
