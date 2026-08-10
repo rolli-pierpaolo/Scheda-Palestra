@@ -35,6 +35,7 @@ try{
   renderActive();
   renderHistList();
   checkAchievements();
+  updateAppBadge();
 
   initAnimations();
 

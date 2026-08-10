@@ -150,50 +150,72 @@ function showView(v){
     return;
   }
 
-  if(v!=='active'){
-    discardReorderIfPending();
-    const floatBtn = document.getElementById('floatingFinishBtn');
-    if(floatBtn) floatBtn.style.display = 'none';
-  } else if(!reorderMode){
-    updateFloatingFinishBtn();
-  }
-
-  document.getElementById('viewActive').style.display = v==='active' ? '' : 'none';
-  document.getElementById('dayTabsActive').style.display = v==='active' ? '' : 'none';
-  document.getElementById('viewHist').style.display = v==='hist' ? '' : 'none';
-  document.getElementById('viewHome').style.display = v==='home' ? '' : 'none';
-
-  document.getElementById('tabActiveBtn').classList.toggle('active', v==='active');
-  document.getElementById('tabHistBtn').classList.toggle('active', v==='hist');
-  document.getElementById('tabHomeBtn').classList.toggle('active', v==='home');
-
-  document.body.classList.toggle('on-home', v==='home');
-if(v === 'home'){
-  animateSuggestedWorkout();
-}
-  // fade + leggero rialzo sulla vista che diventa visibile: il cambio vero e
-  // proprio resta il display toggle sincrono qui sopra (nessun timing da cui
-  // dipende il resto della funzione cambia), e' solo un'entrata piu' morbida
-  // al posto dello scatto secco
-  if(typeof gsap !== "undefined"){
-    const shownEl = v==='active' ? document.getElementById('viewActive')
-      : v==='hist' ? document.getElementById('viewHist')
-      : document.getElementById('viewHome');
-    if(shownEl){
-      gsap.killTweensOf(shownEl);
-      gsap.from(shownEl, {opacity:0, y:10, duration:.28, ease:"power2.out"});
+  const applyViewSwitch = () => {
+    if(v!=='active'){
+      discardReorderIfPending();
+      const floatBtn = document.getElementById('floatingFinishBtn');
+      if(floatBtn) floatBtn.style.display = 'none';
+    } else if(!reorderMode){
+      updateFloatingFinishBtn();
     }
-  }
-  if(v==='active'){
-    activeFirstAnimation = true;
 
-    requestWakeLock();
+    document.getElementById('viewActive').style.display = v==='active' ? '' : 'none';
+    document.getElementById('dayTabsActive').style.display = v==='active' ? '' : 'none';
+    document.getElementById('viewHist').style.display = v==='hist' ? '' : 'none';
+    document.getElementById('viewHome').style.display = v==='home' ? '' : 'none';
 
-    autoGrowAllExNames();
-    autoGrowAllExSchema();
+    document.getElementById('tabActiveBtn').classList.toggle('active', v==='active');
+    document.getElementById('tabHistBtn').classList.toggle('active', v==='hist');
+    document.getElementById('tabHomeBtn').classList.toggle('active', v==='home');
 
+    document.body.classList.toggle('on-home', v==='home');
+    if(v === 'home'){
+      animateSuggestedWorkout();
+    }
+    // fade + leggero rialzo sulla vista che diventa visibile: il cambio vero e
+    // proprio resta il display toggle sincrono qui sopra (nessun timing da cui
+    // dipende il resto della funzione cambia), e' solo un'entrata piu' morbida
+    // al posto dello scatto secco
+    if(typeof gsap !== "undefined"){
+      const shownEl = v==='active' ? document.getElementById('viewActive')
+        : v==='hist' ? document.getElementById('viewHist')
+        : document.getElementById('viewHome');
+      if(shownEl){
+        shownEl.style.opacity = '';
+        gsap.killTweensOf(shownEl);
+        gsap.from(shownEl, {opacity:0, y:10, duration:.28, ease:"power2.out"});
+      }
+    }
+    if(v==='active'){
+      activeFirstAnimation = true;
+
+      requestWakeLock();
+
+      autoGrowAllExNames();
+      autoGrowAllExSchema();
+
+    } else {
+      releaseWakeLock();
+    }
+  };
+
+  // dissolvenza incrociata: se una vista e' gia' visibile la sfumo via PRIMA
+  // di scambiarla con la nuova, cosi' il cambio non e' piu' un taglio secco
+  // (nascondi-e-basta) ma un vero cross-fade tra le due schermate
+  const outgoingEl = ['viewActive','viewHist','viewHome']
+    .map(id => document.getElementById(id))
+    .find(el => el && el.style.display !== 'none');
+
+  if(typeof gsap !== "undefined" && outgoingEl){
+    gsap.killTweensOf(outgoingEl);
+    gsap.to(outgoingEl, {opacity:0, duration:.12, ease:"power1.in"});
+    // lo scambio vero e proprio parte da un timer, non da onComplete del tween:
+    // se il tab e' in background (o comunque il rAF di gsap non gira) il
+    // callback dell'animazione puo' non scattare mai, lasciando l'app bloccata
+    // sulla schermata vecchia per sempre. Il timer invece scatta sempre
+    setTimeout(applyViewSwitch, 120);
   } else {
-    releaseWakeLock();
+    applyViewSwitch();
   }
 }
 
@@ -215,6 +237,26 @@ function releaseWakeLock(){
   if(wakeLock){
     wakeLock.release().catch(()=>{});
     wakeLock = null;
+  }
+}
+
+
+// ---------------- BADGE SULL'ICONA (Home Screen) ----------------
+// mostra a colpo d'occhio, senza aprire l'app, quanti esercizi restano nel
+// giorno che l'app sta suggerendo (state.currentTrainingDayIdx, lo stesso
+// usato dalla Home). Richiamata da saveState() cosi' resta sempre allineata
+// senza doverla richiamare a mano a ogni punto che cambia lo stato
+function updateAppBadge(){
+  if(!('setAppBadge' in navigator)) return;
+  const dayIdx = state.currentTrainingDayIdx;
+  const day = (dayIdx !== null && dayIdx !== undefined) ? state.days[dayIdx] : null;
+  if(!day){ navigator.clearAppBadge().catch(()=>{}); return; }
+  const progress = computeDayProgress(day);
+  const remaining = progress.total - progress.done;
+  if(remaining > 0){
+    navigator.setAppBadge(remaining).catch(()=>{});
+  } else {
+    navigator.clearAppBadge().catch(()=>{});
   }
 }
 

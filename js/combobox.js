@@ -116,6 +116,7 @@ function saveState(){
   saveTimer = setTimeout(()=>{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     document.getElementById('saveStatus').textContent = "Salvato";
+    updateAppBadge();
   }, 400);
 }
 function saveCollapsed(){
