@@ -643,27 +643,44 @@ test('una settimana gia\' fatta/saltata parte collassata anche se e\' nominalmen
   assert.ok(!toggles2[1].classList.contains('collapsed'), 'una scelta esplicita in collapsedMap deve avere sempre l\'ultima parola');
 });
 
-test('l\'icona "Giorno terminato" nella riga dei giorni passa da accesa a spenta/non cliccabile dopo la conferma', () => {
+test('l\'icona "Termina blocco" nella riga dei giorni si accende solo a blocco completo (tutte le settimane fatte)', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
-    weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [],
-    days: [{ name:'Push', esercizi: [
-      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
-    ]}]
+    weeksPerBlock: 4, currentWeek: 1, completedWeeks: [0], completedTrainingDays: [],
+    days: [{ name:'Push', esercizi: [] }]
   };
   window.renderDayTabs();
-  const btn = window.document.getElementById('dayFinishTab');
+  const btn = window.document.getElementById('blockFinishTab');
   assert.ok(btn, 'l\'icona deve esistere nella riga dei giorni');
-  assert.ok(btn.classList.contains('ready'), 'la prima volta (tutto fatto, mai confermato) deve accendersi');
-  assert.ok(!btn.disabled, 'non ancora confermato: deve restare cliccabile per chiudere il giorno');
+  assert.ok(!btn.classList.contains('ready'), 'solo 1 settimana su 4 completata: non deve ancora accendersi');
 
-  // simula la conferma di "Giorno terminato" (quello che fa logWorkoutDay)
-  window.__bridge.state.completedTrainingDays = [0];
-  window.updateDayFinishTab();
-  assert.ok(!btn.classList.contains('ready'), 'BUG: dopo la conferma non deve piu\' risultare accesa');
-  assert.ok(btn.classList.contains('done'), 'dopo la conferma deve passare allo stato "gia\' fatto"');
-  assert.ok(btn.disabled, 'dopo la conferma non deve piu\' essere cliccabile');
+  window.__bridge.state.completedWeeks = [0,1,2,3];
+  window.updateBlockFinishTab();
+  assert.ok(btn.classList.contains('ready'), 'tutte le settimane del blocco completate: deve accendersi');
+});
+
+test('archiveAndReset avvisa e chiede conferma esplicita se il blocco non e\' ancora completo', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    weeksPerBlock: 4, completedWeeks: [0], completedTrainingDays: [], title: 'WO',
+    days: [{ name:'Push', esercizi: [] }, { name:'Pull', esercizi: [] }]
+  };
+  let confirmCalls = 0, confirmMessage = '', promptCalled = false;
+  window.confirm = (msg) => { confirmCalls++; confirmMessage = msg; return false; };
+  window.prompt = () => { promptCalled = true; return null; };
+
+  window.archiveAndReset();
+  assert.strictEqual(confirmCalls, 1, 'a blocco incompleto deve mostrare un avviso PRIMA di qualunque prompt');
+  assert.ok(/settiman/i.test(confirmMessage), 'l\'avviso deve menzionare le settimane mancanti');
+  assert.ok(!promptCalled, 'BUG: se si annulla l\'avviso, non deve comunque chiedere il nome da salvare');
+
+  // a blocco completo l'avviso extra non deve comparire: si passa dritti al prompt del nome
+  window.__bridge.state.completedWeeks = [0,1,2,3];
+  confirmCalls = 0; promptCalled = false;
+  window.archiveAndReset();
+  assert.strictEqual(confirmCalls, 0, 'a blocco completo non deve comparire l\'avviso extra');
+  assert.ok(promptCalled, 'a blocco completo si passa dritti al prompt del nome da salvare');
 });
 
 test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su un giorno vecchio', () => {

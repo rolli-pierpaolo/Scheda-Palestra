@@ -160,16 +160,14 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .day-btn{flex:0 0 auto;padding:8px 12px;border-radius:20px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:12px;font-weight:700;white-space:nowrap;}
 .day-btn.active{background:var(--accent,var(--green));color:#0D0D0D;border-color:var(--accent,var(--green));}
 /* icona rotonda in fondo alla riga dei giorni, per non confondersi con un
-   quinto giorno cliccabile: sostituisce sia il vecchio bottone flottante che
-   quello dentro il carosello - sempre in vista, cambia aspetto invece di
-   comparire/sparire. Spenta se mancano ancora esercizi (resta comunque
-   cliccabile: chi vuole puo' chiudere il giorno anche in anticipo), accesa
-   quando tutto e' fatto e non ancora confermato, spenta e NON cliccabile una
-   volta confermato (o se il giorno non ha ancora esercizi da finire) */
-.day-finish-btn{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);display:flex;align-items:center;justify-content:center;padding:0;transition:box-shadow .2s ease, border-color .2s ease, color .2s ease;}
-.day-finish-btn.ready{border-color:var(--accent,var(--green));color:var(--accent,var(--green));background:var(--panel2);box-shadow:0 0 14px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
-.day-finish-btn.done,.day-finish-btn:disabled{border-color:var(--line);color:var(--muted);background:var(--row-dark);box-shadow:none;opacity:.7;}
-.day-finish-btn:active:not(:disabled){transform:scale(.94);}
+   quinto giorno cliccabile: termina l'INTERO blocco/mese (archiveAndReset),
+   non il singolo giorno - resta sempre cliccabile (anche a blocco
+   incompleto: archiveAndReset stesso avvisa e chiede conferma in quel
+   caso), si accende solo come richiamo quando tutte le settimane del
+   blocco risultano gia' completate */
+.block-finish-btn{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);display:flex;align-items:center;justify-content:center;padding:0;transition:box-shadow .2s ease, border-color .2s ease, color .2s ease;}
+.block-finish-btn.ready{border-color:var(--accent,var(--green));color:var(--accent,var(--green));background:var(--panel2);box-shadow:0 0 14px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
+.block-finish-btn:active{transform:scale(.94);}
 main{padding:12px;}
 /* ---------------- HOME ---------------- */
 #viewHome{padding:20px 16px 30px;}
@@ -448,6 +446,10 @@ main{padding:12px;}
 .stepper{flex:0 0 20px;width:20px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:5px;font-size:13px;font-weight:800;padding:0;line-height:1;}
 .stepper:active{background:var(--accent,var(--green));color:#0D0D0D;}
 .add-ex{display:block;width:100%;background:var(--panel);border:2px dashed var(--line);color:var(--muted);padding:12px;border-radius:10px;font-size:13px;font-weight:700;margin-top:4px;}
+/* "Giorno terminato" (questo singolo giorno): centrale, attaccato subito
+   sotto l'esercizio corrente (fine del carosello) */
+.finish-day-btn{display:block;width:fit-content;margin:18px auto 0;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:12px;padding:12px 22px;font-size:14px;font-weight:900;text-align:center;box-shadow:0 0 16px 1px color-mix(in srgb, var(--accent, var(--green)) 40%, transparent);}
+.finish-day-btn:active{box-shadow:0 0 22px 3px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);}
 /* "Archivia mese": vive nelle Impostazioni (vicino al Backup), non piu' nella
    scheda Allenamento - e' un'azione rara/di fine blocco, non quotidiana */
 .archive-btn{display:block;width:fit-content;margin:10px auto 0;background:var(--panel);border:1px dashed var(--amber);color:var(--amber);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:700;text-align:center;}

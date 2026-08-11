@@ -62,7 +62,7 @@ function showView(v){
     if(v!=='active'){
       discardReorderIfPending();
     } else if(!reorderMode){
-      updateDayFinishTab();
+      updateBlockFinishTab();
     }
 
     document.getElementById('viewActive').style.display = v==='active' ? '' : 'none';
@@ -248,15 +248,17 @@ function renderDayTabs(){
 
   }).join('');
 
-  // icona rotonda dopo l'ultimo giorno: "Giorno terminato" per il giorno
-  // attivo, sempre in vista invece che sepolta sotto il carosello (vedi
-  // updateDayFinishTab per come cambia aspetto)
+  // icona rotonda dopo l'ultimo giorno: "Termina blocco" (l'intero mese, non
+  // il singolo giorno - quello resta sul bottone sotto l'esercizio), sempre
+  // in vista invece che sepolta in Impostazioni (vedi updateBlockFinishTab
+  // per come cambia aspetto, e archiveAndReset per l'avviso di sicurezza se
+  // il blocco non e' ancora completo)
   el.innerHTML = dayButtonsHtml + `
-    <button id="dayFinishTab" class="day-finish-btn" onclick="openFinishWorkoutModal(activeDayIdx)" title="Giorno di allenamento terminato" aria-label="Giorno di allenamento terminato">
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M5 12.5 L10 17.5 L19 6.5"/></svg>
+    <button id="blockFinishTab" class="block-finish-btn" onclick="archiveAndReset()" title="Termina il blocco e inizia un nuovo mese" aria-label="Termina il blocco e inizia un nuovo mese">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/></svg>
     </button>`;
 
-  updateDayFinishTab();
+  updateBlockFinishTab();
 }
 
 
@@ -594,8 +596,8 @@ function forceNextWeekForDay(dayIdx, w){
 }
 
 
-// usata dall'icona "Giorno terminato" nella riga dei giorni (vedi
-// updateDayFinishTab in js/exercise-card.js): controlla la VERA settimana corrente del programma
+// usata dal bottone "Giorno terminato" sotto l'esercizio (vedi
+// openFinishWorkoutModal in js/animations.js): controlla la VERA settimana corrente del programma
 // (state.currentWeek), la stessa che usa exerciseCard() per decidere cosa
 // mostrare aperto. Prima si inferiva una "settimana corrente" per esercizio
 // cercando l'ultimo indice segnato fatto/saltato: a inizio settimana nuova,
