@@ -61,10 +61,8 @@ function showView(v){
   const applyViewSwitch = () => {
     if(v!=='active'){
       discardReorderIfPending();
-      const floatBtn = document.getElementById('floatingFinishBtn');
-      if(floatBtn) floatBtn.style.display = 'none';
     } else if(!reorderMode){
-      updateFloatingFinishBtn();
+      updateDayFinishTab();
     }
 
     document.getElementById('viewActive').style.display = v==='active' ? '' : 'none';
@@ -236,19 +234,29 @@ function renderDayTabs(){
 
   const el = document.getElementById('dayTabsActive');
 
-  el.innerHTML = state.days.map((d,i)=>{
+  const dayButtonsHtml = state.days.map((d,i)=>{
 
     const a = dayAccent(d,i);
 
     return `
-    <button 
-      class="day-btn ${i===activeDayIdx?'active':''}" 
-      style="--accent:${a.c}" 
+    <button
+      class="day-btn ${i===activeDayIdx?'active':''}"
+      style="--accent:${a.c}"
       onclick="selectDay(${i})">
       ${escapeHtml(d.name)}
     </button>`;
 
   }).join('');
+
+  // icona rotonda dopo l'ultimo giorno: "Giorno terminato" per il giorno
+  // attivo, sempre in vista invece che sepolta sotto il carosello (vedi
+  // updateDayFinishTab per come cambia aspetto)
+  el.innerHTML = dayButtonsHtml + `
+    <button id="dayFinishTab" class="day-finish-btn" onclick="openFinishWorkoutModal(activeDayIdx)" title="Giorno di allenamento terminato" aria-label="Giorno di allenamento terminato">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M5 12.5 L10 17.5 L19 6.5"/></svg>
+    </button>`;
+
+  updateDayFinishTab();
 }
 
 
@@ -586,8 +594,8 @@ function forceNextWeekForDay(dayIdx, w){
 }
 
 
-// usata dal bottone flottante "Giorno terminato" (vedi updateFloatingFinishBtn
-// in js/exercise-card.js): controlla la VERA settimana corrente del programma
+// usata dall'icona "Giorno terminato" nella riga dei giorni (vedi
+// updateDayFinishTab in js/exercise-card.js): controlla la VERA settimana corrente del programma
 // (state.currentWeek), la stessa che usa exerciseCard() per decidere cosa
 // mostrare aperto. Prima si inferiva una "settimana corrente" per esercizio
 // cercando l'ultimo indice segnato fatto/saltato: a inizio settimana nuova,

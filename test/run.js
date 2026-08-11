@@ -643,7 +643,7 @@ test('una settimana gia\' fatta/saltata parte collassata anche se e\' nominalmen
   assert.ok(!toggles2[1].classList.contains('collapsed'), 'una scelta esplicita in collapsedMap deve avere sempre l\'ultima parola');
 });
 
-test('il bottone "Giorno terminato" sparisce dopo la prima conferma, sostituito da un tab non cliccabile', () => {
+test('l\'icona "Giorno terminato" nella riga dei giorni passa da accesa a spenta/non cliccabile dopo la conferma', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
@@ -652,17 +652,18 @@ test('il bottone "Giorno terminato" sparisce dopo la prima conferma, sostituito 
       { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
     ]}]
   };
-  window.updateFloatingFinishBtn();
-  const floatBtn = window.document.getElementById('floatingFinishBtn');
-  const doneTab = window.document.getElementById('alreadyDoneTab');
-  assert.notStrictEqual(floatBtn.style.display, 'none', 'la prima volta (tutto fatto, mai confermato) il bottone cliccabile deve comparire');
-  assert.strictEqual(doneTab.style.display, 'none', 'il tab non cliccabile non deve ancora comparire');
+  window.renderDayTabs();
+  const btn = window.document.getElementById('dayFinishTab');
+  assert.ok(btn, 'l\'icona deve esistere nella riga dei giorni');
+  assert.ok(btn.classList.contains('ready'), 'la prima volta (tutto fatto, mai confermato) deve accendersi');
+  assert.ok(!btn.disabled, 'non ancora confermato: deve restare cliccabile per chiudere il giorno');
 
   // simula la conferma di "Giorno terminato" (quello che fa logWorkoutDay)
   window.__bridge.state.completedTrainingDays = [0];
-  window.updateFloatingFinishBtn();
-  assert.strictEqual(floatBtn.style.display, 'none', 'BUG: dopo la conferma il bottone cliccabile non deve ripresentarsi');
-  assert.notStrictEqual(doneTab.style.display, 'none', 'dopo la conferma deve comparire il tab non cliccabile al suo posto');
+  window.updateDayFinishTab();
+  assert.ok(!btn.classList.contains('ready'), 'BUG: dopo la conferma non deve piu\' risultare accesa');
+  assert.ok(btn.classList.contains('done'), 'dopo la conferma deve passare allo stato "gia\' fatto"');
+  assert.ok(btn.disabled, 'dopo la conferma non deve piu\' essere cliccabile');
 });
 
 test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su un giorno vecchio', () => {

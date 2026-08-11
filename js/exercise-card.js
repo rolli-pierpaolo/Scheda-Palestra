@@ -1,26 +1,32 @@
-// stato del bottone flottante "Giorno terminato" (vedi css .floating-finish-btn):
-// funzione a parte invece che solo dentro renderActive(), perche' showView()
-// deve poterlo ricalcolare anche quando si torna sulla tab Allenamento SENZA
-// un vero re-render (es. dal tab in alto) - senza questo, il bottone poteva
-// restare nascosto dall'ultima volta che si era su Home/Storico
-function updateFloatingFinishBtn(){
-  const floatBtn = document.getElementById('floatingFinishBtn');
-  const doneTab = document.getElementById('alreadyDoneTab');
-  if(!floatBtn) return;
+// stato dell'icona "Giorno terminato" nella riga dei giorni (vedi css
+// .day-finish-btn): funzione a parte invece che solo dentro renderActive(),
+// perche' showView() deve poterla ricalcolare anche quando si torna sulla
+// tab Allenamento SENZA un vero re-render (es. dal tab in alto) - senza
+// questo, l'icona poteva restare ferma allo stato di prima di Home/Storico.
+// Tre stati invece di comparire/sparire: spenta (esercizi non ancora finiti,
+// ma resta cliccabile per chi vuole chiudere in anticipo), accesa ("ready":
+// tutto fatto, non ancora confermato), spenta e non cliccabile ("done": gia'
+// confermato per questa settimana, o il giorno non ha ancora esercizi)
+function updateDayFinishTab(){
+  const btn = document.getElementById('dayFinishTab');
+  if(!btn) return;
   const day = state.days[activeDayIdx];
-  if(!day){ floatBtn.style.display = 'none'; if(doneTab) doneTab.style.display = 'none'; return; }
-  const allClosed = day.esercizi.length>0 && allExercisesClosed(day);
+  if(!day || day.esercizi.length===0){
+    btn.classList.remove('ready','done');
+    btn.disabled = true;
+    return;
+  }
+  const allClosed = allExercisesClosed(day);
   // gia' confermato con "Giorno terminato" per la settimana corrente (vedi
   // logWorkoutDay, che aggiunge activeDayIdx qui - azzerato da solo quando
   // la settimana avanza): da quel momento in poi non si invita piu' a
-  // rifarlo, si mostra solo la conferma non cliccabile
+  // rifarlo, l'icona resta spenta e non cliccabile
   const alreadyConfirmed = (state.completedTrainingDays||[]).includes(activeDayIdx);
-  floatBtn.style.display = (allClosed && !alreadyConfirmed) ? '' : 'none';
-  floatBtn.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
-  if(doneTab){
-    doneTab.style.display = (allClosed && alreadyConfirmed) ? '' : 'none';
-    doneTab.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
-  }
+  btn.disabled = alreadyConfirmed;
+  btn.classList.toggle('ready', allClosed && !alreadyConfirmed);
+  btn.classList.toggle('done', allClosed && alreadyConfirmed);
+  btn.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
+  btn.title = alreadyConfirmed ? "Allenamento gia' completato questa settimana" : "Giorno di allenamento terminato";
 }
 // stesso conteggio degli esercizi "chiusi" gia' usato altrove (allExercisesClosed,
 // computeCurrentDoingExerciseIdx): una coppia collegata (super/jump set) conta
@@ -105,8 +111,6 @@ function renderActive(){
   updateThemeColor();
   const main = document.getElementById('viewActive');
   if(reorderMode){
-    const floatBtn = document.getElementById('floatingFinishBtn');
-    if(floatBtn) floatBtn.style.display = 'none';
     main.innerHTML = renderReorderList(day);
     return;
   }
@@ -117,7 +121,10 @@ function renderActive(){
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
   const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>` : '';
-const finishBtn = day.esercizi.length>0 ? `<button class="finish-day-btn" style="--accent:${a.c}" onclick="openFinishWorkoutModal(${activeDayIdx})">${ICON_CHECK} <span class="accent-shine">Giorno di allenamento terminato!</span></button>` : '';  const suggestedIdx = computeSuggestedDayIdx();
+  // "Giorno terminato" non e' piu' qui in mezzo agli esercizi: vive come
+  // icona nella riga dei giorni (vedi renderDayTabs/updateDayFinishTab in
+  // js/navigation.js), sempre in vista invece che sepolta sotto il carosello
+  const suggestedIdx = computeSuggestedDayIdx();
 
 // piccolo banner pulsante invece del box grande di prima: deve vedersi
 // SUBITO entrando nel giorno diverso da quello previsto, ma senza occupare
@@ -173,12 +180,11 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
-     </div>
-     ${finishBtn}`;
+     </div>`;
     autoGrowAllExNames();
     autoGrowAllExSchema();
 
-  updateFloatingFinishBtn();
+  updateDayFinishTab();
 
   if(typeof gsap !== "undefined" && activeFirstAnimation){
   activeFirstAnimation = false;
