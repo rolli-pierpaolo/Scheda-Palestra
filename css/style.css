@@ -292,6 +292,15 @@ main{padding:12px;}
 .ex-jump-dot{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);font-size:11px;font-weight:800;}
 .ex-jump-dot.done{background:var(--accent,var(--green));border-color:var(--accent,var(--green));color:#0D0D0D;}
 .ex-jump-dot.current{box-shadow:0 0 0 2px var(--accent,var(--green));}
+/* icona "Giorno terminato" accanto ai pallini (sostituisce il vecchio
+   bottone grande sotto ogni esercizio): stesso trattamento a 3 stati
+   dell'icona "Termina blocco" nella riga dei giorni - spenta ma cliccabile
+   se mancano ancora esercizi, accesa quando tutto e' fatto, spenta e non
+   cliccabile una volta confermato per questa settimana */
+.ex-finish-icon{flex:0 0 auto;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);display:flex;align-items:center;justify-content:center;padding:0;transition:box-shadow .2s ease, border-color .2s ease, color .2s ease;}
+.ex-finish-icon.ready{border-color:var(--accent,var(--green));color:var(--accent,var(--green));background:var(--panel2);box-shadow:0 0 14px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
+.ex-finish-icon.done,.ex-finish-icon:disabled{border-color:var(--line);color:var(--muted);background:var(--row-dark);box-shadow:none;opacity:.7;}
+.ex-finish-icon:active:not(:disabled){transform:scale(.94);}
 /* ---------------- CAROSELLO ESERCIZI (un esercizio a schermo, swipe per il prossimo) ---------------- */
 /* il viewport clippa tutto tranne la slide attiva, il track e' la riga
    orizzontale di slide traslata via transform (vedi goToExerciseSlide in
@@ -453,10 +462,6 @@ main{padding:12px;}
 .stepper{flex:0 0 20px;width:20px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:5px;font-size:13px;font-weight:800;padding:0;line-height:1;}
 .stepper:active{background:var(--accent,var(--green));color:#0D0D0D;}
 .add-ex{display:block;width:100%;background:var(--panel);border:2px dashed var(--line);color:var(--muted);padding:12px;border-radius:10px;font-size:13px;font-weight:700;margin-top:4px;}
-/* "Giorno terminato" (questo singolo giorno): centrale, attaccato subito
-   sotto l'esercizio corrente (fine del carosello) */
-.finish-day-btn{display:block;width:fit-content;margin:18px auto 0;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:12px;padding:12px 22px;font-size:14px;font-weight:900;text-align:center;box-shadow:0 0 16px 1px color-mix(in srgb, var(--accent, var(--green)) 40%, transparent);}
-.finish-day-btn:active{box-shadow:0 0 22px 3px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);}
 /* "Archivia mese": vive nelle Impostazioni (vicino al Backup), non piu' nella
    scheda Allenamento - e' un'azione rara/di fine blocco, non quotidiana */
 .archive-btn{display:block;width:fit-content;margin:10px auto 0;background:var(--panel);border:1px dashed var(--amber);color:var(--amber);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:700;text-align:center;}

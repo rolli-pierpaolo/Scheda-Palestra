@@ -773,6 +773,29 @@ test('striscia esercizi del giorno: ordine vero, fatto = colorato/piccolo, corre
   assert.ok(!chips[1].classList.contains('done'), 'quello corrente, non ancora fatto, non deve avere la classe done');
 });
 
+test('icona "Giorno terminato" accanto ai pallini: accesa a giorno completo, spenta e bloccata dopo la conferma', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [],
+    days: [{ name:'Push', esercizi: [
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
+    ]}]
+  };
+  window.renderActive();
+  const btn = window.document.getElementById('exDayFinishTab');
+  assert.ok(btn, 'l\'icona deve esistere accanto ai pallini');
+  assert.ok(!window.document.querySelector('.finish-day-btn'), 'BUG: non deve piu\' esserci il vecchio bottone grande sotto l\'esercizio');
+  assert.ok(btn.classList.contains('ready'), 'giorno tutto fatto, mai confermato: deve accendersi');
+  assert.ok(!btn.disabled, 'non ancora confermato: deve restare cliccabile');
+
+  window.__bridge.state.completedTrainingDays = [0];
+  window.updateExFinishIcon();
+  assert.ok(!btn.classList.contains('ready'), 'dopo la conferma non deve piu\' risultare accesa');
+  assert.ok(btn.classList.contains('done'), 'dopo la conferma deve passare allo stato "gia\' fatto"');
+  assert.ok(btn.disabled, 'dopo la conferma non deve piu\' essere cliccabile');
+});
+
 test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su un giorno vecchio', () => {
   const window = loadApp();
   window.__bridge.workoutInProgress = false;
