@@ -121,6 +121,13 @@ function importBackup(){
   }
   if(!confirm("Questo sovrascrivera' l'allenamento attivo, lo storico e lo stato delle settimane con quelli del backup. Continuare?")) return;
   applyBackup(backup);
+  // applyBackup scrive solo in locale (la usano anche pullFromCloud e la
+  // visualizzazione condivisa, dove ripubblicare sul cloud sarebbe sbagliato
+  // o inutile): qui invece, un ripristino manuale voluto dall'utente, va
+  // anche mandato al cloud se e' collegato - altrimenti il dispositivo
+  // resta con dati diversi da quelli sincronizzati finche' non si tocca
+  // qualcos'altro
+  if(typeof pushToCloud === 'function') pushToCloud();
   alert("Backup ripristinato!");
 }
 // stesso identico flusso di importBackup, ma leggendo un file scelto dal telefono
@@ -146,6 +153,7 @@ function importBackupFile(event){
     }
     if(!confirm("Questo sovrascrivera' l'allenamento attivo, lo storico e lo stato delle settimane con quelli del backup. Continuare?")) return;
     applyBackup(backup);
+    if(typeof pushToCloud === 'function') pushToCloud();
     alert("Backup ripristinato dal file!");
   };
   reader.onerror = () => alert("Errore durante la lettura del file.");

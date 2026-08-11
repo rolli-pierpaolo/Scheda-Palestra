@@ -709,6 +709,29 @@ test('archiveAndReset avvisa e chiede conferma esplicita se il blocco non e\' an
   assert.ok(promptCalled, 'a blocco completo si passa dritti al prompt del nome da salvare');
 });
 
+test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' ancora a meta\'', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.workoutInProgress = true;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [],
+    days: [{ name:'Push', esercizi: [
+      // un esercizio fatto, uno no: il giorno NON e' ancora tutto chiuso
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] },
+      { nome:'Ex B', recupero:['60s','60s','60s','60s'], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
+    ]}]
+  };
+  window.showHome();
+  assert.strictEqual(window.__bridge.workoutInProgress, true, 'BUG: dare solo un\'occhiata alla Home a meta\' allenamento non deve far perdere "in corso" - altrimenti riaprendo l\'app si viene rimandati al giorno suggerito invece che a quello vero');
+
+  // ma se il giorno attivo risulta TUTTO chiuso (fatto/saltato) e mai
+  // confermato con "Giorno terminato", quello resta un allenamento
+  // abbandonato per davvero: la Home deve comunque poterlo azzerare
+  window.__bridge.state.days[0].esercizi[1].weekDone = [true,false,false,false];
+  window.showHome();
+  assert.strictEqual(window.__bridge.workoutInProgress, false, 'con il giorno tutto chiuso ma mai confermato, la Home deve ancora azzerare "in corso" come prima');
+});
+
 test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su un giorno vecchio', () => {
   const window = loadApp();
   window.__bridge.workoutInProgress = false;
