@@ -165,13 +165,17 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
       <div class="ex-carousel-track" id="exCarouselTrack" style="transform:translateX(-${activeSlideIdx*100}%)">${slidesHtml}</div>
     </div>` : '';
 
-  main.innerHTML = progressBarHtml + jumpIndexHtml + stickyHeaderHtml + switchTrainingDay + emptyState + carouselHtml +
+  // azioni del giorno (aggiungi/riordina/termina) subito sotto l'indice
+  // esercizi, non piu' in fondo alla pagina dopo il carosello: altrimenti,
+  // scorrendo ogni singolo esercizio verso il basso, si finiva per rivederle
+  // ripetutamente ad ogni swipe, come se fossero "sotto ogni esercizio"
+  main.innerHTML = progressBarHtml + jumpIndexHtml + stickyHeaderHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
      </div>
-     ${finishBtn}
-     <button class="archive-btn" onclick="archiveAndReset()">${ICON_ARCHIVE} Archivia "${escapeHtml(state.title||'questo mese')}" e inizia un nuovo mese</button>`;
+     ${finishBtn}` +
+    switchTrainingDay + emptyState + carouselHtml;
     autoGrowAllExNames();
     autoGrowAllExSchema();
 

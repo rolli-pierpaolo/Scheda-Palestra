@@ -175,26 +175,6 @@ function updateThemeColor(){
 }
 
 
-// ---------------- BADGE SULL'ICONA (Home Screen) ----------------
-// mostra a colpo d'occhio, senza aprire l'app, quanti esercizi restano nel
-// giorno che l'app sta suggerendo (state.currentTrainingDayIdx, lo stesso
-// usato dalla Home). Richiamata da saveState() cosi' resta sempre allineata
-// senza doverla richiamare a mano a ogni punto che cambia lo stato
-function updateAppBadge(){
-  if(!('setAppBadge' in navigator)) return;
-  const dayIdx = state.currentTrainingDayIdx;
-  const day = (dayIdx !== null && dayIdx !== undefined) ? state.days[dayIdx] : null;
-  if(!day){ navigator.clearAppBadge().catch(()=>{}); return; }
-  const progress = computeDayProgress(day);
-  const remaining = progress.total - progress.done;
-  if(remaining > 0){
-    navigator.setAppBadge(remaining).catch(()=>{});
-  } else {
-    navigator.clearAppBadge().catch(()=>{});
-  }
-}
-
-
 document.addEventListener('visibilitychange', () => {
   if(
     document.visibilityState === 'visible' &&
