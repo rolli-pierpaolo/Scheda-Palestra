@@ -38,6 +38,9 @@ const CORE_ASSETS = [
   './js/animations.js',
   './js/accessibility.js',
   './js/install-prompt.js',
+  './js/supabase.min.js',
+  './js/sync.js',
+  './js/auth.js',
   './js/app-init.js',
 ];
 

@@ -117,6 +117,7 @@ function saveState(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     document.getElementById('saveStatus').textContent = "Salvato";
     updateAppBadge();
+    if(typeof pushToCloud === 'function') pushToCloud();
   }, 400);
 }
 function saveCollapsed(){
