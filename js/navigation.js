@@ -63,6 +63,7 @@ function showView(v){
       discardReorderIfPending();
     } else if(!reorderMode){
       updateBlockFinishTab();
+      updateExFinishIcon();
     }
 
     document.getElementById('viewActive').style.display = v==='active' ? '' : 'none';
