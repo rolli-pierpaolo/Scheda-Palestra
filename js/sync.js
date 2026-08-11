@@ -57,27 +57,41 @@ function onSyncLogout(){
 // chiamata da saveState() (vedi js/combobox.js) ogni volta che lo stato
 // locale viene salvato: manda la stessa identica busta dell'export manuale.
 // Debounce separato (piu' lungo di quello del salvataggio locale) per non
-// mandare una richiesta di rete a ogni piccola modifica ravvicinata
+// mandare una richiesta di rete a ogni piccola modifica ravvicinata.
+// flushCloudPush() (chiamata anche da visibilitychange/pagehide qui sotto)
+// prova a mandarla SUBITO invece di aspettare gli 800ms, per lo stesso motivo
+// del flush locale in js/combobox.js: l'app in background ha poco tempo
+let cloudPushPending = false;
 function pushToCloud(){
   if(!isSyncEnabled()) return;
   // guardia in piu' (saveState() gia' non chiama nemmeno pushToCloud in
   // questo caso, vedi js/combobox.js): mentre si guardano dati condivisi da
   // un altro utente, non deve mai partire una scrittura verso il cloud
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
+  cloudPushPending = true;
   clearTimeout(syncPushTimer);
-  syncPushTimer = setTimeout(async () => {
-    if(typeof isViewingShared === 'function' && isViewingShared()) return;
-    const payload = buildBackupPayload();
-    try{
-      await supabaseClient.from('user_data').upsert({
-        user_id: syncSession.user.id,
-        payload,
-        client_id: syncClientId,
-        updated_at: new Date().toISOString()
-      });
-    }catch(e){} // offline o rete assente: l'app continua a funzionare in locale, riprovera' al prossimo salvataggio
-  }, 800);
+  syncPushTimer = setTimeout(flushCloudPush, 800);
 }
+async function flushCloudPush(){
+  clearTimeout(syncPushTimer);
+  if(!cloudPushPending) return;
+  cloudPushPending = false;
+  if(!isSyncEnabled()) return;
+  if(typeof isViewingShared === 'function' && isViewingShared()) return;
+  const payload = buildBackupPayload();
+  try{
+    await supabaseClient.from('user_data').upsert({
+      user_id: syncSession.user.id,
+      payload,
+      client_id: syncClientId,
+      updated_at: new Date().toISOString()
+    });
+  }catch(e){} // offline o rete assente: l'app continua a funzionare in locale, riprovera' al prossimo salvataggio
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden') flushCloudPush();
+});
+window.addEventListener('pagehide', flushCloudPush);
 
 // scarica la riga cloud e la applica con la stessa validazione gia' scritta
 // per l'import manuale da file/testo. "force" true solo al login (dove

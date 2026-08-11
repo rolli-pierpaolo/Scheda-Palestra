@@ -618,6 +618,32 @@ test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio d
   assert.strictEqual(window.localStorage.getItem('scheda_wo18_collapsed_v1'), null, 'BUG DI SICUREZZA: mentre si vedono dati condivisi saveCollapsed non deve scrivere su localStorage');
 });
 
+test('flushSaveState scrive SUBITO su localStorage, senza aspettare il debounce di 400ms', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0,
+    days: [{ name:'Push', esercizi: [] }]
+  };
+  window.localStorage.removeItem('scheda_wo18_state_v1');
+
+  window.saveState();
+  assert.strictEqual(window.localStorage.getItem('scheda_wo18_state_v1'), null, 'subito dopo saveState() (prima del timer) non deve ancora essere scritto: e\' proprio questo il debounce');
+
+  // simula cio' che fa il listener su visibilitychange/pagehide: l'app sta
+  // per finire in background (su iOS puo' voler dire "ricaricata a momenti")
+  // e non c'e' tempo di aspettare i 400ms del debounce normale
+  window.flushSaveState();
+  const saved = window.localStorage.getItem('scheda_wo18_state_v1');
+  assert.ok(saved, 'BUG: flushSaveState deve scrivere SUBITO, senza aspettare il timer - altrimenti l\'ultima modifica si perde se l\'app va in background prima che scatti');
+  assert.strictEqual(JSON.parse(saved).days[0].name, 'Push', 'deve scrivere lo stato vero, non un placeholder');
+
+  // chiamarla una seconda volta senza nulla di nuovo da salvare non deve
+  // ricreare un altro giro (ne' rompere nulla)
+  window.localStorage.removeItem('scheda_wo18_state_v1');
+  window.flushSaveState();
+  assert.strictEqual(window.localStorage.getItem('scheda_wo18_state_v1'), null, 'senza un saveState() in sospeso, una seconda flush non deve riscrivere nulla');
+});
+
 test('una settimana gia\' fatta/saltata parte collassata anche se e\' nominalmente quella corrente', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
