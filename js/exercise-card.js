@@ -37,19 +37,39 @@ function computeDayProgress(day){
   }
   return { total, done, items };
 }
-// si vede SUBITO entrando nel giorno, senza dover scrollare fino in fondo o
-// aspettare che compaia il bottone flottante "Giorno terminato" (che scatta
-// solo a tutti finiti) - non e' sticky apposta: impilare un altro elemento
-// fisso sopra l'header sticky di ogni esercizio avrebbe richiesto ricalcolare
-// --topbar-h (vedi updateTopbarHeightVar in js/app-init.js) e rischiava
-// sovrapposizioni difficili da verificare in ogni caso reale
-function renderDayProgressBar(progress, accent){
+// striscia con gli esercizi di oggi al posto del vecchio testo "X di Y
+// esercizi" (che diceva QUANTI mancavano ma non QUALI): una chip per
+// esercizio (le coppie collegate contano come una sola, stesso principio
+// gia' usato per l'indice a pallini), stesso linguaggio visivo delle card
+// "I tuoi giorni" in Home (vedi renderHome in js/home.js) applicato qui agli
+// esercizi invece che ai giorni - colorata e piu' piccola se fatta, grande e
+// pulsante (vedi pulseCurrentExerciseChip) se e' quella su cui si e' adesso
+function renderDayExerciseStrip(progress, accent, activeExi){
   if(progress.total===0) return '';
-  const pct = Math.round((progress.done/progress.total)*100);
-  return `<div class="day-progress-bar-wrap" style="--accent:${accent}">
-    <div class="day-progress-label">${progress.done} di ${progress.total} esercizi di questa settimana</div>
-    <div class="day-progress-track"><div class="day-progress-fill" style="width:${pct}%"></div></div>
-  </div>`;
+  const day = state.days[activeDayIdx];
+  const chips = progress.items.map(it=>{
+    const ex = day.esercizi[it.exi];
+    const isCurrent = it.exi===activeExi;
+    const cls = ['day-ex-chip', it.isDone?'done':'', isCurrent?'current':''].filter(Boolean).join(' ');
+    return `<button class="${cls}" style="--accent:${accent}" onclick="goToExerciseSlide(${it.exi})">${escapeHtml(ex.nome||('Esercizio '+it.pos))}</button>`;
+  }).join('');
+  return `<div class="day-ex-strip" id="dayExStrip">${chips}</div>`;
+}
+// GSAP che fa "respirare" la chip dell'esercizio corrente nella striscia qui
+// sopra - stesso trattamento delle card giorno in Home. killTweensOf prima di
+// ripartire: sia renderActive() che goToExerciseSlide() ricostruiscono la
+// striscia da zero (outerHTML), senza andrebbero ad accumularsi tween vecchi
+// sugli elementi ricreati
+function pulseCurrentExerciseChip(){
+  if(typeof gsap === "undefined") return;
+  gsap.killTweensOf(".day-ex-chip.current");
+  gsap.to(".day-ex-chip.current", {
+    scale: 1.12,
+    duration: 1.1,
+    repeat: -1,
+    yoyo: true,
+    ease: "sine.inOut"
+  });
 }
 // indice a pallini + frecce prev/next, sempre visibile (prima solo da 6
 // esercizi in su): ora e' il modo principale per muoversi nel carosello, non
@@ -94,6 +114,9 @@ function goToExerciseSlide(exi){
   if(headerOuter) headerOuter.outerHTML = renderExerciseStickyHeader(exi);
   const navWrap = document.getElementById('exCarouselNav');
   if(navWrap) navWrap.outerHTML = renderExerciseJumpIndex(progress, dayAccent(day, activeDayIdx).c);
+  const stripWrap = document.getElementById('dayExStrip');
+  if(stripWrap) stripWrap.outerHTML = renderDayExerciseStrip(progress, dayAccent(day, activeDayIdx).c, exi);
+  pulseCurrentExerciseChip();
 }
 function renderActive(){
   const day = state.days[activeDayIdx];
@@ -135,7 +158,11 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
 
 
   const progress = computeDayProgress(day);
-  const progressBarHtml = renderDayProgressBar(progress, a.c);
+  // risolta PRIMA di costruire la striscia esercizi qui sotto, che deve gia'
+  // sapere qual e' quello "corrente" per accenderlo
+  activeExerciseIdx = resolveActiveExerciseIdx(day);
+  saveActivePos();
+  const dayExStripHtml = renderDayExerciseStrip(progress, a.c, activeExerciseIdx);
 
   // un esercizio per schermata: le slide restano nel DOM (stesso rendering di
   // ogni card di sempre, exerciseCard/linkedExerciseCard), ma sono impilate
@@ -145,8 +172,6 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   // come oggi sono UNA sola card), quindi si costruisce dalla stessa
   // progress.items gia' calcolata (che le tratta gia' come un solo elemento),
   // invece di rifare un secondo loop separato che potrebbe disallinearsi
-  activeExerciseIdx = resolveActiveExerciseIdx(day);
-  saveActivePos();
   const activeItem = progress.items.find(it => it.exi===activeExerciseIdx);
   const activeSlideIdx = activeItem ? progress.items.indexOf(activeItem) : 0;
   const stickyHeaderHtml = renderExerciseStickyHeader(activeExerciseIdx);
@@ -168,7 +193,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   // l'esercizio corrente (fine del carosello), non separate in fondo pagina
   // con un grande stacco - e non prima delle settimane, dove romperebbero il
   // flusso nome->settimane->azioni
-  main.innerHTML = progressBarHtml + jumpIndexHtml + stickyHeaderHtml + switchTrainingDay + emptyState + carouselHtml +
+  main.innerHTML = dayExStripHtml + jumpIndexHtml + stickyHeaderHtml + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -178,6 +203,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
     autoGrowAllExSchema();
 
   updateBlockFinishTab();
+  pulseCurrentExerciseChip();
 
   if(typeof gsap !== "undefined" && activeFirstAnimation){
   activeFirstAnimation = false;

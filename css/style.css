@@ -269,14 +269,18 @@ main{padding:12px;}
 .body-detail{fill:none;stroke:rgba(255,255,255,.22);stroke-width:.8;stroke-linecap:round;}
 .home-muscle-figure-caption{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.2px;}
 .home-muscle-extras{text-align:center;font-size:9px;font-weight:700;color:var(--muted);margin-top:6px;}
-/* barra di progresso del giorno (quanti esercizi della settimana corrente sono
-   gia' chiusi): la prima cosa che si vede entrando in un giorno, senza dover
-   scrollare fino in fondo o aspettare il bottone flottante "Giorno terminato"
-   (che compare solo a tutti finiti) */
-.day-progress-bar-wrap{padding:10px 4px 4px;}
-.day-progress-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
-.day-progress-track{width:100%;height:8px;border-radius:20px;background:var(--row-dark);border:1px solid var(--line);overflow:hidden;}
-.day-progress-fill{height:100%;border-radius:20px;background:var(--accent,var(--green));transition:width .4s ease;}
+/* striscia degli esercizi di oggi (sostituisce la vecchia barra "X di Y
+   esercizi"): la prima cosa che si vede entrando in un giorno, senza dover
+   scrollare fino in fondo o aspettare il bottone "Giorno terminato". Stesso
+   linguaggio visivo delle card "I tuoi giorni" in Home (vedi css piu' sotto
+   .home-day-card): fatta = colorata + un po' piu' piccola, resta al suo
+   posto nell'elenco (l'ordine e' sempre quello di progress.items, cioe'
+   quello vero degli esercizi del giorno); corrente = piu' grande e pulsante
+   (vedi pulseCurrentExerciseChip in js/exercise-card.js) */
+.day-ex-strip{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:10px 4px 6px;}
+.day-ex-chip{flex:0 0 auto;max-width:120px;padding:7px 12px;border-radius:20px;border:1.5px solid var(--line);background:var(--panel);color:var(--text);font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:box-shadow .2s ease, border-color .2s ease;}
+.day-ex-chip.done{background:color-mix(in srgb, var(--accent, var(--green)) 32%, transparent);border-color:var(--accent,var(--green));transform:scale(.9);}
+.day-ex-chip.current{border-color:var(--accent,var(--green));background:var(--panel2);color:var(--accent,var(--green));box-shadow:0 0 12px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
 /* indice a pallini + frecce prev/next: SEMPRE visibile (prima solo da 6
    esercizi in su, un salto diretto per non scrollare) - ora e' il modo
    principale per muoversi nel carosello dell'Allenamento, vedi
