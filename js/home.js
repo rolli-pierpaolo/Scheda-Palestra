@@ -449,34 +449,22 @@ const total = weekly.total;
 
   const monthlyCount = computeMonthlyWorkoutsCount();
   const blockWeek = computeCurrentBlockWeek();
-  // ordine di esecuzione: il giorno CORRENTE sempre per primo (esplicito, non
-  // si puo' dare per scontato che sia trainingQueue[0] - dopo "cambia
-  // allenamento di oggi", vedi confirmSwitchTrainingDay in navigation.js,
-  // currentTrainingDayIdx viene impostato a parte e trainingQueue ricostruita
-  // escludendolo del tutto, quindi affidarsi al solo ordine di trainingQueue
-  // poteva lasciare il giorno da fare ORA in fondo alla lista), poi il resto
-  // della coda, poi i giorni gia' completati questa settimana, poi eventuali
-  // giorni non coperti da nessuno dei precedenti (es. appena aggiunti)
-  const completedList = state.completedTrainingDays || [];
-  const hasCurrent = state.currentTrainingDayIdx !== null && state.currentTrainingDayIdx !== undefined && !completedList.includes(state.currentTrainingDayIdx);
-  const currentFirst = hasCurrent ? [state.currentTrainingDayIdx] : [];
-  const queueRest = (state.trainingQueue || []).filter(i => !currentFirst.includes(i));
-  const coveredIdx = new Set([...currentFirst, ...queueRest, ...completedList]);
-  const missingIdx = state.days.map((_,i)=>i).filter(i=>!coveredIdx.has(i));
-  const orderedDayIdx = [...currentFirst, ...queueRest, ...completedList, ...missingIdx];
-  // non piu' cliccabili: servono solo a mostrare a colpo d'occhio l'ordine
-  // reale di esecuzione (che puo' cambiare tramite "Pianifica i prossimi
-  // allenamenti", vedi openTrainingOrderModal in animations.js) - per iniziare
-  // un allenamento si passa dal bottone "giorno suggerito" o dal tab Allenamento
-  const dayButtons = orderedDayIdx.map((i,pos)=>{
-    const d = state.days[i];
+  // ordine FISSO (stesso ordine di state.days, lo stesso dei tab Push/Pull/
+  // Legs/Upper nella scheda Allenamento): completare un giorno non lo sposta
+  // piu' in fondo alla lista, resta al suo posto e cambia solo aspetto
+  // (colorato+piu' piccolo se fatto, acceso+pulsante se e' quello corrente).
+  // BUG risolto qui: prima l'ordine si ricalcolava ogni volta mettendo
+  // "corrente, poi coda, poi completati" - un giorno fatto finiva sempre in
+  // fondo, anche se era il primo della settimana, e la lista sembrava
+  // "saltare" ogni volta che si chiudeva un allenamento
+  const dayButtons = state.days.map((d,i)=>{
     if(!d) return '';
     const a = dayAccent(d,i);
     const isCompleted = (state.completedTrainingDays||[]).includes(i);
     const isCurrent = !isCompleted && state.currentTrainingDayIdx === i;
     const isEmpty = (d.esercizi||[]).length === 0;
     const cls = ['home-day-card', isCompleted?'completed':'', isCurrent?'active-training':'', isEmpty?'empty':''].filter(Boolean).join(' ');
-    return `<div class="${cls}" style="--accent:${a.c}"><span class="home-day-order">${pos+1}</span>${escapeHtml(d.name)}${isEmpty?'<span class="home-day-empty-tag">vuoto</span>':''}</div>`;
+    return `<div class="${cls}" style="--accent:${a.c}"><span class="home-day-order">${i+1}</span>${escapeHtml(d.name)}${isEmpty?'<span class="home-day-empty-tag">vuoto</span>':''}</div>`;
   }).join('');
   const motivationSplit = suggestedDay ? splitMotivation(pickMotivationalPhrase(suggestedIdx)) : null;
   const suggestedHtml = suggestedDay ? `
@@ -532,15 +520,21 @@ const total = weekly.total;
     duration: 0.8,
     ease: "power2.out"
   });
-  // la card del giorno corrente resta leggermente piu' grande delle altre gia'
-  // da ferma (scale 1.04 fisso), ma non "respira" piu' - quel movimento e'
-  // passato al bottone grande cliccabile qui sopra (vedi animateSuggestedWorkout
-  // in js/animations.js), che e' quello su cui si tocca davvero per iniziare.
-  // killTweensOf prima di ripartire: renderHome() puo' girare piu' volte (ogni
-  // volta che si torna alla Home), senza si accumulerebbero tween vecchi sugli
-  // elementi ricreati ogni volta da zero con innerHTML
+  // la card del giorno corrente cresce e "respira" (pulsa) come il bottone
+  // grande cliccabile qui sopra (vedi animateSuggestedWorkout in
+  // js/animations.js), cosi' si nota subito qual e' senza doverla cercare
+  // nell'elenco - resta comunque ferma nella sua posizione, non piu' spostata
+  // in cima. killTweensOf prima di ripartire: renderHome() puo' girare piu'
+  // volte (ogni volta che si torna alla Home), senza si accumulerebbero
+  // tween vecchi sugli elementi ricreati ogni volta da zero con innerHTML
   gsap.killTweensOf(".home-day-card.active-training");
-  gsap.set(".home-day-card.active-training", { scale: 1.1 });
+  gsap.to(".home-day-card.active-training", {
+    scale: 1.13,
+    duration: 1.1,
+    repeat: -1,
+    yoyo: true,
+    ease: "sine.inOut"
+  });
   // entrata della frase motivazionale: pop leggero invece di comparire di scatto
   gsap.from(".home-motivation", {
     opacity: 0,
