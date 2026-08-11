@@ -1,32 +1,22 @@
-// stato dell'icona "Giorno terminato" nella riga dei giorni (vedi css
-// .day-finish-btn): funzione a parte invece che solo dentro renderActive(),
-// perche' showView() deve poterla ricalcolare anche quando si torna sulla
-// tab Allenamento SENZA un vero re-render (es. dal tab in alto) - senza
-// questo, l'icona poteva restare ferma allo stato di prima di Home/Storico.
-// Tre stati invece di comparire/sparire: spenta (esercizi non ancora finiti,
-// ma resta cliccabile per chi vuole chiudere in anticipo), accesa ("ready":
-// tutto fatto, non ancora confermato), spenta e non cliccabile ("done": gia'
-// confermato per questa settimana, o il giorno non ha ancora esercizi)
-function updateDayFinishTab(){
-  const btn = document.getElementById('dayFinishTab');
+// stato dell'icona "Termina blocco" nella riga dei giorni (vedi css
+// .block-finish-btn): apre archiveAndReset (l'intero mese/blocco, NON il
+// singolo giorno - il cambio giorno resta ai tab Push/Pull/ecc e al
+// suggerimento "Previsto: X", che restano intoccati). Funzione a parte
+// invece che solo dentro renderActive(), perche' showView() deve poterla
+// ricalcolare anche quando si torna sulla tab Allenamento SENZA un vero
+// re-render (es. dal tab in alto). Resta SEMPRE cliccabile (anche a blocco
+// incompleto, per chi vuole terminare in anticipo di proposito) - il
+// controllo "sei sicuro?" con l'avviso su settimane/allenamenti mancanti
+// vive dentro archiveAndReset stesso, cosi' protegge anche l'accesso da
+// Impostazioni, non solo questa icona
+function updateBlockFinishTab(){
+  const btn = document.getElementById('blockFinishTab');
   if(!btn) return;
   const day = state.days[activeDayIdx];
-  if(!day || day.esercizi.length===0){
-    btn.classList.remove('ready','done');
-    btn.disabled = true;
-    return;
-  }
-  const allClosed = allExercisesClosed(day);
-  // gia' confermato con "Giorno terminato" per la settimana corrente (vedi
-  // logWorkoutDay, che aggiunge activeDayIdx qui - azzerato da solo quando
-  // la settimana avanza): da quel momento in poi non si invita piu' a
-  // rifarlo, l'icona resta spenta e non cliccabile
-  const alreadyConfirmed = (state.completedTrainingDays||[]).includes(activeDayIdx);
-  btn.disabled = alreadyConfirmed;
-  btn.classList.toggle('ready', allClosed && !alreadyConfirmed);
-  btn.classList.toggle('done', allClosed && alreadyConfirmed);
-  btn.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
-  btn.title = alreadyConfirmed ? "Allenamento gia' completato questa settimana" : "Giorno di allenamento terminato";
+  const blockComplete = (state.completedWeeks||[]).length >= (state.weeksPerBlock||4);
+  btn.classList.toggle('ready', blockComplete);
+  if(day) btn.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
+  btn.title = blockComplete ? "Blocco completato: termina e inizia un nuovo mese" : "Termina il blocco e inizia un nuovo mese";
 }
 // stesso conteggio degli esercizi "chiusi" gia' usato altrove (allExercisesClosed,
 // computeCurrentDoingExerciseIdx): una coppia collegata (super/jump set) conta
@@ -121,9 +111,11 @@ function renderActive(){
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
   const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>` : '';
-  // "Giorno terminato" non e' piu' qui in mezzo agli esercizi: vive come
-  // icona nella riga dei giorni (vedi renderDayTabs/updateDayFinishTab in
-  // js/navigation.js), sempre in vista invece che sepolta sotto il carosello
+  // "Giorno terminato" (questo singolo giorno, es. Pull Day): resta qui
+  // attaccato sotto l'esercizio corrente, distinto da "Termina blocco"
+  // (l'icona nella riga dei giorni, vedi renderDayTabs/updateBlockFinishTab
+  // in js/navigation.js) che invece chiude l'intero mese/blocco
+  const finishBtn = day.esercizi.length>0 ? `<button class="finish-day-btn" style="--accent:${a.c}" onclick="openFinishWorkoutModal(${activeDayIdx})">${ICON_CHECK} <span class="accent-shine">Giorno di allenamento terminato!</span></button>` : '';
   const suggestedIdx = computeSuggestedDayIdx();
 
 // piccolo banner pulsante invece del box grande di prima: deve vedersi
@@ -180,11 +172,12 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
-     </div>`;
+     </div>
+     ${finishBtn}`;
     autoGrowAllExNames();
     autoGrowAllExSchema();
 
-  updateDayFinishTab();
+  updateBlockFinishTab();
 
   if(typeof gsap !== "undefined" && activeFirstAnimation){
   activeFirstAnimation = false;
@@ -312,7 +305,22 @@ function suggestNextTitle(t){
   return (t || "WO") + " nuovo";
 }
 
+// prima di qualunque prompt: se il blocco non e' ancora completo (settimane
+// mancanti, o allenamenti non ancora fatti in quella corrente) avvisa e
+// chiede conferma esplicita - altrimenti un tocco per sbaglio sull'icona
+// "Termina blocco" azzererebbe pesi/ripetizioni senza nessun avviso
 function archiveAndReset(){
+  const weeksPerBlock = state.weeksPerBlock || 4;
+  const completedWeeksCount = (state.completedWeeks||[]).length;
+  const blockComplete = completedWeeksCount >= weeksPerBlock;
+  if(!blockComplete){
+    const missingWeeks = weeksPerBlock - completedWeeksCount;
+    const trainingsLeftThisWeek = state.days.length - (state.completedTrainingDays||[]).length;
+    const parts = [];
+    if(trainingsLeftThisWeek>0) parts.push(`${trainingsLeftThisWeek} allenament${trainingsLeftThisWeek===1?'o':'i'} di questa settimana`);
+    parts.push(`${missingWeeks} settiman${missingWeeks===1?'a':'e'} del blocco`);
+    if(!confirm(`Attenzione: questo blocco non e' ancora completo - mancano ancora ${parts.join(' e ')}.\n\nSe termini adesso, quello che manca resta non fatto e riparti da zero con un nuovo blocco.\n\nSei sicuro di voler terminare comunque?`)) return;
+  }
   const archiveName = prompt("Con che nome salvare questo mese nello Storico?", state.title || "WO");
   if(archiveName === null || !archiveName.trim()) return;
   const newTitle = prompt("Nome del nuovo mese che stai per iniziare?", suggestNextTitle(state.title));
