@@ -732,6 +732,25 @@ test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' 
   assert.strictEqual(window.__bridge.workoutInProgress, false, 'con il giorno tutto chiuso ma mai confermato, la Home deve ancora azzerare "in corso" come prima');
 });
 
+test('Home "I tuoi giorni": l\'ordine resta fisso (quello di state.days), un giorno fatto non finisce in fondo', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, currentTrainingDayIdx: 1, trainingQueue: [1,2,3], completedTrainingDays: [0],
+    days: [
+      { name:'A', esercizi: [{nome:'Ex', recupero:['60s'], sets:[[]]}] },
+      { name:'B', esercizi: [{nome:'Ex', recupero:['60s'], sets:[[]]}] },
+      { name:'C', esercizi: [{nome:'Ex', recupero:['60s'], sets:[[]]}] },
+      { name:'D', esercizi: [{nome:'Ex', recupero:['60s'], sets:[[]]}] }
+    ]
+  };
+  window.showHome();
+  const cards = [...window.document.querySelectorAll('.home-day-card')];
+  const names = cards.map(c => c.textContent.replace(/[0-9]/g,'').trim());
+  assert.strictEqual(names.join(','), 'A,B,C,D', 'BUG: l\'ordine deve restare quello fisso di state.days - A completato non deve finire in fondo alla lista');
+  assert.ok(cards[0].classList.contains('completed'), 'A (completato) deve avere la classe completed, restando comunque al primo posto');
+  assert.ok(cards[1].classList.contains('active-training'), 'B (currentTrainingDayIdx) deve risultare quello corrente');
+});
+
 test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su un giorno vecchio', () => {
   const window = loadApp();
   window.__bridge.workoutInProgress = false;
