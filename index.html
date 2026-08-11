@@ -16,7 +16,7 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.9</span>
+  <span class="app-version" id="appVersion">v1.10</span>
   <h1>Logbook</h1>
   <button id="accountBtn" class="account-btn" onclick="openAuthModal()" title="Account e sincronizzazione" aria-label="Account e sincronizzazione">
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20 C4 15.5 7.5 13 12 13 C16.5 13 20 15.5 20 20"/></svg>
@@ -69,6 +69,18 @@
     <div class="hist-panel">
       <div class="footer-note" id="settingsAccountStatus" style="margin-bottom:8px;">Non sei collegato: i dati restano solo su questo dispositivo.</div>
       <button class="add-ex small2" onclick="openAuthModal()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="8" r="4"/><path d="M4 20 C4 15.5 7.5 13 12 13 C16.5 13 20 15.5 20 20"/></svg> Gestisci account e sincronizzazione</button>
+    </div>
+    <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M12 15 V4"/><path d="M8 8 L12 4 L16 8"/><path d="M5 13 V19 A1 1 0 0 0 6 20 H18 A1 1 0 0 0 19 19 V13"/></svg> Condividi con un coach</div>
+    <div class="hist-panel">
+      <div class="footer-note" style="margin-bottom:8px;">La persona che inviti puo' solo VEDERE i tuoi dati, mai modificarli.</div>
+      <div class="meta-row"><span class="meta-label">Email</span><input class="meta-input" id="shareInviteEmail" type="email" placeholder="coach@email.it"></div>
+      <div class="footer-note" id="shareInviteError" style="color:var(--red,#C0392B);min-height:14px;"></div>
+      <button class="add-ex small2" onclick="inviteViewer()">Invita</button>
+      <div id="shareInvitesList" style="margin-top:8px;"></div>
+    </div>
+    <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg> Dati condivisi con te</div>
+    <div class="hist-panel">
+      <div id="sharedWithMeList"></div>
     </div>
     <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 4.5 H16 L19 7.5 V19 A0.8 0.8 0 0 1 18.2 19.8 H5.8 A0.8 0.8 0 0 1 5 19 V4.5 Z"/><path d="M7.5 4.5 V9.5 H15 V4.5"/><path d="M8.5 13.5 H15.5 V19.5 H8.5 Z"/></svg> Backup</div>
     <div class="hist-panel backup-row">
@@ -247,6 +259,7 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/supabase.min.js"></script>  <!-- SDK Supabase vendorizzato, nessuna dipendenza da CDN a runtime -->
 <script src="js/sync.js"></script>          <!-- sincronizzazione cloud: deve caricare dopo supabase.min.js -->
 <script src="js/auth.js"></script>          <!-- modale login/registrazione -->
+<script src="js/sharing.js"></script>       <!-- condivisione in sola lettura con un coach -->
 <script src="js/app-init.js"></script>      <!-- avvio vero e proprio dell'app, va per ultimo -->
 </body>
 </html>

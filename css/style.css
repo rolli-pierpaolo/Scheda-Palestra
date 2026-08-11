@@ -128,6 +128,19 @@ body.on-home .topbar h1{
    remoto, mai una sovrascrittura automatica e silenziosa */
 .sync-update-banner{display:none;position:fixed;left:12px;right:12px;bottom:calc(70px + env(safe-area-inset-bottom));z-index:60;background:var(--panel2);border:1.5px solid var(--green);border-radius:10px;padding:10px 14px;color:var(--text);font-size:12px;font-weight:700;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.4);}
 .sync-update-banner.show{display:block;}
+/* modalita' "sto vedendo i dati di qualcun altro" (vedi js/sharing.js):
+   blocca TUTTA l'interazione via CSS invece di dover disabilitare a mano
+   ogni singolo input/bottone nel rendering - un solo interruttore, non puo'
+   restare acceso per sbaglio su un pezzo dimenticato */
+body.shared-readonly input,
+body.shared-readonly textarea,
+body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.75;}
+.shared-view-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:70;background:var(--amber,#E8971C);color:#0D0D0D;font-size:12px;font-weight:800;text-align:center;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;}
+.shared-view-banner.show{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+.shared-view-banner .exit-shared-view{pointer-events:auto;background:#0D0D0D;color:var(--amber,#E8971C);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:800;}
+.share-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px;}
+.share-row:last-child{border-bottom:none;}
+.ex-context-action.small{padding:4px 10px;font-size:11px;width:auto;}
 /* barra di navigazione fissa in basso (Home/Allenamento/Storico insieme,
    invece di casetta in alto + tab separate): standard delle app native,
    molto piu' comoda da raggiungere col pollice mentre ci si allena */

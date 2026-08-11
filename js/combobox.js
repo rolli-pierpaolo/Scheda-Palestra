@@ -111,6 +111,11 @@ let saveTimer=null;
 // debounced: se arrivano piu' chiamate ravvicinate (es. digitando) aspetta 400ms
 // di quiete prima di scrivere davvero su localStorage, invece di farlo ad ogni tasto
 function saveState(){
+  // mentre si guardano i dati condivisi da un altro utente (sola lettura,
+  // vedi js/sharing.js) non si deve MAI salvare: ne' in locale ne' sul
+  // cloud, altrimenti si rischierebbe di scrivere i dati di qualcun altro
+  // al posto dei propri
+  if(typeof isViewingShared === 'function' && isViewingShared()) return;
   document.getElementById('saveStatus').textContent = "Salvataggio...";
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{
@@ -121,6 +126,7 @@ function saveState(){
   }, 400);
 }
 function saveCollapsed(){
+  if(typeof isViewingShared === 'function' && isViewingShared()) return;
   localStorage.setItem(COLLAPSE_KEY, JSON.stringify(collapsedMap));
 }
 

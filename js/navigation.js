@@ -6,6 +6,7 @@ let selectedTrainingOrder = [];
 const ACTIVE_POS_KEY = "scheda_wo18_active_pos_v1";
 let activeExerciseIdx = null;
 function saveActivePos(){
+  if(typeof isViewingShared === 'function' && isViewingShared()) return;
   try{ localStorage.setItem(ACTIVE_POS_KEY, JSON.stringify({dayIdx:activeDayIdx, exi:activeExerciseIdx})); }catch(e){}
 }
 function loadActivePos(){

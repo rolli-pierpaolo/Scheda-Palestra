@@ -84,6 +84,7 @@ function loadApp(){
       get activeDayIdx(){ return activeDayIdx; }, set activeDayIdx(v){ activeDayIdx = v; },
       get activeExerciseIdx(){ return activeExerciseIdx; }, set activeExerciseIdx(v){ activeExerciseIdx = v; },
       get workoutInProgress(){ return workoutInProgress; }, set workoutInProgress(v){ workoutInProgress = v; },
+      get viewingSharedOwnerId(){ return viewingSharedOwnerId; }, set viewingSharedOwnerId(v){ viewingSharedOwnerId = v; },
       get MUSCLE_MOTIVATION(){ return MUSCLE_MOTIVATION; },
       get DEFAULT_MOTIVATION(){ return DEFAULT_MOTIVATION; },
       get PROGRESSION_SUFFIX_PESO(){ return PROGRESSION_SUFFIX_PESO; },

@@ -41,6 +41,7 @@ const CORE_ASSETS = [
   './js/supabase.min.js',
   './js/sync.js',
   './js/auth.js',
+  './js/sharing.js',
   './js/app-init.js',
 ];
 
