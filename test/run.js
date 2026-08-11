@@ -577,6 +577,53 @@ test('la sync cloud riusa buildBackupPayload/validateBackup/applyBackup e non la
   assert.strictEqual(Object.keys(window.__bridge.collapsedMap)[0], '0_0_0', 'BUG: dopo il ripristino il collasso deve restare quello di QUESTO dispositivo, non quello arrivato dalla sync');
 });
 
+test('initSync NON deve sovrascrivere lo stato locale solo perche\' trova una sessione gia\' esistente al riavvio (BUG: il giorno/la settimana tornavano indietro ad ogni riapertura dell\'app)', async () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 2, completedTrainingDays: [0,1],
+    days: [{ name:'Push', esercizi: [] }]
+  };
+  const stateBefore = JSON.stringify(window.__bridge.state);
+
+  // simula una sessione GIA' salvata dal browser (non un login appena
+  // fatto): initSync() la trova ad ogni avvio dell'app, anche quando e'
+  // solo iOS che ha ricaricato la pagina dopo un po' in background
+  window.__bridge.supabaseClient = {
+    auth: {
+      getSession(){ return Promise.resolve({ data: { session: { user: { id:'u1', email:'a@b.com' } } } }); },
+      onAuthStateChange(){}
+    },
+    channel(){ return { on(){ return this; }, subscribe(){ return this; } }; },
+    from(){
+      return { select(){ return this; }, eq(){ return this; }, maybeSingle(){ return Promise.resolve({ data:null, error:null }); } };
+    }
+  };
+  window.initSync();
+  await new Promise(r => setTimeout(r, 20)); // lascia risolvere getSession()
+
+  assert.strictEqual(JSON.stringify(window.__bridge.state), stateBefore, 'BUG: trovare una sessione gia\' esistente al boot non deve MAI toccare lo stato locale - solo un login VERO (evento SIGNED_IN) puo\' farlo');
+});
+
+test('checkRemoteUpdateOnBoot avvisa (mai in automatico) solo se il cloud ha qualcosa di piu\' recente di quanto inviato da questo dispositivo', async () => {
+  const window = loadApp();
+  window.__bridge.syncSession = { user: { id:'u1', email:'a@b.com' } };
+  function mockClient(updatedAtIso){
+    return { from(){ return { select(){ return this; }, eq(){ return this; }, maybeSingle(){ return Promise.resolve({ data: updatedAtIso?{updated_at:updatedAtIso}:null, error:null }); } }; } };
+  }
+  const bannerShown = () => { const el = window.document.getElementById('syncUpdateBanner'); return !!el && el.classList.contains('show'); };
+
+  // questo dispositivo ha appena inviato: il cloud ha la stessa scrittura, nessun avviso
+  window.localStorage.setItem('scheda_wo18_last_cloud_push_v1', String(Date.now()));
+  window.__bridge.supabaseClient = mockClient(new Date().toISOString());
+  await window.checkRemoteUpdateOnBoot();
+  assert.strictEqual(bannerShown(), false, 'BUG: non deve avvisare se il cloud non ha nulla di piu\' recente di quanto inviato da qui');
+
+  // un altro dispositivo ha scritto DOPO l'ultimo invio di questo: deve avvisare (mai sovrascrivere da solo)
+  window.__bridge.supabaseClient = mockClient(new Date(Date.now()+60000).toISOString());
+  await window.checkRemoteUpdateOnBoot();
+  assert.strictEqual(bannerShown(), true, 'BUG: deve avvisare se il cloud ha una scrittura piu\' recente arrivata da un altro dispositivo');
+});
+
 test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio deve partire (ne\' locale ne\' cloud)', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
@@ -815,17 +862,23 @@ test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su u
 });
 
 // ---------------- runner ----------------
-let passed = 0, failed = 0;
-for(const t of tests){
-  try{
-    t.fn();
-    passed++;
-    console.log('  ok - ' + t.name);
-  }catch(err){
-    failed++;
-    console.log('  FAIL - ' + t.name);
-    console.log('    ' + (err && err.message ? err.message : err));
+// async per poter "await t.fn()": i test sincroni di sempre continuano a
+// funzionare identici (await su un valore non-Promise si risolve subito),
+// serve solo ai test nuovi che aspettano davvero una Promise (es. una
+// chiamata Supabase mockata)
+(async () => {
+  let passed = 0, failed = 0;
+  for(const t of tests){
+    try{
+      await t.fn();
+      passed++;
+      console.log('  ok - ' + t.name);
+    }catch(err){
+      failed++;
+      console.log('  FAIL - ' + t.name);
+      console.log('    ' + (err && err.message ? err.message : err));
+    }
   }
-}
-console.log('\n' + passed + ' passati, ' + failed + ' falliti su ' + tests.length);
-process.exit(failed > 0 ? 1 : 0);
+  console.log('\n' + passed + ' passati, ' + failed + ' falliti su ' + tests.length);
+  process.exit(failed > 0 ? 1 : 0);
+})();

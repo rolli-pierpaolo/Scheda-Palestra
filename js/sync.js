@@ -30,11 +30,35 @@ function isSyncEnabled(){
 // sessione salvata dal browser se l'utente aveva gia' fatto login prima, e
 // resta in ascolto di login/logout successivi (es. da un'altra scheda, o
 // dopo aver confermato l'email di registrazione)
+//
+// BUG GRAVE risolto qui: il blocco getSession().then(...) sotto viene
+// eseguito ad OGNI avvio dell'app, non solo alla primissima volta che ci si
+// collega - e su iPhone, mettere la PWA in background e' spesso sufficiente
+// perche' iOS ricarichi la pagina da zero (quindi "avvio dell'app" capita
+// molto piu' spesso di quanto sembri, non solo aprendo l'icona da chiusa).
+// Prima, trovare una sessione gia' salvata veniva trattato come un login
+// vero e proprio e faceva partire onSyncLogin() -> pullFromCloud(true), che
+// SOVRASCRIVE lo stato locale con l'ultima copia sul cloud senza chiedere -
+// se quella copia sul cloud era piu' vecchia (es. l'ultimo invio al cloud
+// non aveva fatto in tempo a partire prima che il telefono mettesse in
+// pausa l'app), il giorno/la settimana su cui si era andava indietro da
+// solo ad ogni riapertura. Ora un semplice "la sessione c'era gia'" non
+// forza piu' nulla: ci si iscrive al realtime e si controlla in modo NON
+// distruttivo se il cloud ha qualcosa di piu' recente (vedi
+// checkRemoteUpdateOnBoot) - se si', si mostra il solito banner "dati
+// aggiornati", mai una sovrascrittura silenziosa. Il pull forzato resta
+// SOLO per un login vero, quello si' fatto apposta in quel momento
+// dall'utente (vedi onAuthStateChange piu' sotto, evento SIGNED_IN - che
+// supabase-js emette solo per un login/registrazione veri, MAI per una
+// sessione ripresa da quella salvata in precedenza, quella e' 'INITIAL_SESSION')
 function initSync(){
   if(!supabaseClient) return;
   supabaseClient.auth.getSession().then(({data}) => {
     syncSession = data && data.session;
-    if(syncSession) onSyncLogin();
+    if(syncSession){
+      subscribeSyncRealtime();
+      checkRemoteUpdateOnBoot();
+    }
     if(typeof renderAuthStatus === 'function') renderAuthStatus();
   });
   supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -46,8 +70,33 @@ function initSync(){
 }
 
 function onSyncLogin(){
-  pullFromCloud(true); // primo caricamento dopo il login: sovrascrivere e' proprio quello che ci si aspetta
+  pullFromCloud(true); // login vero e proprio appena fatto: sovrascrivere e' proprio quello che ci si aspetta
   subscribeSyncRealtime();
+}
+// controllo non distruttivo all'avvio: confronta il momento dell'ultimo
+// invio riuscito al cloud DA QUESTO dispositivo (lastCloudPushAt, salvato in
+// flushCloudPush) con l'orario dell'ultima scrittura sulla riga cloud - se
+// il cloud e' piu' recente, vuol dire che e' arrivato un aggiornamento da
+// un altro dispositivo (o un invio di questo stesso dispositivo non ancora
+// riflesso qui) mentre l'app non era aperta: si avvisa con lo stesso banner
+// del realtime, MAI un'applicazione automatica. Qualche secondo di margine
+// (BOOT_CHECK_SLACK_MS) assorbe la differenza tra l'orologio del telefono e
+// quello del server, oltre alla latenza della richiesta stessa
+const LAST_CLOUD_PUSH_KEY = "scheda_wo18_last_cloud_push_v1";
+const BOOT_CHECK_SLACK_MS = 5000;
+async function checkRemoteUpdateOnBoot(){
+  if(!isSyncEnabled()) return;
+  let lastPush = 0;
+  try{ lastPush = parseInt(localStorage.getItem(LAST_CLOUD_PUSH_KEY), 10) || 0; }catch(e){}
+  const { data, error } = await supabaseClient
+    .from('user_data')
+    .select('updated_at')
+    .eq('user_id', syncSession.user.id)
+    .maybeSingle();
+  if(error || !data || !data.updated_at) return;
+  const cloudUpdatedAt = new Date(data.updated_at).getTime();
+  if(isNaN(cloudUpdatedAt)) return;
+  if(cloudUpdatedAt > lastPush + BOOT_CHECK_SLACK_MS) showSyncUpdateBanner();
 }
 function onSyncLogout(){
   if(syncRealtimeChannel){ supabaseClient.removeChannel(syncRealtimeChannel); syncRealtimeChannel = null; }
@@ -86,6 +135,10 @@ async function flushCloudPush(){
       client_id: syncClientId,
       updated_at: new Date().toISOString()
     });
+    // usato da checkRemoteUpdateOnBoot per sapere se, al prossimo avvio, il
+    // cloud contiene qualcosa di piu' recente di quello che si e' mandato
+    // da qui - salvato SOLO se l'invio e' andato davvero a buon fine
+    try{ localStorage.setItem(LAST_CLOUD_PUSH_KEY, String(Date.now())); }catch(e){}
   }catch(e){} // offline o rete assente: l'app continua a funzionare in locale, riprovera' al prossimo salvataggio
 }
 document.addEventListener('visibilitychange', () => {
