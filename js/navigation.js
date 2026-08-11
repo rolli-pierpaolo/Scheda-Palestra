@@ -637,12 +637,5 @@ function computeCurrentDoingExerciseIdx(dayIdx){
 }
 
 
-function finishDay(){
-
-  const day = state.days[activeDayIdx];
-
-  openFinishWorkoutModal(activeDayIdx);
-
-}
 
 

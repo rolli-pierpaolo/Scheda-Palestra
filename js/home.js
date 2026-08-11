@@ -3,17 +3,21 @@
 // e workoutInProgress in state.js): elenco giorni, progresso settimanale e
 // giorno suggerito, tutto calcolato dal calendario che gia' esiste
 function showHome(){
-  // tornare alla Home (di proposito, toccando la casetta) vuol dire "per ora ho
-  // finito qui": se non si azzera anche qui, un allenamento segnato come
-  // completato ma mai chiuso con "Giorno terminato" resterebbe "in corso" per
-  // sempre, e alla riapertura dell'app (anche giorni dopo) si tornerebbe
-  // dritti li' invece che alla Home, anche se nel frattempo non si e' toccato
-  // piu' nulla. Nessun problema a farlo sempre: quando showHome() viene
-  // chiamata da finishDay() o all'avvio il flag e' gia' false, questo e' un
-  // no-op in quei casi
+  // azzera "in corso" SOLO se il giorno attivo risulta gia' tutto chiuso
+  // (fatto/saltato) ma mai confermato con "Giorno terminato": quello sì che
+  // e' un allenamento abbandonato a meta' del tutto, che altrimenti
+  // resterebbe "in corso" per sempre. BUG risolto qui: prima si azzerava
+  // SEMPRE al primo tocco sulla Home, anche con l'allenamento vero a meta'
+  // (solo alcuni esercizi fatti) - bastava dare un'occhiata alla Home per
+  // "perdere" la sessione, e riaprendo l'app (o tornando su Allenamento) si
+  // veniva rimandati al giorno suggerito invece che a quello dove si era
+  // rimasti davvero
   if(workoutInProgress){
-    workoutInProgress = false;
-    saveWorkoutInProgress();
+    const day = state.days[activeDayIdx];
+    if(day && allExercisesClosed(day)){
+      workoutInProgress = false;
+      saveWorkoutInProgress();
+    }
   }
   renderHome();
   showView('home');
