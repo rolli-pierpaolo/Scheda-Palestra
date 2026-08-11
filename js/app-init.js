@@ -35,7 +35,11 @@ try{
   renderActive();
   renderHistList();
   checkAchievements();
-  updateAppBadge();
+  // il badge numerico sull'icona (esercizi rimasti oggi) e' stato tolto:
+  // confuso con delle notifiche vere e giudicato inutile. Questa riga pulisce
+  // un badge eventualmente rimasto acceso da prima che lo si togliesse - va
+  // tolta anche lei una volta che nessuno ha piu' un badge vecchio in giro
+  if('clearAppBadge' in navigator) navigator.clearAppBadge().catch(()=>{});
   if(typeof initSync === 'function') initSync();
 
   initAnimations();
