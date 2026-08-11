@@ -68,6 +68,13 @@ function applyBackup(backup){
   renderHistList();
   document.getElementById('histDayTabs').innerHTML = '';
   document.getElementById('histBody').innerHTML = '<div class="footer-note">Seleziona un WO storico qui sopra.</div>';
+  // BUG risolto qui: mancava questa riga. renderActive() sopra ridisegna
+  // solo la scheda Allenamento (#viewActive) - se in quel momento si e'
+  // sulla Home (es. dopo aver toccato "dati aggiornati, tocca per
+  // ricaricare" nel banner della sync), i dati venivano aggiornati
+  // davvero dietro le quinte ma la Home restava quella vecchia in vista,
+  // sembrando che il tocco sul banner non avesse fatto nulla
+  if(typeof renderHome === 'function') renderHome();
 }
 // controllo piu' serio di "c'e' backup.state.days": applyBackup usa gia'
 // "|| {}"/"|| []" per ogni sezione opzionale, quindi qui basta controllare che
