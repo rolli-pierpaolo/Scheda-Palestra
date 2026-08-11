@@ -87,41 +87,11 @@ function renderExerciseJumpIndex(progress, accent){
   const dots = progress.items.map(it =>
     `<button class="ex-jump-dot ${it.isDone?'done':''} ${it.exi===activeItem.exi?'current':''}" style="--accent:${accent}" onclick="goToExerciseSlide(${it.exi})" aria-label="Vai a esercizio ${it.pos}">${it.pos}</button>`
   ).join('');
-  // icona "Giorno terminato" (questo singolo giorno) accanto ai pallini,
-  // sempre in vista invece che un bottone grande attaccato sotto ogni
-  // esercizio - averlo li' significava rivederlo identico a ogni swipe, come
-  // se fosse ripetuto per ciascun esercizio. Stesso trattamento a 3 stati di
-  // "Termina blocco" nella riga dei giorni (vedi updateExFinishIcon)
   return `<div class="ex-carousel-nav" id="exCarouselNav">
     <button class="ex-nav-arrow prev" ${hasPrev?`onclick="goToExerciseSlide(${prevExi})"`:'style="visibility:hidden" tabindex="-1"'} aria-label="Esercizio precedente">‹</button>
     <div class="ex-jump-index">${dots}</div>
     <button class="ex-nav-arrow next" ${hasNext?`onclick="goToExerciseSlide(${nextExi})"`:'style="visibility:hidden" tabindex="-1"'} aria-label="Esercizio successivo">›</button>
-    <button id="exDayFinishTab" class="ex-finish-icon" onclick="openFinishWorkoutModal(activeDayIdx)" title="Giorno di allenamento terminato" aria-label="Giorno di allenamento terminato">
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M5 12.5 L10 17.5 L19 6.5"/></svg>
-    </button>
   </div>`;
-}
-// stato dell'icona qui sopra: spenta ma cliccabile se mancano ancora
-// esercizi (chi vuole puo' terminare in anticipo - openFinishWorkoutModal
-// avvisa comunque se il giorno non e' completo), accesa quando tutto e'
-// fatto e non ancora confermato, spenta e non cliccabile una volta
-// confermato per questa settimana (o se il giorno non ha ancora esercizi)
-function updateExFinishIcon(){
-  const btn = document.getElementById('exDayFinishTab');
-  if(!btn) return;
-  const day = state.days[activeDayIdx];
-  if(!day || day.esercizi.length===0){
-    btn.classList.remove('ready','done');
-    btn.disabled = true;
-    return;
-  }
-  const allClosed = allExercisesClosed(day);
-  const alreadyConfirmed = (state.completedTrainingDays||[]).includes(activeDayIdx);
-  btn.disabled = alreadyConfirmed;
-  btn.classList.toggle('ready', allClosed && !alreadyConfirmed);
-  btn.classList.toggle('done', allClosed && alreadyConfirmed);
-  btn.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
-  btn.title = alreadyConfirmed ? "Allenamento gia' completato questa settimana" : "Giorno di allenamento terminato";
 }
 // passa da un esercizio all'altro nel carosello: se il DOM del carosello e'
 // gia' in pagina (praticamente sempre, tranne al primissimo render) tocca
@@ -144,7 +114,6 @@ function goToExerciseSlide(exi){
   if(headerOuter) headerOuter.outerHTML = renderExerciseStickyHeader(exi);
   const navWrap = document.getElementById('exCarouselNav');
   if(navWrap) navWrap.outerHTML = renderExerciseJumpIndex(progress, dayAccent(day, activeDayIdx).c);
-  updateExFinishIcon();
   const stripWrap = document.getElementById('dayExStrip');
   if(stripWrap) stripWrap.outerHTML = renderDayExerciseStrip(progress, dayAccent(day, activeDayIdx).c, exi);
   pulseCurrentExerciseChip();
@@ -165,11 +134,10 @@ function renderActive(){
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
   const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>` : '';
-  // "Giorno terminato" (questo singolo giorno) NON e' piu' un bottone qui
-  // sotto l'esercizio: vive come icona accanto ai pallini (vedi
-  // renderExerciseJumpIndex/updateExFinishIcon qui sopra) - un bottone
-  // grande ripetuto identico sotto ogni esercizio, uguale a ogni swipe,
-  // dava l'impressione sbagliata di esserci "in ogni esercizio"
+  // "Giorno terminato" (questo singolo giorno): di nuovo attaccato subito
+  // sotto l'esercizio corrente, distinto da "Termina blocco" (l'icona nella
+  // riga dei giorni) che invece chiude l'intero mese/blocco
+  const finishBtn = day.esercizi.length>0 ? `<button class="finish-day-btn" style="--accent:${a.c}" onclick="openFinishWorkoutModal(${activeDayIdx})">${ICON_CHECK} <span class="accent-shine">Giorno di allenamento terminato!</span></button>` : '';
   const suggestedIdx = computeSuggestedDayIdx();
 
 // piccolo banner pulsante invece del box grande di prima: deve vedersi
@@ -220,19 +188,19 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
       <div class="ex-carousel-track" id="exCarouselTrack" style="transform:translateX(-${activeSlideIdx*100}%)">${slidesHtml}</div>
     </div>` : '';
 
-  // azioni del giorno (aggiungi/riordina) subito ATTACCATE sotto l'esercizio
-  // corrente (fine del carosello), non separate in fondo pagina con un
-  // grande stacco - "Giorno terminato" non c'e' piu' qui, vedi sopra
+  // azioni del giorno (aggiungi/riordina/termina) subito ATTACCATE sotto
+  // l'esercizio corrente (fine del carosello), non separate in fondo pagina
+  // con un grande stacco
   main.innerHTML = dayExStripHtml + jumpIndexHtml + stickyHeaderHtml + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
-     </div>`;
+     </div>
+     ${finishBtn}`;
     autoGrowAllExNames();
     autoGrowAllExSchema();
 
   updateBlockFinishTab();
-  updateExFinishIcon();
   pulseCurrentExerciseChip();
 
   if(typeof gsap !== "undefined" && activeFirstAnimation){

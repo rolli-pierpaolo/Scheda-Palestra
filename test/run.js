@@ -773,7 +773,7 @@ test('striscia esercizi del giorno: ordine vero, fatto = colorato/piccolo, corre
   assert.ok(!chips[1].classList.contains('done'), 'quello corrente, non ancora fatto, non deve avere la classe done');
 });
 
-test('icona "Giorno terminato" accanto ai pallini: accesa a giorno completo, spenta e bloccata dopo la conferma', () => {
+test('bottone "Giorno terminato" attaccato sotto l\'esercizio, non piu\' accanto ai pallini', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
@@ -783,17 +783,12 @@ test('icona "Giorno terminato" accanto ai pallini: accesa a giorno completo, spe
     ]}]
   };
   window.renderActive();
-  const btn = window.document.getElementById('exDayFinishTab');
-  assert.ok(btn, 'l\'icona deve esistere accanto ai pallini');
-  assert.ok(!window.document.querySelector('.finish-day-btn'), 'BUG: non deve piu\' esserci il vecchio bottone grande sotto l\'esercizio');
-  assert.ok(btn.classList.contains('ready'), 'giorno tutto fatto, mai confermato: deve accendersi');
-  assert.ok(!btn.disabled, 'non ancora confermato: deve restare cliccabile');
-
-  window.__bridge.state.completedTrainingDays = [0];
-  window.updateExFinishIcon();
-  assert.ok(!btn.classList.contains('ready'), 'dopo la conferma non deve piu\' risultare accesa');
-  assert.ok(btn.classList.contains('done'), 'dopo la conferma deve passare allo stato "gia\' fatto"');
-  assert.ok(btn.disabled, 'dopo la conferma non deve piu\' essere cliccabile');
+  assert.ok(!window.document.getElementById('exDayFinishTab'), 'BUG: non deve piu\' esserci l\'icona accanto ai pallini');
+  const btn = window.document.querySelector('.finish-day-btn');
+  assert.ok(btn, 'il bottone grande deve essere di nuovo attaccato sotto l\'esercizio');
+  assert.strictEqual(btn.getAttribute('onclick'), 'openFinishWorkoutModal(0)');
+  const main = window.document.getElementById('viewActive');
+  assert.strictEqual(main.lastElementChild, btn, 'deve essere l\'ultimo elemento della pagina, subito dopo aggiungi/riordina');
 });
 
 test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su un giorno vecchio', () => {
