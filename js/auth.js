@@ -75,8 +75,17 @@ async function handleAuthSignOut(){
 // aggiorna il bottone account nella topbar (icona piena se loggato, vuota se no)
 function renderAuthStatus(){
   const btn = document.getElementById('accountBtn');
-  if(!btn) return;
-  btn.classList.toggle('logged-in', !!syncSession);
-  btn.title = syncSession ? ('Sincronizzato come ' + (syncSession.user.email||'')) : 'Account e sincronizzazione';
+  if(btn){
+    btn.classList.toggle('logged-in', !!syncSession);
+    btn.title = syncSession ? ('Sincronizzato come ' + (syncSession.user.email||'')) : 'Account e sincronizzazione';
+  }
+  // stessa informazione ripetuta nella sezione Account di Storico > Impostazioni,
+  // per chi arriva li' invece che dall'icona in alto
+  const settingsStatus = document.getElementById('settingsAccountStatus');
+  if(settingsStatus){
+    settingsStatus.textContent = syncSession
+      ? ('Sincronizzato come ' + (syncSession.user.email||''))
+      : 'Non sei collegato: i dati restano solo su questo dispositivo.';
+  }
   if(document.getElementById('authModal').style.display === 'flex') renderAuthModalBody();
 }
