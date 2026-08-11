@@ -577,6 +577,47 @@ test('la sync cloud riusa buildBackupPayload/validateBackup/applyBackup e non la
   assert.strictEqual(Object.keys(window.__bridge.collapsedMap)[0], '0_0_0', 'BUG: dopo il ripristino il collasso deve restare quello di QUESTO dispositivo, non quello arrivato dalla sync');
 });
 
+test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio deve partire (ne\' locale ne\' cloud)', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.collapsedMap = {};
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0,
+    days: [{ name:'Push', esercizi: [] }]
+  };
+  // saveState() e' debounced (scrive su localStorage 400ms dopo), ma la
+  // guardia e' la primissima riga della funzione: se blocca, non tocca
+  // nemmeno lo stato "Salvataggio..." sincrono - non serve aspettare i 400ms
+  // per verificare che la guardia abbia funzionato
+  const saveStatusEl = window.document.getElementById('saveStatus');
+  window.localStorage.removeItem('scheda_wo18_active_pos_v1');
+  window.localStorage.removeItem('scheda_wo18_collapsed_v1');
+
+  // caso normale: senza essere in visualizzazione condivisa, i salvataggi funzionano
+  window.__bridge.viewingSharedOwnerId = null;
+  saveStatusEl.textContent = '';
+  window.saveState();
+  window.__bridge.activeExerciseIdx = 2;
+  window.saveActivePos();
+  window.__bridge.collapsedMap = {'x': true};
+  window.saveCollapsed();
+  assert.strictEqual(saveStatusEl.textContent, 'Salvataggio...', 'in condizioni normali saveState() deve procedere');
+  assert.ok(window.localStorage.getItem('scheda_wo18_active_pos_v1'), 'in condizioni normali saveActivePos deve scrivere su localStorage');
+  assert.ok(window.localStorage.getItem('scheda_wo18_collapsed_v1'), 'in condizioni normali saveCollapsed deve scrivere su localStorage');
+
+  // ora si sta guardando l'account di un altro utente: NESSUN salvataggio deve avvenire
+  window.localStorage.removeItem('scheda_wo18_active_pos_v1');
+  window.localStorage.removeItem('scheda_wo18_collapsed_v1');
+  saveStatusEl.textContent = '';
+  window.__bridge.viewingSharedOwnerId = 'owner-fittizio-123';
+  window.saveState();
+  window.saveActivePos();
+  window.saveCollapsed();
+  assert.strictEqual(saveStatusEl.textContent, '', 'BUG DI SICUREZZA: mentre si vedono dati condivisi saveState() non deve nemmeno iniziare');
+  assert.strictEqual(window.localStorage.getItem('scheda_wo18_active_pos_v1'), null, 'BUG DI SICUREZZA: mentre si vedono dati condivisi saveActivePos non deve scrivere su localStorage');
+  assert.strictEqual(window.localStorage.getItem('scheda_wo18_collapsed_v1'), null, 'BUG DI SICUREZZA: mentre si vedono dati condivisi saveCollapsed non deve scrivere su localStorage');
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){

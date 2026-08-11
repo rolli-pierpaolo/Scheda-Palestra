@@ -60,8 +60,13 @@ function onSyncLogout(){
 // mandare una richiesta di rete a ogni piccola modifica ravvicinata
 function pushToCloud(){
   if(!isSyncEnabled()) return;
+  // guardia in piu' (saveState() gia' non chiama nemmeno pushToCloud in
+  // questo caso, vedi js/combobox.js): mentre si guardano dati condivisi da
+  // un altro utente, non deve mai partire una scrittura verso il cloud
+  if(typeof isViewingShared === 'function' && isViewingShared()) return;
   clearTimeout(syncPushTimer);
   syncPushTimer = setTimeout(async () => {
+    if(typeof isViewingShared === 'function' && isViewingShared()) return;
     const payload = buildBackupPayload();
     try{
       await supabaseClient.from('user_data').upsert({
