@@ -538,6 +538,45 @@ test('computeWeeklyMuscleActivation conta solo i gruppi con un esercizio COMPLET
   assert.ok(trained.has('Cardio'), 'Cardio deve risultare tra gli extra');
 });
 
+test('la sync cloud riusa buildBackupPayload/validateBackup/applyBackup e non lascia che i dati remoti sovrascrivano il collasso locale', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, title: 'Dispositivo A',
+    days: [{ name:'Push', esercizi: [
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[{peso:'50',rip:'5'}],[],[],[]] }
+    ]}]
+  };
+  window.__bridge.storicoExtra = {};
+  window.__bridge.extraLists = {esercizi:[], recuperi:[], schemi:[], giorni:[]};
+  window.__bridge.exerciseGroups = {};
+  window.__bridge.deletedEsercizi = [];
+  window.__bridge.calendarLog = {};
+  window.__bridge.deletedStorico = [];
+
+  // la stessa identica busta che pushToCloud manderebbe a Supabase
+  const payload = window.buildBackupPayload();
+  const check = window.validateBackup(payload);
+  assert.strictEqual(check.valid, true, 'la busta costruita da buildBackupPayload deve essere sempre un backup valido per validateBackup');
+  assert.strictEqual(payload.state.title, 'Dispositivo A');
+
+  // simula un payload arrivato da un ALTRO dispositivo (titolo diverso, e un
+  // collasso settimane diverso da quello impostato QUI)
+  const remotePayload = JSON.parse(JSON.stringify(payload));
+  remotePayload.state.title = 'Dispositivo B';
+  remotePayload.collapsedMap = {'9_9_9': true};
+  window.__bridge.collapsedMap = {'0_0_0': true}; // il collasso di QUESTO dispositivo, da preservare
+
+  // esattamente la sequenza di pullFromCloud in js/sync.js: salva il
+  // collasso locale, applica il backup remoto, ripristina il collasso locale
+  const localCollapsed = window.__bridge.collapsedMap;
+  window.applyBackup(remotePayload);
+  assert.strictEqual(window.__bridge.state.title, 'Dispositivo B', 'i dati veri (allenamento) devono venire dal payload remoto');
+  assert.strictEqual(Object.keys(window.__bridge.collapsedMap)[0], '9_9_9', 'applyBackup da solo sovrascrive anche il collasso (comportamento noto, e\' per questo che pullFromCloud lo ripristina dopo)');
+  window.__bridge.collapsedMap = localCollapsed;
+  assert.strictEqual(Object.keys(window.__bridge.collapsedMap)[0], '0_0_0', 'BUG: dopo il ripristino il collasso deve restare quello di QUESTO dispositivo, non quello arrivato dalla sync');
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){

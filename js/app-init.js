@@ -36,6 +36,7 @@ try{
   renderHistList();
   checkAchievements();
   updateAppBadge();
+  if(typeof initSync === 'function') initSync();
 
   initAnimations();
 

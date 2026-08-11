@@ -16,8 +16,11 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.7</span>
+  <span class="app-version" id="appVersion">v1.8</span>
   <h1>Logbook</h1>
+  <button id="accountBtn" class="account-btn" onclick="openAuthModal()" title="Account e sincronizzazione" aria-label="Account e sincronizzazione">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20 C4 15.5 7.5 13 12 13 C16.5 13 20 15.5 20 20"/></svg>
+  </button>
 </div>
 <div id="dayTabsActive" class="day-tabs" style="display:none;"></div>
 <div id="viewHome" style="display:none;"></div>
@@ -91,6 +94,12 @@
   <div class="modal-box">
     <div class="modal-head"><span>Categorie giorni</span><button onclick="closeDaysModal()" aria-label="Chiudi"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M6 6 L18 18"/><path d="M18 6 L6 18"/></svg></button></div>
     <div id="daysModalBody" class="modal-body"></div>
+  </div>
+</div>
+<div id="authModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Account e sincronizzazione" style="display:none;" onclick="if(event.target===this) closeAuthModal()">
+  <div class="modal-box">
+    <div class="modal-head"><span>Account e sincronizzazione</span><button onclick="closeAuthModal()" aria-label="Chiudi"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M6 6 L18 18"/><path d="M18 6 L6 18"/></svg></button></div>
+    <div id="authBody" class="modal-body"></div>
   </div>
 </div>
 <div id="calendarModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Calendario allenamenti" style="display:none;" onclick="if(event.target===this) closeCalendar()">
@@ -230,6 +239,9 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/animations.js"></script>
 <script src="js/accessibility.js"></script> <!-- gestione focus nei modali, Esc per chiudere -->
 <script src="js/install-prompt.js"></script> <!-- banner "installa app" per iOS Safari -->
+<script src="js/supabase.min.js"></script>  <!-- SDK Supabase vendorizzato, nessuna dipendenza da CDN a runtime -->
+<script src="js/sync.js"></script>          <!-- sincronizzazione cloud: deve caricare dopo supabase.min.js -->
+<script src="js/auth.js"></script>          <!-- modale login/registrazione -->
 <script src="js/app-init.js"></script>      <!-- avvio vero e proprio dell'app, va per ultimo -->
 </body>
 </html>

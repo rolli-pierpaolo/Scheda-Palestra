@@ -118,6 +118,16 @@ body.on-home .topbar h1{
    da solo a ogni commit (vedi .git/hooks/pre-commit), serve solo per accorgersi
    a colpo d'occhio che e' stata fatta una modifica dall'ultima volta */
 .app-version{position:absolute;top:calc(env(safe-area-inset-top) + 4px);left:6px;font-size:8px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted);opacity:.5;}
+/* account/sincronizzazione: pieno e verde quando loggato (sync attiva),
+   solo contorno grigio quando no - stesso linguaggio di stato gia' usato
+   altrove nell'app (es. .home-day-card.completed) */
+.account-btn{position:absolute;top:calc(env(safe-area-inset-top) + 8px);right:10px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--muted);background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;}
+.account-btn.logged-in{border-color:var(--green);color:var(--green);}
+/* avviso "dati aggiornati da un altro dispositivo" (vedi js/sync.js): resta
+   nascosto (show la mostra) finche' non arriva davvero un aggiornamento
+   remoto, mai una sovrascrittura automatica e silenziosa */
+.sync-update-banner{display:none;position:fixed;left:12px;right:12px;bottom:calc(70px + env(safe-area-inset-bottom));z-index:60;background:var(--panel2);border:1.5px solid var(--green);border-radius:10px;padding:10px 14px;color:var(--text);font-size:12px;font-weight:700;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.4);}
+.sync-update-banner.show{display:block;}
 /* barra di navigazione fissa in basso (Home/Allenamento/Storico insieme,
    invece di casetta in alto + tab separate): standard delle app native,
    molto piu' comoda da raggiungere col pollice mentre ci si allena */
