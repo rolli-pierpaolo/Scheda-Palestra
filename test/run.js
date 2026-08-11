@@ -751,6 +751,28 @@ test('Home "I tuoi giorni": l\'ordine resta fisso (quello di state.days), un gio
   assert.ok(cards[1].classList.contains('active-training'), 'B (currentTrainingDayIdx) deve risultare quello corrente');
 });
 
+test('striscia esercizi del giorno: ordine vero, fatto = colorato/piccolo, corrente = evidenziato', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.activeExerciseIdx = 1;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [], trainingQueue: [0], currentTrainingDayIdx: 0,
+    days: [{ name:'Push', esercizi: [
+      { nome:'Panca piana', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] },
+      { nome:'Military press', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] },
+      { nome:'Alzate laterali', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
+    ]}]
+  };
+  window.renderActive();
+  const chips = [...window.document.querySelectorAll('.day-ex-chip')];
+  const names = chips.map(c=>c.textContent.trim());
+  assert.strictEqual(names.join(','), 'Panca piana,Military press,Alzate laterali', 'l\'ordine deve essere quello vero degli esercizi del giorno');
+  assert.ok(chips[0].classList.contains('done'), 'il primo (weekDone) deve risultare fatto');
+  assert.ok(!chips[0].classList.contains('current'), 'quello fatto non deve essere segnato come corrente');
+  assert.ok(chips[1].classList.contains('current'), 'quello su cui si e\' (activeExerciseIdx) deve essere segnato come corrente');
+  assert.ok(!chips[1].classList.contains('done'), 'quello corrente, non ancora fatto, non deve avere la classe done');
+});
+
 test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su un giorno vecchio', () => {
   const window = loadApp();
   window.__bridge.workoutInProgress = false;
