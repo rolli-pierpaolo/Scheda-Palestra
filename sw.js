@@ -1,11 +1,16 @@
 // ---------------- SERVICE WORKER (funzionamento offline) ----------------
-// strategia "stale-while-revalidate": risponde SEMPRE dalla copia locale se
-// c'e' (istantaneo, funziona anche senza rete), e in parallelo scarica la
-// versione fresca da internet (se disponibile) per aggiornare la copia in
-// vista della prossima apertura. Cosi' non serve tenere a mano un numero di
-// versione della cache sincronizzato col resto dell'app: si autoaggiorna da
-// sola ogni volta che si apre con connessione, senza mai bloccare l'apertura
-// offline con una copia vecchia
+// strategia "network-first": prova SEMPRE a scaricare la versione fresca da
+// internet, e usa la copia in cache solo come riserva se non c'e' rete. Con
+// l'app corretta spesso in queste settimane, la vecchia strategia
+// "stale-while-revalidate" (rispondeva SEMPRE dalla cache, aggiornandola solo
+// in background per la VOLTA DOPO) faceva vedere una versione dell'app
+// vecchia di un giro intero ad ogni apertura - un fix appena pubblicato non
+// si vedeva mai al primo riavvio, serviva riaprire una seconda volta perche'
+// la cache si fosse aggiornata nel frattempo. BUG piu' subdolo di quanto
+// sembri: con l'app che si ricarica da sola spesso (iOS in background),
+// sembrava "il fix non funziona" quando in realta' il telefono stava ancora
+// eseguendo il codice di prima. Offline resta comunque supportato: quando la
+// rete manca, si ripiega sulla cache esattamente come prima
 const CACHE_NAME = 'logbook-cache-v1';
 const CORE_ASSETS = [
   './',
@@ -65,17 +70,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) =>
-      cache.match(event.request).then((cached) => {
-        const networkFetch = fetch(event.request).then((response) => {
-          if (response && response.status === 200) {
-            cache.put(event.request, response.clone());
-          }
-          return response;
-        }).catch(() => cached);
-        return cached || networkFetch;
-      })
-    )
+    fetch(event.request).then((response) => {
+      if (response && response.status === 200) {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+      }
+      return response;
+    }).catch(() => caches.match(event.request))
   );
 });
 
