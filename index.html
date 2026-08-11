@@ -16,7 +16,7 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.13</span>
+  <span class="app-version" id="appVersion">v1.14</span>
   <h1>Logbook</h1>
   <button id="accountBtn" class="account-btn" onclick="openAuthModal()" title="Account e sincronizzazione" aria-label="Account e sincronizzazione">
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20 C4 15.5 7.5 13 12 13 C16.5 13 20 15.5 20 20"/></svg>
@@ -210,17 +210,6 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <div id="undoToast" class="undo-toast">
   <span>Esercizio eliminato</span>
   <button onclick="undoDeleteExercise()">Annulla</button>
-</div>
-
-
-<button id="floatingFinishBtn" class="floating-finish-btn" style="display:none;" onclick="openFinishWorkoutModal(activeDayIdx)">
-  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 12.5 L10 17.5 L19 6.5"/></svg> <span class="accent-shine">Giorno terminato!</span>
-</button>
-<!-- non cliccabile apposta: compare al posto del bottone sopra quando questo
-     giorno e' gia' stato chiuso con "Giorno terminato" per la settimana
-     corrente, cosi' rivedendolo non si viene invitati a rifarlo -->
-<div id="alreadyDoneTab" class="floating-finish-btn already-done" style="display:none;">
-  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 12.5 L10 17.5 L19 6.5"/></svg> Allenamento gia' completato questa settimana
 </div>
 
 
