@@ -357,10 +357,10 @@ test('computeExerciseRepsAtSameWeight confronta le ripetizioni fatte allo stesso
   assert.strictEqual(points[1].value, 8, 'le rip a 60kg sono salite da 6 a 8: si vede il progresso a parita\' di peso');
 });
 
-test('le card esercizio partono chiuse tranne la prima non ancora fatta, e si richiudono da sole quando la si completa', () => {
+test('il carosello Allenamento mostra un esercizio a schermo e naviga con goToExerciseSlide', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
-  window.__bridge.collapsedMap = {};
+  window.__bridge.activeExerciseIdx = null;
   window.__bridge.state = {
     weeksPerBlock: 4, currentWeek: 0,
     days: [{ name:'Push', esercizi: [
@@ -369,22 +369,36 @@ test('le card esercizio partono chiuse tranne la prima non ancora fatta, e si ri
       { nome:'Ex C', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
     ]}]
   };
+  window.renderActive();
 
-  // di default, senza nessuna voce esplicita in collapsedMap: aperto solo il
-  // primo non ancora fatto (qui il primo in assoluto, exi 0), gli altri chiusi
-  assert.strictEqual(window.isExerciseCardCollapsed(0, 0), false, 'il primo esercizio deve partire aperto');
-  assert.strictEqual(window.isExerciseCardCollapsed(0, 1), true, 'gli altri devono partire chiusi');
-  assert.strictEqual(window.isExerciseCardCollapsed(0, 2), true);
+  // di default (nessuna posizione salvata) la slide attiva e' il primo
+  // esercizio non ancora fatto (computeCurrentDoingExerciseIdx)
+  assert.strictEqual(window.__bridge.activeExerciseIdx, 0, 'senza posizione salvata deve partire dal primo non ancora fatto');
+  let track = window.document.getElementById('exCarouselTrack');
+  assert.ok(track, 'il carosello deve essere in pagina');
+  assert.strictEqual(track.style.transform, 'translateX(-0%)', 'la prima slide deve partire in posizione 0');
+  assert.strictEqual(window.document.getElementById('exStickyHeaderOuter').textContent.trim(), 'Ex A');
+  // prima slide: non c'e' un esercizio precedente, la freccia indietro non deve esserci
+  assert.strictEqual(window.document.querySelector('.ex-nav-arrow.prev').getAttribute('onclick'), null, 'nessuna freccia indietro sulla prima slide');
+  assert.ok(window.document.querySelector('.ex-nav-arrow.next').getAttribute('onclick'), 'la freccia avanti deve esserci (c\'e\' un esercizio dopo)');
 
-  // lo segno completato per la settimana corrente: deve richiudersi da solo,
-  // e il prossimo (Ex B) deve aprirsi da solo al posto suo
+  // saltare direttamente all'ultimo esercizio (come un tap su un pallino, una
+  // freccia, o uno swipe) sposta il carosello senza un renderActive completo
+  window.goToExerciseSlide(2);
+  assert.strictEqual(window.__bridge.activeExerciseIdx, 2);
+  track = window.document.getElementById('exCarouselTrack');
+  assert.strictEqual(track.style.transform, 'translateX(-200%)', 'la terza slide deve essere alla posizione 2');
+  assert.strictEqual(window.document.getElementById('exStickyHeaderOuter').textContent.trim(), 'Ex C');
+  // ultima slide: non c'e' un esercizio successivo, la freccia avanti non deve esserci
+  assert.strictEqual(window.document.querySelector('.ex-nav-arrow.next').getAttribute('onclick'), null, 'nessuna freccia avanti sull\'ultima slide');
+
+  // completare la settimana corrente sul primo esercizio non fa scattare
+  // subito il salto al prossimo (e' rimandato di 250ms, vedi toggleWeekDone):
+  // subito dopo la slide attiva deve essere ancora quella appena completata
+  window.goToExerciseSlide(0);
   window.toggleWeekDone(0, 0);
-  assert.strictEqual(window.isExerciseCardCollapsed(0, 0), true, 'BUG: l\'esercizio appena completato deve richiudersi da solo');
-  assert.strictEqual(window.isExerciseCardCollapsed(0, 1), false, 'il prossimo esercizio deve aprirsi automaticamente al suo posto');
-
-  // un tocco manuale la apre/chiude a prescindere da tutto il resto
-  window.toggleExerciseCollapse(2);
-  assert.strictEqual(window.isExerciseCardCollapsed(0, 2), false, 'un tocco manuale deve poter aprire QUALSIASI esercizio, in qualsiasi ordine');
+  assert.strictEqual(window.__bridge.state.days[0].esercizi[0].weekDone[0], true);
+  assert.strictEqual(window.__bridge.activeExerciseIdx, 0, 'l\'avanzamento automatico e\' rimandato, non deve scattare subito');
 });
 
 test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare i dati, con tutte e 5 le azioni', () => {
