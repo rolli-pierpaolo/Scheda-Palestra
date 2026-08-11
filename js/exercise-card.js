@@ -5,12 +5,22 @@
 // restare nascosto dall'ultima volta che si era su Home/Storico
 function updateFloatingFinishBtn(){
   const floatBtn = document.getElementById('floatingFinishBtn');
+  const doneTab = document.getElementById('alreadyDoneTab');
   if(!floatBtn) return;
   const day = state.days[activeDayIdx];
-  if(!day){ floatBtn.style.display = 'none'; return; }
-  const showFloat = day.esercizi.length>0 && allExercisesClosed(day);
-  floatBtn.style.display = showFloat ? '' : 'none';
+  if(!day){ floatBtn.style.display = 'none'; if(doneTab) doneTab.style.display = 'none'; return; }
+  const allClosed = day.esercizi.length>0 && allExercisesClosed(day);
+  // gia' confermato con "Giorno terminato" per la settimana corrente (vedi
+  // logWorkoutDay, che aggiunge activeDayIdx qui - azzerato da solo quando
+  // la settimana avanza): da quel momento in poi non si invita piu' a
+  // rifarlo, si mostra solo la conferma non cliccabile
+  const alreadyConfirmed = (state.completedTrainingDays||[]).includes(activeDayIdx);
+  floatBtn.style.display = (allClosed && !alreadyConfirmed) ? '' : 'none';
   floatBtn.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
+  if(doneTab){
+    doneTab.style.display = (allClosed && alreadyConfirmed) ? '' : 'none';
+    doneTab.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
+  }
 }
 // stesso conteggio degli esercizi "chiusi" gia' usato altrove (allExercisesClosed,
 // computeCurrentDoingExerciseIdx): una coppia collegata (super/jump set) conta
@@ -495,12 +505,16 @@ function exerciseCard(ex, exi, accent){
 
 
 
-    const isCollapsed = isCurrentWeek ? false : true;
-
-
-
     const weekDone = !!(ex.weekDone && ex.weekDone[w]);
     const weekSkipped = !!(ex.weekSkipped && ex.weekSkipped[w]);
+
+    // rispetta un collasso/apertura scelta a mano (collapsedMap, es. da
+    // forceNextWeekForDay dopo "Giorno terminato") se c'e' gia' una voce;
+    // altrimenti parte aperta solo la settimana corrente ANCORA da fare -
+    // se e' gia' fatta o saltata (anche se nominalmente e' quella corrente)
+    // parte chiusa, cosi' rivedendo un giorno gia' concluso non lo si
+    // ritrova tutto spalancato
+    const isCollapsed = (wkey in collapsedMap) ? !!collapsedMap[wkey] : (!isCurrentWeek || weekDone || weekSkipped);
 
 
 
@@ -1571,13 +1585,15 @@ const isPastWeek = w < state.currentWeek;
 const isFutureWeek = w > state.currentWeek;
 
 
-const isCollapsed = 
-  (wkey in collapsedMap)
-  ? !!collapsedMap[wkey]
-  : !isCurrentWeek;
-
     const weekDone = !!(exA.weekDone && exA.weekDone[w]);
     const weekSkipped = !!(exA.weekSkipped && exA.weekSkipped[w]);
+    // stessa logica della card solo: rispetta collapsedMap se presente,
+    // altrimenti collassa di default una settimana gia' fatta/saltata anche
+    // se e' nominalmente quella corrente
+    const isCollapsed =
+      (wkey in collapsedMap)
+      ? !!collapsedMap[wkey]
+      : (!isCurrentWeek || weekDone || weekSkipped);
     const maxShown = !!(exA.maxShown && exA.maxShown[w]);
     const nRows = Math.max(
       exA.sets && exA.sets[w] ? exA.sets[w].length : 0,

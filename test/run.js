@@ -618,6 +618,76 @@ test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio d
   assert.strictEqual(window.localStorage.getItem('scheda_wo18_collapsed_v1'), null, 'BUG DI SICUREZZA: mentre si vedono dati condivisi saveCollapsed non deve scrivere su localStorage');
 });
 
+test('una settimana gia\' fatta/saltata parte collassata anche se e\' nominalmente quella corrente', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.collapsedMap = {};
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 1, title: 'T',
+    days: [{ name:'Push', esercizi: [
+      // settimana 1 (indice 1, "corrente") gia' segnata fatta: prima di
+      // questo fix restava SEMPRE aperta solo perche' era quella corrente
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,true,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
+    ]}]
+  };
+  window.renderActive();
+  const toggles = [...window.document.querySelectorAll('.week-toggle')];
+  assert.strictEqual(toggles.length, 4, 'devono esserci 4 blocchi settimana');
+  assert.ok(toggles[1].classList.contains('collapsed'), 'BUG: la settimana corrente gia\' fatta deve partire collassata, non spalancata');
+  assert.ok(toggles[0].classList.contains('collapsed'), 'la settimana passata (gia\' non corrente) deve restare collassata come prima');
+
+  // un collasso scelto ESPLICITAMENTE a mano (collapsedMap) deve comunque vincere su tutto
+  window.__bridge.collapsedMap = {'0_0_1': false};
+  window.renderActive();
+  const toggles2 = [...window.document.querySelectorAll('.week-toggle')];
+  assert.ok(!toggles2[1].classList.contains('collapsed'), 'una scelta esplicita in collapsedMap deve avere sempre l\'ultima parola');
+});
+
+test('il bottone "Giorno terminato" sparisce dopo la prima conferma, sostituito da un tab non cliccabile', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [],
+    days: [{ name:'Push', esercizi: [
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
+    ]}]
+  };
+  window.updateFloatingFinishBtn();
+  const floatBtn = window.document.getElementById('floatingFinishBtn');
+  const doneTab = window.document.getElementById('alreadyDoneTab');
+  assert.notStrictEqual(floatBtn.style.display, 'none', 'la prima volta (tutto fatto, mai confermato) il bottone cliccabile deve comparire');
+  assert.strictEqual(doneTab.style.display, 'none', 'il tab non cliccabile non deve ancora comparire');
+
+  // simula la conferma di "Giorno terminato" (quello che fa logWorkoutDay)
+  window.__bridge.state.completedTrainingDays = [0];
+  window.updateFloatingFinishBtn();
+  assert.strictEqual(floatBtn.style.display, 'none', 'BUG: dopo la conferma il bottone cliccabile non deve ripresentarsi');
+  assert.notStrictEqual(doneTab.style.display, 'none', 'dopo la conferma deve comparire il tab non cliccabile al suo posto');
+});
+
+test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su un giorno vecchio', () => {
+  const window = loadApp();
+  window.__bridge.workoutInProgress = false;
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, currentTrainingDayIdx: 2, trainingQueue: [2,0,1], completedTrainingDays:[],
+    days: [
+      { name:'A', esercizi: [] },
+      { name:'B', esercizi: [] },
+      { name:'C (oggi tocca a lui)', esercizi: [] }
+    ]
+  };
+  window.goToActiveTab();
+  assert.strictEqual(window.__bridge.activeDayIdx, 2, 'BUG: deve aprire il giorno suggerito (quello che tocca oggi), non restare sul giorno 0');
+
+  // se invece un allenamento e' gia' deliberatamente in corso su un giorno
+  // preciso, il tab non deve strappare via l'utente da li'
+  window.__bridge.workoutInProgress = true;
+  window.__bridge.activeDayIdx = 1;
+  window.goToActiveTab();
+  assert.strictEqual(window.__bridge.activeDayIdx, 1, 'con un allenamento gia\' in corso su un giorno preciso, quella scelta va rispettata');
+});
+
 // ---------------- runner ----------------
 let passed = 0, failed = 0;
 for(const t of tests){

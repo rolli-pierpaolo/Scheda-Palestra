@@ -592,6 +592,10 @@ main{padding:12px;}
    saltati (vedi allExercisesClosed in js/navigation.js): un accesso rapido al
    tasto "Giorno terminato" senza dover scrollare fino in fondo alla pagina */
 .floating-finish-btn{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:30px;padding:10px 18px;font-size:12px;font-weight:900;z-index:19;box-shadow:0 6px 20px rgba(0,0,0,.5);white-space:nowrap;transition:transform .1s ease;}
+/* variante non cliccabile (vedi #alreadyDoneTab): stesso ingombro/posizione
+   del bottone vero, ma spenta - niente ombra ne' bordo acceso, cosi' si
+   legge subito come informativa e non come un invito a toccarla */
+.floating-finish-btn.already-done{pointer-events:none;background:var(--row-dark);border-color:var(--line);color:var(--muted);box-shadow:none;font-weight:700;}
 .floating-finish-btn:active{transform:translateX(-50%) scale(.96);}
 /* ---------------- COMBOBOX (autocomplete su nome esercizio/recupero/schema/giorni) ---------------- */
 .combo-wrap{position:relative;flex:1 1 auto;min-width:0;}
