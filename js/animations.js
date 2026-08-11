@@ -3,8 +3,8 @@ function initAnimations(){
   if(typeof gsap === "undefined") return;
 
   gsap.to(".topbar h1", {
-    "--shine": "200%",
-    duration: 8,
+    "--shine": "240%",
+    duration: 9,
     repeat: -1,
     yoyo: true,
     ease: "sine.inOut"

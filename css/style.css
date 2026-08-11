@@ -56,25 +56,33 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numer
   text-transform:uppercase;
   transition:font-size .2s ease;
 
+  /* effetto "metallo": non piu' una sola onda morbida verde-bianco-verde,
+     ma piu' bande di luce E ombra alternate (un riflesso solo non basta a
+     leggersi come metallo, serve anche il lato scuro) - resta pero' nella
+     stessa famiglia di verde dell'app invece di saltare all'argento
+     generico, come alluminio anodizzato verde */
   background:linear-gradient(
-    90deg,
+    100deg,
     var(--green) 0%,
-    var(--green) 40%,
-    #dfff70 48%,
-    #ffffff 50%,
-    #dfff70 52%,
+    #263d05 12%,
+    var(--green) 24%,
+    #eaffb0 36%,
+    #ffffff 42%,
+    #eaffb0 48%,
     var(--green) 60%,
+    #263d05 72%,
+    var(--green) 84%,
     var(--green) 100%
   );
 
-  background-size:300% 100%;
+  background-size:340% 100%;
   background-position:var(--shine) center;
 
   -webkit-background-clip:text;
   background-clip:text;
   -webkit-text-fill-color:transparent;
 
-  --shine:-200%;
+  --shine:-240%;
 }
 
 
