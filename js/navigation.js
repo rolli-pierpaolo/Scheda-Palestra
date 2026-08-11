@@ -16,48 +16,6 @@ function loadActivePos(){
     if(typeof pos.exi === 'number' && state.days[activeDayIdx].esercizi[pos.exi]) activeExerciseIdx = pos.exi;
   }
 }
-// nota: NON tocca workoutInProgress. Toccare/guardare un campo non vuol dire
-// aver davvero iniziato l'allenamento (es. uno sguardo distratto a un altro
-// giorno) - quel segnale arriva solo da toggleWeekDone, quando si preme
-// davvero "completata" su almeno una settimana (vedi js/exercise-card.js)
-function trackActiveExercise(e){
-  const card = e.target.closest && e.target.closest('.card[data-exi]');
-  if(!card) return;
-  const exi = parseInt(card.dataset.exi,10);
-  if(!isNaN(exi) && exi !== activeExerciseIdx){
-    activeExerciseIdx = exi;
-    saveActivePos();
-  }
-}
-document.getElementById('viewActive').addEventListener('focusin', trackActiveExercise);
-// pointerdown da solo scattava anche quando il dito toccava per sbaglio una
-// card diversa proprio nell'istante in cui iniziava uno scroll: quella card
-// diventava "attiva" senza che l'utente volesse davvero interagirci, e poi lo
-// scroll magnetico ce lo riportava sopra. Ora si aspetta il pointerup e si
-// controlla che il dito non si sia spostato (un vero tocco fermo, tipo su uno
-// stepper o la spunta, non l'inizio di un trascinamento/scroll)
-let _pdX = null, _pdY = null, _pdTarget = null;
-document.getElementById('viewActive').addEventListener('pointerdown', (e)=>{
-  _pdX = e.clientX; _pdY = e.clientY; _pdTarget = e.target;
-}, {passive:true});
-document.getElementById('viewActive').addEventListener('pointerup', (e)=>{
-  if(_pdX === null) return;
-  const dx = Math.abs(e.clientX - _pdX), dy = Math.abs(e.clientY - _pdY);
-  const target = _pdTarget;
-  _pdX = null; _pdY = null; _pdTarget = null;
-  if(dx > 10 || dy > 10) return;
-  trackActiveExercise({target});
-}, {passive:true});
-
-// ---------------- SCROLL "MAGNETICO" SULL'ESERCIZIO ATTIVO ----------------
-// se sto lavorando su un esercizio e scrollo per sbaglio di poco, quando smetto
-// di scrollare la pagina si ri-centra su quell'esercizio. Se invece lo scroll e'
-// grande (mi sono spostato apposta a guardare altro) non tocca nulla.
-let scrollSnapTimer = null;
-window.addEventListener('scroll', function(){
-  clearTimeout(scrollSnapTimer);
-  scrollSnapTimer = setTimeout(trySnapToActiveExercise, 550);
-}, {passive:true});
 // "titolo grande" che si restringe scorrendo, come le app native iOS
 // (Impostazioni, Mail...): solo un cambio di classe qui, il resto lo fa la
 // transizione CSS gia' pronta su .topbar/.topbar h1. --topbar-h (l'altezza
@@ -81,60 +39,6 @@ window.addEventListener('scroll', function(){
 // un salto automatico della pagina e' solo fastidioso, quindi li' resta disattivo
 function isDesktopDevice(){
   return window.matchMedia && window.matchMedia('(pointer: coarse)').matches === false;
-}
-// allinea al TITOLO dell'esercizio (.name-row), non al centro dell'intera card:
-// la card include anche il blocco settimana aperto sotto, quindi centrare la
-// card intera finiva per centrare quel blocco invece del nome esercizio
-function trySnapToActiveExercise(force){
-  if(isDesktopDevice()) return;
-  if(activeExerciseIdx === null) return;
-  if(document.getElementById('viewActive').style.display === 'none') return;
-  if(document.getElementById('chartModal').style.display === 'flex') return;
-  if(document.getElementById('daysModal').style.display === 'flex') return;
-  if(document.getElementById('calendarModal').style.display === 'flex') return;
-  if(document.getElementById('linkModal').style.display === 'flex') return;
-  if(document.getElementById('plateModal').style.display === 'flex') return;
-  // se c'e' un campo di testo attivo la tastiera e' aperta: l'utente potrebbe aver
-  // scrollato apposta per scrivere comodo, quindi qui non tocchiamo lo scroll
-  // (a meno che non sia uno scroll forzato, es. avanzamento automatico al prossimo esercizio)
-  const activeTag = document.activeElement && document.activeElement.tagName;
-  if(!force && (activeTag === 'INPUT' || activeTag === 'TEXTAREA')) return;
-  // il bersaglio e' l'ultimo esercizio TOCCATO davvero (activeExerciseIdx) -
-  // NON il primo ancora da fare in ordine (era stato provato con
-  // computeCurrentDoingExerciseIdx, ma cosi' chi lavora fuori ordine - es.
-  // salta all'esercizio 4 senza aver ancora chiuso l'1 - si ritrovava lo
-  // scroll magnetico che lo tirava indietro sull'1 a ogni pausa, un
-  // "combattimento" avanti/indietro con l'utente). Il caso "ho appena finito
-  // l'esercizio 1 e scrollo verso il 2" resta gia' coperto SENZA bisogno di
-  // questo: toggleWeekDone/toggleWeekSkipped aggiornano gia' da soli
-  // activeExerciseIdx al prossimo esercizio appena segni completata/saltata
-  const targetExi = activeExerciseIdx;
-  // data-exi2 e' il partner in una coppia collegata (super set/jump set): un
-  // riferimento salvato prima di collegare due esercizi potrebbe puntare a
-  // quello che ora e' "il secondo" della coppia, che non ha un suo data-exi
-  const card = document.querySelector('#viewActive .card[data-exi="'+targetExi+'"], #viewActive .card[data-exi2="'+targetExi+'"]');
-  if(!card) return;
-  // il nome esercizio resta sempre visibile grazie all'header sticky (vedi
-  // .ex-sticky-header), quindi non serve piu' allineare in cima alla card:
-  // ci si allinea direttamente alla settimana CORRENTE, quella su cui si sta
-  // davvero lavorando. Fallback sulla card intera se per qualche motivo la
-  // settimana corrente non si trova (es. tutte le settimane gia' finite)
-  const wrap = card.closest('.ex-card-wrap') || card;
-  const currentWeekBtn = card.querySelector('.week-toggle.current-week');
-  const title = (currentWeekBtn && currentWeekBtn.closest('.week-block')) || card;
-  const rect = title.getBoundingClientRect();
-  const topbar = document.querySelector('.topbar');
-  const stickyHeader = wrap.querySelector('.ex-sticky-header');
-  const offset = (topbar ? topbar.getBoundingClientRect().height : 0) + (stickyHeader ? stickyHeader.getBoundingClientRect().height : 0) + 14;
-  const target = window.scrollY + rect.top - offset;
-  if(force){
-    window.scrollTo({top: Math.max(0,target), behavior:'smooth'});
-    return;
-  }
-  const delta = Math.abs(rect.top - offset);
-  if(delta > 10 && delta < window.innerHeight*0.6){
-    window.scrollTo({top: Math.max(0,target), behavior:'smooth'});
-  }
 }
 function showView(v){
   // Se sono già in Allenamento e premo di nuovo il pulsante,
@@ -292,61 +196,52 @@ document.addEventListener('visibilitychange', () => {
 });
 
 
-// ---------------- RIALINEAMENTO DOPO CHIUSURA TASTIERA ----------------
-
-let lastViewportHeight = window.innerHeight;
-
-window.addEventListener('resize', () => {
-
-  const currentHeight = window.innerHeight;
-
-  if(currentHeight > lastViewportHeight + 100){
-    setTimeout(() => {
-      trySnapToActiveExercise(true);
-    },250);
-  }
-
-  lastViewportHeight = currentHeight;
-});
 
 
-// ---------------- SWIPE TRA ALLENAMENTO E STORICO ----------------
-// pensato per il telefono, come lo scroll magnetico qui sopra: su desktop non
-// c'e' un vero "swipe" col mouse, e li' il drag serve per altro (selezionare
-// testo), quindi resta disattivo
+// ---------------- SWIPE TRA ESERCIZI (carosello Allenamento) ----------------
+// stesso pattern gia' collaudato in questa app per lo swipe tra schede (misura
+// dx/dy/dt su touchstart/touchend, richiede un gesto abbastanza orizzontale e
+// abbastanza veloce prima di considerarlo uno swipe vero, non un semplice
+// scroll verticale) - qui pero' cambia esercizio DENTRO Allenamento invece di
+// cambiare scheda. Lo swipe Allenamento<->Storico che c'era prima e' stato
+// tolto apposta: sulla stessa vista i due gesti confliggerebbero
 function anyModalOpen(){
   return Array.prototype.some.call(document.querySelectorAll('.modal-overlay'), el => el.style.display === 'flex');
 }
-let swipeStartX = null, swipeStartY = null, swipeStartTime = 0;
-function onTabSwipeStart(e){
-  if(isDesktopDevice()){ swipeStartX = null; return; }
-  const onActive = document.getElementById('viewActive').style.display !== 'none';
-  const onHist = document.getElementById('viewHist').style.display !== 'none';
-  if((!onActive && !onHist) || anyModalOpen()){ swipeStartX = null; return; }
-  // niente swipe se il tocco parte da una zona che scrolla gia' in orizzontale
-  // per conto suo (tab dei giorni), da uno stepper +/-, o da un campo di testo
-  // (dove trascinare serve a selezionare/spostare il cursore): altrimenti i due
-  // gesti confliggerebbero
-  if(e.target.closest('.day-tabs, .stepper-pair, input, textarea')){ swipeStartX = null; return; }
+let exSwipeStartX = null, exSwipeStartY = null, exSwipeStartTime = 0;
+function onExerciseSwipeStart(e){
+  if(isDesktopDevice()){ exSwipeStartX = null; return; }
+  if(document.getElementById('viewActive').style.display === 'none' || anyModalOpen()){ exSwipeStartX = null; return; }
+  // niente swipe se il tocco parte da una zona che gestisce gia' un gesto suo
+  // (indice a pallini scorrevole, stepper +/-, un campo di testo dove
+  // trascinare serve a spostare il cursore): altrimenti confliggerebbero
+  if(e.target.closest('.ex-jump-index, .ex-carousel-nav, .stepper-pair, input, textarea')){ exSwipeStartX = null; return; }
   const t = e.touches[0];
-  swipeStartX = t.clientX; swipeStartY = t.clientY; swipeStartTime = Date.now();
+  exSwipeStartX = t.clientX; exSwipeStartY = t.clientY; exSwipeStartTime = Date.now();
 }
-function onTabSwipeEnd(e){
-  if(swipeStartX === null) return;
+function onExerciseSwipeEnd(e){
+  if(exSwipeStartX === null) return;
   const t = e.changedTouches[0];
-  const dx = t.clientX - swipeStartX;
-  const dy = t.clientY - swipeStartY;
-  const dt = Date.now() - swipeStartTime;
-  swipeStartX = null;
+  const dx = t.clientX - exSwipeStartX;
+  const dy = t.clientY - exSwipeStartY;
+  const dt = Date.now() - exSwipeStartTime;
+  exSwipeStartX = null;
   if(dt > 600) return; // troppo lento, non e' uno swipe deciso
   if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy)*1.8) return; // poco orizzontale o troppo verticale
-  const onActive = document.getElementById('viewActive').style.display !== 'none';
-  const target = dx < 0 ? 'hist' : 'active'; // swipe a sinistra = avanti (Storico), a destra = indietro (Allenamento)
-  const current = onActive ? 'active' : 'hist';
-  if(target !== current) showView(target);
+  const day = state.days[activeDayIdx];
+  if(!day) return;
+  const progress = computeDayProgress(day);
+  if(!progress.items.length) return;
+  const activeItem = progress.items.find(it => it.exi===activeExerciseIdx) || progress.items[0];
+  const activePos = activeItem.pos;
+  if(dx < 0 && activePos < progress.total){
+    goToExerciseSlide(progress.items[activePos].exi); // swipe a sinistra = avanti
+  } else if(dx > 0 && activePos > 1){
+    goToExerciseSlide(progress.items[activePos-2].exi); // swipe a destra = indietro
+  }
 }
-document.addEventListener('touchstart', onTabSwipeStart, {passive:true});
-document.addEventListener('touchend', onTabSwipeEnd, {passive:true});
+document.addEventListener('touchstart', onExerciseSwipeStart, {passive:true});
+document.addEventListener('touchend', onExerciseSwipeEnd, {passive:true});
 
 function renderDayTabs(){
 
@@ -708,9 +603,9 @@ function allExercisesClosed(day){
 // il primo esercizio del giorno (nell'ordine in cui sono elencati, cioe'
 // l'ordine di esecuzione) che non risulta ancora completato/saltato per la
 // settimana corrente - quello che si "sta svolgendo" ora. Se sono gia' tutti
-// fatti resta sull'ultimo, cosi' c'e' sempre un bersaglio valido per lo
-// scroll magnetico (vedi trySnapToActiveExercise) invece di uno sganciato
-// dall'esercizio davvero in corso
+// fatti resta sull'ultimo, cosi' c'e' sempre una slide di default valida per
+// il carosello (vedi resolveActiveExerciseIdx in js/exercise-card.js) invece
+// di una sganciata dall'esercizio davvero in corso
 function computeCurrentDoingExerciseIdx(dayIdx){
   const day = state.days[dayIdx];
   if(!day || !day.esercizi.length) return null;

@@ -82,6 +82,7 @@ function loadApp(){
       get DATA(){ return DATA; },
       get weekDoneConfirmTarget(){ return weekDoneConfirmTarget; }, set weekDoneConfirmTarget(v){ weekDoneConfirmTarget = v; },
       get activeDayIdx(){ return activeDayIdx; }, set activeDayIdx(v){ activeDayIdx = v; },
+      get activeExerciseIdx(){ return activeExerciseIdx; }, set activeExerciseIdx(v){ activeExerciseIdx = v; },
       get workoutInProgress(){ return workoutInProgress; }, set workoutInProgress(v){ workoutInProgress = v; },
       get MUSCLE_MOTIVATION(){ return MUSCLE_MOTIVATION; },
       get DEFAULT_MOTIVATION(){ return DEFAULT_MOTIVATION; },

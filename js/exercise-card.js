@@ -45,34 +45,49 @@ function renderDayProgressBar(progress, accent){
     <div class="day-progress-track"><div class="day-progress-fill" style="width:${pct}%"></div></div>
   </div>`;
 }
-// solo sui giorni lunghi (6+ esercizi/coppie): un salto diretto invece di
-// dover scrollare tutta la pagina per trovare un esercizio specifico
+// indice a pallini + frecce prev/next, sempre visibile (prima solo da 6
+// esercizi in su): ora e' il modo principale per muoversi nel carosello, non
+// solo una scorciatoia per i giorni lunghi. Freccia sinistra assente (non
+// solo disabilitata) se non c'e' un esercizio precedente, destra assente se
+// non c'e' un successivo
 function renderExerciseJumpIndex(progress, accent){
-  if(progress.total<6) return '';
+  if(progress.total===0) return '';
+  const activeItem = progress.items.find(it => it.exi===activeExerciseIdx) || progress.items[0];
+  const activePos = activeItem.pos;
+  const hasPrev = activePos > 1;
+  const hasNext = activePos < progress.total;
+  const prevExi = hasPrev ? progress.items[activePos-2].exi : null;
+  const nextExi = hasNext ? progress.items[activePos].exi : null;
   const dots = progress.items.map(it =>
-    `<button class="ex-jump-dot ${it.isDone?'done':''}" style="--accent:${accent}" onclick="scrollToExerciseCard(${it.exi})" aria-label="Vai a esercizio ${it.pos}">${it.pos}</button>`
+    `<button class="ex-jump-dot ${it.isDone?'done':''} ${it.exi===activeItem.exi?'current':''}" style="--accent:${accent}" onclick="goToExerciseSlide(${it.exi})" aria-label="Vai a esercizio ${it.pos}">${it.pos}</button>`
   ).join('');
-  return `<div class="ex-jump-index">${dots}</div>`;
+  return `<div class="ex-carousel-nav" id="exCarouselNav">
+    <button class="ex-nav-arrow prev" ${hasPrev?`onclick="goToExerciseSlide(${prevExi})"`:'style="visibility:hidden" tabindex="-1"'} aria-label="Esercizio precedente">‹</button>
+    <div class="ex-jump-index">${dots}</div>
+    <button class="ex-nav-arrow next" ${hasNext?`onclick="goToExerciseSlide(${nextExi})"`:'style="visibility:hidden" tabindex="-1"'} aria-label="Esercizio successivo">›</button>
+  </div>`;
 }
-function scrollToExerciseCard(exi){
-  // se la card e' chiusa e' display:none: prima la apro (stessa funzione
-  // usata dal tocco sull'header), altrimenti non avrebbe una posizione reale
-  // su cui scrollare. renderActive() la ricrea da zero, quindi la cerco di
-  // nuovo DOPO invece di tenere il riferimento vecchio
-  if(isExerciseCardCollapsed(activeDayIdx, exi)){
-    collapsedMap[activeDayIdx+"_"+exi+"_card"] = false;
-    saveCollapsed();
-    renderActive();
-  }
-  const card = document.querySelector('#viewActive .card[data-exi="'+exi+'"], #viewActive .card[data-exi2="'+exi+'"]');
-  if(!card) return;
-  const wrap = card.closest('.ex-card-wrap') || card;
-  const topbar = document.querySelector('.topbar');
-  const stickyHeader = wrap.querySelector('.ex-sticky-header');
-  const offset = (topbar ? topbar.getBoundingClientRect().height : 0) + (stickyHeader ? stickyHeader.getBoundingClientRect().height : 0) + 14;
-  const rect = card.getBoundingClientRect();
-  const target = window.scrollY + rect.top - offset;
-  window.scrollTo({top: Math.max(0,target), behavior:'smooth'});
+// passa da un esercizio all'altro nel carosello: se il DOM del carosello e'
+// gia' in pagina (praticamente sempre, tranne al primissimo render) tocca
+// SOLO il transform del track e l'header/indice - niente renderActive
+// completo, cosi' lo scorrimento resta una vera animazione invece di uno
+// scatto secco (renderActive ricostruirebbe tutto gia' posizionato, senza
+// transizione visibile)
+function goToExerciseSlide(exi){
+  const day = state.days[activeDayIdx];
+  if(!day || !day.esercizi[exi]) return;
+  activeExerciseIdx = exi;
+  saveActivePos();
+  const progress = computeDayProgress(day);
+  const item = progress.items.find(it => it.exi===exi);
+  const slideIdx = item ? progress.items.indexOf(item) : 0;
+  const track = document.getElementById('exCarouselTrack');
+  if(!track){ renderActive(); return; }
+  track.style.transform = 'translateX(-'+(slideIdx*100)+'%)';
+  const headerOuter = document.getElementById('exStickyHeaderOuter');
+  if(headerOuter) headerOuter.outerHTML = renderExerciseStickyHeader(exi);
+  const navWrap = document.getElementById('exCarouselNav');
+  if(navWrap) navWrap.outerHTML = renderExerciseJumpIndex(progress, dayAccent(day, activeDayIdx).c);
 }
 function renderActive(){
   const day = state.days[activeDayIdx];
@@ -110,20 +125,37 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
 '';
 
 
-  // gli esercizi "collegati" (super set/jump set, vedi piu' sotto) vengono
-  // renderizzati insieme in un'unica card: quello che segue nell'array (il
-  // partner) va saltato qui, e' gia' incluso dentro linkedExerciseCard
-  let cardsHtml = '';
-  for(let exi=0; exi<day.esercizi.length; exi++){
-    const ex = day.esercizi[exi];
-    if(ex.linkGroupId && day.esercizi[exi-1] && day.esercizi[exi-1].linkGroupId===ex.linkGroupId) continue;
-    const partnerExi = (ex.linkGroupId && day.esercizi[exi+1] && day.esercizi[exi+1].linkGroupId===ex.linkGroupId) ? exi+1 : null;
-    cardsHtml += partnerExi!==null ? linkedExerciseCard(ex, exi, day.esercizi[partnerExi], partnerExi, a) : exerciseCard(ex, exi, a);
-  }
   const progress = computeDayProgress(day);
   const progressBarHtml = renderDayProgressBar(progress, a.c);
+
+  // un esercizio per schermata: le slide restano nel DOM (stesso rendering di
+  // ogni card di sempre, exerciseCard/linkedExerciseCard), ma sono impilate
+  // in orizzontale dentro un viewport con overflow:hidden e traslate col
+  // transform del track - solo la slide "attiva" e' visibile, le altre
+  // scorrono a lato. Le coppie collegate restano UNA sola slide (esattamente
+  // come oggi sono UNA sola card), quindi si costruisce dalla stessa
+  // progress.items gia' calcolata (che le tratta gia' come un solo elemento),
+  // invece di rifare un secondo loop separato che potrebbe disallinearsi
+  activeExerciseIdx = resolveActiveExerciseIdx(day);
+  saveActivePos();
+  const activeItem = progress.items.find(it => it.exi===activeExerciseIdx);
+  const activeSlideIdx = activeItem ? progress.items.indexOf(activeItem) : 0;
+  const stickyHeaderHtml = renderExerciseStickyHeader(activeExerciseIdx);
   const jumpIndexHtml = renderExerciseJumpIndex(progress, a.c);
-  main.innerHTML = progressBarHtml + jumpIndexHtml + switchTrainingDay + emptyState + cardsHtml +
+
+  let slidesHtml = '';
+  progress.items.forEach((it, slideIdx) => {
+    const ex = day.esercizi[it.exi];
+    const partnerExi = (ex.linkGroupId && day.esercizi[it.exi+1] && day.esercizi[it.exi+1].linkGroupId===ex.linkGroupId) ? it.exi+1 : null;
+    const cardHtml = partnerExi!==null ? linkedExerciseCard(ex, it.exi, day.esercizi[partnerExi], partnerExi, a) : exerciseCard(ex, it.exi, a);
+    slidesHtml += `<div class="ex-carousel-slide${slideIdx===activeSlideIdx?' current':''}">${cardHtml}</div>`;
+  });
+  const carouselHtml = progress.total>0 ? `
+    <div class="ex-carousel-viewport">
+      <div class="ex-carousel-track" id="exCarouselTrack" style="transform:translateX(-${activeSlideIdx*100}%)">${slidesHtml}</div>
+    </div>` : '';
+
+  main.innerHTML = progressBarHtml + stickyHeaderHtml + jumpIndexHtml + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -138,14 +170,28 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   if(typeof gsap !== "undefined" && activeFirstAnimation){
   activeFirstAnimation = false;
 
-  gsap.from("#viewActive .card", {
+  gsap.from("#viewActive .ex-carousel-slide.current .card", {
     y:35,
     opacity:0,
     duration:0.55,
-    stagger:0.12,
     ease:"power2.out"
   });
 }
+}
+// quale esercizio mostrare come slide attiva: quello salvato/toccato per
+// ultimo (activeExerciseIdx), normalizzato al primo di una coppia collegata
+// se punta al secondo; altrimenti il primo non ancora chiuso per il blocco
+// (computeCurrentDoingExerciseIdx, gia' usato altrove con lo stesso scopo)
+function resolveActiveExerciseIdx(day){
+  if(activeExerciseIdx !== null && day.esercizi[activeExerciseIdx]){
+    const ex = day.esercizi[activeExerciseIdx];
+    if(ex.linkGroupId && day.esercizi[activeExerciseIdx-1] && day.esercizi[activeExerciseIdx-1].linkGroupId===ex.linkGroupId){
+      return activeExerciseIdx-1;
+    }
+    return activeExerciseIdx;
+  }
+  const fallback = computeCurrentDoingExerciseIdx(activeDayIdx);
+  return fallback !== null ? fallback : 0;
 }
 
 // ---------------- RIORDINO ESERCIZI ----------------
@@ -332,7 +378,6 @@ function exerciseCard(ex, exi, accent){
 
   const record = getRecordForExercise(ex.nome);
   const recordAttr = record ? record.peso : 'null';
-  const cardCollapsed = isExerciseCardCollapsed(activeDayIdx, exi);
 
 
   const weeksHtml = weeks.map(w=>{
@@ -753,11 +798,7 @@ function exerciseCard(ex, exi, accent){
 
   return `
 
-  <div class="ex-card-wrap" style="--accent:${accent.c}">
-  <div class="ex-sticky-header ${cardCollapsed?'collapsed':''}" id="stickyHeader-${exi}"
-  onpointerdown="onStickyPointerDown(event,${exi})" onpointermove="onStickyPointerMove(event)" onpointerup="onStickyPointerCancel()" onpointerleave="onStickyPointerCancel()" onpointercancel="onStickyPointerCancel()"
-  onclick="handleStickyHeaderClick(${exi})" ondblclick="startEditStickyName(${exi})">${escapeHtml(ex.nome||'Esercizio')}<span class="ex-collapse-chev">▾</span></div>
-  <div class="card ${cardCollapsed?'ex-collapsed':''}" data-exi="${exi}" style="--accent:${accent.c}">
+  <div class="card" data-exi="${exi}" style="--accent:${accent.c}">
 
 
     <div class="card-head">
@@ -771,7 +812,7 @@ function exerciseCard(ex, exi, accent){
 
 
 
-      
+
 
 <textarea
 class="ex-comment"
@@ -796,11 +837,44 @@ onchange="updateComment(${exi},this.value)">${escapeHtml(ex.commento || '')}
 
 
 
-  </div>
   </div>`;
 
 
 
+}
+// header sticky (nome esercizio, sempre visibile scorrendo) reso a parte
+// invece che dentro ogni card: vive FUORI dal carosello (vedi
+// .ex-carousel-viewport in renderActive), perche' un position:sticky dentro
+// un antenato con overflow:hidden non si aggancia mai allo scroll della
+// pagina (lo stesso motivo per cui .ex-card-wrap teneva l'header fuori dalla
+// card con overflow:hidden, vedi il commento CSS su .ex-card-wrap) - un solo
+// header condiviso che cambia contenuto quando cambia la slide attiva,
+// invece di uno per esercizio quasi sempre fuori vista
+function renderExerciseStickyHeader(exi){
+  const day = state.days[activeDayIdx];
+  if(!day) return '';
+  let ex = day.esercizi[exi];
+  if(!ex) return '';
+  // se exi e' il secondo di una coppia collegata, l'header va sempre mostrato
+  // per la coppia intera a partire dal primo (exiA)
+  if(ex.linkGroupId && day.esercizi[exi-1] && day.esercizi[exi-1].linkGroupId===ex.linkGroupId){
+    exi = exi-1;
+    ex = day.esercizi[exi];
+  }
+  const partnerExi = (ex.linkGroupId && day.esercizi[exi+1] && day.esercizi[exi+1].linkGroupId===ex.linkGroupId) ? exi+1 : null;
+  if(partnerExi !== null){
+    const exB = day.esercizi[partnerExi];
+    const typeLabel = ex.linkType === 'jumpset' ? 'Jump set' : 'Super set';
+    return `<div class="ex-sticky-header linked" id="exStickyHeaderOuter"
+    ondblclick="startEditLinkedSticky(${exi},${partnerExi})">
+      <div class="ex-sticky-line">${escapeHtml(ex.nome||'Esercizio')}</div>
+      <div class="ex-sticky-line ex-sticky-linktype">${typeLabel}</div>
+      <div class="ex-sticky-line">${escapeHtml(exB.nome||'Esercizio')}</div>
+    </div>`;
+  }
+  return `<div class="ex-sticky-header" id="exStickyHeaderOuter"
+  onpointerdown="onStickyPointerDown(event,${exi})" onpointermove="onStickyPointerMove(event)" onpointerup="onStickyPointerCancel()" onpointerleave="onStickyPointerCancel()" onpointercancel="onStickyPointerCancel()"
+  ondblclick="startEditStickyName(${exi})">${escapeHtml(ex.nome||'Esercizio')}</div>`;
 }
 
 // apri/chiudi un blocco settimana: tocca solo le classi CSS (niente renderActive,
@@ -818,60 +892,18 @@ function toggleWeek(btn, key, weekIdx){
 
 }
 
-// stesso principio del collasso per settimana qui sopra, ma un livello piu'
-// su: ogni CARD esercizio puo' essere chiusa o aperta. Di default resta
-// aperta solo quella su cui si sta davvero lavorando (vedi
-// computeCurrentDoingExerciseIdx in js/navigation.js), le altre partono
-// chiuse - su un giorno con tanti esercizi la pagina resta leggera invece di
-// scorrere tutto aperto. Riusa collapsedMap con una chiave diversa da quelle
-// delle settimane (suffisso "_card" non numerico, non puo' scontrarsi con un
-// indice di settimana vero)
-function isExerciseCardCollapsed(dayIdx, exi){
-  const key = dayIdx+"_"+exi+"_card";
-  if(key in collapsedMap) return !!collapsedMap[key];
-  return exi !== computeCurrentDoingExerciseIdx(dayIdx);
-}
-function toggleExerciseCollapse(exi){
-  const key = activeDayIdx+"_"+exi+"_card";
-  collapsedMap[key] = !isExerciseCardCollapsed(activeDayIdx, exi);
-  saveCollapsed();
-  renderActive();
-}
-// distingue un tocco singolo (apri/chiudi la card) da un doppio tocco
-// (rinomina l'esercizio, vedi startEditStickyName/startEditLinkedSticky piu'
-// sotto): senza questo, ogni doppio click farebbe scattare ANCHE il
-// collasso, non solo la rinomina - il secondo click arrivato in tempo (entro
-// la soglia) annulla il collasso e lascia fare tutto a ondblclick
-let stickyClickTimer = null;
-function handleStickyHeaderClick(exi){
-  // una pressione prolungata (menu contestuale, vedi sotto) finisce comunque
-  // con un pointerup/click nativo del browser: se e' gia' scattata lei, il
-  // click che segue va ignorato, non deve ANCHE aprire/chiudere la card
-  if(stickyGesture.longFired){ stickyGesture.longFired = false; return; }
-  if(stickyClickTimer){
-    clearTimeout(stickyClickTimer);
-    stickyClickTimer = null;
-    return;
-  }
-  stickyClickTimer = setTimeout(()=>{
-    stickyClickTimer = null;
-    toggleExerciseCollapse(exi);
-  }, 250);
-}
 // pressione prolungata sul nome esercizio: apre un menu contestuale con le
 // stesse azioni gia' nelle iconcine della card (Elimina, Grafico, Calcola
 // dischi, Collega) - piu' comodo da mirare col dito che 4 iconcine minuscole.
 // Solo sulla card SOLO (non su quella di una coppia collegata: li' le azioni
 // sono gia' sdoppiate su due righe separate, meno affollate, e "a quale dei
 // due esercizi si riferirebbe" sarebbe ambiguo per un solo gesto)
-let stickyGesture = { longTimer:null, startX:0, startY:0, longFired:false };
+let stickyGesture = { longTimer:null, startX:0, startY:0 };
 function onStickyPointerDown(e, exi){
   stickyGesture.startX = e.clientX;
   stickyGesture.startY = e.clientY;
-  stickyGesture.longFired = false;
   clearTimeout(stickyGesture.longTimer);
   stickyGesture.longTimer = setTimeout(()=>{
-    stickyGesture.longFired = true;
     const ex = state.days[activeDayIdx].esercizi[exi];
     openExerciseContextMenu(exi, ex ? ex.nome : '');
   }, 500);
@@ -941,7 +973,7 @@ function updateName(exi, val){
 // logica gia' usata per le settimane future (vedi week-toggle.future-week)
 function startEditStickyName(exi){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  const header = document.getElementById('stickyHeader-'+exi);
+  const header = document.getElementById('exStickyHeaderOuter');
   if(!header || !ex) return;
   header.classList.add('editing');
   header.innerHTML = `<div class="combo-wrap"><textarea class="ex-sticky-name-input" rows="1"
@@ -956,7 +988,7 @@ function startEditStickyName(exi){
 // il salvataggio vero lo fa gia' l'onchange (updateName): qui si torna solo
 // alla scritta statica, rileggendo il nome aggiornato dallo stato
 function finishEditStickyName(exi){
-  const header = document.getElementById('stickyHeader-'+exi);
+  const header = document.getElementById('exStickyHeaderOuter');
   if(!header) return;
   header.classList.remove('editing');
   const ex = state.days[activeDayIdx].esercizi[exi];
@@ -970,7 +1002,7 @@ function finishEditStickyName(exi){
 function startEditLinkedSticky(exiA, exiB){
   const day = state.days[activeDayIdx];
   const exA = day.esercizi[exiA], exB = day.esercizi[exiB];
-  const header = document.getElementById('stickyHeaderLinked-'+exiA);
+  const header = document.getElementById('exStickyHeaderOuter');
   if(!header || !exA || !exB) return;
   const typeLabel = exA.linkType === 'jumpset' ? 'Jump set' : 'Super set';
   header.classList.add('editing');
@@ -991,7 +1023,7 @@ function startEditLinkedSticky(exiA, exiB){
 // del tipo di collegamento) farebbe scattare il blur del primo prima ancora
 // di aver finito - si chiude solo quando si preme davvero "Conferma"
 function finishEditLinkedSticky(exiA, exiB){
-  const header = document.getElementById('stickyHeaderLinked-'+exiA);
+  const header = document.getElementById('exStickyHeaderOuter');
   if(!header) return;
   header.classList.remove('editing');
   renderStickyLinkedDisplay(header, exiA, exiB);
@@ -1183,13 +1215,6 @@ function toggleWeekDone(exi, w){
     workoutInProgress = true;
     saveWorkoutInProgress();
   }
-  // segnare completata la settimana che si sta davvero svolgendo oggi collassa
-  // da sola la card: quell'esercizio non serve piu' aperto, si passa al
-  // prossimo che si vuole fare (in ordine o no, vedi isExerciseCardCollapsed)
-  if(nowDone && w === state.currentWeek){
-    collapsedMap[activeDayIdx+"_"+exi+"_card"] = true;
-    saveCollapsed();
-  }
   saveState();
   renderActive();
   if(nowDone){
@@ -1198,17 +1223,12 @@ function toggleWeekDone(exi, w){
     checkAchievements();
     if(exerciseFullyClosed(ex)) celebrateExerciseDone(ex.nome);
   }
+  // segnare completata la settimana che si sta davvero svolgendo oggi avanza
+  // da sola il carosello al prossimo esercizio, con la stessa animazione di
+  // scorrimento di uno swipe manuale (vedi goToExerciseSlide)
   const next = nextCardIndex(exi);
-  if(nowDone && state.days[activeDayIdx].esercizi[next]){
-    activeExerciseIdx = next;
-    saveActivePos();
-    // forza aperto il prossimo anche se era stato chiuso a mano in precedenza
-    // (es. l'aveva sbirciato e richiuso): l'avanzamento automatico deve
-    // sempre atterrare su una card visibile, mai su una nascosta
-    collapsedMap[activeDayIdx+"_"+next+"_card"] = false;
-    saveCollapsed();
-    renderActive();
-    setTimeout(()=>trySnapToActiveExercise(true), 250);
+  if(nowDone && w === state.currentWeek && state.days[activeDayIdx].esercizi[next]){
+    setTimeout(()=>goToExerciseSlide(next), 250);
   }
 }
 // piccolo pop quando si spunta una settimana come completata: il cambio di
@@ -1264,12 +1284,6 @@ function toggleWeekSkipped(exi, w){
     workoutInProgress = true;
     saveWorkoutInProgress();
   }
-  // stesso principio di toggleWeekDone qui sopra: saltare di proposito la
-  // settimana di oggi collassa comunque la card, non e' un'azione minore
-  if(nowSkipped && w === state.currentWeek){
-    collapsedMap[activeDayIdx+"_"+exi+"_card"] = true;
-    saveCollapsed();
-  }
   saveState();
   renderActive();
   if(nowSkipped){
@@ -1278,14 +1292,11 @@ function toggleWeekSkipped(exi, w){
     checkAchievements();
     if(exerciseFullyClosed(ex)) celebrateExerciseDone(ex.nome);
   }
+  // stesso principio di toggleWeekDone qui sopra: saltare di proposito la
+  // settimana di oggi avanza comunque il carosello, non e' un'azione minore
   const next = nextCardIndex(exi);
-  if(nowSkipped && state.days[activeDayIdx].esercizi[next]){
-    activeExerciseIdx = next;
-    saveActivePos();
-    collapsedMap[activeDayIdx+"_"+next+"_card"] = false;
-    saveCollapsed();
-    renderActive();
-    setTimeout(()=>trySnapToActiveExercise(true), 250);
+  if(nowSkipped && w === state.currentWeek && state.days[activeDayIdx].esercizi[next]){
+    setTimeout(()=>goToExerciseSlide(next), 250);
   }
 }
 function updateMax(exi, w, idx, field, val){
@@ -1547,7 +1558,6 @@ function linkedExerciseCard(exA, exiA, exB, exiB, accent){
   const typeLabel = exA.linkType === 'jumpset' ? 'Jump set' : 'Super set';
   const nWeeks = (exA.recupero && exA.recupero.length) || state.weeksPerBlock || 4;
   const weeks = Array.from({length:nWeeks}, (_,i)=>i);
-  const cardCollapsed = isExerciseCardCollapsed(activeDayIdx, exiA);
   const weeksHtml = weeks.map(w=>{
     const wkey = activeDayIdx+"_"+exiA+"_"+w;
     const isCurrentWeek = w === state.currentWeek;
@@ -1755,14 +1765,7 @@ const isCollapsed =
   const prBadgeA = recordA ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(recordA.peso))} kg${recordA.rip? ' × '+escapeHtml(String(recordA.rip)) : ''}</div>` : '';
   const prBadgeB = recordB ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(recordB.peso))} kg${recordB.rip? ' × '+escapeHtml(String(recordB.rip)) : ''}</div>` : '';
 
-  return `<div class="ex-card-wrap" style="--accent:${accent.c}">
-  <div class="ex-sticky-header linked ${cardCollapsed?'collapsed':''}" id="stickyHeaderLinked-${exiA}" onclick="handleStickyHeaderClick(${exiA})" ondblclick="startEditLinkedSticky(${exiA},${exiB})">
-    <div class="ex-sticky-line">${escapeHtml(exA.nome||'Esercizio')}</div>
-    <div class="ex-sticky-line ex-sticky-linktype">${typeLabel}</div>
-    <div class="ex-sticky-line">${escapeHtml(exB.nome||'Esercizio')}</div>
-    <span class="ex-collapse-chev">▾</span>
-  </div>
-  <div class="card linked-group ${cardCollapsed?'ex-collapsed':''}" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
+  return `<div class="card linked-group" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
     <div class="linked-pair-frame">
       <div class="card-head linked-head compact">
         <button class="ex-more-btn" onclick="openExerciseContextMenu(${exiA}, '${escapeJs(exA.nome||'')}')" title="Altre azioni" aria-label="Altre azioni">${ICON_MORE}</button>
@@ -1777,7 +1780,6 @@ const isCollapsed =
       </div>
     </div>
     <div class="weeks">${weeksHtml}</div>
-  </div>
   </div>`;
 }
 

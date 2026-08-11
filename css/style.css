@@ -234,27 +234,32 @@ main{padding:12px;}
 .day-progress-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
 .day-progress-track{width:100%;height:8px;border-radius:20px;background:var(--row-dark);border:1px solid var(--line);overflow:hidden;}
 .day-progress-fill{height:100%;border-radius:20px;background:var(--accent,var(--green));transition:width .4s ease;}
-/* indice rapido esercizi (solo giorni da 6+ esercizi/coppie): un salto diretto
-   invece di dover scrollare tutta la pagina per trovarne uno specifico -
-   quelli gia' chiusi si riempiono del colore del giorno, gli altri restano
-   solo un contorno */
-.ex-jump-index{display:flex;flex-wrap:wrap;gap:6px;padding:10px 4px;}
+/* indice a pallini + frecce prev/next: SEMPRE visibile (prima solo da 6
+   esercizi in su, un salto diretto per non scrollare) - ora e' il modo
+   principale per muoversi nel carosello dell'Allenamento, vedi
+   renderExerciseJumpIndex in js/exercise-card.js. I pallini scorrono in
+   orizzontale (non vanno piu' a capo) per lasciare sempre spazio alle frecce */
+.ex-carousel-nav{display:flex;align-items:center;gap:6px;padding:8px 4px;}
+.ex-nav-arrow{flex:0 0 auto;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--accent,var(--green));background:var(--panel2);color:var(--accent,var(--green));font-size:18px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;}
+.ex-jump-index{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;flex:1;min-width:0;padding:2px;}
 .ex-jump-dot{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);font-size:11px;font-weight:800;}
 .ex-jump-dot.done{background:var(--accent,var(--green));border-color:var(--accent,var(--green));color:#0D0D0D;}
+.ex-jump-dot.current{box-shadow:0 0 0 2px var(--accent,var(--green));}
+/* ---------------- CAROSELLO ESERCIZI (un esercizio a schermo, swipe per il prossimo) ---------------- */
+/* il viewport clippa tutto tranne la slide attiva, il track e' la riga
+   orizzontale di slide traslata via transform (vedi goToExerciseSlide in
+   js/exercise-card.js) - la transizione CSS anima lo scorrimento senza dover
+   ricostruire il DOM a ogni cambio esercizio */
+.ex-carousel-viewport{overflow:hidden;width:100%;}
+.ex-carousel-track{display:flex;transition:transform .3s ease;}
+.ex-carousel-slide{flex:0 0 100%;min-width:0;max-width:100%;box-sizing:border-box;}
 /* ---------------- SCHEDA ESERCIZIO (nome, note, blocchi settimana) ---------------- */
-/* .ex-card-wrap avvolge card + header sticky: la card ha overflow:hidden (per i
-   bordi arrotondati), e position:sticky su un discendente di un elemento con
-   overflow:hidden non "aggancia" mai lo scroll della pagina - va tenuto fuori */
-.ex-card-wrap{position:relative;}
-.ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 30px 6px 12px;margin-bottom:4px;font-size:14.4px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:normal;overflow:visible;text-overflow:clip;box-shadow:0 4px 10px rgba(0,0,0,.35);}
-/* un tocco sulla scritta apre/chiude la card sotto (vedi handleStickyHeaderClick
-   in js/exercise-card.js) - la freccina segue lo stato, ruotata quando chiusa */
-.ex-collapse-chev{position:absolute;right:10px;top:50%;transform:translateY(-50%);transition:transform .15s;pointer-events:none;}
-.ex-sticky-header.collapsed .ex-collapse-chev{transform:translateY(-50%) rotate(-90deg);}
-/* card chiusa: solo l'header sticky resta visibile, il contenuto sparisce
-   del tutto invece di restare nel documento occupando spazio - su un giorno
-   con tanti esercizi la pagina resta leggera */
-.card.ex-collapsed{display:none;}
+/* l'header sticky vive FUORI dal carosello (e' un elemento solo, condiviso,
+   che cambia contenuto quando cambia la slide attiva - vedi
+   renderExerciseStickyHeader): un position:sticky dentro un antenato con
+   overflow:hidden (il viewport del carosello, sopra) non si aggancerebbe mai
+   allo scroll della pagina */
+.ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 12px;margin-bottom:4px;font-size:14.4px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:normal;overflow:visible;text-overflow:clip;box-shadow:0 4px 10px rgba(0,0,0,.35);}
 /* esercizi collegati: tre righe impilate (esercizio A / tipo / esercizio B)
    invece del vecchio "A + B" su una riga, quindi qui l'header non tronca piu'
    con l'ellissi ne' resta su una riga sola */
