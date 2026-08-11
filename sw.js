@@ -42,6 +42,7 @@ const CORE_ASSETS = [
   './js/sync.js',
   './js/auth.js',
   './js/sharing.js',
+  './js/push.js',
   './js/app-init.js',
 ];
 
@@ -75,5 +76,37 @@ self.addEventListener('fetch', (event) => {
         return cached || networkFetch;
       })
     )
+  );
+});
+
+// ---------------- NOTIFICHE PUSH ----------------
+// il contenuto arriva dalla funzione schedulata lato Supabase (vedi
+// supabase/push-reminder-function.ts): qui si mostra solo la notifica,
+// nessuna logica su CHI/QUANDO avvisare vive nel service worker
+self.addEventListener('push', (event) => {
+  let data = { title: 'Logbook', body: 'Non ti alleni da un po\' - torna a farti sotto!' };
+  if(event.data){
+    try{ data = Object.assign(data, event.data.json()); }catch(e){}
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: './icon-192.png',
+      badge: './icon-192.png',
+      tag: 'logbook-reminder'
+    })
+  );
+});
+
+// un tocco sulla notifica mette a fuoco una scheda dell'app gia' aperta se
+// c'e', altrimenti ne apre una nuova, invece di aprirne sempre una in piu'
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({type:'window', includeUncontrolled:true}).then((clientsArr) => {
+      const existing = clientsArr.find((c) => c.url.includes(self.registration.scope));
+      if(existing) return existing.focus();
+      return self.clients.openWindow('./');
+    })
   );
 });

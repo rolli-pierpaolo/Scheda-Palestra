@@ -17,6 +17,7 @@ function showHistSection(section){
     document.getElementById('histSubTab'+label).classList.toggle('active', s===section);
   });
   if(section==='dati' && typeof renderSharingSection === 'function') renderSharingSection();
+  if(section==='dati' && typeof renderPushStatus === 'function') renderPushStatus();
 }
 function toggleHistEdit(){
   histEditMode = !histEditMode;
