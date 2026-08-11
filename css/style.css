@@ -282,7 +282,10 @@ main{padding:12px;}
    renderExerciseStickyHeader): un position:sticky dentro un antenato con
    overflow:hidden (il viewport del carosello, sopra) non si aggancerebbe mai
    allo scroll della pagina */
-.ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 12px;margin-bottom:4px;font-size:14.4px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:normal;overflow:visible;text-overflow:clip;box-shadow:0 4px 10px rgba(0,0,0,.35);}
+/* transition su top: quando la topbar si accorcia scorrendo (vedi il
+   listener in js/navigation.js che ricalcola --topbar-h), l'header sticky
+   scivola alla nuova posizione invece di scattarci di colpo */
+.ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 12px;margin-bottom:4px;font-size:14.4px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:normal;overflow:visible;text-overflow:clip;box-shadow:0 4px 10px rgba(0,0,0,.35);transition:top .2s ease;}
 /* esercizi collegati: tre righe impilate (esercizio A / tipo / esercizio B)
    invece del vecchio "A + B" su una riga, quindi qui l'header non tronca piu'
    con l'ellissi ne' resta su una riga sola */

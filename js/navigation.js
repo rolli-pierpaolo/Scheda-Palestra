@@ -27,7 +27,10 @@ function loadActivePos(){
 // ogni scroll), sia subito che a transizione finita (300ms dopo)
 let topbarScrolled = false;
 window.addEventListener('scroll', function(){
-  const scrolled = window.scrollY > 20;
+  // due soglie diverse (non una sola) apposta: scrollando avanti e indietro
+  // proprio sul bordo di una soglia unica, lo stato cambierebbe a ogni
+  // pixel avanti/indietro, facendo scattare/tremolare l'header in continuazione
+  const scrolled = topbarScrolled ? (window.scrollY > 8) : (window.scrollY > 20);
   if(scrolled === topbarScrolled) return;
   topbarScrolled = scrolled;
   const topbarEl = document.querySelector('.topbar');
