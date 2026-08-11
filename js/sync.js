@@ -87,13 +87,20 @@ async function pullFromCloud(force){
     .eq('user_id', syncSession.user.id)
     .maybeSingle();
   if(error || !data || !data.payload) return;
-  const check = validateBackup(data.payload);
+  // il client normalmente restituisce gia' un oggetto per una colonna jsonb,
+  // ma per sicurezza (a seconda di come e' stata salvata la riga) si accetta
+  // anche una stringa JSON e la si interpreta prima di validarla
+  let payload = data.payload;
+  if(typeof payload === 'string'){
+    try{ payload = JSON.parse(payload); }catch(e){ return; }
+  }
+  const check = validateBackup(payload);
   if(!check.valid) return;
   // il collasso dei blocchi settimana e' una preferenza di visualizzazione
   // locale (vedi js/state.js), non un dato: non deve venire sovrascritto
   // dalla sync di un altro dispositivo
   const localCollapsed = collapsedMap;
-  applyBackup(data.payload);
+  applyBackup(payload);
   collapsedMap = localCollapsed;
   saveCollapsed();
   hideSyncUpdateBanner();
