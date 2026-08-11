@@ -861,18 +861,22 @@ function renderExerciseStickyHeader(exi){
     exi = exi-1;
     ex = day.esercizi[exi];
   }
+  // --accent va impostato QUI: prima veniva ereditato da .ex-card-wrap (ora
+  // rimosso), senza questo l'header cade sul fallback var(--green) e diventa
+  // sempre verde invece del colore del giorno
+  const accent = dayAccent(day, activeDayIdx).c;
   const partnerExi = (ex.linkGroupId && day.esercizi[exi+1] && day.esercizi[exi+1].linkGroupId===ex.linkGroupId) ? exi+1 : null;
   if(partnerExi !== null){
     const exB = day.esercizi[partnerExi];
     const typeLabel = ex.linkType === 'jumpset' ? 'Jump set' : 'Super set';
-    return `<div class="ex-sticky-header linked" id="exStickyHeaderOuter"
+    return `<div class="ex-sticky-header linked" id="exStickyHeaderOuter" style="--accent:${accent}"
     ondblclick="startEditLinkedSticky(${exi},${partnerExi})">
       <div class="ex-sticky-line">${escapeHtml(ex.nome||'Esercizio')}</div>
       <div class="ex-sticky-line ex-sticky-linktype">${typeLabel}</div>
       <div class="ex-sticky-line">${escapeHtml(exB.nome||'Esercizio')}</div>
     </div>`;
   }
-  return `<div class="ex-sticky-header" id="exStickyHeaderOuter"
+  return `<div class="ex-sticky-header" id="exStickyHeaderOuter" style="--accent:${accent}"
   onpointerdown="onStickyPointerDown(event,${exi})" onpointermove="onStickyPointerMove(event)" onpointerup="onStickyPointerCancel()" onpointerleave="onStickyPointerCancel()" onpointercancel="onStickyPointerCancel()"
   ondblclick="startEditStickyName(${exi})">${escapeHtml(ex.nome||'Esercizio')}</div>`;
 }
