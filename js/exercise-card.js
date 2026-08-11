@@ -155,7 +155,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
       <div class="ex-carousel-track" id="exCarouselTrack" style="transform:translateX(-${activeSlideIdx*100}%)">${slidesHtml}</div>
     </div>` : '';
 
-  main.innerHTML = progressBarHtml + stickyHeaderHtml + jumpIndexHtml + switchTrainingDay + emptyState + carouselHtml +
+  main.innerHTML = progressBarHtml + jumpIndexHtml + stickyHeaderHtml + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
