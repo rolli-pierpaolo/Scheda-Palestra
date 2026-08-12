@@ -116,13 +116,26 @@ function removeLibraryExercise(name){
 // chiave "YYYY-MM-DD" -> lista di {name, color}, cosi' il calendario puo' mostrare
 // un pallino colorato per ogni giorno di allenamento fatto, anche piu' di uno stesso giorno
 let calendarLog = {};
-// true da quando si tocca un esercizio (o si parte da un giorno dalla Home) fino
-// a "Giorno terminato": serve a decidere se, riaprendo l'app da chiusa, si deve
-// tornare dritti dove si era rimasti oppure mostrare la Home (vedi app-init.js)
+// true da quando si scrive DAVVERO un peso (non solo aprendo la scheda o
+// guardando gli esercizi) fino a "Giorno terminato": serve a decidere se,
+// riaprendo l'app da chiusa, si deve tornare dritti dove si era rimasti
+// oppure mostrare la Home (vedi app-init.js)
 const WORKOUT_IN_PROGRESS_KEY = "scheda_wo18_workout_in_progress_v1";
 let workoutInProgress = false;
 function saveWorkoutInProgress(){
   localStorage.setItem(WORKOUT_IN_PROGRESS_KEY, workoutInProgress ? '1' : '0');
+}
+// segna l'allenamento come "davvero iniziato": chiamata SOLO da chi scrive
+// un peso (updateSet/stepSet/updateMax in js/exercise-card.js, mai dalle
+// ripetizioni, nemmeno quelle dei tentativi massimali) - toccare "inizia"
+// dalla Home o scorrere gli esercizi senza scrivere nulla non conta piu',
+// cosi' chiudendo l'app forzatamente PRIMA di aver scritto un peso vero si
+// torna alla Home, non al giorno di allenamento
+function markWorkoutStartedByWeight(){
+  if(!workoutInProgress){
+    workoutInProgress = true;
+    saveWorkoutInProgress();
+  }
 }
 function todayKey(d){
   d = d || new Date();
