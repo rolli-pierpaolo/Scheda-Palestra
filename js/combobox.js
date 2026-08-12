@@ -107,39 +107,36 @@ function deleteHistEntry(t){
 function saveStorico(){
   localStorage.setItem(STORICO_KEY, JSON.stringify(storicoExtra));
 }
-let saveTimer=null;
 let saveStatePending=false;
-// debounced: se arrivano piu' chiamate ravvicinate (es. digitando) aspetta 400ms
-// di quiete prima di scrivere davvero su localStorage, invece di farlo ad ogni tasto.
-// ATTENZIONE: quei 400ms sono una finestra vera in cui una modifica esiste solo
-// in memoria - su iPhone, mettere l'app in background e' spesso sufficiente per
-// far ricaricare la pagina a iOS PRIMA che il timer scatti, perdendo l'ultima
-// modifica (posizione, settimana segnata fatta, ecc: sembra "torna tutto
-// indietro"). flushSaveState() scrive SUBITO, bypassando il debounce: viene
-// chiamata sia dal timer normale sia, piu' sotto, da visibilitychange/pagehide
-// nel momento esatto in cui l'app sta per finire in background
+// scrive SUBITO su localStorage, niente piu' debounce: prima aspettava
+// 400ms di quiete prima di scrivere davvero, e quei 400ms erano una
+// finestra vera in cui una modifica esisteva solo in memoria - su iPhone,
+// mettere l'app in background era spesso sufficiente per far ricaricare la
+// pagina a iOS PRIMA che il timer scattasse, perdendo l'ultima modifica
+// (posizione, settimana segnata fatta, ecc: sembrava "torna tutto
+// indietro"). Ora ogni salvataggio e' immediato e sincrono, per ogni singolo
+// tocco - flushSaveState() resta come nome per compatibilita' con
+// visibilitychange/pagehide qui sotto, ma non c'e' piu' nessun timer da
+// anticipare: saveState() ha gia' scritto tutto nell'istante stesso
 function saveState(){
   // mentre si guardano i dati condivisi da un altro utente (sola lettura,
   // vedi js/sharing.js) non si deve MAI salvare: ne' in locale ne' sul
   // cloud, altrimenti si rischierebbe di scrivere i dati di qualcun altro
   // al posto dei propri
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
-  document.getElementById('saveStatus').textContent = "Salvataggio...";
   saveStatePending = true;
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(flushSaveState, 400);
+  flushSaveState();
 }
 function flushSaveState(){
-  clearTimeout(saveTimer);
   if(!saveStatePending) return;
   saveStatePending = false;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   document.getElementById('saveStatus').textContent = "Salvato";
   if(typeof pushToCloud === 'function') pushToCloud();
 }
-// "hidden" (schermo bloccato, cambio app, tab in background) e' l'ultimo
-// momento affidabile prima che iOS possa ricaricare la pagina - pagehide come
-// rete di sicurezza in piu' per i casi in cui visibilitychange non basta
+// rete di sicurezza in piu' (non dovrebbe piu' servire, dato che saveState()
+// scrive gia' subito): se mai restasse qualcosa in sospeso, lo scrive
+// comunque nel momento esatto in cui l'app sta per finire in background
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'hidden') flushSaveState();
 });

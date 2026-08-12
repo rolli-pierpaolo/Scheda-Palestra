@@ -624,6 +624,26 @@ test('checkRemoteUpdateOnBoot avvisa (mai in automatico) solo se il cloud ha qua
   assert.strictEqual(bannerShown(), true, 'BUG: deve avvisare se il cloud ha una scrittura piu\' recente arrivata da un altro dispositivo');
 });
 
+test('checkRemoteUpdateOnBoot al PRIMISSIMO controllo (mai registrato un invio da qui prima) non deve avvisare, solo registrare il punto di partenza', async () => {
+  const window = loadApp();
+  window.__bridge.syncSession = { user: { id:'u1', email:'a@b.com' } };
+  function mockClient(updatedAtIso){
+    return { from(){ return { select(){ return this; }, eq(){ return this; }, maybeSingle(){ return Promise.resolve({ data:{updated_at:updatedAtIso}, error:null }); } }; } };
+  }
+  const bannerShown = () => { const el = window.document.getElementById('syncUpdateBanner'); return !!el && el.classList.contains('show'); };
+
+  // BUG: chi aveva gia' sincronizzato da PRIMA di questo fix non ha ancora
+  // scheda_wo18_last_cloud_push_v1 salvato in locale - qualunque data vera
+  // sul cloud (qui: di un'ora fa, niente di "nuovo" per davvero) sembrava
+  // "piu' recente" di un lastPush mai registrato (0), facendo comparire il
+  // banner anche senza NESSUNA modifica fatta da nessuna parte
+  window.localStorage.removeItem('scheda_wo18_last_cloud_push_v1');
+  window.__bridge.supabaseClient = mockClient(new Date(Date.now()-3600000).toISOString());
+  await window.checkRemoteUpdateOnBoot();
+  assert.strictEqual(bannerShown(), false, 'BUG: il primissimo controllo (nessun riferimento salvato ancora) non deve avvisare da solo');
+  assert.ok(window.localStorage.getItem('scheda_wo18_last_cloud_push_v1'), 'deve pero\' registrare il punto di partenza per i controlli successivi');
+});
+
 test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio deve partire (ne\' locale ne\' cloud)', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
@@ -632,10 +652,9 @@ test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio d
     weeksPerBlock: 4, currentWeek: 0,
     days: [{ name:'Push', esercizi: [] }]
   };
-  // saveState() e' debounced (scrive su localStorage 400ms dopo), ma la
-  // guardia e' la primissima riga della funzione: se blocca, non tocca
-  // nemmeno lo stato "Salvataggio..." sincrono - non serve aspettare i 400ms
-  // per verificare che la guardia abbia funzionato
+  // saveState() scrive subito, in modo sincrono - la guardia e' la
+  // primissima riga della funzione, quindi se blocca non tocca nemmeno lo
+  // stato "Salvato"
   const saveStatusEl = window.document.getElementById('saveStatus');
   window.localStorage.removeItem('scheda_wo18_active_pos_v1');
   window.localStorage.removeItem('scheda_wo18_collapsed_v1');
@@ -648,7 +667,7 @@ test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio d
   window.saveActivePos();
   window.__bridge.collapsedMap = {'x': true};
   window.saveCollapsed();
-  assert.strictEqual(saveStatusEl.textContent, 'Salvataggio...', 'in condizioni normali saveState() deve procedere');
+  assert.strictEqual(saveStatusEl.textContent, 'Salvato', 'in condizioni normali saveState() deve procedere');
   assert.ok(window.localStorage.getItem('scheda_wo18_active_pos_v1'), 'in condizioni normali saveActivePos deve scrivere su localStorage');
   assert.ok(window.localStorage.getItem('scheda_wo18_collapsed_v1'), 'in condizioni normali saveCollapsed deve scrivere su localStorage');
 
@@ -665,7 +684,7 @@ test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio d
   assert.strictEqual(window.localStorage.getItem('scheda_wo18_collapsed_v1'), null, 'BUG DI SICUREZZA: mentre si vedono dati condivisi saveCollapsed non deve scrivere su localStorage');
 });
 
-test('flushSaveState scrive SUBITO su localStorage, senza aspettare il debounce di 400ms', () => {
+test('saveState() scrive SUBITO su localStorage, in modo sincrono, senza nessun debounce', () => {
   const window = loadApp();
   window.__bridge.state = {
     weeksPerBlock: 4, currentWeek: 0,
@@ -674,21 +693,16 @@ test('flushSaveState scrive SUBITO su localStorage, senza aspettare il debounce 
   window.localStorage.removeItem('scheda_wo18_state_v1');
 
   window.saveState();
-  assert.strictEqual(window.localStorage.getItem('scheda_wo18_state_v1'), null, 'subito dopo saveState() (prima del timer) non deve ancora essere scritto: e\' proprio questo il debounce');
-
-  // simula cio' che fa il listener su visibilitychange/pagehide: l'app sta
-  // per finire in background (su iOS puo' voler dire "ricaricata a momenti")
-  // e non c'e' tempo di aspettare i 400ms del debounce normale
-  window.flushSaveState();
   const saved = window.localStorage.getItem('scheda_wo18_state_v1');
-  assert.ok(saved, 'BUG: flushSaveState deve scrivere SUBITO, senza aspettare il timer - altrimenti l\'ultima modifica si perde se l\'app va in background prima che scatti');
+  assert.ok(saved, 'BUG: saveState() deve scrivere SUBITO, in modo sincrono - ogni ritardo e\' una finestra in cui una modifica esiste solo in memoria e si perde se l\'app va in background prima che scatta il salvataggio');
   assert.strictEqual(JSON.parse(saved).days[0].name, 'Push', 'deve scrivere lo stato vero, non un placeholder');
 
-  // chiamarla una seconda volta senza nulla di nuovo da salvare non deve
-  // ricreare un altro giro (ne' rompere nulla)
+  // il listener su visibilitychange/pagehide chiama flushSaveState() come
+  // rete di sicurezza in piu': senza nulla in sospeso (saveState() ha gia'
+  // scritto tutto sopra) non deve ricreare un altro giro ne' rompere nulla
   window.localStorage.removeItem('scheda_wo18_state_v1');
   window.flushSaveState();
-  assert.strictEqual(window.localStorage.getItem('scheda_wo18_state_v1'), null, 'senza un saveState() in sospeso, una seconda flush non deve riscrivere nulla');
+  assert.strictEqual(window.localStorage.getItem('scheda_wo18_state_v1'), null, 'senza un saveState() in sospeso, una flush in piu\' non deve riscrivere nulla');
 });
 
 test('una settimana gia\' fatta/saltata parte collassata anche se e\' nominalmente quella corrente', () => {
@@ -754,6 +768,26 @@ test('archiveAndReset avvisa e chiede conferma esplicita se il blocco non e\' an
   window.archiveAndReset();
   assert.strictEqual(confirmCalls, 0, 'a blocco completo non deve comparire l\'avviso extra');
   assert.ok(promptCalled, 'a blocco completo si passa dritti al prompt del nome da salvare');
+});
+
+test('loadState() salva di nuovo SOLO se ha davvero corretto/riempito qualcosa, non a ogni avvio senza motivo', () => {
+  const window = loadApp();
+  // uno stato gia' "pulito": tutti i campi che loadState() normalmente
+  // ripara/riempie sono gia' presenti e coerenti, non c'e' nulla da correggere
+  const cleanState = {
+    title: 'WO', days: [{ name:'Push', esercizi: [] }],
+    currentWeek: 0, completedTrainingDays: [], completedWeeks: [],
+    trainingQueue: [0], currentTrainingDayIdx: 0, weeksPerBlock: 4
+  };
+  window.localStorage.setItem('scheda_wo18_state_v1', JSON.stringify(cleanState));
+  window.localStorage.removeItem('scheda_wo18_calendar_log_v1');
+  window.localStorage.removeItem('scheda_wo18_workout_in_progress_v1');
+  const saveStatusEl = window.document.getElementById('saveStatus');
+  saveStatusEl.textContent = '';
+
+  window.loadState();
+
+  assert.strictEqual(saveStatusEl.textContent, '', 'BUG: uno stato gia\' corretto non deve far scattare un salvataggio (e quindi un invio al cloud) a ogni avvio senza un motivo vero - con piu\' dispositivi, questo faceva comparire il banner "dati aggiornati" anche senza nessuna modifica reale, solo perche\' un altro dispositivo era stato aperto nel frattempo');
 });
 
 test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' ancora a meta\'', () => {
