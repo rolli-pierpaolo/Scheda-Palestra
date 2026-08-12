@@ -3,15 +3,20 @@
 // rinominato o e' uno in piu', accentFor ripiega sulla stessa lista di colori
 // scelta in base alla posizione (idx%4), cosi' c'e' sempre un colore assegnato
 const ACCENTS = {};
+// stessi colori di --green/--amber/--red/--steel in css/style.css (li' sono
+// per l'accento di default dell'app, qui per i 4 giorni "storici" - tenerli
+// coordinati non e' un caso: e' la stessa palette ricalibrata, meno satura
+// di prima, cosi' i colori dei vari giorni sembrano un set scelto apposta
+// invece di quattro tinte a caso una diversa dall'altra)
 function accentFor(name, idx){
-  return ACCENTS[name] || [{c:"#9ACD32",d:"#3F5C0A"},{c:"#E8971C",d:"#5C3D0B"},{c:"#C0392B",d:"#4A1A14"},{c:"#4A90A4",d:"#17313A"}][idx%4];
+  return ACCENTS[name] || [{c:"#7EA83C",d:"#33470F"},{c:"#C98A3A",d:"#4F350F"},{c:"#B23D30",d:"#421A15"},{c:"#417C8E",d:"#152C33"}][idx%4];
 }
 // scurisce un colore esadecimale di un fattore (0-1): serve per ricavare da un
 // solo colore scelto dall'utente anche la variante scura usata sull'intestazione
 // del blocco settimana, senza dover far scegliere due colori separati
 function darkenColor(hex, factor){
   const h = String(hex||'').replace('#','');
-  if(h.length!==6) return '#3F5C0A';
+  if(h.length!==6) return '#33470F';
   const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
   const toHex = v => Math.max(0,Math.min(255,Math.round(v*factor))).toString(16).padStart(2,'0');
   return '#'+toHex(r)+toHex(g)+toHex(b);

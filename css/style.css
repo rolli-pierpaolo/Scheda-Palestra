@@ -19,8 +19,16 @@
 }
 :root{
   --bg-black:#0D0D0D; --panel:#1C1C1C; --panel2:#262626; --row-dark:#141414;
-  --line:#3A3A3A; --green:#9ACD32; --green-dark:#3F5C0A; --amber:#E8971C; --amber-dark:#5C3D0B;
-  --red:#C0392B; --red-dark:#4A1A14; --steel:#4A90A4; --steel-dark:#17313A;
+  --line:#3A3A3A;
+  /* palette accento ricalibrata: stessi 4 colori di sempre (verde/ambra/
+     rosso/acciaio), ma meno saturi e un filo piu' scuri - restano
+     riconoscibili come "quel colore" senza leggersi come RGB da gaming.
+     Tutti i bordi/glow/badge dell'app derivano da queste variabili (o dal
+     colore scelto a mano per un giorno, via --accent), quindi basta
+     cambiarle qui perche' l'effetto si propaghi ovunque senza toccare le
+     decine di posti che le usano */
+  --green:#7EA83C; --green-dark:#33470F; --amber:#C98A3A; --amber-dark:#4F350F;
+  --red:#B23D30; --red-dark:#421A15; --steel:#417C8E; --steel-dark:#152C33;
   --text:#F2F2F2; --muted:#9E9E9E;
   --font-display:'Oswald', 'Arial Narrow', sans-serif;
   --font-body:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
@@ -183,9 +191,9 @@ body.on-home .topbar h1{
 body.shared-readonly input,
 body.shared-readonly textarea,
 body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.75;}
-.shared-view-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:70;background:var(--amber,#E8971C);color:#0D0D0D;font-size:12px;font-weight:800;text-align:center;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;}
+.shared-view-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:70;background:var(--amber,#C98A3A);color:#0D0D0D;font-size:12px;font-weight:800;text-align:center;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;}
 .shared-view-banner.show{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
-.shared-view-banner .exit-shared-view{pointer-events:auto;background:#0D0D0D;color:var(--amber,#E8971C);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:800;}
+.shared-view-banner .exit-shared-view{pointer-events:auto;background:#0D0D0D;color:var(--amber,#C98A3A);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:800;}
 .share-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:12px;}
 .share-row:last-child{border-bottom:none;}
 .ex-context-action.small{padding:4px 10px;font-size:11px;width:auto;}

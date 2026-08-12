@@ -15,7 +15,7 @@ function showReloadBanner(msg){
   if(document.getElementById('errBoundaryBanner')) return; // gia' mostrato, non impilarne un altro
   const el = document.createElement('div');
   el.id = 'errBoundaryBanner';
-  el.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));background:#C0392B;color:#fff;padding:12px 16px;border-radius:10px;font:700 13px -apple-system,BlinkMacSystemFont,sans-serif;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.5);text-align:center;cursor:pointer;';
+  el.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));background:#B23D30;color:#fff;padding:12px 16px;border-radius:10px;font:700 13px -apple-system,BlinkMacSystemFont,sans-serif;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.5);text-align:center;cursor:pointer;';
   // stile inline (non da css/style.css): se il problema e' proprio un
   // caricamento incompleto/disallineato, il foglio di stile potrebbe essere
   // nella stessa situazione - questo banner deve funzionare comunque
