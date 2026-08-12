@@ -195,16 +195,14 @@ const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
   gsap.fromTo(
     ".finish-modal",
     {
-      y:80,
-      opacity:0,
-      scale:.9
+      y:"100%",
+      opacity:0
     },
     {
       y:0,
       opacity:1,
-      scale:1,
-      duration:.45,
-      ease:"back.out(1.5)"
+      duration:.4,
+      ease:"power3.out"
     }
   );
 
@@ -378,16 +376,14 @@ ${
   gsap.fromTo(
     ".finish-modal",
     {
-      y:80,
-      opacity:0,
-      scale:.9
+      y:"100%",
+      opacity:0
     },
     {
       y:0,
       opacity:1,
-      scale:1,
-      duration:.45,
-      ease:"back.out(1.5)"
+      duration:.4,
+      ease:"power3.out"
     }
   );
 
@@ -463,10 +459,10 @@ function closeTrainingOrderModal(){
   const modal = document.getElementById("trainingOrderModal");
 
 gsap.to("#trainingOrderModal .finish-modal",{
-      y:40,
+      y:"100%",
     opacity:0,
-    scale:.95,
-    duration:.2,
+    duration:.25,
+    ease:"power2.in",
     onComplete(){
 
       modal.style.display="none";
@@ -483,10 +479,10 @@ function closeFinishWorkoutModal(){
 
   gsap.to("#finishWorkoutModal .finish-modal",{
 
-    y:40,
+    y:"100%",
     opacity:0,
-    scale:.95,
-    duration:.2,
+    duration:.25,
+    ease:"power2.in",
 
     onComplete(){
 

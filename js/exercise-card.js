@@ -1183,7 +1183,7 @@ function askWeekDoneConfirm(exi, w, exName){
   setTimeout(()=>{
     modal.style.display = 'flex';
     if(typeof gsap !== 'undefined'){
-      gsap.fromTo('#weekDoneModal .finish-modal', {y:40,opacity:0,scale:.95}, {y:0,opacity:1,scale:1,duration:.35,ease:'back.out(1.5)'});
+      gsap.fromTo('#weekDoneModal .finish-modal', {y:'100%',opacity:0}, {y:0,opacity:1,duration:.35,ease:'power3.out'});
     }
   }, 150);
 }
