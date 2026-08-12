@@ -688,13 +688,7 @@ main{padding:12px;}
    js/exercise-card.js) - meno affollato, e chi non scopre mai il gesto di
    pressione prolungata ha comunque un modo visibile per arrivarci */
 .ex-more-btn{background:none;border:1px solid var(--line);color:var(--text);font-size:12px;padding:8px;min-width:38px;min-height:38px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;float:right;margin-left:6px;}
-/* ---------------- OBIETTIVI: toast di sblocco + lista nella modale ---------------- */
-.achiev-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--panel2);border:2px solid var(--green);color:var(--text);padding:10px 16px;border-radius:10px;z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.5);max-width:85%;display:flex;align-items:center;gap:10px;}
-.achiev-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.achiev-toast-icon{font-size:26px;}
-.achiev-toast-icon svg{width:26px;height:26px;}
-.achiev-toast-label{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--green);text-transform:uppercase;}
-.achiev-toast-name{font-size:14px;font-weight:800;}
+/* ---------------- OBIETTIVI: lista nella modale ---------------- */
 .achiev-count{font-size:11px;font-weight:700;color:var(--muted);margin-left:6px;}
 .achiev-row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line);}
 .achiev-row:last-child{border-bottom:none;}
@@ -703,6 +697,28 @@ main{padding:12px;}
 .achiev-row.locked{opacity:.5;}
 .achiev-title{font-weight:800;font-size:14px;}
 .achiev-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+/* ---------------- FESTEGGIAMENTI (record personale / obiettivo sbloccato) ----------------
+   un momento vero al centro dello schermo invece del solito toast in alto:
+   card + scheggie colorate che esplodono dal centro (vedi showCelebration in
+   js/utils.js). Stessa base per PR e obiettivi, cambia solo il colore
+   (verde per i record, ambra per gli obiettivi) cosi' restano due eventi
+   riconoscibili senza essere due componenti separati da mantenere */
+.celebration-overlay{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .2s;}
+.celebration-overlay.show{opacity:1;}
+.celebration-burst{position:absolute;inset:0;overflow:hidden;}
+.celebration-shard{position:absolute;top:50%;left:50%;width:7px;height:7px;border-radius:2px;opacity:0;will-change:transform,opacity;}
+.celebration-card{position:relative;background:var(--panel2);border:2px solid var(--green);border-radius:16px;padding:26px 30px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.55);max-width:280px;}
+.celebration-card.accent-amber{border-color:var(--amber);}
+.celebration-icon{width:48px;height:48px;margin:0 auto 12px;color:var(--green);}
+.celebration-card.accent-amber .celebration-icon{color:var(--amber);}
+.celebration-icon svg{width:100%;height:100%;}
+.celebration-label{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:6px;}
+.celebration-card.accent-amber .celebration-label{color:var(--amber);}
+.celebration-title{font-family:var(--font-display);font-size:22px;font-weight:600;line-height:1.2;text-wrap:balance;}
+.celebration-subtitle{font-size:13px;color:var(--muted);font-weight:600;margin-top:6px;}
+@media (prefers-reduced-motion: reduce){
+  .celebration-shard{display:none;}
+}
 /* ---------------- MODALI (grafico progressione + categorie giorni) ---------------- */
 /* sfondo sfocato dietro i modali (invece di solo scurito): l'effetto "vetro"
    riconoscibile delle app native di qualita' (iOS, Notion...) - -webkit-

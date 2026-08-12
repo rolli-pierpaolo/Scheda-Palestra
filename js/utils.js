@@ -38,6 +38,71 @@ function showQuickToast(msg){
   clearTimeout(window._prToastTimer);
   window._prToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2200);
 }
+// festeggiamento a schermo intero per record personale/obiettivo sbloccato
+// (vedi celebratePR in js/records.js e revealAchievement in js/achievements.js):
+// card centrale + scheggie colorate che esplodono dal centro. title/subtitle
+// vanno SEMPRE per textContent (mai innerHTML) perche' title puo' contenere
+// il nome di un esercizio scritto dall'utente
+const CELEBRATION_SHARD_COLORS = ['var(--green)','var(--amber)','var(--red)','var(--steel)'];
+function showCelebration(opts){
+  let overlay = document.getElementById('celebrationOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'celebrationOverlay';
+    overlay.className = 'celebration-overlay';
+    overlay.innerHTML = '<div class="celebration-burst"></div><div class="celebration-card"><div class="celebration-icon"></div><div class="celebration-label"></div><div class="celebration-title"></div><div class="celebration-subtitle"></div></div>';
+    document.body.appendChild(overlay);
+  }
+  const card = overlay.querySelector('.celebration-card');
+  card.classList.toggle('accent-amber', opts.accent === 'amber');
+  overlay.querySelector('.celebration-icon').innerHTML = opts.icon || '';
+  overlay.querySelector('.celebration-label').textContent = opts.label || '';
+  overlay.querySelector('.celebration-title').textContent = opts.title || '';
+  const sub = overlay.querySelector('.celebration-subtitle');
+  sub.textContent = opts.subtitle || '';
+  sub.style.display = opts.subtitle ? '' : 'none';
+
+  const reduceMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const burst = overlay.querySelector('.celebration-burst');
+  burst.innerHTML = '';
+  if(!reduceMotion){
+    for(let i=0;i<18;i++){
+      const s = document.createElement('div');
+      s.className = 'celebration-shard';
+      s.style.background = CELEBRATION_SHARD_COLORS[i % CELEBRATION_SHARD_COLORS.length];
+      burst.appendChild(s);
+    }
+  }
+
+  overlay.classList.add('show');
+  clearTimeout(window._celebrationTimer);
+
+  if(typeof gsap !== 'undefined'){
+    gsap.killTweensOf(card);
+    if(reduceMotion){
+      gsap.fromTo(card, {opacity:0}, {opacity:1, duration:.25});
+    } else {
+      gsap.fromTo(card, {scale:.6, opacity:0, y:20}, {scale:1, opacity:1, y:0, duration:.5, ease:'back.out(1.8)'});
+      burst.querySelectorAll('.celebration-shard').forEach(s=>{
+        const angle = Math.random()*Math.PI*2;
+        const dist = 90 + Math.random()*90;
+        gsap.set(s, {x:0, y:0, opacity:1, rotation:0, scale:.6+Math.random()*.6});
+        gsap.to(s, {
+          x: Math.cos(angle)*dist,
+          y: Math.sin(angle)*dist - 20,
+          rotation: (Math.random()*360)-180,
+          opacity: 0,
+          duration: .9 + Math.random()*.4,
+          ease: 'power2.out'
+        });
+      });
+    }
+  }
+
+  vibrate(opts.vibrate || [25,40,25,40,110]);
+
+  window._celebrationTimer = setTimeout(()=>{ overlay.classList.remove('show'); }, opts.duration || 2600);
+}
 // seconda tornata: intestazioni/bottoni di Storico + chrome dei modali. Stessa
 // funzione svgIcon() per non ripetere gli attributi comuni ogni volta - il
 // "d" di ogni singolo path resta l'unica parte che cambia da icona a icona
