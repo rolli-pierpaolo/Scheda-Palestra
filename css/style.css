@@ -519,14 +519,21 @@ main{padding:12px;}
 .set-label.dropset{color:var(--amber);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
 .set-input{background:#fff;color:#141414;border:none;border-radius:6px;padding:5px 2px;font-size:13px;font-weight:700;text-align:center;width:100%;min-width:0;box-sizing:border-box;}
 .set-input::placeholder{color:#999;font-weight:400;}
+/* .kg-cell impila kg-wrap (stepper+input) sopra al chip "ultimo peso"
+   invece di farli stare tutti sulla stessa riga: su telefono stretto,
+   stepper+input+chip appiattiti in fila lasciavano il chip largo si' e no
+   28px, quasi impossibile da toccare con precisione e facile da non notare
+   proprio - impilati, il chip ha tutta la larghezza della colonna kg */
+.kg-cell{display:flex;flex-direction:column;gap:3px;min-width:0;}
 .kg-wrap{display:flex;align-items:stretch;gap:3px;min-width:0;}
 .kg-wrap .set-input{flex:1;min-width:0;}
 .stepper-pair{display:flex;gap:2px;flex:0 0 auto;}
 /* tocca per riusare l'ultimo peso scritto invece di doverlo riscrivere a
    mano (vedi fillSuggestedWeight in js/exercise-card.js): compare solo
    quando la serie e' ancora vuota e sparisce da sola appena la riempi,
-   in un modo o nell'altro */
-.kg-fill-chip{flex:0 0 auto;background:var(--panel2);border:1px solid var(--accent,var(--green));color:var(--accent,var(--green));font-size:11px;font-weight:800;border-radius:6px;padding:0 6px;white-space:nowrap;}
+   in un modo o nell'altro. Larghezza piena della colonna invece di un
+   chip minuscolo incastrato accanto allo stepper */
+.kg-fill-chip{width:100%;background:var(--panel2);border:1px solid var(--accent,var(--green));color:var(--accent,var(--green));font-size:10px;font-weight:800;border-radius:6px;padding:4px 2px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:24px;}
 /* stesso schema del kg-wrap ma per rip+RPE: il chip resta muto finche' non
    c'e' un RPE registrato, si accende col colore del giorno appena tocchi e
    scrivi un valore (vedi editRpe in js/exercise-card.js) */
