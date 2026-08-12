@@ -504,6 +504,11 @@ main{padding:12px;}
 .kg-wrap{display:flex;align-items:stretch;gap:3px;min-width:0;}
 .kg-wrap .set-input{flex:1;min-width:0;}
 .stepper-pair{display:flex;gap:2px;flex:0 0 auto;}
+/* tocca per riusare l'ultimo peso scritto invece di doverlo riscrivere a
+   mano (vedi fillSuggestedWeight in js/exercise-card.js): compare solo
+   quando la serie e' ancora vuota e sparisce da sola appena la riempi,
+   in un modo o nell'altro */
+.kg-fill-chip{flex:0 0 auto;background:var(--panel2);border:1px solid var(--accent,var(--green));color:var(--accent,var(--green));font-size:11px;font-weight:800;border-radius:6px;padding:0 6px;white-space:nowrap;}
 .stepper{flex:0 0 20px;width:20px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:5px;font-size:13px;font-weight:800;padding:0;line-height:1;}
 .stepper:active{background:var(--accent,var(--green));color:#0D0D0D;}
 .add-ex{display:block;width:100%;background:var(--panel);border:2px dashed var(--line);color:var(--muted);padding:12px;border-radius:10px;font-size:13px;font-weight:700;margin-top:4px;}
