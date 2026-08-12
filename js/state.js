@@ -137,6 +137,24 @@ function markWorkoutStartedByWeight(){
     saveWorkoutInProgress();
   }
 }
+// workoutInProgress e' UNICO per tutto il blocco, non per singolo giorno: una
+// volta scritto un peso vero da qualche parte, resta acceso finche' quel
+// giorno non viene chiuso con "Giorno terminato" - anche settimane dopo,
+// anche per giorni completamente diversi. BUG (preso segnalando l'app a un
+// utente vero): alla RIAPERTURA dell'app questo faceva tornare dritti al
+// giorno attivo anche quando quel giorno specifico, per la settimana
+// corrente, non aveva ancora una sola cifra scritta - "in corso" era vero
+// per via di settimane passate gia' concluse altrove nel blocco, non perche'
+// ci fosse davvero qualcosa di appeso li'. Questa funzione guarda SOLO il
+// giorno e la settimana che si aprirebbero per davvero
+function dayHasRealProgressThisWeek(day){
+  if(!day) return false;
+  const w = state.currentWeek || 0;
+  return (day.esercizi||[]).some(ex=>{
+    const sets = (ex.sets && ex.sets[w]) || [];
+    return sets.some(s => s && String(s.peso||'').trim()!=='');
+  });
+}
 function todayKey(d){
   d = d || new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');

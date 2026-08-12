@@ -46,8 +46,14 @@ try{
 
   document.getElementById('histBody').innerHTML = '<div class="footer-note">Seleziona un WO storico qui sopra.</div>';
   // niente allenamento in corso (mai iniziato, o concluso con "Giorno terminato"):
-  // si apre sulla Home invece che tornare dritti sulla scheda esercizi
-  if(workoutInProgress){
+  // si apre sulla Home invece che tornare dritti sulla scheda esercizi.
+  // workoutInProgress da solo pero' non basta: e' un interruttore per tutto
+  // il blocco, resta acceso anche settimane dopo per via di giorni gia'
+  // conclusi in passato. Si torna dritti al giorno attivo SOLO se quel
+  // giorno, per la settimana corrente, ha davvero un peso scritto - altrimenti
+  // e' solo la posizione dell'ultima occhiata data, non un allenamento appeso
+  // li' (vedi dayHasRealProgressThisWeek in js/state.js)
+  if(workoutInProgress && dayHasRealProgressThisWeek(state.days[activeDayIdx])){
     // il carosello si posiziona gia' da solo sulla slide giusta dentro
     // renderActive() (chiamata poco sopra), che traduce activeExerciseIdx nel
     // transform del track - niente altro da fare qui all'apertura dell'app
