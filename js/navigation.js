@@ -84,6 +84,8 @@ function showView(v){
     // l'unica cosa che deve contare li', l'esercizio a schermo
     const accountBtn = document.getElementById('accountBtn');
     if(accountBtn) accountBtn.style.display = v==='active' ? 'none' : '';
+    const settingsBtn = document.getElementById('settingsBtn');
+    if(settingsBtn) settingsBtn.style.display = v==='active' ? 'none' : '';
     // fade + leggero rialzo sulla vista che diventa visibile: il cambio vero e
     // proprio resta il display toggle sincrono qui sopra (nessun timing da cui
     // dipende il resto della funzione cambia), e' solo un'entrata piu' morbida

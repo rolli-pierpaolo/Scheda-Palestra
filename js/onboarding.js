@@ -14,7 +14,7 @@ const GUIDE_TIPS = [
   { v:1, icon:ICON_FLAG, title:'Giorno terminato', text:'A fine sessione premi "Giorno di allenamento terminato": viene registrata e torni alla Home, pronto per il prossimo giorno.' },
   { v:1, icon:ICON_LINK, title:'Super set', text:'Puoi collegare due esercizi per farli uno dopo l\'altro senza pausa, tipo super set o giant set.' },
   { v:1, icon:ICON_TARGET, title:'Obiettivi nascosti', text:'In "Obiettivi" trovi traguardi a sorpresa: restano oscurati finche\' non li sblocchi allenandoti davvero.' },
-  { v:1, icon:ICON_CALENDAR, title:'Calendario', text:'Il Calendario, dentro Storico, mostra tutti i giorni di allenamento fatti, con un pallino colorato per ogni sessione.' },
+  { v:1, icon:ICON_CALENDAR, title:'Calendario', text:'Il Calendario, dentro Progressi, mostra tutti i giorni di allenamento fatti, con un pallino colorato per ogni sessione.' },
 ];
 
 function getSeenGuideVersion(){

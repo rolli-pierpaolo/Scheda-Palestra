@@ -6,18 +6,25 @@ let histActive = null;
 let histDayIdx = 0;
 let histEditMode = false;
 
-// le 3 sotto-sezioni del tab Storico (Cronologia/Strumenti/Dati, vedi
+// le 2 sotto-sezioni del tab Progressi (Cronologia/Strumenti, vedi
 // index.html): una alla volta, si riparte sempre da Cronologia ogni volta che
-// si entra nel tab - e' quella che si vuole vedere piu' spesso, le altre due
-// si toccano solo ogni tanto
+// si entra nel tab - e' quella che si vuole vedere piu' spesso. Le vere
+// Impostazioni (account, backup, notifiche...) non vivono piu' qui: sono in
+// #settingsModal, aperto dall'icona a ingranaggio in alto (vedi sotto)
 function showHistSection(section){
-  ['cronologia','strumenti','dati'].forEach(s=>{
+  ['cronologia','strumenti'].forEach(s=>{
     const label = s.charAt(0).toUpperCase()+s.slice(1);
     document.getElementById('histSection'+label).style.display = (s===section) ? '' : 'none';
     document.getElementById('histSubTab'+label).classList.toggle('active', s===section);
   });
-  if(section==='dati' && typeof renderSharingSection === 'function') renderSharingSection();
-  if(section==='dati' && typeof renderPushStatus === 'function') renderPushStatus();
+}
+function openSettingsModal(){
+  if(typeof renderSharingSection === 'function') renderSharingSection();
+  if(typeof renderPushStatus === 'function') renderPushStatus();
+  document.getElementById('settingsModal').style.display = 'flex';
+}
+function closeSettingsModal(){
+  document.getElementById('settingsModal').style.display = 'none';
 }
 function toggleHistEdit(){
   histEditMode = !histEditMode;
