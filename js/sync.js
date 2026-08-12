@@ -183,9 +183,24 @@ async function pullFromCloud(force){
   // locale (vedi js/state.js), non un dato: non deve venire sovrascritto
   // dalla sync di un altro dispositivo
   const localCollapsed = collapsedMap;
+  // BUG risolto qui: applyBackup() azzera SEMPRE activeDayIdx/activeExerciseIdx
+  // a 0 - giusto per un ripristino vero (import di un backup, si riparte da
+  // capo), ma qui si sta solo allineando ai dati piu' recenti: ogni volta
+  // che si toccava il banner "dati aggiornati" (o, prima del fix del falso
+  // positivo, anche senza toccarlo) si veniva riportati al primo giorno
+  // anche restando esattamente sui propri dati veri
+  const localDayIdx = activeDayIdx;
+  const localExerciseIdx = activeExerciseIdx;
   applyBackup(payload);
   collapsedMap = localCollapsed;
   saveCollapsed();
+  if(state.days[localDayIdx]){
+    activeDayIdx = localDayIdx;
+    if(typeof localExerciseIdx === 'number' && state.days[activeDayIdx].esercizi[localExerciseIdx]) activeExerciseIdx = localExerciseIdx;
+    saveActivePos();
+    renderDayTabs();
+    renderActive();
+  }
   hideSyncUpdateBanner();
 }
 

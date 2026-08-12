@@ -644,6 +644,44 @@ test('checkRemoteUpdateOnBoot al PRIMISSIMO controllo (mai registrato un invio d
   assert.ok(window.localStorage.getItem('scheda_wo18_last_cloud_push_v1'), 'deve pero\' registrare il punto di partenza per i controlli successivi');
 });
 
+test('pullFromCloud NON deve azzerare la posizione (giorno/esercizio su cui si e\') se il giorno resta valido nei dati nuovi', async () => {
+  const window = loadApp();
+  window.__bridge.syncSession = { user: { id:'u1', email:'a@b.com' } };
+  window.__bridge.activeDayIdx = 2; // giorno C
+  window.__bridge.activeExerciseIdx = 1;
+  window.__bridge.collapsedMap = {};
+  const dayCEsercizi = [
+    { nome:'Ex1', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] },
+    { nome:'Ex2', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
+  ];
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, title: 'locale', completedTrainingDays: [], trainingQueue: [0,1,2], currentTrainingDayIdx: 2,
+    days: [
+      { name:'A', esercizi: [] },
+      { name:'B', esercizi: [] },
+      { name:'C', esercizi: dayCEsercizi }
+    ]
+  };
+  const remotePayload = {
+    state: {
+      weeksPerBlock:4, currentWeek:0, title:'dal cloud', completedTrainingDays: [], trainingQueue: [0,1,2], currentTrainingDayIdx: 2,
+      days: [
+        { name:'A', esercizi: [] },
+        { name:'B', esercizi: [] },
+        { name:'C', esercizi: dayCEsercizi }
+      ]
+    },
+    storicoExtra:{}, collapsedMap:{}, deletedStorico:[], calendarLog:{}, extraLists:{esercizi:[],recuperi:[],schemi:[],giorni:[]}, exerciseGroups:{}, deletedEsercizi:[]
+  };
+  window.__bridge.supabaseClient = {
+    from(){ return { select(){ return this; }, eq(){ return this; }, maybeSingle(){ return Promise.resolve({ data: {payload: remotePayload}, error:null }); } }; }
+  };
+  await window.pullFromCloud(true);
+  assert.strictEqual(window.__bridge.activeDayIdx, 2, 'BUG: dopo pullFromCloud, se il giorno su cui si era resta valido nei dati nuovi, deve restarci - non tornare al primo giorno (applyBackup da solo azzera sempre a 0, giusto per un ripristino vero ma non per un semplice allineamento dati)');
+  assert.strictEqual(window.__bridge.activeExerciseIdx, 1, 'anche l\'esercizio su cui si era deve restare, se ancora valido');
+  assert.strictEqual(window.__bridge.state.title, 'dal cloud', 'i dati veri devono comunque venire dal payload remoto');
+});
+
 test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio deve partire (ne\' locale ne\' cloud)', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
