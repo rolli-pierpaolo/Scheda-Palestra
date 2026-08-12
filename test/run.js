@@ -898,6 +898,28 @@ test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' 
   assert.strictEqual(window.__bridge.workoutInProgress, false, 'con il giorno tutto chiuso ma mai confermato, la Home deve ancora azzerare "in corso" come prima');
 });
 
+test('dayHasRealProgressThisWeek: BUG segnalato da un utente vero - "in corso" e\' del blocco intero, ma alla riapertura conta solo il giorno/settimana attivi', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 2, // settimana 3 (indice 2): settimane 1-2 gia' concluse altrove
+    days: [
+      // giorno 1: settimane passate gia' fatte, ma NIENTE scritto per la settimana corrente
+      { name:'A', esercizi: [
+        { nome:'Ex A', weekDone:[true,true,false,false], sets:[[{peso:'50',rip:'5'}],[{peso:'52',rip:'5'}],[],[]] }
+      ]},
+      // giorno 3: quello che si vuole aprire, per davvero vuoto per la settimana corrente
+      { name:'C', esercizi: [
+        { nome:'Ex C', weekDone:[false,false,false,false], sets:[[],[],[],[]] }
+      ]}
+    ]
+  };
+  assert.strictEqual(window.dayHasRealProgressThisWeek(window.__bridge.state.days[1]), false, 'BUG: il giorno 3 e\' vuoto per la settimana corrente, non deve risultare "con progresso" solo perche\' il blocco nel suo insieme e\' andato avanti altrove');
+
+  // ma se sul giorno 3, PER LA SETTIMANA CORRENTE, e' stato scritto un peso vero, allora si'
+  window.__bridge.state.days[1].esercizi[0].sets[2] = [{peso:'20', rip:''}];
+  assert.strictEqual(window.dayHasRealProgressThisWeek(window.__bridge.state.days[1]), true, 'un peso vero scritto per la settimana corrente sul giorno 3 deve contare come progresso vero');
+});
+
 test('Home "I tuoi giorni": l\'ordine resta fisso (quello di state.days), un giorno fatto non finisce in fondo', () => {
   const window = loadApp();
   window.__bridge.state = {
