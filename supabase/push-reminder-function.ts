@@ -53,7 +53,7 @@ Deno.serve(async () => {
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth_key } },
-          JSON.stringify({ title: 'Logbook', body: `Non ti alleni da ${daysSince} giorni - torna a farti sotto!` })
+          JSON.stringify({ title: 'Viridis', body: `Non ti alleni da ${daysSince} giorni - torna a farti sotto!` })
         );
         sent++;
       } catch (err) {

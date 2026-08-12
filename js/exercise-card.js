@@ -984,8 +984,8 @@ async function shareExercise(exi){
   if(!ex) return;
   const record = getRecordForExercise(ex.nome);
   const text = record
-    ? `💪 ${ex.nome}: record personale ${record.peso}kg × ${record.rip||'?'} rip\nTracciato con Logbook`
-    : `🏋️ ${ex.nome} - allenamento tracciato con Logbook`;
+    ? `💪 ${ex.nome}: record personale ${record.peso}kg × ${record.rip||'?'} rip\nTracciato con Viridis`
+    : `🏋️ ${ex.nome} - allenamento tracciato con Viridis`;
   if(navigator.share){
     try{ await navigator.share({text}); }catch(e){} // annullare il pannello non e' un errore
   } else if(navigator.clipboard && navigator.clipboard.writeText){

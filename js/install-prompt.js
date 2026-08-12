@@ -38,7 +38,7 @@ function maybeShowInstallBanner(){
   el.className = 'install-banner';
   el.innerHTML = `
     <button class="install-banner-close" onclick="dismissInstallBanner()" aria-label="Chiudi">✕</button>
-    <div class="install-banner-text">${ICON_SHARE} Installa Logbook: tocca <b>Condividi</b> qui sotto, poi <b>"Aggiungi alla schermata Home"</b></div>
+    <div class="install-banner-text">${ICON_SHARE} Installa Viridis: tocca <b>Condividi</b> qui sotto, poi <b>"Aggiungi alla schermata Home"</b></div>
   `;
   document.body.appendChild(el);
 }

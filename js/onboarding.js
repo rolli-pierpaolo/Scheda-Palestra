@@ -45,7 +45,7 @@ function openOnboarding(){
 // seenVersion>0 (qui non c'e' mai niente da evidenziare come "novita'")
 function renderOnboardingModal(seenVersion, isManual){
   const isUpdate = !isManual && seenVersion > 0;
-  const title = isUpdate ? 'Novità in Logbook' : 'Come funziona Logbook';
+  const title = isUpdate ? 'Novità in Viridis' : 'Come funziona Viridis';
   const intro = isUpdate
     ? 'L\'app si è aggiornata: ecco di nuovo tutte le funzioni principali, con le novità evidenziate.'
     : 'Una guida veloce alle funzioni principali, prima di iniziare.';

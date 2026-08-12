@@ -87,7 +87,7 @@ self.addEventListener('fetch', (event) => {
 // supabase/push-reminder-function.ts): qui si mostra solo la notifica,
 // nessuna logica su CHI/QUANDO avvisare vive nel service worker
 self.addEventListener('push', (event) => {
-  let data = { title: 'Logbook', body: 'Non ti alleni da un po\' - torna a farti sotto!' };
+  let data = { title: 'Viridis', body: 'Non ti alleni da un po\' - torna a farti sotto!' };
   if(event.data){
     try{ data = Object.assign(data, event.data.json()); }catch(e){}
   }
