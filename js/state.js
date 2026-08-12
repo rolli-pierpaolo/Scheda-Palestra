@@ -232,8 +232,16 @@ function loadState(){
   // precedente che lo attivava anche solo toccando un campo) ma nessuna
   // settimana risulta davvero completata in nessun giorno, non e' un
   // allenamento "in corso" per davvero - si corregge qui cosi' non serve
-  // aspettare un "Giorno terminato" per tornare a vedere la Home
-  if(workoutInProgress && !state.days.some(d => (d.esercizi||[]).some(ex => (ex.weekDone||[]).some(Boolean)))){
+  // aspettare un "Giorno terminato" per tornare a vedere la Home.
+  // BUG risolto qui: controllava solo weekDone, non anche weekSkipped -
+  // toggleWeekSkipped attiva "in corso" esattamente come toggleWeekDone
+  // (saltare una settimana di proposito conta come allenarsi, vedi il
+  // commento li'), ma questo controllo lo ignorava: una sessione fatta
+  // SOLO di esercizi saltati (nessuno segnato "fatto") veniva giudicata
+  // "non in corso per davvero" e azzerata, mandando alla Home invece che
+  // dritti al giorno vero - e da li' un tocco su "Allenamento" faceva
+  // ripartire dal primo giorno invece di quello su cui si era davvero
+  if(workoutInProgress && !state.days.some(d => (d.esercizi||[]).some(ex => (ex.weekDone||[]).some(Boolean) || (ex.weekSkipped||[]).some(Boolean)))){
     workoutInProgress = false;
     saveWorkoutInProgress();
   }

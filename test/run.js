@@ -790,6 +790,22 @@ test('loadState() salva di nuovo SOLO se ha davvero corretto/riempito qualcosa, 
   assert.strictEqual(saveStatusEl.textContent, '', 'BUG: uno stato gia\' corretto non deve far scattare un salvataggio (e quindi un invio al cloud) a ogni avvio senza un motivo vero - con piu\' dispositivi, questo faceva comparire il banner "dati aggiornati" anche senza nessuna modifica reale, solo perche\' un altro dispositivo era stato aperto nel frattempo');
 });
 
+test('loadState() NON deve azzerare "allenamento in corso" se l\'unico progresso e\' fatto di esercizi SALTATI (non "fatti")', () => {
+  const window = loadApp();
+  window.localStorage.setItem('scheda_wo18_state_v1', JSON.stringify({
+    title: 'WO', currentWeek: 0,
+    days: [{ name:'Push', esercizi: [
+      // nessun weekDone=true da nessuna parte, ma un weekSkipped=true si':
+      // saltare una settimana di proposito conta come allenarsi (vedi
+      // toggleWeekSkipped), l'autocorrezione doveva controllare anche questo
+      { nome:'Ex A', weekDone:[false,false,false,false], weekSkipped:[true,false,false,false] }
+    ]}]
+  }));
+  window.localStorage.setItem('scheda_wo18_workout_in_progress_v1', '1');
+  window.loadState();
+  assert.strictEqual(window.__bridge.workoutInProgress, true, 'BUG: un allenamento fatto solo di esercizi saltati non deve essere trattato come "non in corso per davvero" - altrimenti riaprendo l\'app si finisce alla Home invece che sul giorno vero, e da li\' un tocco su Allenamento fa ripartire dal primo giorno');
+});
+
 test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' ancora a meta\'', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
