@@ -179,6 +179,10 @@ body.on-home .topbar h1{
    altrove nell'app (es. .home-day-card.completed) */
 .account-btn{position:absolute;top:calc(env(safe-area-inset-top) + 8px);right:10px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--muted);background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;}
 .account-btn.logged-in{border-color:var(--green);color:var(--green);}
+/* stessa forma del bottone account, spostata a sinistra di quello cosi' non
+   si sovrappongono: l'icona a ingranaggio segnala "impostazioni" senza
+   bisogno di una scritta accanto */
+.settings-btn{right:48px;}
 /* avviso "dati aggiornati da un altro dispositivo" (vedi js/sync.js): resta
    nascosto (show la mostra) finche' non arriva davvero un aggiornamento
    remoto, mai una sovrascrittura automatica e silenziosa */

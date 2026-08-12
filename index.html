@@ -16,8 +16,11 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.16</span>
+  <span class="app-version" id="appVersion">v1.17</span>
   <h1>Logbook</h1>
+  <button id="settingsBtn" class="account-btn settings-btn" onclick="openSettingsModal()" title="Impostazioni" aria-label="Impostazioni">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 4 V6.5"/><path d="M12 17.5 V20"/><path d="M4 12 H6.5"/><path d="M17.5 12 H20"/><path d="M6.3 6.3 L8.1 8.1"/><path d="M15.9 15.9 L17.7 17.7"/><path d="M17.7 6.3 L15.9 8.1"/><path d="M8.1 15.9 L6.3 17.7"/></svg>
+  </button>
   <button id="accountBtn" class="account-btn" onclick="openAuthModal()" title="Account e sincronizzazione" aria-label="Account e sincronizzazione">
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20 C4 15.5 7.5 13 12 13 C16.5 13 20 15.5 20 20"/></svg>
   </button>
@@ -29,14 +32,14 @@
 <div id="viewHist" style="display:none;">
   <!-- prima Storico, Backup e Impostazioni stavano tutte impilate in un'unica
        pagina lunga (12 bottoni tutti uguali, "Andamenti" sepolto in mezzo alle
-       impostazioni senza un nesso logico ovvio) - ora sono 3 sezioni distinte,
-       una alla volta, cosi' la pagina resta leggera e ognuna ha una casa
-       coerente: la cronologia vera, gli strumenti che usi spesso, i dati/backup
-       che tocchi raramente -->
+       impostazioni senza un nesso logico ovvio). Le Impostazioni vere e proprie
+       (account, backup, notifiche...) le tocchi si' e no una volta al mese: ora
+       vivono in un'icona a parte in alto (vedi #settingsBtn/#settingsModal),
+       cosi' questo tab resta SOLO le cose che guardi spesso per capire come
+       stai andando - la cronologia e gli strumenti di progresso -->
   <div class="hist-subnav">
     <button class="day-btn active" id="histSubTabCronologia" onclick="showHistSection('cronologia')">Cronologia</button>
     <button class="day-btn" id="histSubTabStrumenti" onclick="showHistSection('strumenti')">Strumenti</button>
-    <button class="day-btn" id="histSubTabDati" onclick="showHistSection('dati')">Impostazioni</button>
   </div>
 
   <div id="histSectionCronologia">
@@ -64,7 +67,13 @@
     </div>
   </div>
 
-  <div id="histSectionDati" style="display:none;">
+  <div class="footer-note">Dati salvati automaticamente su questo telefono (localStorage).</div>
+</div>
+
+<div id="settingsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Impostazioni" style="display:none;" onclick="if(event.target===this) closeSettingsModal()">
+  <div class="modal-box">
+    <div class="modal-head"><span>Impostazioni</span><button onclick="closeSettingsModal()" aria-label="Chiudi"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M6 6 L18 18"/><path d="M18 6 L6 18"/></svg></button></div>
+    <div class="modal-body">
     <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="8" r="4"/><path d="M4 20 C4 15.5 7.5 13 12 13 C16.5 13 20 15.5 20 20"/></svg> Account</div>
     <div class="hist-panel">
       <div class="footer-note" id="settingsAccountStatus" style="margin-bottom:8px;">Non sei collegato: i dati restano solo su questo dispositivo.</div>
@@ -101,9 +110,9 @@
       <div class="footer-note" style="margin-bottom:8px;">Chiudi il mese attuale, salvalo nello Storico, e riparti con pesi e ripetizioni azzerati.</div>
       <button class="add-ex small2" onclick="archiveAndReset()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/></svg> Archivia ed inizia un nuovo mese</button>
     </div>
+    <div class="footer-note" style="margin-top:4px;">Aggiungi questa pagina alla schermata Home per aprirla come un'app. Fai un backup ogni tanto: se cancelli i dati del browser o cambi telefono, senza backup li perdi.</div>
+    </div>
   </div>
-
-  <div class="footer-note">Dati salvati automaticamente su questo telefono (localStorage). Aggiungi questa pagina alla schermata Home per aprirla come un'app. Fai un backup ogni tanto: se cancelli i dati del browser o cambi telefono, senza backup li perdi.</div>
 </div>
 <div id="chartModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Grafico progressione" style="display:none;" onclick="if(event.target===this) closeChart()">
   <div class="modal-box">
@@ -223,8 +232,8 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
     <span id="tabActiveLabel">Allenamento</span>
   </button>
   <button class="bottom-nav-btn" id="tabHistBtn" onclick="showView('hist')">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/></svg>
-    <span>Storico</span>
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M4 20 V4"/><path d="M4 20 H20"/><path d="M6.5 15 L11 10.5 L14 13.5 L19 7.5"/></svg>
+    <span>Progressi</span>
   </button>
 </div>
 

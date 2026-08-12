@@ -79,8 +79,8 @@ function renderAuthStatus(){
     btn.classList.toggle('logged-in', !!syncSession);
     btn.title = syncSession ? ('Sincronizzato come ' + (syncSession.user.email||'')) : 'Account e sincronizzazione';
   }
-  // stessa informazione ripetuta nella sezione Account di Storico > Impostazioni,
-  // per chi arriva li' invece che dall'icona in alto
+  // stessa informazione ripetuta nella sezione Account dentro Impostazioni,
+  // per chi arriva li' invece che dall'icona account in alto
   const settingsStatus = document.getElementById('settingsAccountStatus');
   if(settingsStatus){
     settingsStatus.textContent = syncSession
