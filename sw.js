@@ -20,6 +20,7 @@ const CORE_ASSETS = [
   './icon-512.png',
   './fonts/oswald.woff2',
   './fonts/ibm-plex-sans.woff2',
+  './fonts/orbitron.woff2',
   './css/style.css',
   './js/bootstrap.js',
   './js/error-boundary.js',
