@@ -469,6 +469,8 @@ function exerciseCard(ex, exi, accent){
         <button type="button" class="set-label${s.dropset?' dropset':''}" ${isReadOnlyWeek?'disabled':''} onclick="toggleDropset(${exi},${w},${si},this)" title="Segna/togli come dropset">${roman}</button>
 
 
+        <div class="kg-cell">
+
         <div class="kg-wrap">
 
 
@@ -506,8 +508,9 @@ function exerciseCard(ex, exi, accent){
           value="${escapeAttr(s.peso ?? '')}"
           onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
 
-          ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" ${isReadOnlyWeek?'disabled':''} title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">${suggestedKg}</button>` : ''}
+        </div>
 
+        ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" ${isReadOnlyWeek?'disabled':''} title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
 
         </div>
 
@@ -1230,7 +1233,7 @@ function fillSuggestedWeight(exi, w, si, value, btn, recordPeso){
   if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
   if(!ex.sets[w]) ex.sets[w]=[];
   while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
-  const input = btn.closest('.kg-wrap').querySelector('.set-input');
+  const input = btn.closest('.kg-cell').querySelector('.set-input');
   if(input) input.value = value;
   updateSet(exi, w, si, 'peso', value, recordPeso);
   btn.remove();
@@ -1659,13 +1662,15 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
   const recordAttr = record ? record.peso : 'null';
   const suggestedKg = (!s.peso && s.peso!==0) ? suggestNextWeight(ex, w, si) : null;
   return `<span class="linked-tag" title="${escapeAttr(ex.nome||'')}">${escapeHtml(ex.nome||'—')}</span>
+    <div class="kg-cell">
     <div class="kg-wrap">
       <div class="stepper-pair">
         <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
         <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
       </div>
       <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" oninput="scheduleAutoAdvance(this)" inputmode="decimal" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
-      ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">${suggestedKg}</button>` : ''}
+    </div>
+    ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
     </div>
     <div class="rip-wrap">
     <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">
