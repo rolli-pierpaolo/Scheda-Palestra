@@ -462,12 +462,6 @@ function exerciseCard(ex, exi, accent){
       : null;
 
 
-      const kgPlaceholder = suggestedKg!==null
-      ? ('ultimo peso: '+suggestedKg)
-      : 'kg';
-
-
-
       return `
       <div class="set-row">
 
@@ -508,9 +502,11 @@ function exerciseCard(ex, exi, accent){
           onblur="resetFieldKeyboard(this)"
           oninput="scheduleAutoAdvance(this)"
           inputmode="decimal"
-          placeholder="${kgPlaceholder}"
+          placeholder="kg"
           value="${escapeAttr(s.peso ?? '')}"
           onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+
+          ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" ${isReadOnlyWeek?'disabled':''} title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">${suggestedKg}</button>` : ''}
 
 
         </div>
@@ -1220,6 +1216,20 @@ function stepSet(exi, w, si, delta, btn){
     checkAchievements();
   }
 }
+// tocco sul chip "ultimo peso" (vedi kgPlaceholder/suggestNextWeight): riempie
+// la serie SENZA dover riscrivere a mano un numero gia' scritto la settimana
+// scorsa - stesso aggiornamento mirato del solo input di stepSet, invece di
+// un intero re-render, per non perdere scroll/focus sul resto della card
+function fillSuggestedWeight(exi, w, si, value, btn, recordPeso){
+  const ex = state.days[activeDayIdx].esercizi[exi];
+  if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
+  if(!ex.sets[w]) ex.sets[w]=[];
+  while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
+  const input = btn.closest('.kg-wrap').querySelector('.set-input');
+  if(input) input.value = value;
+  updateSet(exi, w, si, 'peso', value, recordPeso);
+  btn.remove();
+}
 // il riquadro "max" ha lo stesso spirito a cascata di recupero/schema: espandendolo
 // in una settimana si espande anche in quelle dopo. Nascondendolo pero' NON si
 // nasconde nelle settimane successive che hanno gia' dei dati inseriti, altrimenti
@@ -1606,14 +1616,14 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
   const record = getRecordForExercise(ex.nome);
   const recordAttr = record ? record.peso : 'null';
   const suggestedKg = (!s.peso && s.peso!==0) ? suggestNextWeight(ex, w, si) : null;
-  const kgPlaceholder = suggestedKg!==null ? ('ultimo peso: '+suggestedKg) : 'kg';
   return `<span class="linked-tag" title="${escapeAttr(ex.nome||'')}">${escapeHtml(ex.nome||'—')}</span>
     <div class="kg-wrap">
       <div class="stepper-pair">
         <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
         <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
       </div>
-      <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" oninput="scheduleAutoAdvance(this)" inputmode="decimal" placeholder="${kgPlaceholder}" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+      <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" oninput="scheduleAutoAdvance(this)" inputmode="decimal" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+      ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">${suggestedKg}</button>` : ''}
     </div>
     <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">`;
 }
