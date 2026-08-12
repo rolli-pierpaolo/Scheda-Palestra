@@ -548,16 +548,16 @@ main{padding:12px;}
    dati passati", "sto facendo un backup" e "sto cambiando un'impostazione".
    Ora ogni gruppo vive dentro un pannello con bordo/sfondo proprio, con
    un'etichetta sopra a dire di cosa si tratta */
-.hist-section-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;padding:16px 12px 6px;}
+/* niente piu' un pannello bordato/riempito per ogni sezione (stesso schema
+   "rounded-lg + bordo colorato" gia' tolto dalle card esercizio e dalla
+   Home): l'etichetta - piu' presente di prima, col font da titolo - e lo
+   spazio generoso sopra ogni gruppo bastano a separare le sezioni, come le
+   Impostazioni di iOS invece di una fila di riquadri tutti uguali */
+.hist-section-label{font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;padding:24px 14px 8px;}
 .trends-section-label{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
 .trends-record{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--text);background:var(--row-dark);border-radius:8px;padding:8px 10px;margin-bottom:14px;}
-.hist-panel{background:var(--panel2);border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));border-radius:8px;margin:0 12px;overflow:hidden;}
-/* stesso linguaggio visivo delle card esercizio (bordo superiore colorato):
-   ogni sezione di Storico ha il suo colore, cosi' la pagina non e' piu' una
-   lista piatta di pannelli tutti identici */
-.hist-panel-browse{--accent:var(--green);padding:2px 0 8px;}
-.backup-row{--accent:var(--steel);}
-.settings-row{--accent:var(--amber);}
+.hist-panel{margin:0 14px;}
+.hist-panel-browse{padding:2px 0 8px;}
 /* sotto-navigazione del tab Storico (Cronologia/Strumenti/Dati): stessa forma
    a pillola di .day-tabs/.day-btn (gia' usata per i giorni), ma un contenitore
    suo perche' qui non deve scorrere orizzontalmente ne' avere il padding
