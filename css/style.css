@@ -219,11 +219,11 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 main{padding:12px;}
 /* ---------------- HOME ---------------- */
 #viewHome{padding:20px 16px 30px;}
-.home-hero{text-align:center;padding:14px 10px 16px;}
+.home-hero{text-align:center;padding:10px 10px 8px;}
 /* eyebrow, numero, barra e statistica mensile accorpati in un unico modulo
    compatto invece di 4 blocchi separati con margini propri: stessa
    informazione, meno "muro di testo" impilato */
-.home-progress-module{margin-bottom:6px;}
+.home-progress-module{margin-bottom:2px;}
 .home-block-week{font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--green);margin-bottom:6px;}
 .home-progress-label{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--muted);}
 .home-progress-num{
@@ -250,43 +250,43 @@ main{padding:12px;}
 .home-progress-sub{font-size:13px;font-weight:700;color:var(--text);margin-top:8px;text-transform:uppercase;letter-spacing:.5px;}
 .home-progress-bar-wrap{width:100%;max-width:220px;height:8px;border-radius:10px;background:var(--row-dark);border:1px solid var(--line);margin:6px auto 8px;overflow:hidden;}
 .home-progress-bar-fill{height:100%;border-radius:10px;background:var(--accent,var(--green));box-shadow:0 0 10px 1px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);width:0%;}
-.home-suggested-btn{display:block;width:100%;background:var(--accent,var(--green));border:none;border-radius:10px;padding:18px 14px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
-.home-motivation{text-align:center;font-size:19px;font-weight:900;margin:0 8px 34px;line-height:1.3;letter-spacing:.2px;text-transform:uppercase;}
+/* il bottone "giorno suggerito" e' il vero protagonista della pagina (e'
+   l'unica cosa che davvero SERVE toccare per iniziare): piu' spazio intorno
+   e testo piu' grande di prima, cosi' l'occhio ci va prima di tutto il
+   resto invece di leggere la Home come una fila di riquadri tutti uguali */
+.home-suggested-btn{display:block;width:100%;background:var(--accent,var(--green));border:none;border-radius:10px;padding:26px 16px;margin:10px 0 20px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.home-motivation{text-align:center;font-size:19px;font-weight:900;margin:0 8px 30px;line-height:1.3;letter-spacing:.2px;text-transform:uppercase;}
 .home-suggested-label{display:block;font-size:11px;font-weight:800;letter-spacing:1.5px;color:#0D0D0D;opacity:.7;}
-.home-suggested-name{display:block;font-size:24px;font-weight:900;color:#0D0D0D;text-transform:uppercase;margin-top:4px;letter-spacing:.5px;}
+.home-suggested-name{display:block;font-size:28px;font-weight:900;color:#0D0D0D;text-transform:uppercase;margin-top:4px;letter-spacing:.5px;}
 .home-days-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
-/* verticali (non piu' griglia 2 colonne): in colonna si legge subito l'ordine
-   di esecuzione dall'alto in basso, cosa che con 2 colonne non era ovvia */
-.home-days-grid{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.home-days-grid{display:flex;flex-direction:column;gap:9px;}
 /* i giorni e la mappa del corpo affiancati, non impilati: cosi' la mappa non
    allunga la pagina, occupa lo spazio orizzontale che c'e' gia' invece di
-   aggiungerne altro in verticale - la home deve restare su una sola schermata.
-   Meta' e meta' (flex:1 su entrambi), ognuna centrata dentro la propria meta':
-   prima la colonna giorni prendeva tutto lo spazio restante e i suoi bottoni
-   restavano centrati solo nella SUA meta', molto piu' larga di quella della
-   mappa - il risultato era uno strano vuoto in mezzo e la mappa schiacciata
-   sul bordo destro, non un impaginato bilanciato */
-.home-middle-row{display:flex;align-items:stretch;gap:10px;margin-bottom:16px;}
-.home-days-col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;}
-/* non piu' un bottone (non sono cliccabili): solo indicatori dell'ordine e
-   dello stato di ogni giorno. Centrali ma strette (non a tutta larghezza),
-   la larghezza segue il contenuto invece di riempire la riga */
-.home-day-card{display:flex;align-items:center;justify-content:center;gap:10px;width:auto;min-width:150px;max-width:75%;padding:8px 20px;border-radius:8px;border:2px solid var(--accent,var(--green));background:var(--panel2);color:var(--text);font-size:13px;font-weight:800;text-transform:uppercase;transition:transform .25s ease;}
-.home-day-order{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:1px solid var(--accent,var(--green));display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent,var(--green));}
-/* completato: sfondo tinto col colore del giorno (trasparente), bordo che resta
-   acceso, leggermente piu' piccola delle altre - resta al suo posto nell'elenco
-   (l'ordine e' sempre quello fisso di state.days, vedi renderHome in js/home.js),
-   non finisce piu' in fondo: cambia solo aspetto, non posizione */
-.home-day-card.completed{background:color-mix(in srgb, var(--accent, var(--green)) 32%, transparent);border-color:var(--accent,var(--green));transform:scale(.92);}
-.home-day-card.completed .home-day-order{background:var(--accent,var(--green));color:#0D0D0D;border-color:var(--accent,var(--green));}
-/* corrente: leggero glow statico gia' da CSS, l'effetto "respiro" (scala + glow
-   pulsante) lo fa GSAP in home.js appena la card e' in pagina */
-.home-day-card.active-training{box-shadow:0 0 10px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
-/* giorno senza esercizi assegnati: bordo tratteggiato + etichetta, cosi' si
-   distingue a colpo d'occhio da un giorno pronto ma solo non ancora fatto */
-.home-day-card.empty{border-style:dashed;opacity:.65;}
-.home-day-empty-tag{flex:0 0 auto;font-size:9px;font-weight:800;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:5px;padding:1px 5px;letter-spacing:.03em;}
-.home-total-stat{text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:-8px;opacity:.85;}
+   aggiungerne altro in verticale - la home deve restare su una sola schermata */
+.home-middle-row{display:flex;align-items:center;gap:18px;margin-bottom:14px;}
+.home-days-col{flex:1;min-width:0;}
+/* righe di testo, non piu' pillole bordate/riempite: "I tuoi giorni" e' solo
+   una lista di stato (non sono cliccabili), non merita lo stesso peso visivo
+   delle card vere dell'app - un pallino (pieno=fatto, con glow=oggi,
+   contorno=da fare) al posto del bordo pesante di prima */
+.home-day-card{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.4px;color:var(--text);text-transform:uppercase;transition:opacity .25s ease;}
+.home-day-dot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--accent,var(--green));background:transparent;}
+/* completato: pallino pieno, nome nel colore del giorno ma smorzato - resta
+   al suo posto nell'elenco (l'ordine e' sempre quello fisso di state.days,
+   vedi renderHome in js/home.js), non finisce piu' in fondo: cambia solo
+   aspetto, non posizione */
+.home-day-card.completed{color:var(--accent,var(--green));opacity:.6;}
+.home-day-card.completed .home-day-dot{background:var(--accent,var(--green));}
+/* corrente: pallino pieno e con un glow leggero gia' da CSS, l'effetto
+   "respiro" (scala pulsante) lo fa GSAP in home.js appena la card e' in
+   pagina */
+.home-day-card.active-training{color:var(--accent,var(--green));}
+.home-day-card.active-training .home-day-dot{background:var(--accent,var(--green));box-shadow:0 0 8px 2px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);}
+/* giorno senza esercizi assegnati: solo l'etichetta a dirlo, niente piu'
+   bordo tratteggiato dedicato (non c'e' piu' un bordo da tratteggiare) */
+.home-day-card.empty{opacity:.5;}
+.home-day-empty-tag{flex:0 0 auto;font-family:var(--font-body);font-size:9px;font-weight:800;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:5px;padding:1px 5px;letter-spacing:.03em;}
+.home-total-stat{text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:2px;opacity:.85;}
 .home-volume-trend{display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:6px;}
 .home-volume-trend b{color:var(--green);}
 .home-volume-trend svg{flex:0 0 auto;width:13px;height:13px;}
@@ -294,16 +294,10 @@ main{padding:12px;}
    muscolari sovrapposte che si accendono nell'accent del giorno via classe
    .trained solo su quelle gia' completate questa settimana) - vedi
    renderMuscleMap in js/home.js. Affiancata ai giorni (vedi .home-middle-row
-   sopra), incorniciata come un modulo vero (stesso bordo/sfondo delle card
-   giorno accanto) e centrata in verticale sulla loro altezza, invece di
-   restare testo+svg buttati li' senza una cornice a farli sentire "casa" */
-/* meta' destra della riga (vedi .home-days-col sopra per il perche'): fa da
-   slot di uguale larghezza alla colonna giorni, e centra al suo interno la
-   card vera (.home-muscle-map, che resta stretta intorno al suo contenuto,
-   non stirata) - cosi' le due meta' sono bilanciate ma la cornice della
-   mappa non si allarga fino a diventare un riquadro vuoto */
-.home-muscle-slot{flex:1;display:flex;justify-content:center;align-items:stretch;}
-.home-muscle-map{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:8px;padding:10px 12px;}
+   sopra), senza cornice/sfondo: le sagome colorate parlano gia' da sole,
+   una card intorno le avrebbe solo appesantite come l'elenco giorni accanto */
+.home-muscle-slot{flex:1;display:flex;justify-content:center;}
+.home-muscle-map{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;}
 .home-muscle-map-label{text-align:center;font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
 .home-muscle-figures{display:flex;justify-content:center;align-items:flex-start;gap:8px;}
 .home-muscle-figure-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;}

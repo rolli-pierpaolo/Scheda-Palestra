@@ -464,7 +464,7 @@ const total = weekly.total;
     const isCurrent = !isCompleted && state.currentTrainingDayIdx === i;
     const isEmpty = (d.esercizi||[]).length === 0;
     const cls = ['home-day-card', isCompleted?'completed':'', isCurrent?'active-training':'', isEmpty?'empty':''].filter(Boolean).join(' ');
-    return `<div class="${cls}" style="--accent:${a.c}"><span class="home-day-order">${i+1}</span>${escapeHtml(d.name)}${isEmpty?'<span class="home-day-empty-tag">vuoto</span>':''}</div>`;
+    return `<div class="${cls}" style="--accent:${a.c}"><span class="home-day-dot"></span>${escapeHtml(d.name)}${isEmpty?'<span class="home-day-empty-tag">vuoto</span>':''}</div>`;
   }).join('');
   const motivationSplit = suggestedDay ? splitMotivation(pickMotivationalPhrase(suggestedIdx)) : null;
   const suggestedHtml = suggestedDay ? `
