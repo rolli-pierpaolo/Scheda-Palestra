@@ -513,6 +513,8 @@ function exerciseCard(ex, exi, accent){
 
 
 
+        <div class="rip-wrap">
+
         <input class="set-input"
         ${isReadOnlyWeek?'disabled':''}
         onpointerdown="onSetInputPointerDown(event,this)"
@@ -526,6 +528,9 @@ function exerciseCard(ex, exi, accent){
         value="${escapeAttr(s.rip ?? '')}"
         onchange="updateSet(${exi},${w},${si},'rip',this.value)">
 
+        <button type="button" class="rpe-chip ${s.rpe?'filled':''}" ${isReadOnlyWeek?'disabled':''} onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
+
+        </div>
 
 
       </div>`;
@@ -1230,6 +1235,28 @@ function fillSuggestedWeight(exi, w, si, value, btn, recordPeso){
   updateSet(exi, w, si, 'peso', value, recordPeso);
   btn.remove();
 }
+// RPE (sforzo percepito, 1-10) per la singola serie: un prompt() invece di
+// un'altra tastiera custom da costruire - stessa scelta gia' fatta altrove
+// in questo file per un singolo numero (peso bilanciere, settimane blocco).
+// Facoltativo: lasciare vuoto toglie l'RPE gia' segnato
+function editRpe(exi, w, si, btn){
+  const ex = state.days[activeDayIdx].esercizi[exi];
+  if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
+  if(!ex.sets[w]) ex.sets[w]=[];
+  while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
+  const cur = ex.sets[w][si].rpe || '';
+  const raw = prompt('RPE di questa serie (1-10, es. 8 o 8.5). Lascia vuoto per toglierlo:', cur);
+  if(raw === null) return;
+  const val = raw.trim();
+  if(val !== ''){
+    const n = parseFloat(val.replace(',','.'));
+    if(isNaN(n) || n<1 || n>10){ alert('RPE deve essere un numero tra 1 e 10.'); return; }
+  }
+  ex.sets[w][si].rpe = val;
+  saveState();
+  btn.textContent = val || 'RPE';
+  btn.classList.toggle('filled', !!val);
+}
 // il riquadro "max" ha lo stesso spirito a cascata di recupero/schema: espandendolo
 // in una settimana si espande anche in quelle dopo. Nascondendolo pero' NON si
 // nasconde nelle settimane successive che hanno gia' dei dati inseriti, altrimenti
@@ -1625,7 +1652,10 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
       <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" oninput="scheduleAutoAdvance(this)" inputmode="decimal" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
       ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">${suggestedKg}</button>` : ''}
     </div>
-    <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">`;
+    <div class="rip-wrap">
+    <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">
+    <button type="button" class="rpe-chip ${s.rpe?'filled':''}" onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
+    </div>`;
 }
 // la card per una coppia collegata: stesso impianto di exerciseCard, ma con due
 // intestazioni (una per esercizio) e un'unica settimana condivisa, dove ogni

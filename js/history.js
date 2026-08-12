@@ -80,7 +80,7 @@ function renderHistBody(){
         if(ex.weekSkipped && ex.weekSkipped[w]) return `<div class="hist-week hist-week-skipped">Sett.${w+1}: saltata</div>`;
         return '';
       }
-      const chips = sets.map(s=>`<span class="hist-set">${escapeHtml(s.peso??'')}${s.peso&&s.rip?' × ':''}${escapeHtml(s.rip??'')}</span>`).join('');
+      const chips = sets.map(s=>`<span class="hist-set">${escapeHtml(s.peso??'')}${s.peso&&s.rip?' × ':''}${escapeHtml(s.rip??'')}${s.rpe?' @'+escapeHtml(String(s.rpe)):''}</span>`).join('');
       return `<div class="hist-week">Sett.${w+1} (${escapeHtml(ex.recupero[w]||'')}): ${chips}</div>`;
     }).join('');
     return `<div class="card hist-card" style="--accent:${a.c}">
