@@ -515,27 +515,27 @@ test('updateThemeColor segue l\'accent del giorno in Allenamento, torna neutro s
   assert.notStrictEqual(meta.getAttribute('content'), '#0D0D0D', 'in Allenamento deve seguire l\'accent del giorno, non restare neutro');
 });
 
-test('computeWeeklyMuscleActivation conta solo i gruppi con un esercizio COMPLETATO nella settimana corrente', () => {
+test('computeWeeklyMuscleSetCounts conta le serie con dati dei gruppi con un esercizio COMPLETATO nella settimana corrente', () => {
   const window = loadApp();
   window.__bridge.exerciseGroups = { 'panca piana':'Petto', 'squat':'Quadricipiti', 'rematore':'Schiena', 'corsa':'Cardio' };
   window.__bridge.state = {
     weeksPerBlock: 4, currentWeek: 1,
     days: [
       { name:'A', esercizi: [
-        { nome:'Panca piana', weekDone:[true,true,false,false] },   // completata in settimana 1 (indice 1): conta
-        { nome:'Squat', weekDone:[true,false,false,false] },        // completata solo in settimana 0: NON conta per la settimana 1
-        { nome:'Corsa', weekDone:[false,true,false,false] }         // completata in settimana 1: conta (extra, non sul corpo)
+        { nome:'Panca piana', weekDone:[true,true,false,false], sets:[[],[{peso:'50',rip:'8'},{peso:'50',rip:'8'},{peso:'50',rip:'6'}],[],[]] },  // completata in settimana 1 (indice 1): 3 serie contano
+        { nome:'Squat', weekDone:[true,false,false,false], sets:[[{peso:'80',rip:'5'}],[{peso:'80',rip:'5'}],[],[]] },        // completata solo in settimana 0: NON conta per la settimana 1
+        { nome:'Corsa', weekDone:[false,true,false,false], sets:[[],[{peso:'',rip:'20'}],[],[]] }         // completata in settimana 1, 1 serie con dati: conta (extra, non sul corpo)
       ]},
       { name:'B', esercizi: [
-        { nome:'Rematore', weekSkipped:[false,true,false,false] }   // SALTATA, non completata: non deve contare
+        { nome:'Rematore', weekSkipped:[false,true,false,false], sets:[[],[{peso:'40',rip:'10'}],[],[]] }   // SALTATA, non completata: non deve contare
       ]}
     ]
   };
-  const trained = window.computeWeeklyMuscleActivation();
-  assert.ok(trained.has('Petto'), 'Petto deve risultare allenato (Panca piana completata questa settimana)');
-  assert.ok(!trained.has('Quadricipiti'), 'BUG: Squat era completato la settimana scorsa, non questa');
-  assert.ok(!trained.has('Schiena'), 'BUG: una settimana saltata non deve contare come allenata');
-  assert.ok(trained.has('Cardio'), 'Cardio deve risultare tra gli extra');
+  const counts = window.computeWeeklyMuscleSetCounts();
+  assert.strictEqual(counts['Petto'], 3, 'Petto deve contare le 3 serie con dati di Panca piana completata questa settimana');
+  assert.ok(!counts['Quadricipiti'], 'BUG: Squat era completato la settimana scorsa, non questa');
+  assert.ok(!counts['Schiena'], 'BUG: una settimana saltata non deve contare come allenata');
+  assert.strictEqual(counts['Cardio'], 1, 'Cardio deve risultare tra gli extra con 1 serie');
 });
 
 test('la sync cloud riusa buildBackupPayload/validateBackup/applyBackup e non lascia che i dati remoti sovrascrivano il collasso locale', () => {
