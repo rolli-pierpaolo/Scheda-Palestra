@@ -844,6 +844,37 @@ test('loadState() NON deve azzerare "allenamento in corso" se l\'unico progresso
   assert.strictEqual(window.__bridge.workoutInProgress, true, 'BUG: un allenamento fatto solo di esercizi saltati non deve essere trattato come "non in corso per davvero" - altrimenti riaprendo l\'app si finisce alla Home invece che sul giorno vero, e da li\' un tocco su Allenamento fa ripartire dal primo giorno');
 });
 
+test('"in corso" si attiva SOLO scrivendo un peso vero (non aprendo la scheda, non scrivendo ripetizioni)', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.workoutInProgress = false;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [], trainingQueue: [0], currentTrainingDayIdx: 0,
+    days: [{ name:'Push', esercizi: [
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]], maxExtra:[[],[],[],[]] }
+    ]}]
+  };
+
+  // toccare "inizia" dalla Home NON deve piu' contare da solo
+  window.startDayFromHome(0);
+  assert.strictEqual(window.__bridge.workoutInProgress, false, 'BUG: aprire il giorno da solo (senza scrivere nulla) non deve attivare "in corso"');
+
+  // scrivere le RIPETIZIONI non deve contare
+  window.updateSet(0, 0, 0, 'rip', '8');
+  assert.strictEqual(window.__bridge.workoutInProgress, false, 'BUG: scrivere le ripetizioni non deve attivare "in corso" - solo il peso');
+
+  // scrivere un PESO vero deve attivarlo
+  window.updateSet(0, 0, 0, 'peso', '50');
+  assert.strictEqual(window.__bridge.workoutInProgress, true, 'BUG: scrivere un peso vero deve attivare "in corso" - e\' questo il segnale che l\'allenamento e\' iniziato per davvero');
+
+  // il peso di un tentativo massimale deve contare allo stesso modo
+  window.__bridge.workoutInProgress = false;
+  window.updateMax(0, 0, 0, 'rip', '3');
+  assert.strictEqual(window.__bridge.workoutInProgress, false, 'BUG: le ripetizioni di un tentativo massimale non devono attivare "in corso"');
+  window.updateMax(0, 0, 0, 'peso', '55');
+  assert.strictEqual(window.__bridge.workoutInProgress, true, 'BUG: il peso di un tentativo massimale deve attivare "in corso" come quello di una serie normale');
+});
+
 test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' ancora a meta\'', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;

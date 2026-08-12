@@ -22,9 +22,12 @@ function showHome(){
   renderHome();
   showView('home');
 }
+// toccare "inizia" da qui NON conta piu' come allenamento iniziato per
+// davvero (vedi markWorkoutStartedByWeight in js/state.js) - solo scrivere
+// un peso lo fa: guardare gli esercizi (o toccare "inizia" per sbaglio)
+// senza scrivere nulla, chiudendo l'app forzatamente, deve riportare alla
+// Home la prossima volta, non dritti qui dove ci si era fermati a guardare
 function startDayFromHome(dayIdx){
-  workoutInProgress = true;
-  saveWorkoutInProgress();
   selectDay(dayIdx);
   showView('active');
 }

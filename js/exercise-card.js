@@ -1122,6 +1122,9 @@ function updateSet(exi, w, si, field, val, recordPeso){
   if(!ex.sets[w]) ex.sets[w]=[];
   while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
   ex.sets[w][si][field]=val;
+  // solo il peso conta come "inizio vero" dell'allenamento, mai le
+  // ripetizioni - vedi markWorkoutStartedByWeight in js/state.js
+  if(field==='peso' && String(val||'').trim()!=='') markWorkoutStartedByWeight();
   saveState();
   if(field==='peso' && recordPeso!==undefined && recordPeso!==null){
     const p = parseFloat(String(val).replace(',','.'));
@@ -1207,6 +1210,7 @@ function stepSet(exi, w, si, delta, btn){
   let next = Math.max(0, Math.round((cur+delta)*10)/10);
   const record = getRecordForExercise(ex.nome);
   ex.sets[w][si].peso = next;
+  markWorkoutStartedByWeight();
   const input = btn.closest('.kg-wrap').querySelector('.set-input');
   if(input) input.value = next;
   saveState();
@@ -1364,6 +1368,9 @@ function updateMax(exi, w, idx, field, val){
   if(!ex.maxExtra[w]) ex.maxExtra[w]=[];
   if(!ex.maxExtra[w][idx]) ex.maxExtra[w][idx]={};
   ex.maxExtra[w][idx][field]=val;
+  // anche il peso di un tentativo massimale conta come "inizio vero", non
+  // solo quello delle serie normali - le ripetizioni no, ne' qui ne' li'
+  if(field==='peso' && String(val||'').trim()!=='') markWorkoutStartedByWeight();
   saveState();
 }
 function addSet(exi, w){
