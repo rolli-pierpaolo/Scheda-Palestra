@@ -1,4 +1,4 @@
--- Schema Supabase per la sincronizzazione di Logbook.
+-- Schema Supabase per la sincronizzazione di Viridis.
 -- Incolla ed esegui questo file intero nell'SQL editor del progetto Supabase
 -- (dashboard -> SQL Editor -> New query -> incolla -> Run).
 --
