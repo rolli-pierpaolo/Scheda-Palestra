@@ -96,6 +96,17 @@ async function checkRemoteUpdateOnBoot(){
   if(error || !data || !data.updated_at) return;
   const cloudUpdatedAt = new Date(data.updated_at).getTime();
   if(isNaN(cloudUpdatedAt)) return;
+  // BUG risolto qui: LAST_CLOUD_PUSH_KEY e' una chiave nuova, chi aveva gia'
+  // sincronizzato da prima di questo fix non ce l'ha ancora salvata - senza
+  // questo controllo, lastPush restava 0 e QUALSIASI data vera sul cloud
+  // (che e' sempre "dopo il 1970") risultava "piu' recente", facendo
+  // comparire il banner anche senza nessuna modifica vera da nessuna parte.
+  // La prima volta che si controlla, si registra solo il punto di partenza
+  // (senza avvisare): il confronto vero parte dal controllo successivo
+  if(lastPush === 0){
+    try{ localStorage.setItem(LAST_CLOUD_PUSH_KEY, String(cloudUpdatedAt)); }catch(e){}
+    return;
+  }
   if(cloudUpdatedAt > lastPush + BOOT_CHECK_SLACK_MS) showSyncUpdateBanner();
 }
 function onSyncLogout(){

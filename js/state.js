@@ -139,6 +139,9 @@ function loadState(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){ state = JSON.parse(raw); }
   }catch(e){}
+  // per capire, alla fine, se una delle "riparazioni" qui sotto ha DAVVERO
+  // cambiato qualcosa (vedi il confronto finale prima di saveState())
+  const rawStateJson = state ? JSON.stringify(state) : null;
   if(!state) state = JSON.parse(JSON.stringify(DATA.attivo));
   if(!state.title) state.title = DATA.attivo.title || "Allenamento";
   if(!state.days) state.days = [];
@@ -235,7 +238,16 @@ function loadState(){
     saveWorkoutInProgress();
   }
 
-  saveState();
+  // salva solo se il caricamento ha DAVVERO corretto/riempito qualcosa:
+  // prima si chiamava saveState() incondizionatamente a ogni avvio, anche
+  // quando non c'era nulla da riparare - risultato: ogni apertura
+  // dell'app mandava comunque un invio al cloud (una volta collegato
+  // l'account), aggiornando "updated_at" sulla riga anche senza nessuna
+  // modifica vera. Con piu' di un dispositivo, questo faceva comparire il
+  // banner "dati aggiornati da un altro dispositivo" anche quando davvero
+  // non era cambiato nulla, solo perche' un altro dispositivo era stato
+  // aperto nel frattempo
+  if(JSON.stringify(state) !== rawStateJson) saveState();
 }
 function getWeekStatus(weekIndex){
   const current = state.currentWeek || 0;
