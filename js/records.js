@@ -36,7 +36,12 @@ function getRecordForExercise(name){
 // festeggiamento a schermo intero (vedi showCelebration in js/utils.js) al
 // posto del vecchio toast: un record merita di essere notato, non solo
 // accennato in un angolo per due secondi
+// PR accumulati dalla sessione in corso (svuotati da confirmFinishWorkout
+// in js/animations.js quando l'allenamento finisce per davvero): servono
+// al recap nel popup "Giorno terminato", non sono un log storico
+let sessionPRs = [];
 function celebratePR(name, weight){
+  sessionPRs.push({name: name||'', weight});
   const w = (weight!==undefined && weight!==null && !isNaN(weight)) ? String(weight).replace('.',',')+' kg' : '';
   showCelebration({
     icon: ICON_PLATE,
