@@ -33,13 +33,13 @@ function renderChartSVG(points){
     return {x,y,label:p.label,value:p.value};
   });
   const path = coords.map((c,i)=> (i===0?'M':'L') + c.x.toFixed(1) + ',' + c.y.toFixed(1)).join(' ');
-  const dots = coords.map(c=>`<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3.5" fill="#9ACD32"></circle>`).join('');
+  const dots = coords.map(c=>`<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3.5" fill="#7EA83C"></circle>`).join('');
   const skip = Math.max(1, Math.ceil(n/6));
   const labels = coords.map((c,i)=> (i%skip===0 || i===n-1) ? `<text x="${c.x.toFixed(1)}" y="${H-10}" font-size="8" fill="#9E9E9E" text-anchor="middle">${escapeHtml(String(c.label).replace('WO ','W'))}</text>` : '').join('');
   const valLabels = coords.map(c=>`<text x="${c.x.toFixed(1)}" y="${(c.y-8).toFixed(1)}" font-size="9" fill="#F2F2F2" text-anchor="middle" font-weight="700">${c.value}</text>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;">
     <line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#3A3A3A" stroke-width="1"/>
-    <path d="${path}" fill="none" stroke="#9ACD32" stroke-width="2"/>
+    <path d="${path}" fill="none" stroke="#7EA83C" stroke-width="2"/>
     ${dots}${labels}${valLabels}
   </svg>`;
 }

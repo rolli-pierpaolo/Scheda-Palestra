@@ -33,7 +33,7 @@ function renderAuthModalBody(){
   body.innerHTML = `
     <div class="meta-row"><span class="meta-label">Email</span><input class="meta-input" id="authEmailInput" type="email" autocomplete="email" placeholder="tua@email.it"></div>
     <div class="meta-row"><span class="meta-label">Password</span><input class="meta-input" id="authPasswordInput" type="password" autocomplete="${authMode==='signup'?'new-password':'current-password'}" placeholder="••••••••"></div>
-    <div class="footer-note" id="authErrorMsg" style="color:var(--red,#C0392B);min-height:14px;"></div>
+    <div class="footer-note" id="authErrorMsg" style="color:var(--red,#B23D30);min-height:14px;"></div>
     ${authMode==='signin' ? `
       <button class="add-ex" onclick="handleAuthSignIn()">Accedi</button>
       <button class="ex-context-cancel" style="margin-top:8px;" onclick="switchAuthMode('signup')">Non hai un account? Registrati</button>
