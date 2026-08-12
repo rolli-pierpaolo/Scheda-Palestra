@@ -33,10 +33,17 @@ function getRecordForExercise(name){
   });
   return best;
 }
-// il disco al posto del trofeo: stesso motivo usato altrove nell'app
-// (ICON_PLATE, gia' usata per l'obiettivo "Tre cifre"), coerente col resto
-// invece del solito emoji generico
-function celebratePR(){
-  showQuickToast(ICON_PLATE + " Nuovo record personale!");
+// festeggiamento a schermo intero (vedi showCelebration in js/utils.js) al
+// posto del vecchio toast: un record merita di essere notato, non solo
+// accennato in un angolo per due secondi
+function celebratePR(name, weight){
+  const w = (weight!==undefined && weight!==null && !isNaN(weight)) ? String(weight).replace('.',',')+' kg' : '';
+  showCelebration({
+    icon: ICON_PLATE,
+    label: 'Nuovo record personale',
+    title: name || 'Record personale',
+    subtitle: w ? ('Nuovo massimale: '+w) : '',
+    accent: 'green'
+  });
 }
 

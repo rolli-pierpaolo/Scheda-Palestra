@@ -1129,7 +1129,7 @@ function updateSet(exi, w, si, field, val, recordPeso){
   if(field==='peso' && recordPeso!==undefined && recordPeso!==null){
     const p = parseFloat(String(val).replace(',','.'));
     if(!isNaN(p) && p>recordPeso){
-      celebratePR();
+      celebratePR(ex.nome, p);
       bumpAchievCounter('prCount');
       checkAchievements();
     }
@@ -1215,7 +1215,7 @@ function stepSet(exi, w, si, delta, btn){
   if(input) input.value = next;
   saveState();
   if(record && next>record.peso){
-    celebratePR();
+    celebratePR(ex.nome, next);
     bumpAchievCounter('prCount');
     checkAchievements();
   }

@@ -111,18 +111,15 @@ function checkAchievements(){
   }
 }
 function revealAchievement(a){
-  let el = document.getElementById('achievToast');
-  if(!el){
-    el = document.createElement('div');
-    el.id = 'achievToast';
-    el.className = 'achiev-toast';
-    document.body.appendChild(el);
-  }
-  el.innerHTML = `<div class="achiev-toast-icon">${a.icon}</div><div class="achiev-toast-text"><div class="achiev-toast-label">Obiettivo sbloccato!</div><div class="achiev-toast-name">${escapeHtml(a.title)}</div></div>`;
-  el.classList.add('show');
-  vibrate([30,40,30,40,90]);
-  clearTimeout(window._achievToastTimer);
-  window._achievToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 3200);
+  showCelebration({
+    icon: a.icon,
+    label: 'Obiettivo sbloccato',
+    title: a.title,
+    subtitle: a.desc || '',
+    accent: 'amber',
+    vibrate: [30,40,30,40,90],
+    duration: 3200
+  });
   if(achievNotificationsEnabled && typeof Notification!=='undefined' && Notification.permission==='granted' && 'serviceWorker' in navigator){
     navigator.serviceWorker.ready.then(reg=>{
       reg.showNotification('🎯 Obiettivo sbloccato: '+a.title, { body:a.desc, icon:'icon-192.png', tag:'achiev-'+a.id });
