@@ -18,6 +18,8 @@ const CORE_ASSETS = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
+  './fonts/oswald.woff2',
+  './fonts/ibm-plex-sans.woff2',
   './css/style.css',
   './js/bootstrap.js',
   './js/error-boundary.js',

@@ -33,7 +33,10 @@ function getRecordForExercise(name){
   });
   return best;
 }
+// il disco al posto del trofeo: stesso motivo usato altrove nell'app
+// (ICON_PLATE, gia' usata per l'obiettivo "Tre cifre"), coerente col resto
+// invece del solito emoji generico
 function celebratePR(){
-  showQuickToast("\ud83c\udfc6 Nuovo record personale!");
+  showQuickToast(ICON_PLATE + " Nuovo record personale!");
 }
 
