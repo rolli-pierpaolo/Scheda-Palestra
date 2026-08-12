@@ -255,7 +255,7 @@ function renderDayTabs(){
   // il blocco non e' ancora completo)
   el.innerHTML = dayButtonsHtml + `
     <button id="blockFinishTab" class="block-finish-btn" onclick="archiveAndReset()" title="Termina il blocco e inizia un nuovo mese" aria-label="Termina il blocco e inizia un nuovo mese">
-      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/></svg>
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/></svg>
     </button>`;
 
   updateBlockFinishTab();

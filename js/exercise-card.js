@@ -792,7 +792,7 @@ function exerciseCard(ex, exi, accent){
           ${isReadOnlyWeek?'disabled':''}
           onclick="toggleMax(${exi},${w})">
 
-          ${maxShown?'nascondi max':'max'}
+          ${ICON_PLATE} ${maxShown?'nascondi max':'max'}
 
           </button>
 
@@ -1788,7 +1788,7 @@ const isFutureWeek = w > state.currentWeek;
         <button class="max-toggle"
         onclick="toggleMax(${exiA},${w});toggleMax(${exiB},${w})">
 
-          ${maxShown?'nascondi max':'max'}
+          ${ICON_PLATE} ${maxShown?'nascondi max':'max'}
 
         </button>
 

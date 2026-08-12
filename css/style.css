@@ -1,8 +1,29 @@
+/* font veri, portati offline (stesso trattamento di js/gsap.min.js): mai da
+   internet, l'app deve restare usabile senza rete. Oswald (condensato,
+   pesante, da segnaletica/industriale) per titoli/numeri grandi - deve
+   sembrare inciso, non "stampato" come il font di sistema di prima. IBM
+   Plex Sans per tutto il resto: cifre tabellari vere per allineare le
+   colonne di peso/ripetizioni, leggibile anche piccolo. Entrambi i file
+   sono variabili (un solo woff2 copre tutti i pesi), i due format() nel src
+   sono lo stesso file: 'woff2-variations' e' l'hint corretto per i browser
+   che lo riconoscono, 'woff2' il fallback per gli altri */
+@font-face{
+  font-family:'Oswald';
+  src:url('../fonts/oswald.woff2') format('woff2-variations'), url('../fonts/oswald.woff2') format('woff2');
+  font-weight:200 700; font-style:normal; font-display:swap;
+}
+@font-face{
+  font-family:'IBM Plex Sans';
+  src:url('../fonts/ibm-plex-sans.woff2') format('woff2-variations'), url('../fonts/ibm-plex-sans.woff2') format('woff2');
+  font-weight:100 700; font-style:normal; font-display:swap;
+}
 :root{
   --bg-black:#0D0D0D; --panel:#1C1C1C; --panel2:#262626; --row-dark:#141414;
   --line:#3A3A3A; --green:#9ACD32; --green-dark:#3F5C0A; --amber:#E8971C; --amber-dark:#5C3D0B;
   --red:#C0392B; --red-dark:#4A1A14; --steel:#4A90A4; --steel-dark:#17313A;
   --text:#F2F2F2; --muted:#9E9E9E;
+  --font-display:'Oswald', 'Arial Narrow', sans-serif;
+  --font-body:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 /* nessun testo selezionabile/evidenziabile di default (col mouse o col doppio
@@ -27,10 +48,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
    propria piu' sotto che aggiunge scale() senza perdere il posizionamento */
 button{transition:transform .1s ease;}
 button:active{transform:scale(.96);}
-html,body{margin:0;padding:0;background:var(--bg-black);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
+html,body{margin:0;padding:0;background:var(--bg-black);color:var(--text);font-family:var(--font-body);}
 /* spazio per lo stack fisso in fondo: barra di navigazione + savebar, cosi'
-   il contenuto scrollato in fondo alla pagina non ci finisce mai sotto */
-body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numeric:tabular-nums;}
+   il contenuto scrollato in fondo alla pagina non ci finisce mai sotto.
+   La texture e' una grana finissima (rumore, ripetuta in un tile minuscolo)
+   invece dello sfondo nero piatto di prima - richiama la gomma della sala
+   pesi invece di un semplice "dark mode" da dashboard, ma resta cosi'
+   discreta da non disturbare mai la lettura */
+body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numeric:tabular-nums;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  background-repeat:repeat;
+}
+/* font "da segnaletica" per titoli/etichette/numeri grandi in tutta l'app -
+   un solo punto per applicarlo a tutte le classi che se ne giovano, invece
+   di ripeterlo dentro ogni singola regola sparsa nel file */
+.day-btn, .home-block-week, .home-progress-label, .home-progress-num,
+.home-day-card, .ex-sticky-header, .hist-section-label, .finish-title,
+.finish-title-text, .onb-title, .week-toggle span, .day-ex-chip,
+.ex-jump-dot, .block-finish-btn, .home-suggested-name, .app-version,
+.hist-subnav .day-btn{
+  font-family:var(--font-display);
+  letter-spacing:.4px;
+}
 /* ---------------- BARRA IN ALTO + TAB ALLENAMENTO/STORICO/GIORNI ---------------- */
 .topbar{
     position:sticky;
@@ -49,9 +88,10 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numer
 
 .topbar h1{
   margin:0;
-  font-size:16px;
-  letter-spacing:.5px;
-  font-weight:900;
+  font-family:var(--font-display);
+  font-size:17px;
+  letter-spacing:1.5px;
+  font-weight:700;
   text-align:center;
   text-transform:uppercase;
   transition:font-size .2s ease;
@@ -157,7 +197,7 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .bottom-nav-btn svg{width:22px;height:22px;}
 .bottom-nav-btn.active{color:var(--green);}
 .day-tabs{display:flex;gap:6px;padding:10px 10px 0;overflow-x:auto;}
-.day-btn{flex:0 0 auto;padding:8px 12px;border-radius:20px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:12px;font-weight:700;white-space:nowrap;}
+.day-btn{flex:0 0 auto;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:12px;font-weight:700;white-space:nowrap;}
 .day-btn.active{background:var(--accent,var(--green));color:#0D0D0D;border-color:var(--accent,var(--green));}
 /* icona rotonda in fondo alla riga dei giorni, per non confondersi con un
    quinto giorno cliccabile: termina l'INTERO blocco/mese (archiveAndReset),
@@ -200,9 +240,9 @@ main{padding:12px;}
 
 
 .home-progress-sub{font-size:13px;font-weight:700;color:var(--text);margin-top:8px;text-transform:uppercase;letter-spacing:.5px;}
-.home-progress-bar-wrap{width:100%;max-width:220px;height:8px;border-radius:20px;background:var(--row-dark);border:1px solid var(--line);margin:6px auto 8px;overflow:hidden;}
-.home-progress-bar-fill{height:100%;border-radius:20px;background:var(--accent,var(--green));box-shadow:0 0 10px 1px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);width:0%;}
-.home-suggested-btn{display:block;width:100%;background:var(--accent,var(--green));border:none;border-radius:16px;padding:18px 14px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.home-progress-bar-wrap{width:100%;max-width:220px;height:8px;border-radius:10px;background:var(--row-dark);border:1px solid var(--line);margin:6px auto 8px;overflow:hidden;}
+.home-progress-bar-fill{height:100%;border-radius:10px;background:var(--accent,var(--green));box-shadow:0 0 10px 1px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);width:0%;}
+.home-suggested-btn{display:block;width:100%;background:var(--accent,var(--green));border:none;border-radius:10px;padding:18px 14px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
 .home-motivation{text-align:center;font-size:19px;font-weight:900;margin:0 8px 34px;line-height:1.3;letter-spacing:.2px;text-transform:uppercase;}
 .home-suggested-label{display:block;font-size:11px;font-weight:800;letter-spacing:1.5px;color:#0D0D0D;opacity:.7;}
 .home-suggested-name{display:block;font-size:24px;font-weight:900;color:#0D0D0D;text-transform:uppercase;margin-top:4px;letter-spacing:.5px;}
@@ -223,7 +263,7 @@ main{padding:12px;}
 /* non piu' un bottone (non sono cliccabili): solo indicatori dell'ordine e
    dello stato di ogni giorno. Centrali ma strette (non a tutta larghezza),
    la larghezza segue il contenuto invece di riempire la riga */
-.home-day-card{display:flex;align-items:center;justify-content:center;gap:10px;width:auto;min-width:150px;max-width:75%;padding:8px 20px;border-radius:12px;border:2px solid var(--accent,var(--green));background:var(--panel2);color:var(--text);font-size:13px;font-weight:800;text-transform:uppercase;transition:transform .25s ease;}
+.home-day-card{display:flex;align-items:center;justify-content:center;gap:10px;width:auto;min-width:150px;max-width:75%;padding:8px 20px;border-radius:8px;border:2px solid var(--accent,var(--green));background:var(--panel2);color:var(--text);font-size:13px;font-weight:800;text-transform:uppercase;transition:transform .25s ease;}
 .home-day-order{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:1px solid var(--accent,var(--green));display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--accent,var(--green));}
 /* completato: sfondo tinto col colore del giorno (trasparente), bordo che resta
    acceso, leggermente piu' piccola delle altre - resta al suo posto nell'elenco
@@ -255,7 +295,7 @@ main{padding:12px;}
    non stirata) - cosi' le due meta' sono bilanciate ma la cornice della
    mappa non si allarga fino a diventare un riquadro vuoto */
 .home-muscle-slot{flex:1;display:flex;justify-content:center;align-items:stretch;}
-.home-muscle-map{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:12px;padding:10px 12px;}
+.home-muscle-map{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:8px;padding:10px 12px;}
 .home-muscle-map-label{text-align:center;font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
 .home-muscle-figures{display:flex;justify-content:center;align-items:flex-start;gap:8px;}
 .home-muscle-figure-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;}
@@ -278,7 +318,7 @@ main{padding:12px;}
    quello vero degli esercizi del giorno); corrente = piu' grande e pulsante
    (vedi pulseCurrentExerciseChip in js/exercise-card.js) */
 .day-ex-strip{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:10px 4px 6px;}
-.day-ex-chip{flex:0 0 auto;max-width:120px;padding:7px 12px;border-radius:20px;border:1.5px solid var(--line);background:var(--panel);color:var(--text);font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:box-shadow .2s ease, border-color .2s ease;}
+.day-ex-chip{flex:0 0 auto;max-width:120px;padding:7px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--panel);color:var(--text);font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:box-shadow .2s ease, border-color .2s ease;}
 .day-ex-chip.done{background:color-mix(in srgb, var(--accent, var(--green)) 32%, transparent);border-color:var(--accent,var(--green));transform:scale(.9);}
 .day-ex-chip.current{border-color:var(--accent,var(--green));background:var(--panel2);color:var(--accent,var(--green));box-shadow:0 0 12px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
 /* indice a pallini + frecce prev/next: SEMPRE visibile (prima solo da 6
@@ -294,7 +334,7 @@ main{padding:12px;}
 .ex-jump-dot.current{box-shadow:0 0 0 2px var(--accent,var(--green));}
 /* "Giorno terminato" (questo singolo giorno): centrale, attaccato subito
    sotto l'esercizio corrente (fine del carosello) */
-.finish-day-btn{display:block;width:fit-content;margin:18px auto 0;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:12px;padding:12px 22px;font-size:14px;font-weight:900;text-align:center;box-shadow:0 0 16px 1px color-mix(in srgb, var(--accent, var(--green)) 40%, transparent);}
+.finish-day-btn{display:block;width:fit-content;margin:18px auto 0;background:var(--panel2);border:2px solid var(--accent,var(--green));border-radius:8px;padding:12px 22px;font-size:14px;font-weight:900;text-align:center;box-shadow:0 0 16px 1px color-mix(in srgb, var(--accent, var(--green)) 40%, transparent);}
 .finish-day-btn:active{box-shadow:0 0 22px 3px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);}
 /* ---------------- CAROSELLO ESERCIZI (un esercizio a schermo, swipe per il prossimo) ---------------- */
 /* il viewport clippa tutto tranne la slide attiva, il track e' la riga
@@ -326,7 +366,11 @@ main{padding:12px;}
 .ex-sticky-name-input{width:100%;background:var(--row-dark);border:1px solid var(--accent,var(--green));border-radius:5px;color:var(--text);font-size:14.4px;font-weight:700;text-transform:none;letter-spacing:0;padding:4px 6px;resize:none;}
 .ex-sticky-linktype-btn{display:block;width:100%;background:none;border:1px dashed var(--accent,var(--green));border-radius:5px;color:var(--accent,var(--green));font-size:10px;font-weight:700;text-transform:none;padding:3px 8px;margin:3px 0;}
 .ex-sticky-confirm-btn{display:block;width:100%;background:var(--accent,var(--green));color:#0D0D0D;border:none;border-radius:5px;font-size:11px;font-weight:800;padding:5px 10px;margin-top:3px;}
-.card{background:var(--panel2);border-radius:12px;margin-bottom:14px;overflow:hidden;border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));box-shadow:0 4px 14px rgba(0,0,0,.35);}
+/* bordo pieno nel colore del giorno invece del filo sottile + strisciolina
+   sopra di prima (lo schema "rounded-lg + accento solo in cima" e' quello
+   di qualsiasi dashboard generica) - angoli meno arrotondati, piu' vicini a
+   un pannello/attrezzo che a una card da app consumer */
+.card{background:var(--panel2);border-radius:6px;margin-bottom:14px;overflow:hidden;border:2px solid var(--accent,var(--green));box-shadow:0 4px 14px rgba(0,0,0,.35);}
 .card-head{padding:8px 12px 2px;}
 /* ---------------- SUPERSET / JUMP SET (esercizi collegati) ---------------- */
 .card.linked-group{border-top:1px solid var(--line);border-left:4px solid var(--accent,var(--green));}
@@ -505,7 +549,7 @@ main{padding:12px;}
 .hist-section-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;padding:16px 12px 6px;}
 .trends-section-label{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
 .trends-record{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--text);background:var(--row-dark);border-radius:8px;padding:8px 10px;margin-bottom:14px;}
-.hist-panel{background:var(--panel2);border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));border-radius:12px;margin:0 12px;overflow:hidden;}
+.hist-panel{background:var(--panel2);border:1px solid var(--line);border-top:3px solid var(--accent,var(--green));border-radius:8px;margin:0 12px;overflow:hidden;}
 /* stesso linguaggio visivo delle card esercizio (bordo superiore colorato):
    ogni sezione di Storico ha il suo colore, cosi' la pagina non e' piu' una
    lista piatta di pannelli tutti identici */
@@ -531,7 +575,7 @@ main{padding:12px;}
 .hist-list{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:8px;}
 .hist-edit-btn{flex-shrink:0;width:auto;}
 .hist-edit-btn.active{background:var(--green);color:#0D0D0D;border-color:var(--green);}
-.hist-chip{padding:8px 14px;border-radius:20px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:1px;}
+.hist-chip{padding:8px 14px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:1px;}
 .hist-chip.active{background:var(--amber);color:#0D0D0D;border-color:var(--amber);}
 .hist-chip-date{font-size:9px;font-weight:600;opacity:.65;letter-spacing:.2px;}
 .hist-chip.active .hist-chip-date{opacity:.75;}
@@ -544,7 +588,7 @@ main{padding:12px;}
 /* avviso "giorno diverso dal previsto": piccola pillola rossa pulsante, ben
    visibile appena si entra nel giorno, ma minuscola - tutta cliccabile, un
    solo tocco per cambiare, niente piu' box grande con titolo/sottotitolo/bottone */
-.switch-training-pill{display:block;width:fit-content;max-width:92%;margin:0 auto 10px;background:rgba(192,57,43,.18);border:1px solid var(--red);color:var(--text);border-radius:20px;padding:5px 12px;font-size:10px;font-weight:700;text-align:center;line-height:1.3;animation:switchPillPulse 1.6s ease-in-out infinite;}
+.switch-training-pill{display:block;width:fit-content;max-width:92%;margin:0 auto 10px;background:rgba(192,57,43,.18);border:1px solid var(--red);color:var(--text);border-radius:10px;padding:5px 12px;font-size:10px;font-weight:700;text-align:center;line-height:1.3;animation:switchPillPulse 1.6s ease-in-out infinite;}
 @keyframes switchPillPulse{
   0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.5);}
   50%{box-shadow:0 0 8px 3px rgba(192,57,43,.5);}
@@ -552,7 +596,7 @@ main{padding:12px;}
 /* banner "installa app" (solo iOS Safari, vedi js/install-prompt.js): appena
    sotto la topbar (stessa altezza dinamica usata dall'header sticky
    dell'esercizio), cosi' non la copre ne' lascia un vuoto su telefoni diversi */
-.install-banner{position:fixed;top:calc(var(--topbar-h, 80px) + 8px);left:10px;right:10px;background:var(--panel2);border:1.5px solid var(--accent,var(--green));border-radius:12px;padding:10px 34px 10px 12px;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+.install-banner{position:fixed;top:calc(var(--topbar-h, 80px) + 8px);left:10px;right:10px;background:var(--panel2);border:1.5px solid var(--accent,var(--green));border-radius:8px;padding:10px 34px 10px 12px;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);}
 .install-banner-text{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);line-height:1.4;}
 .install-banner-text svg{flex:0 0 auto;}
 .install-banner-close{position:absolute;top:4px;right:6px;background:none;border:none;color:var(--muted);font-size:14px;font-weight:800;padding:6px;}
@@ -601,7 +645,7 @@ main{padding:12px;}
 .plate-chip{display:inline-block;background:var(--green);color:#0D0D0D;padding:5px 10px;border-radius:6px;font-weight:800;font-size:14px;margin:3px;}
 /* ---------------- LIBRERIA ESERCIZI (ricerca, filtro gruppo, elenco) ---------------- */
 .exlib-group-filters{display:flex;gap:6px;overflow-x:auto;padding:10px 0;-webkit-overflow-scrolling:touch;}
-.exlib-group-chip{flex:0 0 auto;padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:11px;font-weight:700;white-space:nowrap;}
+.exlib-group-chip{flex:0 0 auto;padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:11px;font-weight:700;white-space:nowrap;}
 .exlib-group-chip.active{background:var(--green);color:#0D0D0D;border-color:var(--green);}
 .exlib-add-form{display:flex;flex-direction:column;gap:8px;background:var(--row-dark);border-radius:10px;padding:10px;margin:8px 0 14px;}
 .exlib-list{display:flex;flex-direction:column;gap:8px;}
@@ -625,15 +669,15 @@ main{padding:12px;}
 .savebar b{color:var(--green);}
 /* ---------------- RECORD PERSONALI: badge sulla scheda + toast di festeggiamento ---------------- */
 .pr-badge{margin:2px 0 2px;font-size:11px;font-weight:800;color:var(--amber);text-shadow:0 0 8px rgba(232,151,28,.55);}
-.pr-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--green);color:#0D0D0D;padding:10px 18px;border-radius:20px;font-weight:800;font-size:13px;z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.45);text-align:center;max-width:80%;}
+.pr-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--green);color:#0D0D0D;padding:10px 18px;border-radius:10px;font-weight:800;font-size:13px;z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.45);text-align:center;max-width:80%;}
 .pr-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 /* notifica "esercizio completato": stesso schema del pr-toast ma piu' piccola,
    discreta (sfondo scuro invece di verde pieno) e dura molto meno */
-.ex-done-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-10px);background:var(--panel2);border:1px solid var(--accent,var(--green));color:var(--text);padding:6px 14px;border-radius:16px;font-weight:700;font-size:11px;z-index:60;opacity:0;transition:opacity .2s, transform .2s;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.4);text-align:center;max-width:75%;}
+.ex-done-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-10px);background:var(--panel2);border:1px solid var(--accent,var(--green));color:var(--text);padding:6px 14px;border-radius:10px;font-weight:700;font-size:11px;z-index:60;opacity:0;transition:opacity .2s, transform .2s;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.4);text-align:center;max-width:75%;}
 .ex-done-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 /* stesso stile del toast PR, ma cliccabile (serve poter premere "Annulla") e
    bordo rosso invece di sfondo verde, per non sembrare un festeggiamento */
-.undo-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--panel2);border:1px solid var(--red);color:var(--text);padding:10px 16px;border-radius:20px;font-weight:700;font-size:13px;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;box-shadow:0 6px 20px rgba(0,0,0,.45);text-align:center;max-width:80%;display:flex;align-items:center;justify-content:center;gap:10px;}
+.undo-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--panel2);border:1px solid var(--red);color:var(--text);padding:10px 16px;border-radius:10px;font-weight:700;font-size:13px;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;box-shadow:0 6px 20px rgba(0,0,0,.45);text-align:center;max-width:80%;display:flex;align-items:center;justify-content:center;gap:10px;}
 .undo-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
 .undo-toast button{background:none;border:none;color:var(--red);font-weight:800;text-decoration:underline;padding:2px 4px;font-size:13px;}
 /* sostituisce le 3-4 iconcine separate (Elimina/Grafico/Dischi/Collega, vedi
@@ -643,7 +687,7 @@ main{padding:12px;}
    pressione prolungata ha comunque un modo visibile per arrivarci */
 .ex-more-btn{background:none;border:1px solid var(--line);color:var(--text);font-size:12px;padding:8px;min-width:38px;min-height:38px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;float:right;margin-left:6px;}
 /* ---------------- OBIETTIVI: toast di sblocco + lista nella modale ---------------- */
-.achiev-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--panel2);border:2px solid var(--green);color:var(--text);padding:10px 16px;border-radius:16px;z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.5);max-width:85%;display:flex;align-items:center;gap:10px;}
+.achiev-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--panel2);border:2px solid var(--green);color:var(--text);padding:10px 16px;border-radius:10px;z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.5);max-width:85%;display:flex;align-items:center;gap:10px;}
 .achiev-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .achiev-toast-icon{font-size:26px;}
 .achiev-toast-icon svg{width:26px;height:26px;}
@@ -663,18 +707,18 @@ main{padding:12px;}
    prefisso necessario per Safari/iOS, che e' anche la piattaforma di chi usa
    davvero questa app */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;}
-.modal-box{background:var(--panel2);border:1px solid var(--line);border-radius:12px;max-width:360px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.modal-box{background:var(--panel2);border:1px solid var(--line);border-radius:8px;max-width:360px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.5);}
 /* menu contestuale a pressione prolungata sul nome esercizio (vedi
    openExerciseContextMenu in js/exercise-card.js): stile "action sheet"
    nativo iOS, dal basso invece che centrato come gli altri modali - riusa
    .modal-overlay (stesso sfondo sfocato) con l'allineamento cambiato */
 .ex-context-overlay{align-items:flex-end;padding:12px;gap:8px;flex-direction:column;}
-.ex-context-sheet{width:100%;max-width:360px;background:var(--panel2);border-radius:14px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.ex-context-sheet{width:100%;max-width:360px;background:var(--panel2);border-radius:8px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5);}
 .ex-context-title{padding:12px 14px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);text-align:center;border-bottom:1px solid var(--line);}
 .ex-context-action{display:flex;align-items:center;gap:10px;width:100%;padding:14px;background:none;border:none;border-bottom:1px solid var(--line);color:var(--text);font-size:14px;font-weight:700;text-align:left;}
 .ex-context-action:last-child{border-bottom:none;}
 .ex-context-action.danger{color:var(--red);}
-.ex-context-cancel{width:100%;max-width:360px;background:var(--panel2);border:none;border-radius:14px;padding:14px;color:var(--accent,var(--green));font-size:14px;font-weight:800;box-shadow:0 12px 40px rgba(0,0,0,.5);}
+.ex-context-cancel{width:100%;max-width:360px;background:var(--panel2);border:none;border-radius:8px;padding:14px;color:var(--accent,var(--green));font-size:14px;font-weight:800;box-shadow:0 12px 40px rgba(0,0,0,.5);}
 .modal-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:800;font-size:14px;color:var(--green);position:sticky;top:0;background:var(--panel2);}
 .modal-head button{background:none;border:none;color:var(--muted);font-size:17px;padding:2px 6px;}
 .modal-body{padding:14px;}
@@ -716,7 +760,7 @@ main{padding:12px;}
    colorate, al posto dei due blocchi di testo giganti (34px, uno sopra
    l'altro) che c'erano prima - stessa informazione, molto meno ingombro */
 .finish-day-transition{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
-.finish-day-pill{font-size:14px;font-weight:800;padding:8px 14px;border-radius:20px;border:2px solid var(--accent,var(--green));color:var(--accent,var(--green));background:color-mix(in srgb, var(--accent, var(--green)) 12%, transparent);}
+.finish-day-pill{font-size:14px;font-weight:800;padding:8px 14px;border-radius:10px;border:2px solid var(--accent,var(--green));color:var(--accent,var(--green));background:color-mix(in srgb, var(--accent, var(--green)) 12%, transparent);}
 .finish-arrow{font-size:16px;font-weight:700;opacity:.5;}
 
 
@@ -741,7 +785,7 @@ main{padding:12px;}
 .onb-tip-title{font-weight:800;font-size:13px;margin-bottom:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .onb-tip-text{font-size:12px;opacity:.8;line-height:1.45;}
 .onb-tip-new{border-color:var(--green);box-shadow:0 0 0 1px var(--green),0 0 14px rgba(154,205,50,.25);}
-.onb-new-badge{background:var(--green);color:#0d0d0d;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;padding:2px 6px;border-radius:20px;}
+.onb-new-badge{background:var(--green);color:#0d0d0d;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;padding:2px 6px;border-radius:10px;}
 .hist-chip-wrap{position:relative;display:inline-flex;align-items:center;}
 .hist-chip-wrap:has(.hist-del) .hist-chip{padding-right:28px;}
 .hist-del{position:absolute;right:3px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--red);font-size:12px;font-weight:800;padding:4px 6px;}
@@ -860,7 +904,7 @@ main{padding:12px;}
   width:100%;
   padding:14px;
 
-  border-radius:12px;
+  border-radius:8px;
 
   border:1px solid var(--border);
 
