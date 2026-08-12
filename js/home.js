@@ -335,22 +335,25 @@ function splitMotivation(phrase){
   const iconMap = { '🔥':ICON_FLAME_COLOR, '💥':ICON_LIGHTNING_COLOR, '💪':ICON_PLATE_COLOR, '🦵':ICON_PLATE_COLOR };
   return { text: phrase.slice(0, m.index).trim(), icon: iconMap[m[1]] || '' };
 }
-// gruppi muscolari con almeno un esercizio segnato COMPLETATO nella
-// settimana corrente (in qualsiasi giorno): solo "completata" conta come
-// muscolo davvero allenato, "saltata" no - stessa logica di ogni altro punto
-// dell'app che tratta weekDone come la fonte di verita' del lavoro fatto
-function computeWeeklyMuscleActivation(){
+// quante serie per gruppo muscolare nella settimana corrente (in qualsiasi
+// giorno), non solo se e' stato "sfiorato": solo esercizi con la settimana
+// segnata COMPLETATA contano ("saltata" no) - stessa logica di ogni altro
+// punto dell'app che tratta weekDone come la fonte di verita' del lavoro
+// fatto, ma qui si contano le serie vere invece di segnare solo si'/no
+function computeWeeklyMuscleSetCounts(){
   const w = state.currentWeek || 0;
-  const trained = new Set();
+  const counts = {};
   (state.days||[]).forEach(day => {
     (day.esercizi||[]).forEach(ex => {
-      if(ex.weekDone && ex.weekDone[w]){
-        const g = getExerciseGroup(ex.nome);
-        if(g) trained.add(g);
-      }
+      if(!(ex.weekDone && ex.weekDone[w])) return;
+      const g = getExerciseGroup(ex.nome);
+      if(!g) return;
+      const sets = (ex.sets && ex.sets[w]) || [];
+      const n = sets.filter(s => s && (String(s.peso||'').trim()!=='' || String(s.rip||'').trim()!=='')).length;
+      if(n>0) counts[g] = (counts[g]||0) + n;
     });
   });
-  return trained;
+  return counts;
 }
 // due sagome (davanti/dietro - servono entrambe, dal solo davanti non si
 // vedono schiena/femorali/glutei e viceversa) fatte di due livelli: un corpo
@@ -414,22 +417,34 @@ const MUSCLE_MAP_REGIONS_BACK = [
   { group:'Femorali', shape:'<ellipse cx="42" cy="120" rx="8.5" ry="16"/><ellipse cx="58" cy="120" rx="8.5" ry="16"/>' },
   { group:'Polpacci', shape:'<ellipse cx="42" cy="153" rx="7.5" ry="21"/><ellipse cx="58" cy="153" rx="7.5" ry="21"/>' }
 ];
-function renderBodyFigure(regions, trained, detailLines){
-  const regionsHtml = regions.map(r =>
-    `<g class="body-region${trained.has(r.group)?' trained':''}">${r.shape}</g>`
-  ).join('');
+function renderBodyFigure(regions, counts, maxCount, detailLines){
+  const regionsHtml = regions.map(r => {
+    const n = counts[r.group] || 0;
+    // 0.35 come minimo invece di 0 - anche un solo gruppo allenato deve
+    // restare leggibile, non quasi trasparente solo perche' un altro gruppo
+    // ha fatto molte piu' serie nella stessa settimana
+    const intensity = n>0 ? Math.min(1, 0.35 + 0.65*(n/(maxCount||1))) : 0;
+    return `<g class="body-region${n>0?' trained':''}"${n>0?` style="--intensity:${intensity.toFixed(2)}"`:''}>${r.shape}</g>`;
+  }).join('');
   return `<svg viewBox="0 0 100 195" class="body-figure"><g class="body-base">${BODY_BASE_SHAPES}</g>${regionsHtml}<g class="body-detail">${detailLines}</g></svg>`;
 }
 function renderMuscleMap(accent){
-  const trained = computeWeeklyMuscleActivation();
-  const extras = ['Cardio','Altro'].filter(g=>trained.has(g));
+  const counts = computeWeeklyMuscleSetCounts();
+  const maxCount = Math.max(0, ...Object.values(counts));
+  const extras = ['Cardio','Altro'].filter(g=>counts[g]>0);
+  const breakdown = Object.keys(counts)
+    .filter(g => !extras.includes(g) && counts[g]>0)
+    .sort((a,b)=>counts[b]-counts[a])
+    .map(g=>`<span class="home-muscle-count-item">${escapeHtml(g)} <b>${counts[g]}</b></span>`)
+    .join('');
   return `<div class="home-muscle-map" style="--accent:${accent}">
     <div class="home-muscle-map-label">Muscoli</div>
     <div class="home-muscle-figures">
-      <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_FRONT, trained, BODY_DETAIL_FRONT)}<span class="home-muscle-figure-caption">Davanti</span></div>
-      <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_BACK, trained, BODY_DETAIL_BACK)}<span class="home-muscle-figure-caption">Dietro</span></div>
+      <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_FRONT, counts, maxCount, BODY_DETAIL_FRONT)}<span class="home-muscle-figure-caption">Davanti</span></div>
+      <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_BACK, counts, maxCount, BODY_DETAIL_BACK)}<span class="home-muscle-figure-caption">Dietro</span></div>
     </div>
-    ${extras.length ? `<div class="home-muscle-extras">+ ${extras.join(', ')}</div>` : ''}
+    ${breakdown ? `<div class="home-muscle-counts">${breakdown}</div>` : ''}
+    ${extras.length ? `<div class="home-muscle-extras">+ ${extras.map(g=>g+' '+counts[g]).join(', ')}</div>` : ''}
   </div>`;
 }
 function renderHome(){

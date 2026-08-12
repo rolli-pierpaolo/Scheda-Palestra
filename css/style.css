@@ -307,8 +307,14 @@ main{padding:12px;}
 .home-muscle-figure-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;}
 .body-figure{width:42px;height:auto;display:block;}
 .body-base{fill:#3c3f45;}
-.body-region{fill:rgba(255,255,255,.16);transition:fill .4s ease;}
-.body-region.trained{fill:var(--accent,var(--green));}
+.body-region{fill:rgba(255,255,255,.16);transition:fill .4s ease, opacity .4s ease;}
+/* --intensity (0.35-1, vedi computeWeeklyMuscleSetCounts in js/home.js) fa si'
+   che un gruppo allenato con tante serie risalti di piu' di uno sfiorato con
+   una sola - non e' piu' solo "acceso/spento" */
+.body-region.trained{fill:var(--accent,var(--green));opacity:var(--intensity,1);}
+.home-muscle-counts{display:flex;flex-wrap:wrap;justify-content:center;gap:3px 8px;margin-top:6px;max-width:190px;}
+.home-muscle-count-item{font-size:9px;font-weight:700;color:var(--muted);}
+.home-muscle-count-item b{color:var(--accent,var(--green));font-weight:800;}
 /* venature muscolari fisse (non legate a completato/non completato, solo
    decorazione) sovrapposte sopra le regioni colorate, per dare la stessa
    "trama" del riferimento anatomico invece di forme piatte */
