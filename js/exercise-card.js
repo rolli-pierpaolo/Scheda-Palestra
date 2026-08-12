@@ -466,7 +466,7 @@ function exerciseCard(ex, exi, accent){
       <div class="set-row">
 
 
-        <div class="set-label">${roman}</div>
+        <button type="button" class="set-label${s.dropset?' dropset':''}" ${isReadOnlyWeek?'disabled':''} onclick="toggleDropset(${exi},${w},${si},this)" title="Segna/togli come dropset">${roman}</button>
 
 
         <div class="kg-wrap">
@@ -1127,7 +1127,7 @@ function updateSet(exi, w, si, field, val, recordPeso){
   // ripetizioni - vedi markWorkoutStartedByWeight in js/state.js
   if(field==='peso' && String(val||'').trim()!=='') markWorkoutStartedByWeight();
   saveState();
-  if(field==='peso' && recordPeso!==undefined && recordPeso!==null){
+  if(field==='peso' && recordPeso!==undefined && recordPeso!==null && !ex.sets[w][si].dropset){
     const p = parseFloat(String(val).replace(',','.'));
     if(!isNaN(p) && p>recordPeso){
       celebratePR(ex.nome, p);
@@ -1215,7 +1215,7 @@ function stepSet(exi, w, si, delta, btn){
   const input = btn.closest('.kg-wrap').querySelector('.set-input');
   if(input) input.value = next;
   saveState();
-  if(record && next>record.peso){
+  if(record && next>record.peso && !ex.sets[w][si].dropset){
     celebratePR(ex.nome, next);
     bumpAchievCounter('prCount');
     checkAchievements();
@@ -1256,6 +1256,21 @@ function editRpe(exi, w, si, btn){
   saveState();
   btn.textContent = val || 'RPE';
   btn.classList.toggle('filled', !!val);
+}
+// dropset: tocca il numero romano della serie per segnarla come tale.
+// Il PESO piu' basso di un dropset (dopo il cedimento sulla serie vera)
+// resta comunque salvato e conta per volume/serie totali - viene solo
+// escluso dal calcolo dei record (vedi maxPesoInDay in js/records.js e i
+// controlli "nuovo PR" dentro updateSet/stepSet qui sopra), altrimenti un
+// dropset piu' pesante di un vecchio record festeggerebbe un PR che non lo e'
+function toggleDropset(exi, w, si, btn){
+  const ex = state.days[activeDayIdx].esercizi[exi];
+  if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
+  if(!ex.sets[w]) ex.sets[w]=[];
+  while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
+  ex.sets[w][si].dropset = !ex.sets[w][si].dropset;
+  saveState();
+  btn.classList.toggle('dropset', !!ex.sets[w][si].dropset);
 }
 // il riquadro "max" ha lo stesso spirito a cascata di recupero/schema: espandendolo
 // in una settimana si espande anche in quelle dopo. Nascondendolo pero' NON si

@@ -512,7 +512,11 @@ main{padding:12px;}
 .set-row{display:grid;grid-template-columns:20px minmax(0,1fr) minmax(0,1fr);gap:5px;margin-bottom:3px;align-items:center;width:100%;}
 /* colore del giorno invece del grigio muto: lega di piu' i numeri di serie al
    resto della card, ormai colorata per giorno ovunque */
-.set-label{font-size:10px;color:var(--accent,var(--green));font-weight:700;text-align:center;}
+/* ora e' un bottone (tocca per segnare/togliere dropset, vedi toggleDropset
+   in js/exercise-card.js): reset dei default da <button> per restare
+   identico al testo semplice di prima quando non e' un dropset */
+.set-label{font-size:10px;color:var(--accent,var(--green));font-weight:700;text-align:center;background:none;border:none;padding:0;width:100%;font-family:inherit;}
+.set-label.dropset{color:var(--amber);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
 .set-input{background:#fff;color:#141414;border:none;border-radius:6px;padding:5px 2px;font-size:13px;font-weight:700;text-align:center;width:100%;min-width:0;box-sizing:border-box;}
 .set-input::placeholder{color:#999;font-weight:400;}
 .kg-wrap{display:flex;align-items:stretch;gap:3px;min-width:0;}
