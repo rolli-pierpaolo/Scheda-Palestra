@@ -16,7 +16,7 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.18</span>
+  <span class="app-version" id="appVersion">v1.19</span>
   <h1>Viridis</h1>
   <button id="settingsBtn" class="account-btn settings-btn" onclick="openSettingsModal()" title="Impostazioni" aria-label="Impostazioni">
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 4 V6.5"/><path d="M12 17.5 V20"/><path d="M4 12 H6.5"/><path d="M17.5 12 H20"/><path d="M6.3 6.3 L8.1 8.1"/><path d="M15.9 15.9 L17.7 17.7"/><path d="M17.7 6.3 L15.9 8.1"/><path d="M8.1 15.9 L6.3 17.7"/></svg>
@@ -100,6 +100,7 @@
     <div class="hist-panel backup-row">
       <button class="add-ex small2" onclick="exportBackup()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M12 4 V15"/><path d="M7 11 L12 16 L17 11"/><path d="M5 20 H19"/></svg> Esporta backup</button>
       <button class="add-ex small2" onclick="exportBackupFile()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 4.5 H16 L19 7.5 V19 A0.8 0.8 0 0 1 18.2 19.8 H5.8 A0.8 0.8 0 0 1 5 19 V4.5 Z"/><path d="M7.5 4.5 V9.5 H15 V4.5"/><path d="M8.5 13.5 H15.5 V19.5 H8.5 Z"/></svg> Salva su file</button>
+      <button class="add-ex small2" onclick="exportCSV()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><rect x="4" y="4.5" width="16" height="15" rx="1.5"/><path d="M4 9.5 H20"/><path d="M9.5 9.5 V19.5"/></svg> Esporta CSV</button>
       <button class="add-ex small2" onclick="shareBackup()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M12 15 V4"/><path d="M8 8 L12 4 L16 8"/><path d="M5 13 V19 A1 1 0 0 0 6 20 H18 A1 1 0 0 0 19 19 V13"/></svg> Condividi backup</button>
       <button class="add-ex small2" onclick="importBackup()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M12 20 V9"/><path d="M7 13 L12 8 L17 13"/><path d="M5 4 H19"/></svg> Importa testo</button>
       <button class="add-ex small2" onclick="document.getElementById('fileImportInput').click()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M3.5 7 A1 1 0 0 1 4.5 6 H9.5 L11.5 8 H19.5 A1 1 0 0 1 20.5 9 V17.5 A1 1 0 0 1 19.5 18.5 H4.5 A1 1 0 0 1 3.5 17.5 Z"/></svg> Importa backup Json da file</button>

@@ -191,8 +191,8 @@ function maybeAutoBackup(){
     showAutoBackupToast();
   }catch(e){} // se qualcosa va storto va bene lo stesso: c'e' sempre "Esporta backup" a mano
 }
-function downloadBackupFile(json, filename){
-  const blob = new Blob([json], {type:'application/json'});
+function downloadTextFile(content, filename, mime){
+  const blob = new Blob([content], {type:mime});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
@@ -200,6 +200,46 @@ function downloadBackupFile(json, filename){
   a.click();
   a.remove();
   setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+function downloadBackupFile(json, filename){
+  downloadTextFile(json, filename, 'application/json');
+}
+// export CSV (oltre al JSON, che resta il formato "vero" per un ripristino
+// completo): una riga per SERIE con dati veri, su tutta la cronologia (blocco
+// attivo + tutti quelli archiviati, stessa fonte di getChronologicalBlocks
+// gia' usata da Andamenti) - pensato per aprirlo in Excel/Fogli, non per
+// reimportarlo in app
+function csvEscapeCell(val){
+  const s = String(val==null ? '' : val);
+  return /[",\n;]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function buildCSVRows(){
+  const rows = [['Blocco','Giorno','Esercizio','Settimana','Serie','Peso (kg)','Ripetizioni','RPE']];
+  getChronologicalBlocks().forEach(block=>{
+    (block.days||[]).forEach(day=>{
+      (day.esercizi||[]).forEach(ex=>{
+        (ex.sets||[]).forEach((weekSets,w)=>{
+          (weekSets||[]).forEach((s,si)=>{
+            if(!s) return;
+            const peso = s.peso!=null ? String(s.peso) : '';
+            const rip = s.rip!=null ? String(s.rip) : '';
+            const rpe = s.rpe!=null ? String(s.rpe) : '';
+            if(peso==='' && rip==='' && rpe==='') return;
+            rows.push([block.name, day.name||'', ex.nome||'', w+1, si+1, peso, rip, rpe]);
+          });
+        });
+      });
+    });
+  });
+  return rows;
+}
+function exportCSV(){
+  const rows = buildCSVRows();
+  if(rows.length<=1){ alert('Non ci sono ancora serie registrate da esportare.'); return; }
+  const csv = rows.map(r=>r.map(csvEscapeCell).join(',')).join('\r\n');
+  // BOM iniziale: senza, Excel su alcuni sistemi legge gli accenti italiani
+  // (perche', gia' fatta...) come caratteri sbagliati
+  downloadTextFile('﻿'+csv, 'viridis-export.csv', 'text/csv;charset=utf-8;');
 }
 function showAutoBackupToast(){
   let el = document.getElementById('autoBackupToast');
