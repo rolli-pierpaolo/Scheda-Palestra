@@ -1,10 +1,14 @@
 // ---------------- RECORD PERSONALI (PR) ----------------
+// un dropset e' per definizione un peso ridotto DOPO il cedimento sulla
+// serie vera: non rappresenta la forza massima del momento, quindi non deve
+// mai contare come record (vedi toggleDropset in js/exercise-card.js)
 function maxPesoInDay(day, key){
   let m = null;
   (day.esercizi||[]).forEach(ex=>{
     if(String(ex.nome||'').trim().toLowerCase() !== key) return;
     (ex.sets||[]).forEach(weekSets=>{
       (weekSets||[]).forEach(s=>{
+        if(s.dropset) return;
         const p = parseFloat(String(s.peso).replace(',','.'));
         if(!isNaN(p) && p>0){
           if(m===null || p>m.peso || (p===m.peso && (parseFloat(String(s.rip).replace(',','.'))||0) > (parseFloat(String(m.rip).replace(',','.'))||0))){
