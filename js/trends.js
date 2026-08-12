@@ -31,6 +31,22 @@ function computeWeekTotalVolume(w){
   return vol;
 }
 
+// volume + numero di serie con dati veri di UN giorno, nella settimana
+// corrente - usato dal recap del popup "Giorno terminato" (vedi
+// openFinishWorkoutModal in js/animations.js), stesso conteggio di
+// computeWeekTotalVolume ma per un solo giorno invece di tutti insieme
+function computeDaySessionStats(day){
+  const w = state.currentWeek || 0;
+  let volume = 0, setsCount = 0;
+  (day.esercizi||[]).forEach(ex=>{
+    ((ex.sets && ex.sets[w]) || []).forEach(s=>{
+      const p = parseFloat(String(s.peso).replace(',','.'));
+      const r = parseFloat(String(s.rip).replace(',','.'));
+      if(!isNaN(p) && p>0 && !isNaN(r) && r>0){ volume += p*r; setsCount++; }
+    });
+  });
+  return { volume: Math.round(volume), setsCount };
+}
 // piccolo assaggio di "Andamenti" mostrato in Home: confronta l'ultima
 // settimana GIA' CONCLUSA con quella subito precedente (entrambe finite per
 // davvero) - apposta non "questo mese contro il precedente", che sarebbe un

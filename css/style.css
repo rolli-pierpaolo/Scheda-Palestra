@@ -803,6 +803,16 @@ main{padding:12px;}
 .finish-title-row svg{width:22px;height:22px;flex:0 0 auto;}
 .finish-title-text{font-size:22px;font-weight:900;}
 
+/* recap della sessione appena chiusa (serie/volume/record, vedi
+   computeDaySessionStats in js/trends.js e sessionPRs in js/records.js):
+   tre numeri grandi affiancati, stesso linguaggio del contatore GIORNO
+   in Home invece di un paragrafo di testo da leggere */
+.finish-recap{display:flex;justify-content:center;gap:22px;margin-bottom:14px;}
+.finish-recap-stat{display:flex;flex-direction:column;align-items:center;}
+.finish-recap-num{font-family:var(--font-display);font-size:26px;font-weight:700;line-height:1;}
+.finish-recap-label{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.finish-recap-prs{text-align:center;font-size:12px;font-weight:700;color:var(--green);margin-bottom:14px;}
+
 /* "giorno di oggi -> prossimo giorno" su una riga sola con due pillole
    colorate, al posto dei due blocchi di testo giganti (34px, uno sopra
    l'altro) che c'erano prima - stessa informazione, molto meno ingombro */

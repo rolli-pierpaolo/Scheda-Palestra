@@ -142,6 +142,19 @@ const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
 
   const body = document.getElementById("finishWorkoutBody");
 
+  // recap: cosa e' successo davvero in questa sessione (volume/serie di
+  // OGGI, non di tutta la settimana) + i PR presi da quando e' iniziata -
+  // niente da mostrare se non e' stato ancora scritto nulla (es. si apre il
+  // popup senza aver fatto una sola serie)
+  const stats = computeDaySessionStats(day);
+  const recapHtml = stats.setsCount>0 ? `
+    <div class="finish-recap">
+      <div class="finish-recap-stat"><span class="finish-recap-num">${stats.setsCount}</span><span class="finish-recap-label">serie</span></div>
+      <div class="finish-recap-stat"><span class="finish-recap-num">${stats.volume.toLocaleString('it-IT')}</span><span class="finish-recap-label">kg volume</span></div>
+      ${sessionPRs.length ? `<div class="finish-recap-stat"><span class="finish-recap-num">${sessionPRs.length}</span><span class="finish-recap-label">record</span></div>` : ''}
+    </div>
+    ${sessionPRs.length ? `<div class="finish-recap-prs">${ICON_PLATE} ${sessionPRs.map(p=>escapeHtml(p.name)+(p.weight!=null?' '+String(p.weight).replace('.',',')+'kg':'')).join(' · ')}</div>` : ''}
+  ` : '';
 
   body.innerHTML = `
 
@@ -157,6 +170,8 @@ const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
     : "Allenamento completato"
   }
 </div>
+
+    ${recapHtml}
 
     <div class="finish-day-transition">
       <span class="finish-day-pill" style="--accent:${accent}">${escapeHtml(day.name)}</span>
@@ -530,6 +545,7 @@ if(weekFinished){
 
     workoutInProgress = false;
     saveWorkoutInProgress();
+    sessionPRs = [];
 
     renderDayTabs();
     renderActive();
