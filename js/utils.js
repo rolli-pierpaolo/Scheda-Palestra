@@ -1,4 +1,8 @@
+// ---------------- FUNZIONI DI SUPPORTO VARIE ----------------
+// icone, piccoli aiuti per il rendering, gesti su schermo e simili - roba
+// usata da tanti file diversi in giro per l'app, raccolta qui in un posto solo
 const FEEDBACK_FORM_URL = "https://forms.gle/sjQnNHYtPJqRnG119";
+// apre in una scheda nuova il modulo per lasciare un feedback
 function openFeedbackForm(){
   if(!FEEDBACK_FORM_URL){
     alert('Link al modulo feedback non ancora configurato (FEEDBACK_FORM_URL in js/utils.js).');
@@ -6,11 +10,11 @@ function openFeedbackForm(){
   }
   window.open(FEEDBACK_FORM_URL, '_blank', 'noopener');
 }
-// icone SVG in linea (stroke="currentColor": prendono da sole il colore del
-// bottone che le contiene, niente CSS in piu' da coordinare) al posto delle
-// emoji sui bottoni funzionali della card esercizio - stesso stile a linee
-// dell'icona Home nella barra di navigazione, cosi' l'app ha un set coerente
-// invece di dipendere da come ogni telefono disegna le emoji
+// icone SVG in linea, stroke="currentColor" così prendono da sole il colore
+// del bottone che le contiene, niente CSS in più da coordinare, al posto
+// delle emoji sui bottoni funzionali della card esercizio - stesso stile a
+// linee dell'icona Home nella barra di navigazione, così l'app ha un set
+// coerente invece di dipendere da come ogni telefono disegna le emoji
 const ICON_TRASH = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 7 H20"/><path d="M9 7 V4.5 A1 1 0 0 1 10 3.5 H14 A1 1 0 0 1 15 4.5 V7"/><path d="M6 7 L7 20 A1 1 0 0 0 8 21 H16 A1 1 0 0 0 17 20 L18 7"/><path d="M10 11 V17"/><path d="M14 11 V17"/></svg>';
 const ICON_CHART = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 20 V4"/><path d="M4 20 H20"/><path d="M6.5 15 L11 10.5 L14 13.5 L19 7.5"/></svg>';
 const ICON_PLATE = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -18,13 +22,11 @@ const ICON_LINK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" s
 // "..." stile iOS: tre pallini pieni invece del solito bordo/tratto delle
 // altre icone di questo set, si legge meglio a quella dimensione minuscola
 const ICON_MORE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none"/></svg>';
-// piccolo avviso flottante generico (riusa lo stesso box/animazione del
-// festeggiamento PR, che in realta' non ha nulla di specifico al PR se non il
-// testo): comodo per qualsiasi conferma rapida senza dover creare un nuovo
-// elemento/stile per ognuna
-// innerHTML invece di textContent: serve a celebratePR() per poter mettere
-// l'icona del disco al posto dell'emoji trofeo - sicuro qui perche' ogni
-// chiamata passa sempre un testo scritto a mano nel codice, mai input utente
+// piccolo avviso flottante generico, comodo per qualsiasi conferma rapida
+// senza dover creare un nuovo elemento o stile per ognuna
+// innerHTML invece di textContent: serve per poter mettere un'icona dentro
+// il messaggio invece di un'emoji - sicuro qui perché ogni chiamata passa
+// sempre un testo scritto a mano nel codice, mai input dell'utente
 function showQuickToast(msg){
   let el = document.getElementById('prToast');
   if(!el){
@@ -38,11 +40,11 @@ function showQuickToast(msg){
   clearTimeout(window._prToastTimer);
   window._prToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2200);
 }
-// festeggiamento a schermo intero per record personale/obiettivo sbloccato
-// (vedi celebratePR in js/records.js e revealAchievement in js/achievements.js):
-// card centrale + scheggie colorate che esplodono dal centro. title/subtitle
-// vanno SEMPRE per textContent (mai innerHTML) perche' title puo' contenere
-// il nome di un esercizio scritto dall'utente
+// festeggiamento a schermo intero per record personale o obiettivo sbloccato,
+// vedi celebratePR in js/records.js e revealAchievement in js/achievements.js:
+// card centrale più scheggie colorate che esplodono dal centro. Title e
+// subtitle vanno sempre per textContent, mai innerHTML, perché title può
+// contenere il nome di un esercizio scritto dall'utente
 const CELEBRATION_SHARD_COLORS = ['var(--green)','var(--amber)','var(--red)','var(--steel)'];
 function showCelebration(opts){
   let overlay = document.getElementById('celebrationOverlay');
@@ -103,9 +105,11 @@ function showCelebration(opts){
 
   window._celebrationTimer = setTimeout(()=>{ overlay.classList.remove('show'); }, opts.duration || 2600);
 }
-// seconda tornata: intestazioni/bottoni di Storico + chrome dei modali. Stessa
-// funzione svgIcon() per non ripetere gli attributi comuni ogni volta - il
-// "d" di ogni singolo path resta l'unica parte che cambia da icona a icona
+// seconda tornata di icone: intestazioni e bottoni di Storico, cornice dei
+// modali. Stessa funzione svgIcon() per non ripetere gli attributi comuni
+// ogni volta - il percorso di ogni singola icona resta l'unica parte che
+// cambia da una all'altra
+// costruisce il markup di un'icona SVG a partire dai suoi percorsi interni
 function svgIcon(inner, size){
   size = size || 16;
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle">${inner}</svg>`;
@@ -128,7 +132,7 @@ const ICON_REORDER = svgIcon('<path d="M8 4 L8 20"/><path d="M5 7 L8 4 L11 7"/><
 const ICON_CHECK = svgIcon('<path d="M5 12.5 L10 17.5 L19 6.5"/>');
 const ICON_BELL = svgIcon('<path d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18.5 H4 Z"/><path d="M10 20.5 A2 2 0 0 0 14 20.5"/>');
 const ICON_BELL_OFF = svgIcon('<path d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18.5 H4 Z"/><path d="M10 20.5 A2 2 0 0 0 14 20.5"/><path d="M4 4 L20 20"/>');
-// terza tornata: badge obiettivi, toast/festeggiamenti, indicatori settimana
+// terza tornata di icone: badge obiettivi, toast e festeggiamenti, indicatori settimana
 const ICON_FLAG = svgIcon('<path d="M6 3 V21"/><path d="M6 4 H16 L13.5 7.5 L16 11 H6"/>');
 const ICON_STAR = svgIcon('<path d="M12 3 L14.6 9 L21 9.6 L16.2 13.8 L17.6 20 L12 16.7 L6.4 20 L7.8 13.8 L3 9.6 L9.4 9 Z"/>');
 const ICON_TROPHY = svgIcon('<path d="M7 4 H17 V8 A5 5 0 0 1 7 8 Z"/><path d="M7 5 H4.5 A2.5 2.5 0 0 0 7 9.5"/><path d="M17 5 H19.5 A2.5 2.5 0 0 1 17 9.5"/><path d="M12 13 V17"/><path d="M9 20 H15"/><path d="M10 17 H14 L14.5 20 H9.5 Z"/>');
@@ -137,29 +141,29 @@ const ICON_LOCK = svgIcon('<rect x="5" y="11" width="14" height="9" rx="1.5"/><p
 const ICON_WARNING = svgIcon('<path d="M12 4 L21 19 H3 Z"/><path d="M12 10 V14"/><circle cx="12" cy="16.7" r="0.9" fill="currentColor" stroke="none"/>');
 const ICON_FLAME = svgIcon('<path d="M12 2 C12 2 6 9 6 13.5 A6 6 0 0 0 18 13.5 C18 11 16.5 9.5 15.8 9 C16 11 14 12 14 10 C14 7.5 15 6 12 2 Z"/>');
 const ICON_LIGHTNING = svgIcon('<path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z"/>');
-// varianti a colori pieni delle stesse 3 forme, usate SOLO per l'icona finale
-// delle frasi motivazionali in Home (splitMotivation, in js/home.js): li'
-// l'utente le vuole colorate e "piene" invece che in tinta unita come il
-// resto dell'app - tutte le altre icone (bottoni, badge...) restano
-// outline/monocromatiche per coerenza col resto dell'interfaccia
+// varianti a colori pieni delle stesse tre forme, usate solo per l'icona
+// finale delle frasi motivazionali in Home, splitMotivation in js/home.js:
+// lì si vogliono colorate e piene invece che in tinta unita come il resto
+// dell'app - tutte le altre icone, bottoni, badge, restano a contorno e
+// monocromatiche per coerenza col resto dell'interfaccia
 const ICON_FLAME_COLOR = '<svg viewBox="0 0 24 24" width="21" height="21" style="vertical-align:middle"><path d="M12 2 C12 2 6 9 6 13.5 A6 6 0 0 0 18 13.5 C18 11 16.5 9.5 15.8 9 C16 11 14 12 14 10 C14 7.5 15 6 12 2 Z" fill="#FF7A1A"/></svg>';
 const ICON_LIGHTNING_COLOR = '<svg viewBox="0 0 24 24" width="21" height="21" style="vertical-align:middle"><path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z" fill="#FFD400"/></svg>';
 const ICON_PLATE_COLOR = '<svg viewBox="0 0 24 24" width="21" height="21" style="vertical-align:middle"><circle cx="12" cy="12" r="8" fill="none" stroke="#FF3D7F" stroke-width="3"/><circle cx="12" cy="12" r="3" fill="#FF3D7F"/></svg>';
 const ICON_POINT = svgIcon('<circle cx="12" cy="12" r="8.5"/><path d="M12 8 V13"/><circle cx="12" cy="16" r="0.9" fill="currentColor" stroke="none"/>');
-// stessa identica forma della casetta gia' in HTML nella barra di navigazione:
-// costante qui solo per poterla riusare anche dentro le stringhe JS (guida)
+// stessa identica forma della casetta già in HTML nella barra di navigazione:
+// costante qui solo per poterla riusare anche dentro le stringhe JS della guida
 const ICON_HOME = svgIcon('<path d="M4 11 L12 4 L20 11 V20 H4 Z"/><path d="M9.5 20 V13 H14.5 V20"/>');
-// vibrazione breve su azioni chiave (spunta settimana, obiettivo sbloccato,
-// giorno terminato): silenziosa se il dispositivo/browser non la supporta
-// (es. iOS Safari, che non implementa la Vibration API)
+// vibrazione breve su azioni chiave, spunta settimana, obiettivo sbloccato,
+// giorno terminato: silenziosa se il dispositivo o il browser non la
+// supporta, per esempio iOS Safari, che non implementa la Vibration API
 function vibrate(pattern){
   if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
 }
 // auto-avanzamento del focus dal campo kg al campo rip della stessa riga: le
-// tastiere numeriche (inputmode decimal/numeric) di solito non hanno un tasto
-// "avanti", quindi qui si usa una piccola pausa dopo l'ultimo tasto premuto -
-// se dopo quella pausa il focus e' ancora sul campo kg (l'utente non e' gia'
-// passato oltre da solo) si salta al campo successivo della riga
+// tastiere numeriche di solito non hanno un tasto "avanti", quindi qui si
+// usa una piccola pausa dopo l'ultimo tasto premuto - se dopo quella pausa
+// il focus è ancora sul campo kg, l'utente non è già passato oltre da solo,
+// si salta al campo successivo della riga
 function scheduleAutoAdvance(input){
   clearTimeout(input._advanceTimer);
   if(!input.value) return;
@@ -173,19 +177,19 @@ function scheduleAutoAdvance(input){
     if(next) next.focus();
   }, 700);
 }
-// hash minimo e stabile (non Math.random): la stessa frase resta la stessa
-// finche' non cambia il seed (esercizio+settimana), invece di saltare a caso
-// a ogni render - stesso principio di pickMotivationalPhrase in js/home.js
+// hash minimo e stabile, non Math.random: la stessa frase resta la stessa
+// finché non cambia il seme, esercizio più settimana, invece di saltare a
+// caso a ogni render - stesso principio di pickMotivationalPhrase in js/home.js
 function pickFromPool(pool, seed){
   let hash = 0;
   for(let i=0;i<seed.length;i++){ hash = (hash*31 + seed.charCodeAt(i)) >>> 0; }
   return pool[hash % pool.length];
 }
-// piu' varianti apposta (prima era una singola frase fissa per direzione,
-// sempre identica: "leggeva sempre uguale", cosa giustamente segnalata come
-// stucchevole da rileggere esercizio dopo esercizio) - il seed usato per
-// scegliere il suffisso e' diverso da quello della frase base (vedi sotto),
-// cosi' le due cose non sono sempre "incollate" nella stessa combinazione
+// più varianti apposta, prima era una singola frase fissa per direzione,
+// sempre identica: leggeva sempre uguale, cosa giustamente segnalata come
+// stucchevole da rileggere esercizio dopo esercizio - il seme usato per
+// scegliere il suffisso è diverso da quello della frase base, vedi sotto,
+// così le due cose non sono sempre incollate nella stessa combinazione
 const PROGRESSION_SUFFIX_PESO = [
   " Stavolta carica un filo di più!",
   " Oggi il ferro sale ancora!",
@@ -198,17 +202,18 @@ const PROGRESSION_SUFFIX_REP = [
   " Trova un'altra rip nelle gambe... o nelle braccia!",
   " Stavolta il numero sale ancora!",
 ];
-// frase motivazionale per la settimana CORRENTE non ancora conclusa: SEMPRE
-// presente a prescindere dai dati delle settimane vecchie (anche alla primissima
-// settimana in assoluto, dove non c'e' proprio nulla prima) - i dati passati
-// servono solo per aggiungere un breve suggerimento di direzione in piu' (piu'
-// peso o piu' ripetizioni) quando ci sono, MAI per decidere se mostrare la
-// frase o no. La base viene dal pool motivazionale del GRUPPO MUSCOLARE di
-// QUESTO esercizio (vedi MUSCLE_MOTIVATION/getExerciseGroup) - non ha senso
-// una frase sul petto mentre stai facendo gambe. Il suffisso di direzione non
-// rivela mai il numero di ripetizioni fatte la volta scorsa: vederlo scritto
-// potrebbe influenzare a farne apposta di meno per "eguagliarlo" invece di
-// superarlo (richiesta esplicita dell'utente)
+// frase motivazionale per la settimana corrente non ancora conclusa: sempre
+// presente a prescindere dai dati delle settimane vecchie, anche alla
+// primissima settimana in assoluto, dove non c'è proprio nulla prima - i
+// dati passati servono solo per aggiungere un breve suggerimento di
+// direzione in più, più peso o più ripetizioni, quando ci sono, mai per
+// decidere se mostrare la frase o no. La base viene dal gruppo di frasi del
+// gruppo muscolare di questo esercizio, vedi MUSCLE_MOTIVATION e
+// getExerciseGroup: non ha senso una frase sul petto mentre stai facendo
+// gambe. Il suffisso di direzione non rivela mai il numero di ripetizioni
+// fatte la volta scorsa: vederlo scritto potrebbe influenzare a farne
+// apposta di meno per eguagliarlo invece di superarlo, richiesta esplicita
+// dell'utente
 function computeProgressionHint(ex, w){
   if(w < 0) return null;
   const group = getExerciseGroup(ex.nome);
@@ -231,53 +236,56 @@ function computeProgressionHint(ex, w){
   }
   return { text: base.text + suffix, icon: base.icon };
 }
+// rende sicuro un testo da mettere dentro un attributo HTML tra virgolette
 function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
 // per infilare un nome dentro una stringa JS tra apici singoli scritta a mano
-// in un onclick="...('...')" : nomi con un apostrofo (es. "SLDL (TI TORMENTERA')",
-// un esercizio vero salvato in DATA) romperebbero l'attributo senza questo escape
+// in un onclick="...('...')": nomi con un apostrofo, per esempio "SLDL (TI
+// TORMENTERA')", un esercizio vero salvato tra i dati, romperebbero
+// l'attributo senza questo escape
 function escapeJs(s){ return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+// rende sicuro un testo da mettere dentro il contenuto HTML di un elemento
 function escapeHtml(s){ if(s===null||s===undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-// altezza della textarea del nome esercizio calcolata sul contenuto reale
-// (scrollHeight): azzerare l'altezza prima del ricalcolo e' necessario,
-// altrimenti scrollHeight resterebbe quello vecchio se il testo si accorcia
+// altezza della textarea del nome esercizio calcolata sul contenuto reale:
+// azzerare l'altezza prima del ricalcolo è necessario, altrimenti
+// resterebbe quella vecchia se il testo si accorcia
 function autoGrowTextarea(el){
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
 }
 // dopo ogni renderActive() le textarea dei nomi partono tutte con l'altezza
-// di una riga sola: qui si ricalcolano subito, cosi' i nomi lunghi si vedono
-// gia' per intero dal primo render, senza dover toccare l'esercizio
+// di una riga sola: qui si ricalcolano subito, così i nomi lunghi si vedono
+// già per intero dal primo render, senza dover toccare l'esercizio
 function autoGrowAllExNames(){
   document.querySelectorAll('#viewActive .ex-name').forEach(autoGrowTextarea);
 }
-// le note/tecnica (.ex-comment) NON si allargano piu' col contenuto: restano
-// piccole finche' non ci si clicca sopra (vedi :focus in css/style.css),
-// niente piu' bisogno di ricalcolarle dopo ogni render
-// stesso principio per il campo "Serie" (schema): prima era un input a riga
-// singola che tagliava gli schemi scritti lunghi, ora e' una textarea con
-// riga propria che cresce con il testo, stessa logica di nome/note
+// le note e tecnica non si allargano più col contenuto: restano piccole
+// finché non ci si clicca sopra, niente più bisogno di ricalcolarle dopo
+// ogni render.
+// Stesso principio per il campo "Serie", schema: prima era un input a riga
+// singola che tagliava gli schemi scritti lunghi, ora è una textarea con
+// riga propria che cresce con il testo, stessa logica di nome e note
 function autoGrowAllExSchema(){
   document.querySelectorAll('#viewActive .meta-input.schema').forEach(el=>{
     autoGrowTextarea(el);
     autoWidthSchema(el);
   });
 }
-// larghezza in "ch" (circa 1 carattere) invece che altezza: per uno schema
-// corto ("4x8") il campo resta piccolo come il Recupero qui sopra, invece di
-// occupare comunque tutta la riga. Solo se il testo supera la larghezza
-// disponibile (max-width:100% in CSS) va a capo, e li' entra in gioco la
-// crescita in altezza di autoGrowTextarea qui sopra
+// larghezza in "ch", circa un carattere, invece che altezza: per uno schema
+// corto tipo "4x8" il campo resta piccolo come il Recupero qui sopra, invece
+// di occupare comunque tutta la riga. Solo se il testo supera la larghezza
+// disponibile va a capo, e lì entra in gioco la crescita in altezza di
+// autoGrowTextarea qui sopra
 function autoWidthSchema(el){
   const len = (el.value || '').length;
   el.style.width = Math.max(4, Math.min(len + 2, 40)) + 'ch';
 }
-// i campi kg/rip usano inputmode="decimal"/"numeric" cosi' di default si apre
-// la tastiera solo numeri (piu' comoda per la maggior parte degli inserimenti),
-// ma a volte serve poter scrivere anche lettere/simboli (es. "fallimento"):
+// i campi kg e rip usano una modalità che apre di default la tastiera solo
+// numeri, più comoda per la maggior parte degli inserimenti, ma a volte
+// serve poter scrivere anche lettere o simboli, per esempio "fallimento":
 // una pressione prolungata sul campo passa alla tastiera intera, e torna in
-// automatico a quella numerica di default appena si esce dal campo (blur
+// automatico a quella numerica di default appena si esce dal campo, un blur
 // vero, non quello interno usato per far ridisegnare la tastiera dal sistema
-// operativo)
+// operativo
 function toggleFieldKeyboard(input){
   const dflt = input.dataset.defaultInputmode || input.getAttribute('inputmode') || 'decimal';
   input.dataset.defaultInputmode = dflt;
@@ -287,6 +295,7 @@ function toggleFieldKeyboard(input){
   input.blur();
   setTimeout(()=>{ input._kbSwitching = false; input.focus(); }, 30);
 }
+// riporta un campo alla sua tastiera numerica di default, appena lo si lascia
 function resetFieldKeyboard(input){
   if(input._kbSwitching) return;
   if(input.dataset.defaultInputmode){
@@ -294,13 +303,14 @@ function resetFieldKeyboard(input){
     delete input.dataset.defaultInputmode;
   }
 }
-// pressione prolungata invece del doppio tap: su mobile il doppio tap e'
-// spesso poco affidabile (due tocchi non abbastanza ravvicinati non vengono
-// riconosciuti come "dblclick" dal browser, quindi a volte semplicemente non
-// succede nulla) - stesso schema gia' usato per il menu contestuale sul nome
-// esercizio (vedi stickyGesture in exercise-card.js), qui su un gesture state
-// separato perche' agisce su un elemento diverso (il singolo campo kg/rip)
+// pressione prolungata invece del doppio tap: su mobile il doppio tap è
+// spesso poco affidabile, due tocchi non abbastanza ravvicinati non vengono
+// riconosciuti come dblclick dal browser, quindi a volte semplicemente non
+// succede nulla - stesso schema già usato per il menu contestuale sul nome
+// esercizio, vedi stickyGesture in exercise-card.js, qui su uno stato del
+// gesto separato perché agisce su un elemento diverso, il singolo campo kg o rip
 let kbGesture = { timer:null, startX:0, startY:0 };
+// inizia a contare il tempo di pressione su un campo kg o rip
 function onSetInputPointerDown(e, input){
   kbGesture.startX = e.clientX;
   kbGesture.startY = e.clientY;
@@ -311,10 +321,13 @@ function onSetInputPointerDown(e, input){
     toggleFieldKeyboard(input);
   }, 450);
 }
+// annulla la pressione prolungata se il dito si sposta troppo, per non
+// confonderla con uno scroll
 function onSetInputPointerMove(e){
   const dx = Math.abs(e.clientX-kbGesture.startX), dy = Math.abs(e.clientY-kbGesture.startY);
   if(dx>10 || dy>10) clearTimeout(kbGesture.timer);
 }
+// annulla la pressione prolungata se il dito si solleva prima del tempo
 function onSetInputPointerCancel(){
   clearTimeout(kbGesture.timer);
 }
