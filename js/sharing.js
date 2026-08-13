@@ -1,24 +1,27 @@
 // ---------------- CONDIVISIONE CON UN COACH (sola lettura) ----------------
-// un utente puo' invitare via email un'altra persona (es. il proprio coach)
-// a VEDERE (mai modificare) i propri dati. Chi riceve l'invito entra in una
-// modalita' di sola visualizzazione che riusa il rendering vero dell'app -
-// mai un secondo sistema di rendering separato - ma con tutti gli input
-// bloccati via CSS (vedi .shared-readonly in css/style.css) e con ogni
+// un utente può invitare via email un'altra persona, per esempio il proprio
+// coach, a vedere ma mai modificare i propri dati. Chi riceve l'invito entra
+// in una modalità di sola visualizzazione che riusa il rendering vero
+// dell'app, mai un secondo sistema di rendering separato, ma con tutti gli
+// input bloccati via css, vedi .shared-readonly in css/style.css, e con ogni
 // salvataggio disattivato mentre si guardano dati non propri: vedi
-// isViewingShared(), controllato da saveState/saveActivePos/saveCollapsed
-// (js/combobox.js, js/navigation.js) e da pushToCloud (js/sync.js).
+// isViewingShared(), controllato da saveState, saveActivePos, saveCollapsed
+// in js/combobox.js e js/navigation.js, e da pushToCloud in js/sync.js
 
-// se non-null, siamo in modalita' visualizzazione dei dati di un altro
-// utente (l'id del proprietario). sharedViewBackup e' l'istantanea dello
-// stato VERO del viewer, per poterlo ripristinare uscendo dalla visualizzazione
+// se diverso da null, siamo in modalità visualizzazione dei dati di un altro
+// utente, contiene l'id del proprietario. sharedViewBackup è l'istantanea
+// dello stato vero del viewer, per poterlo ripristinare uscendo dalla
+// visualizzazione
 let viewingSharedOwnerId = null;
 let sharedViewBackup = null;
 
+// dice se in questo momento si stanno guardando i dati di qualcun altro
 function isViewingShared(){
   return !!viewingSharedOwnerId;
 }
 
-// ---- lato proprietario: invita/revoca chi puo' vedere i TUOI dati ----
+// ---- lato proprietario: invita o revoca chi può vedere i tuoi dati ----
+// legge la lista di persone che hai già invitato a vedere i tuoi dati
 async function loadMyInvites(){
   if(!isSyncEnabled()) return [];
   const { data, error } = await supabaseClient
@@ -28,6 +31,7 @@ async function loadMyInvites(){
     .order('created_at', {ascending:false});
   return error ? [] : (data||[]);
 }
+// invita una persona via email a vedere i tuoi dati
 async function inviteViewer(){
   const input = document.getElementById('shareInviteEmail');
   const errorEl = document.getElementById('shareInviteError');
@@ -42,20 +46,22 @@ async function inviteViewer(){
     viewer_email: email
   });
   if(error){
-    if(errorEl) errorEl.textContent = error.code==='23505' ? 'Hai gia\' invitato questa email.' : error.message;
+    if(errorEl) errorEl.textContent = error.code==='23505' ? 'Hai già invitato questa email.' : error.message;
     return;
   }
   input.value = '';
   renderSharingSection();
 }
+// toglie a una persona la possibilità di vedere i tuoi dati, con conferma
 async function revokeViewer(id){
   if(!isSyncEnabled()) return;
-  if(!confirm('Togliere a questa persona la possibilita\' di vedere i tuoi dati?')) return;
+  if(!confirm('Togliere a questa persona la possibilità di vedere i tuoi dati?')) return;
   await supabaseClient.from('shared_access').delete().eq('id', id);
   renderSharingSection();
 }
 
-// ---- lato invitato: vede chi lo ha invitato, entra/esce dalla visualizzazione ----
+// ---- lato invitato: vede chi lo ha invitato, entra ed esce dalla visualizzazione ----
+// legge la lista di persone che ti hanno invitato a vedere i loro dati
 async function loadSharedWithMe(){
   if(!isSyncEnabled() || !syncSession.user.email) return [];
   const { data, error } = await supabaseClient
@@ -65,6 +71,8 @@ async function loadSharedWithMe(){
   return error ? [] : (data||[]);
 }
 
+// entra nella visualizzazione di sola lettura dei dati di un'altra persona,
+// salvando prima una copia dei tuoi dati veri per poterci tornare
 async function viewSharedAccount(ownerUserId){
   if(!isSyncEnabled()) return;
   const { data, error } = await supabaseClient
@@ -80,13 +88,13 @@ async function viewSharedAccount(ownerUserId){
   const check = validateBackup(payload);
   if(!check.valid){ alert('I dati ricevuti non sono validi: ' + check.reason); return; }
 
-  // istantanea di TUTTO lo stato vero del viewer, per ripristinarlo uscendo
+  // istantanea di tutto lo stato vero del viewer, per ripristinarlo uscendo
   sharedViewBackup = {
     state, storicoExtra, collapsedMap, deletedStorico, calendarLog,
     extraLists, exerciseGroups, deletedEsercizi
   };
   viewingSharedOwnerId = ownerUserId;
-  applyBackup(payload); // stesso riuso della sync - qui pero' non si salva mai, vedi le guardie in saveState/saveActivePos/saveCollapsed/pushToCloud
+  applyBackup(payload); // stesso riuso della sync, qui però non si salva mai, vedi le guardie in saveState, saveActivePos, saveCollapsed, pushToCloud
   activeDayIdx = 0;
   document.body.classList.add('shared-readonly');
   showSharedViewBanner();
@@ -94,6 +102,7 @@ async function viewSharedAccount(ownerUserId){
   showView('active');
 }
 
+// esce dalla visualizzazione condivisa e ripristina i tuoi dati veri
 function exitSharedView(){
   if(!sharedViewBackup) return;
   state = sharedViewBackup.state;
@@ -113,6 +122,7 @@ function exitSharedView(){
   showHome();
 }
 
+// mostra il banner che ricorda "stai guardando dati non tuoi"
 function showSharedViewBanner(){
   let el = document.getElementById('sharedViewBanner');
   if(!el){
@@ -124,12 +134,14 @@ function showSharedViewBanner(){
   el.innerHTML = '👀 Stai vedendo dati condivisi (sola lettura) <button class="exit-shared-view" onclick="exitSharedView()">Torna ai tuoi dati</button>';
   el.classList.add('show');
 }
+// nasconde il banner di visualizzazione condivisa
 function hideSharedViewBanner(){
   const el = document.getElementById('sharedViewBanner');
   if(el) el.classList.remove('show');
 }
 
-// ---- rendering della sezione dentro Storico > Impostazioni ----
+// ---- rendering della sezione dentro Impostazioni ----
+// disegna sia la lista di chi hai invitato che quella di chi ti ha invitato
 async function renderSharingSection(){
   const invitesEl = document.getElementById('shareInvitesList');
   const sharedWithMeEl = document.getElementById('sharedWithMeList');

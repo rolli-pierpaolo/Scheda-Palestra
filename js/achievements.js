@@ -1,19 +1,22 @@
 // ---------------- OBIETTIVI (traguardi nascosti, stile "a sorpresa") ----------------
-// una lista fissa di traguardi, dai piu' semplici ai piu' complessi: finche' non
-// vengono raggiunti restano "oscurati" nella modale (si vede solo un lucchetto
-// e "???"), cosi' la sorpresa di scoprirli resta intatta. checkAchievements()
-// viene richiamata dopo ogni azione rilevante (fine allenamento, nuovo record,
-// nuovo blocco, superset creato, esercizio aggiunto alla libreria...) e valuta
-// tutte le condizioni: quelle vere per la prima volta si sbloccano e vengono
-// mostrate subito (toast in-app, sempre; notifica di sistema solo se attivata,
-// vedi toggleAchievNotifications)
+// una lista fissa di traguardi, dai più semplici ai più complessi: finché non
+// vengono raggiunti restano oscurati nella modale, si vede solo un lucchetto
+// e tre punti interrogativi, così la sorpresa di scoprirli resta intatta.
+// checkAchievements() viene richiamata dopo ogni azione rilevante, fine
+// allenamento, nuovo record, nuovo blocco, superset creato, esercizio
+// aggiunto alla libreria, e valuta tutte le condizioni: quelle vere per la
+// prima volta si sbloccano e vengono mostrate subito, un festeggiamento
+// sempre in app, una notifica di sistema solo se attivata, vedi
+// toggleAchievNotifications
 const ACHIEVEMENTS_KEY = "scheda_wo18_achievements_v1";
 const ACHIEV_NOTIF_KEY = "scheda_wo18_achiev_notifications_v1";
 const ACHIEV_COUNTERS_KEY = "scheda_wo18_achiev_counters_v1";
-let unlockedAchievements = {}; // {id: dataKey sblocco}
+let unlockedAchievements = {}; // {id: data chiave dello sblocco}
 let achievNotificationsEnabled = false;
 let achievCounters = { prCount:0, linkCount:0 };
 
+// carica dagli obiettivi sbloccati, le preferenze di notifica e i contatori
+// salvati su localStorage
 function loadAchievements(){
   try{
     const raw = localStorage.getItem(ACHIEVEMENTS_KEY);
@@ -30,16 +33,21 @@ function loadAchievements(){
 function saveAchievements(){ localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(unlockedAchievements)); }
 function saveAchievNotifications(){ localStorage.setItem(ACHIEV_NOTIF_KEY, achievNotificationsEnabled ? '1' : '0'); }
 function saveAchievCounters(){ localStorage.setItem(ACHIEV_COUNTERS_KEY, JSON.stringify(achievCounters)); }
+// incrementa di uno un contatore usato dalle condizioni degli obiettivi,
+// per esempio quante volte hai battuto un record
 function bumpAchievCounter(name){
   achievCounters[name] = (achievCounters[name]||0) + 1;
   saveAchievCounters();
 }
 
+// conta quanti allenamenti risultano registrati in totale nel calendario
 function totalWorkoutsLogged(){
   let n = 0;
   Object.keys(calendarLog).forEach(k=>{ n += (calendarLog[k]||[]).length; });
   return n;
 }
+// trova il peso più alto mai sollevato in assoluto, in qualunque esercizio,
+// sia nel blocco attivo che nello storico
 function maxWeightEverLifted(){
   let max = 0;
   const scan = day => (day.esercizi||[]).forEach(ex=>{
@@ -53,8 +61,8 @@ function maxWeightEverLifted(){
   Object.keys(storico).forEach(t=>(storico[t]||[]).forEach(scan));
   return max;
 }
-// scarto in giorni tra gli ultimi due allenamenti registrati (0 se non c'e'
-// abbastanza storico): usato per rilevare un "ritorno" dopo una pausa lunga
+// scarto in giorni tra gli ultimi due allenamenti registrati, zero se non
+// c'è abbastanza storico: usato per rilevare un ritorno dopo una pausa lunga
 function daysSinceLastGap(){
 const startKey = state.programStartDate || mostRecentMondayKey();
 
@@ -70,10 +78,13 @@ const dates = Object.keys(calendarLog)
   const prev = new Date(dates[dates.length-2]+'T00:00:00');
   return Math.round((last-prev)/86400000);
 }
+// dice se nel blocco attivo esiste almeno una settimana segnata come saltata
 function anyWeekSkippedInActiveState(){
   return (state.days||[]).some(d=>(d.esercizi||[]).some(ex=>(ex.weekSkipped||[]).some(Boolean)));
 }
 
+// l'elenco vero e proprio degli obiettivi: ognuno ha un'icona, un titolo,
+// una descrizione, e una funzione check() che dice se è stato raggiunto
 const ACHIEVEMENTS = [
   { id:'primo_allenamento', icon:ICON_FLAG, title:'Si comincia!', desc:'Hai registrato il tuo primo allenamento.', check: () => totalWorkoutsLogged() >= 1 },
   { id:'prima_settimana', icon:ICON_CHECK, title:'Prima tacca', desc:'Hai segnato la tua prima settimana come completata.', check: () => (state.days||[]).some(d=>(d.esercizi||[]).some(ex=>(ex.weekDone||[]).some(Boolean))) },
@@ -91,9 +102,10 @@ const ACHIEVEMENTS = [
   { id:'bentornato', icon:ICON_CYCLE, title:'Bentornato', desc:"Sei tornato ad allenarti dopo una pausa di almeno 10 giorni.", check: () => daysSinceLastGap() >= 10 },
 ];
 
-// idempotente: si puo' chiamare quante volte si vuole, sblocca solo cio' che
-// non era gia' sbloccato e mostra solo l'ultimo traguardo nuovo trovato in
-// questa chiamata (nel raro caso in cui piu' condizioni diventino vere insieme)
+// controlla tutti gli obiettivi non ancora sbloccati e sblocca quelli
+// raggiunti. Idempotente: si può chiamare quante volte si vuole, sblocca solo
+// ciò che non era già sbloccato e mostra solo l'ultimo traguardo nuovo trovato
+// in questa chiamata, nel raro caso in cui più condizioni diventino vere insieme
 function checkAchievements(){
   let newlyUnlocked = null;
   ACHIEVEMENTS.forEach(a=>{
@@ -110,6 +122,8 @@ function checkAchievements(){
     revealAchievement(newlyUnlocked);
   }
 }
+// mostra il festeggiamento per un obiettivo appena sbloccato, e se attivate
+// manda anche una notifica di sistema
 function revealAchievement(a){
   showCelebration({
     icon: a.icon,
@@ -126,9 +140,10 @@ function revealAchievement(a){
     }).catch(()=>{});
   }
 }
-// richiede il permesso per le notifiche di sistema SOLO quando l'utente attiva
+// richiede il permesso per le notifiche di sistema solo quando l'utente attiva
 // l'interruttore: senza permesso concesso, il traguardo si sblocca comunque e
-// si vede nel toast/nella modale, semplicemente non arriva la notifica di sistema
+// si vede nel festeggiamento e nella modale, semplicemente non arriva la
+// notifica di sistema
 async function toggleAchievNotifications(){
   if(achievNotificationsEnabled){
     achievNotificationsEnabled = false;
@@ -149,10 +164,12 @@ async function toggleAchievNotifications(){
   saveAchievNotifications();
   renderAchievNotifToggle();
 }
+// aggiorna il testo del bottone per attivare o disattivare le notifiche
 function renderAchievNotifToggle(){
   const btn = document.getElementById('achievNotifToggleBtn');
   if(btn) btn.innerHTML = achievNotificationsEnabled ? (ICON_BELL+' Notifiche obiettivi: ON') : (ICON_BELL_OFF+' Notifiche obiettivi: OFF');
 }
+// apre il modale con l'elenco completo degli obiettivi, sbloccati e non
 function openAchievements(){
   const body = document.getElementById('achievBody');
   body.innerHTML = ACHIEVEMENTS.map(a=>{
