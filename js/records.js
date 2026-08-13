@@ -1,5 +1,7 @@
 // ---------------- RECORD PERSONALI (PR) ----------------
-// un dropset e' per definizione un peso ridotto DOPO il cedimento sulla
+// cerca dentro un giorno il peso più alto mai sollevato per un esercizio
+// specifico, scorrendo tutte le settimane e tutte le serie
+// un dropset è per definizione un peso ridotto dopo il cedimento sulla
 // serie vera: non rappresenta la forza massima del momento, quindi non deve
 // mai contare come record (vedi toggleDropset in js/exercise-card.js)
 function maxPesoInDay(day, key){
@@ -20,6 +22,8 @@ function maxPesoInDay(day, key){
   });
   return m;
 }
+// trova il record assoluto per un esercizio, guardando sia il blocco
+// attivo che tutti i mesi archiviati nello storico
 function getRecordForExercise(name){
   const key = String(name||'').trim().toLowerCase();
   if(!key) return null;

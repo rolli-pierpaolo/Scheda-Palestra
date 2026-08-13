@@ -9,28 +9,36 @@
 const INSTALL_BANNER_DISMISS_KEY = 'scheda_wo18_install_banner_dismissed_v1';
 const INSTALL_BANNER_RESHOW_DAYS = 14;
 
+// controlla se siamo su un iPhone/iPad con Safari e l'app non è ancora
+// installata sulla schermata Home
 function isIosSafariNotInstalled(){
   const ua = navigator.userAgent;
   const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-  // navigator.standalone e' specifico di iOS Safari: true solo quando l'app
-  // gira gia' come icona installata sulla Home, non nel browser normale
+  // navigator.standalone è specifico di iOS Safari: true solo quando l'app
+  // gira già come icona installata sulla Home, non nel browser normale
   const isStandalone = window.navigator.standalone === true;
   return isIOS && !isStandalone;
 }
+// decide se mostrare il banner adesso, guardando quando è stato chiuso
+// l'ultima volta
 function shouldShowInstallBanner(){
   if(!isIosSafariNotInstalled()) return false;
   let dismissedAt = 0;
   try{ dismissedAt = parseInt(localStorage.getItem(INSTALL_BANNER_DISMISS_KEY), 10) || 0; }catch(e){}
   if(!dismissedAt) return true;
   // non sparisce per sempre al primo "chiudi": ripropone gentilmente ogni
-  // paio di settimane finche' l'app non risulta davvero installata
+  // paio di settimane finché l'app non risulta davvero installata
   return (Date.now() - dismissedAt) > INSTALL_BANNER_RESHOW_DAYS*24*60*60*1000;
 }
+// chiude il banner e ricorda quando è stato chiuso, per non rimostrarlo
+// subito dopo
 function dismissInstallBanner(){
   const el = document.getElementById('installBanner');
   if(el) el.remove();
   try{ localStorage.setItem(INSTALL_BANNER_DISMISS_KEY, String(Date.now())); }catch(e){}
 }
+// crea e mostra il banner con le istruzioni per installare l'app, solo se
+// ha senso farlo adesso
 function maybeShowInstallBanner(){
   if(!shouldShowInstallBanner()) return;
   const el = document.createElement('div');
