@@ -1,3 +1,6 @@
+// ---------------- ANIMAZIONI (GSAP) ----------------
+// avvia l'unica animazione permanente dell'app: il riflesso metallico che
+// scorre sul nome in alto, per sempre, avanti e indietro
 function initAnimations(){
 
   if(typeof gsap === "undefined") return;
@@ -13,6 +16,8 @@ function initAnimations(){
 }
 
 
+// fa comparire il bottone del giorno suggerito in Home con un piccolo
+// rimbalzo, poi lo fa pulsare piano per sempre finché resta in vista
 function animateSuggestedWorkout(){
 
   if(typeof gsap === "undefined") return;
@@ -23,8 +28,8 @@ function animateSuggestedWorkout(){
 
   btn.classList.add("glow");
 
-  // killTweensOf: showView('home') puo' richiamare questa funzione piu' volte
-  // (ogni volta che si torna alla Home), altrimenti si accumulerebbero piu'
+  // killTweensOf: showView('home') può richiamare questa funzione più volte,
+  // ogni volta che si torna alla Home, altrimenti si accumulerebbero più
   // loop infiniti sullo stesso bottone
   gsap.killTweensOf(btn);
 
@@ -37,10 +42,10 @@ function animateSuggestedWorkout(){
       duration:.7,
       ease:"back.out(1.7)",
       onComplete(){
-        // il "respiro" (stessa logica che prima era sulla card del giorno
-        // corrente, vedi renderHome in js/home.js) parte solo DOPO l'entrata,
-        // mai in contemporanea: altrimenti le due animazioni si contenderebbero
-        // la stessa proprieta' "scale" sullo stesso elemento
+        // il respiro, stessa logica che prima era sulla card del giorno
+        // corrente, vedi renderHome in js/home.js, parte solo dopo l'entrata,
+        // mai in contemporanea: altrimenti le due animazioni si
+        // contenderebbero la stessa proprietà scale sullo stesso elemento
         gsap.to(btn, {
           scale:1.045,
           boxShadow:"0 0 22px 5px var(--accent, var(--green))",
@@ -56,6 +61,7 @@ function animateSuggestedWorkout(){
 }
 
 
+// bagliore pulsante extra dietro al bottone del giorno suggerito
 function animateSuggestedGlow(){
 
   if(typeof gsap === "undefined") return;
@@ -71,6 +77,8 @@ function animateSuggestedGlow(){
 }
 
 
+// piccolo festeggiamento che sale e sparisce quando si completa un
+// allenamento, "+1 workout completato"
 function animateWorkoutComplete(){
 
   const el = document.getElementById("workoutCompleteFx");
@@ -118,17 +126,18 @@ function animateWorkoutComplete(){
 
 // ---------------- POPUP FINE ALLENAMENTO ----------------
 
-
+// prepara e mostra il popup di conferma per chiudere il giorno, con il
+// recap della sessione appena fatta e il passaggio al giorno successivo
 function openFinishWorkoutModal(dayIdx){
 
   const day = state.days[dayIdx];
 
   if(!day) return;
 
-// prima era fissa a false (il ramo "ATTENZIONE" qui sotto non poteva mai
-// scattare, qualunque cosa mancasse): allExercisesClosed guarda la vera
-// settimana corrente del programma (state.currentWeek) su ogni esercizio,
-// la stessa gia' usata dal bottone flottante "Giorno terminato"
+// prima era fissa a false, il ramo "attenzione" qui sotto non poteva mai
+// scattare qualunque cosa mancasse: allExercisesClosed guarda la vera
+// settimana corrente del programma su ogni esercizio, la stessa già usata
+// dal bottone flottante "Giorno terminato"
 const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
 
   const accent = dayAccent(day, dayIdx).c;
@@ -142,10 +151,10 @@ const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
 
   const body = document.getElementById("finishWorkoutBody");
 
-  // recap: cosa e' successo davvero in questa sessione (volume/serie di
-  // OGGI, non di tutta la settimana) + i PR presi da quando e' iniziata -
-  // niente da mostrare se non e' stato ancora scritto nulla (es. si apre il
-  // popup senza aver fatto una sola serie)
+  // recap: cosa è successo davvero in questa sessione, volume e serie di
+  // oggi, non di tutta la settimana, più i PR presi da quando è iniziata -
+  // niente da mostrare se non è stato ancora scritto nulla, per esempio si
+  // apre il popup senza aver fatto una sola serie
   const stats = computeDaySessionStats(day);
   const recapHtml = stats.setsCount>0 ? `
     <div class="finish-recap">
@@ -223,6 +232,7 @@ const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
 
 }
 
+// prepara e mostra il popup per pianificare i prossimi allenamenti della settimana
 function openTrainingOrderModal(){
 
   const body = document.getElementById("trainingOrderBody");
@@ -403,6 +413,7 @@ ${
   );
 
 }
+// accende o spegne un giorno tra quelli scelti per l'ordine dei prossimi allenamenti
 function selectTrainingOrder(idx){
 
   const pos = selectedTrainingOrder.indexOf(idx);
@@ -423,6 +434,7 @@ function selectTrainingOrder(idx){
   openTrainingOrderModal();
 
 }
+// salva l'ordine scelto per i prossimi allenamenti della settimana
 function confirmTrainingOrder(){
 
   if(selectedTrainingOrder.length !== state.trainingQueue.length){
@@ -444,6 +456,8 @@ function confirmTrainingOrder(){
 
 }
 
+// scorciatoia per invertire l'ordine dei prossimi allenamenti senza doverli
+// scegliere uno per uno
 function applyTrainingOrder(reverse){
 
   if(!state.trainingQueue || state.trainingQueue.length < 2){
@@ -469,6 +483,7 @@ function applyTrainingOrder(reverse){
 
 }
 
+// chiude il popup di pianificazione allenamenti con un'animazione di uscita
 function closeTrainingOrderModal(){
 
   const modal = document.getElementById("trainingOrderModal");
@@ -487,6 +502,7 @@ gsap.to("#trainingOrderModal .finish-modal",{
 
 }
 
+// chiude il popup di fine allenamento con un'animazione di uscita
 function closeFinishWorkoutModal(){
 
   const modal = document.getElementById("finishWorkoutModal");
@@ -513,16 +529,19 @@ function closeFinishWorkoutModal(){
 
 // ---------------- CONFERMA FINE ALLENAMENTO ----------------
 
+// chiude davvero il giorno di allenamento: registra il completamento, fa
+// avanzare la settimana se serve, resetta la posizione e torna alla Home
+// con il festeggiamento
 function confirmFinishWorkout(dayIdx){
 
   closeFinishWorkoutModal();
 
   setTimeout(()=>{
 
-    // catturata PRIMA di logWorkoutDay: quella funzione puo' gia' far avanzare
-    // da sola state.currentWeek al suo interno (se questo era l'ultimo giorno
-    // mancante della settimana), quindi leggerla dopo chiuderebbe la
-    // settimana sbagliata (quella nuova invece di quella appena conclusa)
+    // catturata prima di logWorkoutDay: quella funzione può già far avanzare
+    // da sola state.currentWeek al suo interno, se questo era l'ultimo
+    // giorno mancante della settimana, quindi leggerla dopo chiuderebbe la
+    // settimana sbagliata, quella nuova invece di quella appena conclusa
     const finishedWeek = state.currentWeek;
 
     logWorkoutDay(dayIdx);
@@ -578,13 +597,15 @@ function cascadeScheduleToWeek(newWeek){
     });
   });
 }
+// chiude la settimana corrente e apre la successiva, se il blocco non è
+// ancora finito
 function advanceProgramWeek(){
 
-  // idempotente: viene chiamata da piu' punti diversi per lo stesso evento
-  // "settimana finita" (updateTrainingQueueAfterComplete, logWorkoutDay,
-  // confirmFinishWorkout). Se i giorni completati non sono (piu') al completo
-  // non fa nulla, cosi' le chiamate ripetute per lo stesso completamento non
-  // fanno avanzare la settimana piu' di una volta
+  // idempotente: viene chiamata da più punti diversi per lo stesso evento
+  // "settimana finita", updateTrainingQueueAfterComplete, logWorkoutDay,
+  // confirmFinishWorkout. Se i giorni completati non sono più al completo
+  // non fa nulla, così le chiamate ripetute per lo stesso completamento non
+  // fanno avanzare la settimana più di una volta
   if((state.completedTrainingDays||[]).length < state.days.length) return;
 
   const maxWeek = (state.weeksPerBlock || 4) - 1;
