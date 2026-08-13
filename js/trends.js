@@ -1,22 +1,22 @@
 // ---------------- ANDAMENTI (dashboard progressi su tutta la cronologia) ----------------
-// A differenza del grafico per-esercizio esistente (js/chart.js, solo mese
-// attivo), qui si guarda TUTTA la cronologia: ogni mese archiviato nello
-// Storico conta come UN punto (aggregato su tutte le sue settimane - schema
-// serie/rip cambia da un mese all'altro, entrare nel dettaglio settimana per
-// settimana tra mesi diversi non avrebbe senso), il mese ATTIVO invece resta
-// un punto per settimana come nel grafico esistente, visto che li' lo schema
-// e' lo stesso lungo tutto il blocco
+// a differenza del grafico per-esercizio esistente, js/chart.js, solo mese
+// attivo, qui si guarda tutta la cronologia: ogni mese archiviato nello
+// Storico conta come un punto, aggregato su tutte le sue settimane, perché lo
+// schema serie/rip può cambiare da un mese all'altro e entrare nel dettaglio
+// settimana per settimana tra mesi diversi non avrebbe senso. Il mese attivo
+// invece resta un punto per settimana come nel grafico esistente, visto che
+// lì lo schema è lo stesso lungo tutto il blocco
 
-// formula di Epley: stima del massimale (1RM) da peso e ripetizioni fatte,
-// piu' onesta del solo peso sollevato quando le ripetizioni cambiano da una
+// formula di Epley: stima del massimale, 1RM, da peso e ripetizioni fatte,
+// più onesta del solo peso sollevato quando le ripetizioni cambiano da una
 // settimana all'altra
 function epley1RM(peso, rip){
   return peso * (1 + rip/30);
 }
 
-// volume totale (tutti gli esercizi di tutti i giorni) di UNA settimana del
-// blocco attivo - usata per l'assaggio di andamento in Home (vedi
-// computeHomeVolumeTrend piu' sotto)
+// volume totale, tutti gli esercizi di tutti i giorni, di una settimana del
+// blocco attivo - usata per l'assaggio di andamento in Home, vedi
+// computeHomeVolumeTrend più sotto
 function computeWeekTotalVolume(w){
   let vol = 0;
   (state.days||[]).forEach(day=>{
@@ -48,21 +48,21 @@ function computeDaySessionStats(day){
   return { volume: Math.round(volume), setsCount };
 }
 // piccolo assaggio di "Andamenti" mostrato in Home: confronta l'ultima
-// settimana GIA' CONCLUSA con quella subito precedente (entrambe finite per
-// davvero) - apposta non "questo mese contro il precedente", che sarebbe un
-// confronto sbilanciato finche' il mese e' ancora a meta'
+// settimana già conclusa con quella subito precedente, entrambe finite per
+// davvero - apposta non "questo mese contro il precedente", che sarebbe un
+// confronto sbilanciato finché il mese è ancora a metà
 function computeHomeVolumeTrend(){
   const w = state.currentWeek || 0;
-  if(w < 2) return null; // servono almeno 2 settimane gia' concluse prima di questa
+  if(w < 2) return null; // servono almeno due settimane già concluse prima di questa
   const lastVol = computeWeekTotalVolume(w-1);
   const prevVol = computeWeekTotalVolume(w-2);
   if(lastVol <= 0 || prevVol <= 0) return null;
   return { pct: Math.round(((lastVol - prevVol) / prevVol) * 100) };
 }
 
-// tutti i "blocchi" (mesi) in ordine cronologico: quelli archiviati (via
-// getStorico, gia' in js/combobox.js) datati con storicoDates, piu' il
-// blocco ATTIVO per ultimo (sempre il piu' recente per definizione)
+// tutti i blocchi, mesi, in ordine cronologico: quelli archiviati, tramite
+// getStorico già in js/combobox.js, datati con storicoDates, più il
+// blocco attivo per ultimo, sempre il più recente per definizione
 function getChronologicalBlocks(){
   const storico = getStorico();
   const blocks = Object.keys(storico).map(name => ({
@@ -88,9 +88,10 @@ function getAllExerciseNamesEverUsed(){
   return [...names].sort((a,b)=>a.localeCompare(b, 'it'));
 }
 
-// per un esercizio (case-insensitive sul nome): un punto per volume totale
-// (somma peso*rip di tutte le serie) e uno per la stima 1RM migliore, per
-// ogni periodo (settimana nel blocco attivo, mese intero negli archiviati)
+// per un esercizio, senza distinguere maiuscole e minuscole nel nome: un
+// punto per volume totale, somma peso per ripetizioni di tutte le serie, e
+// uno per la stima 1RM migliore, per ogni periodo, settimana nel blocco
+// attivo, mese intero negli archiviati
 function computeExerciseTrend(exerciseName){
   const key = String(exerciseName||'').trim().toLowerCase();
   const volumePoints = [];
@@ -140,13 +141,13 @@ function computeExerciseTrend(exerciseName){
   return { volumePoints, oneRMPoints };
 }
 
-// confronto "a parita' di peso": trova il peso usato piu' spesso in assoluto
-// per questo esercizio (la "moda", non il piu' recente - piu' robusto, un
-// singolo tentativo isolato non lo sposta) e per ogni periodo mostra la
-// MIGLIOR ripetizione fatta esattamente a quel peso. Un modo diverso di
-// leggere i progressi rispetto a volume/1RM: utile soprattutto sui
+// confronto a parità di peso: trova il peso usato più spesso in assoluto
+// per questo esercizio, la moda, non il più recente, più robusto perché un
+// singolo tentativo isolato non lo sposta, e per ogni periodo mostra la
+// migliore ripetizione fatta esattamente a quel peso. Un modo diverso di
+// leggere i progressi rispetto a volume e 1RM: utile soprattutto sui
 // macchinari a incrementi fissi, dove il peso resta spesso lo stesso per
-// mesi e il vero progresso si vede nelle ripetizioni a parita' di carico
+// mesi e il vero progresso si vede nelle ripetizioni a parità di carico
 function computeExerciseRepsAtSameWeight(exerciseName){
   const key = String(exerciseName||'').trim().toLowerCase();
   const blocks = getChronologicalBlocks();
@@ -218,6 +219,8 @@ function computeExerciseRepsAtSameWeight(exerciseName){
 
 let trendsSelectedExercise = null;
 
+// apre il modale Andamenti, riprendendo l'esercizio scelto l'ultima volta
+// se esiste ancora, altrimenti il primo della lista
 function openTrends(){
   const names = getAllExerciseNamesEverUsed();
   if(!trendsSelectedExercise || !names.includes(trendsSelectedExercise)){
@@ -229,10 +232,14 @@ function openTrends(){
 function closeTrends(){
   document.getElementById('trendsModal').style.display = 'none';
 }
+// cambia l'esercizio mostrato nel modale Andamenti
 function selectTrendsExercise(name){
   trendsSelectedExercise = name;
   renderTrendsModal(getAllExerciseNamesEverUsed());
 }
+// disegna tutto il contenuto del modale Andamenti: il selettore esercizio,
+// il record attuale, e i tre grafici, volume, 1RM stimato, ripetizioni a
+// parità di peso
 function renderTrendsModal(names){
   const body = document.getElementById('trendsBody');
   if(!names.length){
