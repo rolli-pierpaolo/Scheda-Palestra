@@ -1,8 +1,8 @@
 // ---------------- NOTIFICHE PUSH ----------------
 // promemoria "non ti alleni da un po'" mandati da una funzione schedulata
-// lato Supabase (vedi supabase/push-reminder-function.ts), non da questa
+// lato Supabase, vedi supabase/push-reminder-function.ts, non da questa
 // pagina - qui si gestisce solo l'iscrizione: chiedere il permesso, ottenere
-// una subscription dal browser e salvarla, cosi' la funzione schedulata sa
+// una subscription dal browser e salvarla, così la funzione schedulata sa
 // dove mandare il promemoria quando serve
 const VAPID_PUBLIC_KEY = 'BFXitGkIG8cE5cPSeLLyJP-vGmKcQj9QHGISK7jcVwamet7BAVI3B4ho7DKeyBCiyAYu9i9rsi1DncGMQUt-S3g';
 
@@ -17,16 +17,20 @@ function urlBase64ToUint8Array(base64String){
   return outputArray;
 }
 
+// controlla se il browser sa gestire le notifiche push
 function isPushSupported(){
   return 'serviceWorker' in navigator && 'PushManager' in window && typeof Notification !== 'undefined';
 }
 
+// legge l'iscrizione push già attiva su questo dispositivo, se c'è
 async function getCurrentPushSubscription(){
   if(!isPushSupported()) return null;
   const reg = await navigator.serviceWorker.ready;
   return reg.pushManager.getSubscription();
 }
 
+// chiede il permesso per le notifiche, crea l'iscrizione presso il browser
+// e la salva su Supabase così la funzione schedulata sa dove mandarla
 async function enablePushNotifications(){
   if(!isPushSupported()){ alert('Le notifiche push non sono supportate su questo browser/dispositivo.'); return; }
   if(!isSyncEnabled()){ alert('Devi prima collegare il tuo account per attivare i promemoria.'); return; }
@@ -52,6 +56,7 @@ async function enablePushNotifications(){
   renderPushStatus();
 }
 
+// annulla l'iscrizione alle notifiche, sia sul dispositivo che su Supabase
 async function disablePushNotifications(){
   const sub = await getCurrentPushSubscription();
   if(sub){
@@ -63,6 +68,8 @@ async function disablePushNotifications(){
   renderPushStatus();
 }
 
+// aggiorna il testo e il bottone in Impostazioni per riflettere se i
+// promemoria sono attivi o no
 async function renderPushStatus(){
   const el = document.getElementById('pushStatus');
   const btn = document.getElementById('pushToggleBtn');

@@ -1,13 +1,14 @@
 // ---------------- ERROR BOUNDARY + AUTO-RIPARAZIONE CACHE ----------------
 // Causa storica numero uno di "l'app sembra rotta / i dati sembrano spariti"
-// in questa app: HTML e JS scaricati in momenti diversi (sw.js usa stale-
-// while-revalidate) finiscono disallineati - il JS nuovo si aspetta un pezzo
-// di HTML che la pagina vecchia in cache non ha ancora, e l'inizializzazione
-// si ferma a meta' con un errore silenzioso (schermo bianco o dati che
-// sembrano spariti, mentre in realta' sono ancora li' in localStorage,
-// semplicemente mai disegnati). Questo file va caricato PER PRIMO in
-// index.html, prima di ogni altro script, cosi' puo' intercettare errori
-// anche durante il caricamento/esecuzione degli script successivi.
+// in questa app: html e js scaricati in momenti diversi finiscono
+// disallineati, ad esempio se il service worker (sw.js, oggi network-first)
+// non ha ancora fatto in tempo ad aggiornare tutti i file. Il js nuovo si
+// aspetta un pezzo di html che la pagina vecchia in cache non ha ancora, e
+// l'inizializzazione si ferma a metà con un errore silenzioso, schermo
+// bianco o dati che sembrano spariti mentre in realtà sono ancora lì in
+// localStorage, semplicemente mai disegnati. Questo file va caricato per
+// primo in index.html, prima di ogni altro script, così può intercettare
+// errori anche durante il caricamento e l'esecuzione degli script successivi
 
 const SELF_HEAL_KEY = 'scheda_wo18_self_heal_attempted_v1';
 

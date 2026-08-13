@@ -1,4 +1,7 @@
 // ---------------- CATEGORIE GIORNI (impostazioni) ----------------
+// disegna il modale per rinominare i giorni, cambiarne il colore,
+// aggiungerne o toglierne, e modificare titolo e numero di settimane
+// del blocco attivo
 function openDaysModal(){
   const body = document.getElementById('daysModalBody');
   body.innerHTML = state.days.map((d,i)=>{
@@ -33,6 +36,8 @@ function openDaysModal(){
 function closeDaysModal(){
   document.getElementById('daysModal').style.display = 'none';
 }
+// controlla il nuovo numero di settimane scelto e, se è valido e confermato,
+// allunga il blocco attuale
 function handleExtendWeeksInput(el){
   const current = state.weeksPerBlock || 4;
   const newTotal = parseInt(el.value, 10);
@@ -51,6 +56,7 @@ function handleExtendWeeksInput(el){
   renderActive();
   openDaysModal();
 }
+// cambia il nome di un giorno, ignorando un valore vuoto
 function renameDay(i, val){
   val = (val||'').trim();
   if(!val){ renderDayTabs(); renderActive(); return; }
@@ -59,6 +65,8 @@ function renameDay(i, val){
   renderDayTabs();
   renderActive();
 }
+// cambia il titolo generale dell'allenamento, tornando a un nome
+// predefinito se lasciato vuoto
 function updateWorkoutTitle(val){
   val = (val || '').trim();
 
@@ -72,15 +80,16 @@ function updateWorkoutTitle(val){
   updateTitles();
 }
 // colore scelto a mano dall'utente per quel giorno: da qui in poi dayAccent()
-// usa sempre questo invece di ripiegare su ACCENTS/posizione
+// usa sempre questo invece di ripiegare sui colori di default per posizione
 function updateDayColor(i, hex){
   state.days[i].color = hex;
   saveState();
   renderDayTabs();
   if(i === activeDayIdx) renderActive();
 }
-// i giorni non sono per forza 4: se ne serve uno in piu' (es. un giorno di
-// cardio a parte) si aggiunge qui, con un nome segnaposto da rinominare subito
+// i giorni non sono per forza quattro: se ne serve uno in più, per esempio un
+// giorno di cardio a parte, si aggiunge qui, con un nome segnaposto da
+// rinominare subito
 function addDay(){
   state.days.push({ name: 'Nuovo giorno ' + (state.days.length + 1), esercizi: [] });
   saveState();
@@ -88,8 +97,8 @@ function addDay(){
   updateTitles();
   renderDayTabs();
 }
-// elimina il giorno e tutti i suoi esercizi (con conferma, dato che non si
-// torna indietro); tiene sempre almeno un giorno e sposta activeDayIdx se
+// elimina il giorno e tutti i suoi esercizi, con conferma dato che non si
+// torna indietro; tiene sempre almeno un giorno e sposta activeDayIdx se
 // quello eliminato era quello aperto o ne cambiava la posizione
 function deleteDay(i){
   if(state.days.length<=1){ alert('Deve rimanere almeno un giorno.'); return; }
@@ -103,8 +112,3 @@ function deleteDay(i){
   renderDayTabs();
   renderActive();
 }
-
-// ridisegna da zero tutta la tab Allenamento per il giorno selezionato (tutte le
-// schede esercizio piu' i due bottoni in fondo). E' l'unico punto che scrive
-// dentro #viewActive: ogni volta che qualcosa cambia struttura (nuovo esercizio,
-// nuova/rimossa serie, cascata di settimane...) si richiama semplicemente questa
