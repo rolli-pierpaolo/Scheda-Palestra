@@ -627,12 +627,13 @@ body.training-focus .week-block{margin-top:10px;}
 .set-btns-right .add-ex.small.danger{position:absolute;left:0;}
 .week-actions-btn{width:32px;height:30px;padding:0;background:var(--panel);border:1.5px solid var(--accent,var(--green));border-radius:8px;color:var(--accent,var(--green));display:inline-flex;align-items:center;justify-content:center;}
 .week-actions-btn svg{width:17px;height:17px;}
-.max-entry-box{margin:6px 0 8px;padding:7px;border:1px dashed color-mix(in srgb,var(--amber) 70%,var(--line));border-radius:7px;background:color-mix(in srgb,var(--amber) 5%,transparent);}
-.max-entry-heading{font-size:9px;font-weight:900;letter-spacing:.5px;color:var(--amber);text-transform:uppercase;margin-bottom:5px;}
-.max-entry-heading span{color:var(--muted);font-weight:700;letter-spacing:0;text-transform:none;margin-left:4px;}
-.max-attempt-row{display:grid;grid-template-columns:22px repeat(2,minmax(0,1fr));gap:4px;align-items:center;margin-top:4px;}
-.max-attempt-row>span{font-size:9px;font-weight:800;color:var(--muted);text-align:center;}
-.max-attempt-row .max-input{width:100%;padding:6px 2px;}
+.set-series-group{margin-bottom:3px;}
+.set-series-group.has-max{border:1px dashed color-mix(in srgb,var(--amber) 72%,var(--line));border-radius:7px;padding:5px 6px 6px;background:transparent;}
+.set-series-group.has-max .set-row{margin-bottom:4px;}
+.max-entry-box{padding:2px 0 0;background:transparent;}
+.max-attempt-row{display:grid;gap:4px;align-items:center;margin-top:3px;}
+.max-attempt-row>span{font-size:8px;font-weight:800;color:var(--amber);text-align:center;line-height:1.05;}
+.max-attempt-row .max-input{width:100%;padding:4px 1px;font-size:10px;min-height:26px;}
 .max-label{color:var(--amber)!important;font-size:9px!important;letter-spacing:.4px;}
 /* scoped a .set-btns cosi' non tocca altri bottoni "add-ex small" nel resto della pagina */
 .set-btns .add-ex.small{flex:none;width:auto;padding:5px 10px;font-size:10px;margin-top:0;border-width:1px;border-style:solid;}

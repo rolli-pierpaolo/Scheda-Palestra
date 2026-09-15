@@ -544,9 +544,9 @@ function maxEntriesAfter(ex, w, si){
 function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek){
   const entries = maxEntriesAfter(ex,w,si);
   if(!entries.length) return '';
-  const fields = (field,label) => `<div class="max-attempt-row"><span>${label}</span>${entries.map(({entry,index},attempt)=>
+  const fields = (field,label) => `<div class="max-attempt-row" style="grid-template-columns:22px repeat(${entries.length},minmax(0,1fr))"><span>${label}</span>${entries.map(({entry,index},attempt)=>
     `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="${label.toLowerCase()} ${attempt+1}" value="${escapeAttr(entry[field]??'')}" onchange="updateMaxEntry(${exi},${w},${index},'${field}',this.value)">`).join('')}</div>`;
-  return `<div class="max-entry-box"><div class="max-entry-heading">MAX <span>dopo serie ${si+1}</span></div>${fields('peso','KG')}${fields('rip','RIP')}</div>`;
+  return `<div class="max-entry-box">${fields('peso','MAX KG')}${fields('rip','MAX RIP')}</div>`;
 }
 function exerciseCard(ex, exi, accent){
 
@@ -591,7 +591,9 @@ function exerciseCard(ex, exi, accent){
 
 
       const setFilled = String(s.peso??'').trim() && String(s.rip??'').trim();
+      const maxHtml = renderMaxEntries(ex,exi,w,si,isReadOnlyWeek);
       return `
+      <div class="set-series-group${maxHtml?' has-max':''}">
       <div class="set-row${setFilled?' filled':''}">
 
 
@@ -653,7 +655,7 @@ function exerciseCard(ex, exi, accent){
         </div>
 
 
-      </div>${renderMaxEntries(ex,exi,w,si,isReadOnlyWeek)}`;
+      </div>${maxHtml}</div>`;
     }).join('');
 
 
