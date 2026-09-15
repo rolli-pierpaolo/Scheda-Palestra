@@ -502,6 +502,16 @@ main{padding:12px;}
 .meta-row-schema .meta-field-center{align-items:flex-start;}
 .meta-row-schema .combo-wrap{flex:0 1 auto;min-width:0;max-width:100%;}
 .meta-row-schema .meta-input.schema{width:auto;max-width:100%;flex:0 1 auto;text-align:left;resize:none;overflow:hidden;min-height:34px;font-size:15px;font-weight:700;}
+/* Serie e recupero fanno parte della scheda, non sono due box tecnici a
+   parte: fondo trasparente, testo neutro e una riga leggera li rendono più
+   leggibili e molto meno pesanti. Il bordo colorato torna solo in modifica. */
+.card .meta-row-schema,.card .meta-row-combined{border-bottom:1px solid rgba(255,255,255,.10);padding:2px 2px 7px;margin-bottom:7px;}
+.card .meta-row-combined{padding-bottom:5px;margin-bottom:8px;}
+.card .meta-label{color:var(--muted);letter-spacing:.7px;}
+.card .meta-input{background:transparent;border:1px solid transparent;color:var(--text);border-radius:6px;padding:7px 5px;}
+.card .meta-input.schema{color:var(--text);font-weight:700;}
+.card .meta-input::placeholder{color:var(--muted);opacity:.7;}
+.card .meta-input:focus{background:rgba(255,255,255,.06);border-color:var(--accent,var(--green));outline:none;}
 .sets-wrap{width:100%;}
 /* griglia comune a ogni riga serie: numero romano, colonna kg, colonna rip.
    la stessa griglia viene riusata dalla riga "max" per restare allineata */
