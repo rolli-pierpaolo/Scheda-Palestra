@@ -573,6 +573,11 @@ body.training-focus .week-block{margin-top:10px;}
    scrivi un valore (vedi editRpe in js/exercise-card.js) */
 .rip-wrap{display:flex;align-items:stretch;gap:3px;min-width:0;}
 .rip-wrap .set-input{flex:1;min-width:0;}
+.rip-cell{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.rep-compare-btn{align-self:flex-start;background:transparent;border:0;color:var(--muted);font-size:9px;font-weight:700;padding:1px 2px;text-decoration:underline;text-underline-offset:2px;}
+.rep-compare-btn:not(:disabled){color:var(--accent,var(--green));}
+.rep-compare-btn:disabled{opacity:.38;text-decoration:none;}
+.rep-comparison{color:var(--muted);font-size:9px;line-height:1.2;padding:1px 2px;}
 .rpe-chip{flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-size:10px;font-weight:800;border-radius:6px;padding:0 5px;white-space:nowrap;}
 .rpe-chip.filled{border-color:var(--accent,var(--green));color:var(--accent,var(--green));}
 .stepper{flex:0 0 20px;width:20px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:5px;font-size:13px;font-weight:800;padding:0;line-height:1;}

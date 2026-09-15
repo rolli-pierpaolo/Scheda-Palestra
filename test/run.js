@@ -357,6 +357,15 @@ test('computeExerciseRepsAtSameWeight confronta le ripetizioni fatte allo stesso
   assert.strictEqual(points[1].value, 8, 'le rip a 60kg sono salite da 6 a 8: si vede il progresso a parita\' di peso');
 });
 
+test('il confronto post-serie legge solo la stessa serie della settimana precedente', () => {
+  const window = loadApp();
+  const ex = { sets:[[{rip:'8'},{rip:'10'}],[{rip:'9'},{rip:'7'}]] };
+  assert.strictEqual(window.getPreviousWeekRep(ex, 1, 0), '8');
+  assert.strictEqual(window.getPreviousWeekRep(ex, 1, 1), '10');
+  assert.strictEqual(window.getPreviousWeekRep(ex, 0, 0), null, 'nella prima settimana non esiste un confronto');
+  assert.strictEqual(window.getPreviousWeekRep({sets:[[]]}, 1, 0), null, 'una serie assente non deve inventare dati');
+});
+
 test('il carosello Allenamento mostra un esercizio a schermo e naviga con goToExerciseSlide', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;

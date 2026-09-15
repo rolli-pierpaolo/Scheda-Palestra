@@ -611,16 +611,18 @@ function exerciseCard(ex, exi, accent){
 
 
 
+        <div class="rip-cell">
         <div class="rip-wrap">
-
         <input type="text" class="set-input"
         ${isReadOnlyWeek?'disabled':''}
         placeholder="rip"
         value="${escapeAttr(s.rip ?? '')}"
-        onchange="updateSet(${exi},${w},${si},'rip',this.value)">
+        onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
 
         <button type="button" class="rpe-chip ${s.rpe?'filled':''}" ${isReadOnlyWeek?'disabled':''} onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
-
+        </div>
+        <button type="button" class="rep-compare-btn" ${isReadOnlyWeek || !String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>
+        <span class="rep-comparison" aria-live="polite" hidden></span>
         </div>
 
 
@@ -1215,6 +1217,41 @@ function updateSet(exi, w, si, field, val, recordPeso){
     if(partnerReady) askWeekDoneConfirm(exi, w, ex.nome);
   }
 }
+
+// Dato della stessa serie nella settimana immediatamente precedente: non
+// viene mostrato automaticamente, per evitare di condizionare il risultato.
+function getPreviousWeekRep(ex, w, si){
+  if(!ex || w < 1 || !ex.sets || !ex.sets[w-1] || !ex.sets[w-1][si]) return null;
+  const value = String(ex.sets[w-1][si].rip ?? '').trim();
+  return value || null;
+}
+function updateRepCompareAvailability(input){
+  const cell = input.closest('.rip-cell');
+  if(!cell) return;
+  const btn = cell.querySelector('.rep-compare-btn');
+  const output = cell.querySelector('.rep-comparison');
+  if(btn) btn.disabled = !String(input.value||'').trim();
+  if(output){ output.hidden = true; output.textContent = ''; }
+}
+function showRepComparison(exi, w, si, btn){
+  const ex = state.days[activeDayIdx] && state.days[activeDayIdx].esercizi[exi];
+  const cell = btn.closest('.rip-cell');
+  const output = cell && cell.querySelector('.rep-comparison');
+  if(!ex || !output) return;
+  const current = String((((ex.sets||[])[w]||[])[si]||{}).rip ?? '').trim();
+  if(!current) return;
+  const previous = getPreviousWeekRep(ex, w, si);
+  if(previous === null){
+    output.textContent = 'Nessun dato per questa serie la settimana scorsa.';
+  } else {
+    const nowNum = Number(String(current).replace(',','.'));
+    const prevNum = Number(String(previous).replace(',','.'));
+    const delta = Number.isFinite(nowNum) && Number.isFinite(prevNum) ? nowNum - prevNum : null;
+    const deltaText = delta === null || delta === 0 ? '' : ` · ${delta>0?'+':''}${String(delta).replace('.',',')}`;
+    output.textContent = `Settimana scorsa: ${previous} rip${deltaText}`;
+  }
+  output.hidden = false;
+}
 function isLastSetOfWeekFilled(ex, w){
   const sets = ex.sets && ex.sets[w];
   if(!sets || !sets.length) return false;
@@ -1754,9 +1791,13 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
     </div>
     ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
     </div>
+    <div class="rip-cell">
     <div class="rip-wrap">
-    <input type="text" class="set-input" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">
+    <input type="text" class="set-input" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
     <button type="button" class="rpe-chip ${s.rpe?'filled':''}" onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
+    </div>
+    <button type="button" class="rep-compare-btn" ${!String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>
+    <span class="rep-comparison" aria-live="polite" hidden></span>
     </div>`;
 }
 // la card per una coppia collegata: stesso impianto di exerciseCard, ma con due
