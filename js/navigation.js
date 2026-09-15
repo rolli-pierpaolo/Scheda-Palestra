@@ -98,6 +98,10 @@ function showView(v){
     if(accountBtn) accountBtn.style.display = v==='active' ? 'none' : '';
     const settingsBtn = document.getElementById('settingsBtn');
     if(settingsBtn) settingsBtn.style.display = v==='active' ? 'none' : '';
+    // In Allenamento la lente restava fissa sopra la barra mentre si
+    // scorreva: non serve in quel momento e può coprire l'intestazione.
+    const searchBtn = document.getElementById('searchBtn');
+    if(searchBtn) searchBtn.style.display = v==='active' ? 'none' : '';
     // fade + leggero rialzo sulla vista che diventa visibile: il cambio vero e
     // proprio resta il display toggle sincrono qui sopra (nessun timing da cui
     // dipende il resto della funzione cambia), e' solo un'entrata piu' morbida
@@ -647,5 +651,4 @@ function computeCurrentDoingExerciseIdx(dayIdx){
   }
   return day.esercizi.length - 1;
 }
-
 

@@ -669,8 +669,8 @@ function exerciseCard(ex, exi, accent){
       (!maxPair[1].peso && maxPair[1].peso!==0) ? suggestNextMaxWeight(ex,w,1) : null
     ];
     const maxKgPlaceholder = [
-      maxSuggested[0]!==null ? ('ultimo: '+maxSuggested[0]) : 'max kg',
-      maxSuggested[1]!==null ? ('ultimo: '+maxSuggested[1]) : 'max kg'
+      maxSuggested[0]!==null ? String(maxSuggested[0]) : '',
+      maxSuggested[1]!==null ? String(maxSuggested[1]) : ''
     ];
 
     const maxRowHtml = maxShown ? `
@@ -708,7 +708,7 @@ function exerciseCard(ex, exi, accent){
 
         <input type="text" class="set-input max-input"
         ${isReadOnlyWeek?'disabled':''}
-        placeholder="max rip"
+        placeholder=""
         value="${escapeAttr(maxPair[0].rip??'')}"
         onchange="updateMax(${exi},${w},0,'rip',this.value)">
 
@@ -716,7 +716,7 @@ function exerciseCard(ex, exi, accent){
 
         <input type="text" class="set-input max-input"
         ${isReadOnlyWeek?'disabled':''}
-        placeholder="max rip"
+        placeholder=""
         value="${escapeAttr(maxPair[1].rip??'')}"
         onchange="updateMax(${exi},${w},1,'rip',this.value)">
 
@@ -1848,8 +1848,8 @@ const isFutureWeek = w > state.currentWeek;
     if(maxShown){
       const maxA = ((exA.maxExtra && exA.maxExtra[w]) || [])[0] || {};
       const maxB = ((exB.maxExtra && exB.maxExtra[w]) || [])[0] || {};
-      const maxAKgPh = (!maxA.peso && maxA.peso!==0 && suggestNextMaxWeight(exA,w,0)!==null) ? ('ultimo: '+suggestNextMaxWeight(exA,w,0)) : 'max kg';
-      const maxBKgPh = (!maxB.peso && maxB.peso!==0 && suggestNextMaxWeight(exB,w,0)!==null) ? ('ultimo: '+suggestNextMaxWeight(exB,w,0)) : 'max kg';
+      const maxAKgPh = (!maxA.peso && maxA.peso!==0 && suggestNextMaxWeight(exA,w,0)!==null) ? String(suggestNextMaxWeight(exA,w,0)) : '';
+      const maxBKgPh = (!maxB.peso && maxB.peso!==0 && suggestNextMaxWeight(exB,w,0)!==null) ? String(suggestNextMaxWeight(exB,w,0)) : '';
       maxRowHtml = `<div class="linked-set-group">
         <div class="linked-set-wrap">
           <div class="set-label">max</div>
@@ -1857,12 +1857,12 @@ const isFutureWeek = w > state.currentWeek;
             <div class="linked-sub-row">
               <span class="linked-tag" title="${escapeAttr(exA.nome||'')}">${escapeHtml(exA.nome||'—')}</span>
               <input type="text" class="set-input max-input" placeholder="${maxAKgPh}" value="${escapeAttr(maxA.peso??'')}" onchange="updateMax(${exiA},${w},0,'peso',this.value)">
-              <input type="text" class="set-input max-input" placeholder="max rip" value="${escapeAttr(maxA.rip??'')}" onchange="updateMax(${exiA},${w},0,'rip',this.value)">
+              <input type="text" class="set-input max-input" placeholder="" value="${escapeAttr(maxA.rip??'')}" onchange="updateMax(${exiA},${w},0,'rip',this.value)">
             </div>
             <div class="linked-sub-row">
               <span class="linked-tag" title="${escapeAttr(exB.nome||'')}">${escapeHtml(exB.nome||'—')}</span>
               <input type="text" class="set-input max-input" placeholder="${maxBKgPh}" value="${escapeAttr(maxB.peso??'')}" onchange="updateMax(${exiB},${w},0,'peso',this.value)">
-              <input type="text" class="set-input max-input" placeholder="max rip" value="${escapeAttr(maxB.rip??'')}" onchange="updateMax(${exiB},${w},0,'rip',this.value)">
+              <input type="text" class="set-input max-input" placeholder="" value="${escapeAttr(maxB.rip??'')}" onchange="updateMax(${exiB},${w},0,'rip',this.value)">
             </div>
           </div>
         </div>
