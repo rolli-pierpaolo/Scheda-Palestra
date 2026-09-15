@@ -16,6 +16,21 @@ if(typeof supabase !== 'undefined' && supabase.createClient){
 let syncSession = null; // sessione utente Supabase corrente, null se non loggato
 let syncRealtimeChannel = null;
 let syncPushTimer = null;
+// Revisione solo locale della copia aperta. Non richiede modifiche al
+// database: serve a sapere se una modifica fatta qui non ha ancora ricevuto
+// conferma dal cloud, anche quando l'invio è fallito perché il telefono era
+// momentaneamente senza rete.
+const SYNC_LOCAL_REVISION_KEY = 'scheda_wo18_sync_local_revision_v1';
+const SYNC_CONFIRMED_REVISION_KEY = 'scheda_wo18_sync_confirmed_revision_v1';
+function readSyncRevision(key){
+  try{ return parseInt(localStorage.getItem(key), 10) || 0; }catch(e){ return 0; }
+}
+function writeSyncRevision(key, value){
+  try{ localStorage.setItem(key, String(value)); }catch(e){}
+}
+let syncLocalRevision = readSyncRevision(SYNC_LOCAL_REVISION_KEY);
+let syncConfirmedRevision = readSyncRevision(SYNC_CONFIRMED_REVISION_KEY);
+let syncConflictRemoteUpdatedAt = '';
 // generato una volta per apertura dell'app, mai salvato: serve solo a
 // riconoscere le proprie scritture quando tornano indietro via realtime,
 // altrimenti ogni proprio salvataggio si autosegnalerebbe come modificato
@@ -134,6 +149,8 @@ function pushToCloud(){
   // questo caso, vedi js/combobox.js: mentre si guardano dati condivisi da
   // un altro utente, non deve mai partire una scrittura verso il cloud
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
+  syncLocalRevision++;
+  writeSyncRevision(SYNC_LOCAL_REVISION_KEY, syncLocalRevision);
   cloudPushPending = true;
   clearTimeout(syncPushTimer);
   syncPushTimer = setTimeout(flushCloudPush, 800);
@@ -146,6 +163,7 @@ async function flushCloudPush(){
   if(!isSyncEnabled()) return;
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
   const payload = buildBackupPayload();
+  const revisionBeingSent = syncLocalRevision;
   try{
     await supabaseClient.from('user_data').upsert({
       user_id: syncSession.user.id,
@@ -156,6 +174,8 @@ async function flushCloudPush(){
     // usato da checkRemoteUpdateOnBoot per sapere se, al prossimo avvio, il
     // cloud contiene qualcosa di più recente di quello che si è mandato
     // da qui - salvato solo se l'invio è andato davvero a buon fine
+    syncConfirmedRevision = revisionBeingSent;
+    writeSyncRevision(SYNC_CONFIRMED_REVISION_KEY, syncConfirmedRevision);
     try{ localStorage.setItem(LAST_CLOUD_PUSH_KEY, String(Date.now())); }catch(e){}
   }catch(e){} // offline o rete assente: l'app continua a funzionare in locale, riproverà al prossimo salvataggio
 }
@@ -224,27 +244,53 @@ function subscribeSyncRealtime(){
     }, (payload) => {
       // è la mia stessa scrittura che torna indietro: non è una novità da un altro dispositivo
       if(payload.new && payload.new.client_id === syncClientId) return;
-      showSyncUpdateBanner();
+      showSyncUpdateBanner(payload.new && payload.new.updated_at);
     })
     .subscribe();
 }
 
 // niente sovrascrittura automatica e silenziosa: solo un avviso, si applica
 // quando l'utente tocca davvero, potrebbe essere a metà di un allenamento
-function showSyncUpdateBanner(){
+function hasUnsyncedLocalChanges(){
+  return syncLocalRevision > syncConfirmedRevision || cloudPushPending;
+}
+// Mostra sempre l'avviso per un aggiornamento remoto; se qui ci sono modifiche
+// non ancora confermate, non propone più un unico ambiguo "ricarica": espone
+// entrambe le azioni, così la sovrascrittura è una scelta dell'utente.
+function showSyncUpdateBanner(remoteUpdatedAt){
+  syncConflictRemoteUpdatedAt = remoteUpdatedAt || syncConflictRemoteUpdatedAt || '';
   let el = document.getElementById('syncUpdateBanner');
   if(!el){
-    el = document.createElement('button');
+    el = document.createElement('div');
     el.id = 'syncUpdateBanner';
     el.className = 'sync-update-banner';
-    el.onclick = () => pullFromCloud(true);
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
     document.body.appendChild(el);
   }
-  el.textContent = '🔄 Dati aggiornati da un altro dispositivo — tocca per ricaricare';
+  if(hasUnsyncedLocalChanges()){
+    el.innerHTML = `<div><b>Modifiche su due dispositivi</b><br><span>Decidi quale versione mantenere.</span></div>
+      <div class="sync-update-actions"><button onclick="pullFromCloud(true)">Carica l'altra copia</button><button onclick="keepLocalCloudVersion()">Tieni questa copia</button></div>`;
+  } else {
+    el.innerHTML = `<span>🔄 Dati aggiornati da un altro dispositivo</span><button onclick="pullFromCloud(true)">Ricarica</button>`;
+  }
   el.classList.add('show');
+}
+// L'utente ha scelto esplicitamente la copia aperta qui: la invia subito,
+// senza aspettare il debounce e senza alcuna sovrascrittura silenziosa.
+function keepLocalCloudVersion(){
+  if(!isSyncEnabled()) return;
+  if(syncLocalRevision === syncConfirmedRevision){
+    syncLocalRevision++;
+    writeSyncRevision(SYNC_LOCAL_REVISION_KEY, syncLocalRevision);
+  }
+  cloudPushPending = true;
+  flushCloudPush();
+  hideSyncUpdateBanner();
 }
 // nasconde l'avviso "dati aggiornati"
 function hideSyncUpdateBanner(){
   const el = document.getElementById('syncUpdateBanner');
   if(el) el.classList.remove('show');
+  syncConflictRemoteUpdatedAt = '';
 }

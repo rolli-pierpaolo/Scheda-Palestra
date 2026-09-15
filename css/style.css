@@ -197,6 +197,9 @@ body.on-home .topbar h1{
    remoto, mai una sovrascrittura automatica e silenziosa */
 .sync-update-banner{display:none;position:fixed;left:12px;right:12px;bottom:calc(70px + env(safe-area-inset-bottom));z-index:60;background:var(--panel2);border:1.5px solid var(--green);border-radius:10px;padding:10px 14px;color:var(--text);font-size:12px;font-weight:700;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.4);}
 .sync-update-banner.show{display:block;}
+.sync-update-actions{display:flex;justify-content:center;gap:8px;margin-top:9px;}
+.sync-update-banner button{border:1px solid var(--green);border-radius:7px;padding:7px 9px;background:transparent;color:var(--green);font:inherit;font-weight:800;}
+.sync-update-banner button:last-child{background:var(--green);color:#0D0D0D;}
 /* modalita' "sto vedendo i dati di qualcun altro" (vedi js/sharing.js):
    blocca TUTTA l'interazione via CSS invece di dover disabilitare a mano
    ogni singolo input/bottone nel rendering - un solo interruttore, non puo'

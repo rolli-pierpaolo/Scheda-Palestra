@@ -87,6 +87,8 @@ function loadApp(){
       get viewingSharedOwnerId(){ return viewingSharedOwnerId; }, set viewingSharedOwnerId(v){ viewingSharedOwnerId = v; },
       get supabaseClient(){ return supabaseClient; }, set supabaseClient(v){ supabaseClient = v; },
       get syncSession(){ return syncSession; }, set syncSession(v){ syncSession = v; },
+      get syncLocalRevision(){ return syncLocalRevision; }, set syncLocalRevision(v){ syncLocalRevision = v; },
+      get syncConfirmedRevision(){ return syncConfirmedRevision; }, set syncConfirmedRevision(v){ syncConfirmedRevision = v; },
       get MUSCLE_MOTIVATION(){ return MUSCLE_MOTIVATION; },
       get DEFAULT_MOTIVATION(){ return DEFAULT_MOTIVATION; },
       get PROGRESSION_SUFFIX_PESO(){ return PROGRESSION_SUFFIX_PESO; },

@@ -624,6 +624,17 @@ test('checkRemoteUpdateOnBoot avvisa (mai in automatico) solo se il cloud ha qua
   assert.strictEqual(bannerShown(), true, 'BUG: deve avvisare se il cloud ha una scrittura piu\' recente arrivata da un altro dispositivo');
 });
 
+test('un conflitto cloud con modifiche locali offre entrambe le copie, senza ricaricare da solo', () => {
+  const window = loadApp();
+  window.__bridge.syncLocalRevision = 4;
+  window.__bridge.syncConfirmedRevision = 3;
+  window.showSyncUpdateBanner(new Date().toISOString());
+  const el = window.document.getElementById('syncUpdateBanner');
+  assert.ok(el.classList.contains('show'), 'l’avviso deve essere visibile');
+  assert.ok(el.textContent.includes('Carica l\'altra copia'), 'deve rendere disponibile la copia arrivata dall’altro dispositivo');
+  assert.ok(el.textContent.includes('Tieni questa copia'), 'deve rendere disponibile anche la copia locale');
+});
+
 test('checkRemoteUpdateOnBoot al PRIMISSIMO controllo (mai registrato un invio da qui prima) non deve avvisare, solo registrare il punto di partenza', async () => {
   const window = loadApp();
   window.__bridge.syncSession = { user: { id:'u1', email:'a@b.com' } };
