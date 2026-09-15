@@ -523,6 +523,32 @@ function suggestNextMaxWeight(ex, w, mi){
   const raw = String(m.peso).trim();
   return raw==='' ? null : raw;
 }
+// I Max non sono piu' una sola riga in fondo alla tabella: ogni tentativo
+// ricorda dopo quale serie e' stato fatto. I vecchi dati restano leggibili e
+// vengono convertiti al primo utilizzo, senza perdere ne' kg ne' ripetizioni.
+function getMaxEntries(ex, w){
+  const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+  if(!ex.maxEntries) ex.maxEntries = Array.from({length:nWeeks}, (_, week)=>{
+    const legacy = (ex.maxExtra && ex.maxExtra[week]) || [];
+    const lastSet = Math.max(0, ((ex.sets && ex.sets[week]) || []).length - 1);
+    return legacy.filter(m => m && (String(m.peso||'').trim() || String(m.rip||'').trim()))
+      .map(m => ({afterSet:lastSet, peso:m.peso||'', rip:m.rip||''}));
+  });
+  while(ex.maxEntries.length < nWeeks) ex.maxEntries.push([]);
+  if(!ex.maxEntries[w]) ex.maxEntries[w] = [];
+  return ex.maxEntries[w];
+}
+function maxEntriesAfter(ex, w, si){
+  return getMaxEntries(ex,w).map((entry,index)=>({entry,index})).filter(item=>item.entry.afterSet===si);
+}
+function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek){
+  return maxEntriesAfter(ex,w,si).map(({entry,index})=>`
+    <div class="set-row max-entry-row">
+      <span class="set-label max-label">MAX</span>
+      <div class="kg-cell"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="kg" value="${escapeAttr(entry.peso??'')}" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)"></div>
+      <div class="rip-cell"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="rip" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value)"></div>
+    </div>`).join('');
+}
 function exerciseCard(ex, exi, accent){
 
   const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
@@ -541,7 +567,9 @@ function exerciseCard(ex, exi, accent){
     const isPastWeek = w < currentWeek;
     const isFutureWeek = w > currentWeek;
 
-    const isReadOnlyWeek = isPastWeek;
+    // I dati restano sempre correggibili: una ripetizione inserita male in una
+    // settimana passata non deve trasformarsi in un dato impossibile da sistemare.
+    const isReadOnlyWeek = false;
 
 
     const sets = ex.sets && ex.sets[w] ? ex.sets[w] : [];
@@ -626,7 +654,7 @@ function exerciseCard(ex, exi, accent){
         </div>
 
 
-      </div>`;
+      </div>${renderMaxEntries(ex,exi,w,si,isReadOnlyWeek)}`;
     }).join('');
 
 
@@ -650,84 +678,6 @@ function exerciseCard(ex, exi, accent){
     // parte chiusa, cosi' rivedendo un giorno gia' concluso non lo si
     // ritrova tutto spalancato
     const isCollapsed = (wkey in collapsedMap) ? !!collapsedMap[wkey] : (!isCurrentWeek || weekDone || weekSkipped);
-
-
-
-    const maxRaw = (ex.maxExtra && ex.maxExtra[w]) || [];
-
-    const maxPair = [
-      maxRaw[0]||{},
-      maxRaw[1]||{}
-    ];
-
-
-
-    const maxShown = !!(ex.maxShown && ex.maxShown[w]);
-
-    const maxSuggested = [
-      (!maxPair[0].peso && maxPair[0].peso!==0) ? suggestNextMaxWeight(ex,w,0) : null,
-      (!maxPair[1].peso && maxPair[1].peso!==0) ? suggestNextMaxWeight(ex,w,1) : null
-    ];
-    const maxKgPlaceholder = [
-      maxSuggested[0]!==null ? String(maxSuggested[0]) : '',
-      maxSuggested[1]!==null ? String(maxSuggested[1]) : ''
-    ];
-
-    const maxRowHtml = maxShown ? `
-
-    <div class="set-row max-row">
-
-
-      <div></div>
-
-
-      <div class="max-cell">
-
-
-        <input type="text" class="set-input max-input"
-        ${isReadOnlyWeek?'disabled':''}
-        placeholder="${maxKgPlaceholder[0]}"
-        value="${escapeAttr(maxPair[0].peso??'')}"
-        onchange="updateMax(${exi},${w},0,'peso',this.value)">
-
-
-
-        <input type="text" class="set-input max-input"
-        ${isReadOnlyWeek?'disabled':''}
-        placeholder="${maxKgPlaceholder[1]}"
-        value="${escapeAttr(maxPair[1].peso??'')}"
-        onchange="updateMax(${exi},${w},1,'peso',this.value)">
-
-
-      </div>
-
-
-
-      <div class="max-cell">
-
-
-        <input type="text" class="set-input max-input"
-        ${isReadOnlyWeek?'disabled':''}
-        placeholder=""
-        value="${escapeAttr(maxPair[0].rip??'')}"
-        onchange="updateMax(${exi},${w},0,'rip',this.value)">
-
-
-
-        <input type="text" class="set-input max-input"
-        ${isReadOnlyWeek?'disabled':''}
-        placeholder=""
-        value="${escapeAttr(maxPair[1].rip??'')}"
-        onchange="updateMax(${exi},${w},1,'rip',this.value)">
-
-
-      </div>
-
-
-    </div>
-
-
-    ` : '';
 
 
 
@@ -772,7 +722,7 @@ function exerciseCard(ex, exi, accent){
 
 
       <div class="week-body ${isCollapsed?'collapsed':''}" data-exi="${exi}" data-week="${w}">
-      <div class="week-quick-summary"><span>${escapeHtml(ex.schema[w] || 'Schema libero')} <i>·</i> ${escapeHtml(ex.recupero[w] || 'Recupero libero')}</span><button type="button" onclick="toggleWeekNote(this)">Nota</button></div>
+      <div class="week-quick-summary"><span><b>Serie</b> ${escapeHtml(ex.schema[w] || 'libere')} <i>·</i> <b>Recupero</b> ${escapeHtml(ex.recupero[w] || 'libero')}</span><button type="button" onclick="toggleWeekNote(this)">Nota</button></div>
       <div class="week-note-wrap">
       <input class="week-note"
       ${isReadOnlyWeek?'disabled':''}
@@ -818,12 +768,6 @@ function exerciseCard(ex, exi, accent){
         ${setRows}
 
       </div>
-
-
-
-
-      ${maxRowHtml}
-
 
 
 
@@ -1080,7 +1024,8 @@ function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
     <div class="ex-context-sheet">
       <div class="ex-context-title">${escapeHtml(exName||'Esercizio')}</div>
       <div class="ex-context-group-label">Questo esercizio</div>
-      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();toggleMax(${exi},${weekIdx})${typeof partnerExi==='number'?`;toggleMax(${partnerExi},${weekIdx})`:''}">${ICON_PLATE} Max</button>` : ''}
+      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();requestAddMax(${exi},${weekIdx}${typeof partnerExi==='number'?`,`+partnerExi:''})">${ICON_PLATE} Aggiungi serie Max</button>` : ''}
+      ${typeof weekIdx==='number' && getMaxEntries(state.days[activeDayIdx].esercizi[exi],weekIdx).length ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();requestRemoveMax(${exi},${weekIdx}${typeof partnerExi==='number'?`,`+partnerExi:''})">${ICON_TRASH} Rimuovi serie Max</button>` : ''}
       ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();openWeekConfig(${exi},${weekIdx})">${ICON_GEAR} Modifica schema e recupero</button>` : ''}
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openPlateCalc(${exi})">${ICON_PLATE} Calcola dischi bilanciere</button>
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openLinkPicker(${exi})">${ICON_LINK} Collega esercizio</button>
@@ -1420,8 +1365,55 @@ function toggleDropset(exi, w, si, btn){
 // nasconde nelle settimane successive che hanno gia' dei dati inseriti, altrimenti
 // si perderebbero di vista senza cancellarli davvero
 function maxHasData(ex, w){
+  if(ex.maxEntries && ex.maxEntries[w]) return ex.maxEntries[w].some(m=> m && (String(m.peso||'').trim() || String(m.rip||'').trim()));
   const pair = (ex.maxExtra && ex.maxExtra[w]) || [];
   return pair.some(m=> m && (String(m.peso||'').trim() || String(m.rip||'').trim()));
+}
+function requestAddMax(exi, w, partnerExi){
+  const ex = state.days[activeDayIdx].esercizi[exi];
+  const nSets = Math.max(1, ((ex.sets && ex.sets[w]) || []).length);
+  const raw = prompt(`Dopo quale serie vuoi aggiungere il Max? (1-${nSets})`, String(nSets));
+  if(raw===null) return;
+  const afterSet = Number.parseInt(String(raw).trim(),10);
+  if(!Number.isInteger(afterSet) || afterSet<1 || afterSet>nSets){
+    alert(`Inserisci un numero da 1 a ${nSets}.`);
+    return;
+  }
+  getMaxEntries(ex,w).push({afterSet:afterSet-1,peso:'',rip:''});
+  if(typeof partnerExi==='number'){
+    const partner = state.days[activeDayIdx].esercizi[partnerExi];
+    getMaxEntries(partner,w).push({afterSet:afterSet-1,peso:'',rip:''});
+  }
+  saveState();
+  renderActive();
+}
+function requestRemoveMax(exi, w, partnerExi){
+  const ex = state.days[activeDayIdx].esercizi[exi];
+  const entries = getMaxEntries(ex,w);
+  if(!entries.length) return;
+  const choices = entries.map((entry,i)=>`${i+1}: dopo serie ${entry.afterSet+1}`).join('\n');
+  const raw = prompt(`Quale serie Max vuoi rimuovere?\n${choices}`, '1');
+  if(raw===null) return;
+  const index = Number.parseInt(String(raw).trim(),10)-1;
+  if(!Number.isInteger(index) || index<0 || index>=entries.length){
+    alert('Seleziona uno dei Max indicati.');
+    return;
+  }
+  entries.splice(index,1);
+  if(typeof partnerExi==='number'){
+    const partnerEntries = getMaxEntries(state.days[activeDayIdx].esercizi[partnerExi],w);
+    if(index<partnerEntries.length) partnerEntries.splice(index,1);
+  }
+  saveState();
+  renderActive();
+}
+function updateMaxEntry(exi, w, index, field, val){
+  const ex = state.days[activeDayIdx].esercizi[exi];
+  const entry = getMaxEntries(ex,w)[index];
+  if(!entry) return;
+  entry[field] = val;
+  if(field==='peso' && String(val||'').trim()!=='') markWorkoutStartedByWeight();
+  saveState();
 }
 function toggleMax(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
@@ -1823,6 +1815,21 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
     <span class="rep-comparison" aria-live="polite" hidden></span>
     </div>`;
 }
+function linkedMaxEntriesHtml(exA, exiA, exB, exiB, w, si){
+  const aItems = maxEntriesAfter(exA,w,si);
+  const bItems = maxEntriesAfter(exB,w,si);
+  const count = Math.max(aItems.length,bItems.length);
+  let html = '';
+  for(let i=0;i<count;i++){
+    const a = aItems[i], b = bItems[i];
+    html += `<div class="linked-set-group max-entry-group"><div class="linked-set-wrap">
+      <div class="set-label max-label">MAX</div><div class="linked-sub-rows">
+      <div class="linked-sub-row"><span class="linked-tag">${escapeHtml(exA.nome||'—')}</span><input type="text" class="set-input max-input" placeholder="kg" value="${escapeAttr(a ? a.entry.peso??'' : '')}" ${a?'':'disabled'} onchange="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'peso',this.value)"><input type="text" class="set-input max-input" placeholder="rip" value="${escapeAttr(a ? a.entry.rip??'' : '')}" ${a?'':'disabled'} onchange="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'rip',this.value)"></div>
+      <div class="linked-sub-row"><span class="linked-tag">${escapeHtml(exB.nome||'—')}</span><input type="text" class="set-input max-input" placeholder="kg" value="${escapeAttr(b ? b.entry.peso??'' : '')}" ${b?'':'disabled'} onchange="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'peso',this.value)"><input type="text" class="set-input max-input" placeholder="rip" value="${escapeAttr(b ? b.entry.rip??'' : '')}" ${b?'':'disabled'} onchange="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'rip',this.value)"></div>
+      </div></div></div>`;
+  }
+  return html;
+}
 // la card per una coppia collegata: stesso impianto di exerciseCard, ma con due
 // intestazioni (una per esercizio) e un'unica settimana condivisa, dove ogni
 // riga numerata si sdoppia in due sotto-righe (una per esercizio)
@@ -1848,7 +1855,6 @@ const isFutureWeek = w > state.currentWeek;
       (wkey in collapsedMap)
       ? !!collapsedMap[wkey]
       : (!isCurrentWeek || weekDone || weekSkipped);
-    const maxShown = !!(exA.maxShown && exA.maxShown[w]);
     const nRows = Math.max(
       exA.sets && exA.sets[w] ? exA.sets[w].length : 0,
       exB.sets && exB.sets[w] ? exB.sets[w].length : 0,
@@ -1865,31 +1871,7 @@ const isFutureWeek = w > state.currentWeek;
             <div class="linked-sub-row">${linkedSubRowInputsHtml(exB, exiB, w, si)}</div>
           </div>
         </div>
-      </div>`;
-    }
-    let maxRowHtml = '';
-    if(maxShown){
-      const maxA = ((exA.maxExtra && exA.maxExtra[w]) || [])[0] || {};
-      const maxB = ((exB.maxExtra && exB.maxExtra[w]) || [])[0] || {};
-      const maxAKgPh = (!maxA.peso && maxA.peso!==0 && suggestNextMaxWeight(exA,w,0)!==null) ? String(suggestNextMaxWeight(exA,w,0)) : '';
-      const maxBKgPh = (!maxB.peso && maxB.peso!==0 && suggestNextMaxWeight(exB,w,0)!==null) ? String(suggestNextMaxWeight(exB,w,0)) : '';
-      maxRowHtml = `<div class="linked-set-group">
-        <div class="linked-set-wrap">
-          <div class="set-label">max</div>
-          <div class="linked-sub-rows">
-            <div class="linked-sub-row">
-              <span class="linked-tag" title="${escapeAttr(exA.nome||'')}">${escapeHtml(exA.nome||'—')}</span>
-              <input type="text" class="set-input max-input" placeholder="${maxAKgPh}" value="${escapeAttr(maxA.peso??'')}" onchange="updateMax(${exiA},${w},0,'peso',this.value)">
-              <input type="text" class="set-input max-input" placeholder="" value="${escapeAttr(maxA.rip??'')}" onchange="updateMax(${exiA},${w},0,'rip',this.value)">
-            </div>
-            <div class="linked-sub-row">
-              <span class="linked-tag" title="${escapeAttr(exB.nome||'')}">${escapeHtml(exB.nome||'—')}</span>
-              <input type="text" class="set-input max-input" placeholder="${maxBKgPh}" value="${escapeAttr(maxB.peso??'')}" onchange="updateMax(${exiB},${w},0,'peso',this.value)">
-              <input type="text" class="set-input max-input" placeholder="" value="${escapeAttr(maxB.rip??'')}" onchange="updateMax(${exiB},${w},0,'rip',this.value)">
-            </div>
-          </div>
-        </div>
-      </div>`;
+      </div>${linkedMaxEntriesHtml(exA,exiA,exB,exiB,w,si)}`;
     }
     return `
 
@@ -1925,7 +1907,7 @@ const isFutureWeek = w > state.currentWeek;
 
 
   <div class="week-body ${isCollapsed?'collapsed':''}" data-exi="${exiA}" data-week="${w}">
-    <div class="week-quick-summary"><span>${escapeHtml(exA.schema[w] || 'Schema libero')} <i>·</i> ${escapeHtml(exA.recupero[w] || 'Recupero libero')}</span><button type="button" onclick="toggleWeekNote(this)">Nota</button></div>
+    <div class="week-quick-summary"><span><b>Serie</b> ${escapeHtml(exA.schema[w] || 'libere')} <i>·</i> <b>Recupero</b> ${escapeHtml(exA.recupero[w] || 'libero')}</span><button type="button" onclick="toggleWeekNote(this)">Nota</button></div>
     <div class="week-note-wrap">
     <input class="week-note"
     placeholder="nota settimana (facoltativo)"
@@ -1971,8 +1953,6 @@ const isFutureWeek = w > state.currentWeek;
       ${setsHtml}
 
     </div>
-
-    ${maxRowHtml}
 
     <div class="set-btns">
 

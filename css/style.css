@@ -477,7 +477,8 @@ main{padding:12px;}
 .week-body{padding:8px;width:100%;box-sizing:border-box;max-height:2000px;opacity:1;overflow:hidden;transition:max-height .22s ease, opacity .18s ease, padding .22s ease;}
 .week-body.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;}
 .week-quick-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border-bottom:1px solid rgba(255,255,255,.10);color:var(--text);padding:2px 2px 8px;margin:0 0 7px;font-size:12px;font-weight:700;}
-.week-quick-summary span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.week-quick-summary span{min-width:0;line-height:1.35;}
+.week-quick-summary b{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.25px;margin-right:2px;}
 .week-quick-summary i{color:var(--muted);font-style:normal;padding:0 2px;}
 .week-quick-summary button{flex:0 0 auto;background:transparent;border:none;color:var(--accent,var(--green));font-size:10px;font-weight:800;padding:4px 2px;}
 .week-note-wrap{display:none;}
@@ -619,10 +620,15 @@ body.training-focus .week-block{margin-top:10px;}
 .week-done-wrap{display:flex;flex-direction:row;justify-content:center;gap:22px;}
 .week-status-col{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .week-done-label{font-size:11px;color:var(--muted);opacity:.7;text-align:center;}
-.set-btns-secondary{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.set-btns-right{display:flex;gap:6px;}
+.set-btns-secondary{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;}
+.set-btns-right{display:contents;}
+.set-btns-right .add-ex.small:first-child{grid-column:1;justify-self:start;}
+.set-btns-right .week-actions-btn{grid-column:2;justify-self:center;}
+.set-btns-right .add-ex.small.danger{grid-column:3;justify-self:end;}
 .week-actions-btn{width:32px;height:30px;padding:0;background:var(--panel);border:1.5px solid var(--accent,var(--green));border-radius:8px;color:var(--accent,var(--green));display:inline-flex;align-items:center;justify-content:center;}
 .week-actions-btn svg{width:17px;height:17px;}
+.max-entry-row{margin:5px 0 7px;padding:5px 0;border-top:1px dashed rgba(255,255,255,.12);border-bottom:1px dashed rgba(255,255,255,.12);}
+.max-label{color:var(--amber)!important;font-size:9px!important;letter-spacing:.4px;}
 /* scoped a .set-btns cosi' non tocca altri bottoni "add-ex small" nel resto della pagina */
 .set-btns .add-ex.small{flex:none;width:auto;padding:5px 10px;font-size:10px;margin-top:0;border-width:1px;border-style:solid;}
 .add-ex.danger{color:var(--red);border-color:var(--red);}
