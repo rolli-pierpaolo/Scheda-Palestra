@@ -48,7 +48,7 @@ function loadApp(){
   // dipende da quell'ordine: variabili/funzioni dichiarate in un file
   // vengono usate da quelli caricati dopo, esattamente come in un browser vero)
   const scriptSrcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)]
-    .map(m => m[1])
+    .map(m => m[1].split('?')[0])
     .filter(src => !src.includes('gsap.min.js') && !src.includes('app-init.js'));
 
   for(const src of scriptSrcs){

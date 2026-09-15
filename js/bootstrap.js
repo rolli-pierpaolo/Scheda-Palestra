@@ -34,7 +34,7 @@
     window.addEventListener('load', function(){
       // Il numero di build nel URL evita che una cache HTTP troppo aggressiva
       // trattenga il service worker precedente dopo una nuova pubblicazione.
-      navigator.serviceWorker.register('sw.js?v=1.22').then(function(registration){
+      navigator.serviceWorker.register('sw.js?rev=20260915a').then(function(registration){
         if(registration.waiting) showAppUpdateBanner();
         registration.addEventListener('updatefound', function(){
           var worker = registration.installing;
