@@ -772,6 +772,10 @@ function exerciseCard(ex, exi, accent){
 
 
       <div class="week-body ${isCollapsed?'collapsed':''}">
+      <button type="button" class="week-quick-summary" onclick="toggleWeekConfig(this)" aria-expanded="false">
+        <span>${escapeHtml(ex.schema[w] || 'Schema libero')} <i>·</i> ${escapeHtml(ex.recupero[w] || 'Recupero libero')}</span><small>Opzioni</small>
+      </button>
+      <div class="week-config">
       <input class="week-note"
       ${isReadOnlyWeek?'disabled':''}
       placeholder="nota settimana (facoltativo)"
@@ -809,6 +813,7 @@ function exerciseCard(ex, exi, accent){
 
       </div>
 
+      </div>
       <div class="sets-wrap">
 
         ${setRows}
@@ -910,9 +915,7 @@ function exerciseCard(ex, exi, accent){
 
 
 
-  const prBadge = record
-  ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(record.peso))} kg${record.rip?' × '+escapeHtml(String(record.rip)):''}</div>`
-  : '';
+  const prBadge = '';
 
 
 
@@ -1015,6 +1018,15 @@ function toggleWeek(btn, key, weekIdx){
 
   saveCollapsed();
 
+}
+
+function toggleWeekConfig(btn){
+  const body = btn.closest('.week-body');
+  if(!body) return;
+  const open = body.classList.toggle('show-config');
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  const label = btn.querySelector('small');
+  if(label) label.textContent = open ? 'Chiudi' : 'Opzioni';
 }
 
 // pressione prolungata sul nome esercizio: apre un menu contestuale con le
@@ -1911,7 +1923,10 @@ const isFutureWeek = w > state.currentWeek;
 
 
   <div class="week-body ${isCollapsed?'collapsed':''}">
-
+    <button type="button" class="week-quick-summary" onclick="toggleWeekConfig(this)" aria-expanded="false">
+      <span>${escapeHtml(exA.schema[w] || 'Schema libero')} <i>·</i> ${escapeHtml(exA.recupero[w] || 'Recupero libero')}</span><small>Opzioni</small>
+    </button>
+    <div class="week-config">
     <input class="week-note"
     placeholder="nota settimana (facoltativo)"
     value="${escapeAttr((exA.weekNote && exA.weekNote[w]) ?? '')}"
@@ -1949,6 +1964,7 @@ const isFutureWeek = w > state.currentWeek;
 
     </div>
 
+    </div>
     <div class="sets-wrap">
 
       ${setsHtml}
@@ -2021,8 +2037,8 @@ const isFutureWeek = w > state.currentWeek;
 
   const recordA = getRecordForExercise(exA.nome);
   const recordB = getRecordForExercise(exB.nome);
-  const prBadgeA = recordA ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(recordA.peso))} kg${recordA.rip? ' × '+escapeHtml(String(recordA.rip)) : ''}</div>` : '';
-  const prBadgeB = recordB ? `<div class="pr-badge">${ICON_TROPHY} Record: ${escapeHtml(String(recordB.peso))} kg${recordB.rip? ' × '+escapeHtml(String(recordB.rip)) : ''}</div>` : '';
+  const prBadgeA = '';
+  const prBadgeB = '';
 
   return `<div class="card linked-group" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
     <div class="linked-pair-frame">

@@ -476,6 +476,14 @@ main{padding:12px;}
    misurare l'altezza reale in JS, semplice transizione CSS */
 .week-body{padding:8px;width:100%;box-sizing:border-box;max-height:2000px;opacity:1;overflow:hidden;transition:max-height .22s ease, opacity .18s ease, padding .22s ease;}
 .week-body.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;}
+.week-quick-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.10);color:var(--text);padding:2px 2px 8px;margin:0 0 7px;text-align:left;font-size:12px;font-weight:700;}
+.week-quick-summary span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.week-quick-summary i{color:var(--muted);font-style:normal;padding:0 2px;}
+.week-quick-summary small{flex:0 0 auto;color:var(--accent,var(--green));font-size:10px;font-weight:800;}
+.week-config{display:none;}
+.week-body.show-config .week-config{display:block;}
+.week-body:not(.show-config) .max-row,.week-body:not(.show-config) .set-btns-secondary{display:none;}
+.week-body:not(.show-config) .rpe-chip{display:none;}
 .meta-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;width:100%;}
 .meta-label{width:70px;flex:0 0 70px;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;}
 .meta-input{flex:1 1 auto;min-width:0;width:100%;background:#000;border:1px solid var(--line);color:var(--accent,var(--green));font-size:12px;text-align:center;border-radius:6px;padding:8px 4px;box-sizing:border-box;}
@@ -518,13 +526,13 @@ main{padding:12px;}
 /* righe piu' compatte (meno padding verticale sugli input, meno margine tra
    una riga e l'altra): con 4 settimane * piu' serie erano ingombranti senza
    un vero motivo, i numeri restano leggibili lo stesso */
-.set-row{display:grid;grid-template-columns:20px minmax(0,1fr) minmax(0,1fr);gap:5px;margin-bottom:3px;align-items:center;width:100%;}
+.set-row{display:grid;grid-template-columns:20px minmax(0,1fr) minmax(0,1fr);gap:5px;margin-bottom:3px;align-items:start;width:100%;}
 /* colore del giorno invece del grigio muto: lega di piu' i numeri di serie al
    resto della card, ormai colorata per giorno ovunque */
 /* ora e' un bottone (tocca per segnare/togliere dropset, vedi toggleDropset
    in js/exercise-card.js): reset dei default da <button> per restare
    identico al testo semplice di prima quando non e' un dropset */
-.set-label{font-size:10px;color:var(--accent,var(--green));font-weight:700;text-align:center;background:none;border:none;padding:0;width:100%;font-family:inherit;}
+.set-label{font-size:10px;color:var(--accent,var(--green));font-weight:700;text-align:center;background:none;border:none;padding:0;width:100%;font-family:inherit;margin-top:7px;}
 .set-label.dropset{color:var(--amber);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
 .set-input{background:color-mix(in srgb,var(--row-dark) 78%,var(--panel2));color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:5px 2px;font-size:13px;font-weight:700;text-align:center;width:100%;min-width:0;box-sizing:border-box;box-shadow:inset 0 1px 0 rgba(255,255,255,.035);}
 .set-input::placeholder{color:var(--muted);font-weight:500;opacity:.72;}
@@ -541,7 +549,7 @@ body.training-focus .day-ex-strip,body.training-focus .ex-carousel-nav{display:n
 body.training-focus .ex-sticky-header{font-size:18px;padding:10px 14px;margin-bottom:8px;}
 body.training-focus .week-toggle{padding:10px 12px;font-size:15px;}
 body.training-focus .set-row{grid-template-columns:26px minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px;}
-body.training-focus .set-label{font-size:13px;}
+body.training-focus .set-label{font-size:13px;margin-top:14px;}
 body.training-focus .set-input{min-height:48px;padding:9px 4px;font-size:21px;border-radius:8px;}
 body.training-focus .stepper{flex-basis:30px;width:30px;font-size:19px;border-radius:7px;}
 body.training-focus .rpe-chip{min-width:48px;font-size:12px;border-radius:8px;}
