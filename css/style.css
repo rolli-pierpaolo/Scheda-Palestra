@@ -476,13 +476,14 @@ main{padding:12px;}
    misurare l'altezza reale in JS, semplice transizione CSS */
 .week-body{padding:8px;width:100%;box-sizing:border-box;max-height:2000px;opacity:1;overflow:hidden;transition:max-height .22s ease, opacity .18s ease, padding .22s ease;}
 .week-body.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;}
-.week-quick-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.10);color:var(--text);padding:2px 2px 8px;margin:0 0 7px;text-align:left;font-size:12px;font-weight:700;}
+.week-quick-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border-bottom:1px solid rgba(255,255,255,.10);color:var(--text);padding:2px 2px 8px;margin:0 0 7px;font-size:12px;font-weight:700;}
 .week-quick-summary span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .week-quick-summary i{color:var(--muted);font-style:normal;padding:0 2px;}
-.week-quick-summary small{flex:0 0 auto;color:var(--accent,var(--green));font-size:10px;font-weight:800;}
+.week-quick-summary button{flex:0 0 auto;background:transparent;border:none;color:var(--accent,var(--green));font-size:10px;font-weight:800;padding:4px 2px;}
+.week-note-wrap{display:none;}
+.week-body.show-note .week-note-wrap{display:block;}
 .week-config{display:none;}
 .week-body.show-config .week-config{display:block;}
-.week-body:not(.show-config) .max-row,.week-body:not(.show-config) .set-btns-secondary{display:none;}
 .week-body:not(.show-config) .rpe-chip{display:none;}
 .meta-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;width:100%;}
 .meta-label{width:70px;flex:0 0 70px;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;}
@@ -620,6 +621,8 @@ body.training-focus .week-block{margin-top:10px;}
 .week-done-label{font-size:11px;color:var(--muted);opacity:.7;text-align:center;}
 .set-btns-secondary{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .set-btns-right{display:flex;gap:6px;}
+.week-actions-btn{width:32px;height:30px;padding:0;background:var(--panel);border:1.5px solid var(--accent,var(--green));border-radius:8px;color:var(--accent,var(--green));display:inline-flex;align-items:center;justify-content:center;}
+.week-actions-btn svg{width:17px;height:17px;}
 /* scoped a .set-btns cosi' non tocca altri bottoni "add-ex small" nel resto della pagina */
 .set-btns .add-ex.small{flex:none;width:auto;padding:5px 10px;font-size:10px;margin-top:0;border-width:1px;border-style:solid;}
 .add-ex.danger{color:var(--red);border-color:var(--red);}
@@ -834,6 +837,7 @@ body.training-focus .week-block{margin-top:10px;}
 .ex-context-overlay{padding:12px;gap:8px;flex-direction:column;}
 .ex-context-sheet{width:100%;max-width:360px;background:var(--panel2);border-radius:8px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5);}
 .ex-context-title{padding:12px 14px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);text-align:center;border-bottom:1px solid var(--line);}
+.ex-context-group-label{padding:10px 14px 5px;background:var(--row-dark);color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;}
 .ex-context-action{display:flex;align-items:center;gap:10px;width:100%;padding:14px;background:none;border:none;border-bottom:1px solid var(--line);color:var(--text);font-size:14px;font-weight:700;text-align:left;}
 .ex-context-action:last-child{border-bottom:none;}
 .ex-context-action.danger{color:var(--red);}

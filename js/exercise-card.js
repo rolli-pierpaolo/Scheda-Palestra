@@ -771,18 +771,17 @@ function exerciseCard(ex, exi, accent){
 
 
 
-      <div class="week-body ${isCollapsed?'collapsed':''}">
-      <button type="button" class="week-quick-summary" onclick="toggleWeekConfig(this)" aria-expanded="false">
-        <span>${escapeHtml(ex.schema[w] || 'Schema libero')} <i>·</i> ${escapeHtml(ex.recupero[w] || 'Recupero libero')}</span><small>Opzioni</small>
-      </button>
-      <div class="week-config">
+      <div class="week-body ${isCollapsed?'collapsed':''}" data-exi="${exi}" data-week="${w}">
+      <div class="week-quick-summary"><span>${escapeHtml(ex.schema[w] || 'Schema libero')} <i>·</i> ${escapeHtml(ex.recupero[w] || 'Recupero libero')}</span><button type="button" onclick="toggleWeekNote(this)">Nota</button></div>
+      <div class="week-note-wrap">
       <input class="week-note"
       ${isReadOnlyWeek?'disabled':''}
       placeholder="nota settimana (facoltativo)"
       value="${escapeAttr((ex.weekNote && ex.weekNote[w]) ?? '')}"
       onchange="updateWeekNote(${exi},${w},this.value)">
 
-      ${isCurrentWeek && !weekDone && !weekSkipped ? (()=>{ const hint = computeProgressionHint(ex, w); return hint ? `<div class="progression-hint">${escapeHtml(hint.text)} ${hint.icon}</div>` : ''; })() : ''}
+      </div>
+      <div class="week-config">
 
       <div class="meta-row-schema">
         <span class="meta-label small">Serie</span>
@@ -859,15 +858,6 @@ function exerciseCard(ex, exi, accent){
 
         <div class="set-btns-secondary">
 
-          <button class="max-toggle"
-          ${isReadOnlyWeek?'disabled':''}
-          onclick="toggleMax(${exi},${w})">
-
-          ${ICON_PLATE} ${maxShown?'nascondi max':'max'}
-
-          </button>
-
-
         <div class="set-btns-right">
 
 
@@ -879,7 +869,7 @@ function exerciseCard(ex, exi, accent){
 
           </button>
 
-
+          <button class="week-actions-btn" ${isReadOnlyWeek?'disabled':''} onclick="openExerciseContextMenu(${exi}, '${escapeJs(ex.nome||'')}', ${w})" aria-label="Azioni esercizio">${ICON_MORE}</button>
 
 
           <button class="add-ex small danger"
@@ -926,9 +916,6 @@ function exerciseCard(ex, exi, accent){
 
 
     <div class="card-head">
-
-
-      <button class="ex-more-btn" onclick="openExerciseContextMenu(${exi}, '${escapeJs(ex.nome||'')}')" title="Altre azioni" aria-label="Altre azioni">${ICON_MORE}</button>
 
 
       ${prBadge}
@@ -1028,6 +1015,17 @@ function toggleWeekConfig(btn){
   const label = btn.querySelector('small');
   if(label) label.textContent = open ? 'Chiudi' : 'Opzioni';
 }
+function toggleWeekNote(btn){
+  const body = btn.closest('.week-body');
+  if(!body) return;
+  const open = body.classList.toggle('show-note');
+  btn.textContent = open ? 'Chiudi nota' : 'Nota';
+  if(open){ const input = body.querySelector('.week-note'); if(input) input.focus(); }
+}
+function openWeekConfig(exi, w){
+  const body = document.querySelector(`.week-body[data-exi="${exi}"][data-week="${w}"]`);
+  if(body) body.classList.add('show-config');
+}
 
 // pressione prolungata sul nome esercizio: apre un menu contestuale con le
 // stesse azioni gia' nelle iconcine della card (Elimina, Grafico, Calcola
@@ -1072,7 +1070,7 @@ async function shareExercise(exi){
     }catch(e){}
   }
 }
-function openExerciseContextMenu(exi, exName){
+function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
   closeExerciseContextMenu();
   const el = document.createElement('div');
   el.id = 'exContextMenu';
@@ -1081,9 +1079,13 @@ function openExerciseContextMenu(exi, exName){
   el.innerHTML = `
     <div class="ex-context-sheet">
       <div class="ex-context-title">${escapeHtml(exName||'Esercizio')}</div>
-      <button class="ex-context-action" onclick="closeExerciseContextMenu();openChart(${exi})">${ICON_CHART} Grafico progressione</button>
+      <div class="ex-context-group-label">Questo esercizio</div>
+      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();toggleMax(${exi},${weekIdx})${typeof partnerExi==='number'?`;toggleMax(${partnerExi},${weekIdx})`:''}">${ICON_PLATE} Max</button>` : ''}
+      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();openWeekConfig(${exi},${weekIdx})">${ICON_GEAR} Modifica schema e recupero</button>` : ''}
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openPlateCalc(${exi})">${ICON_PLATE} Calcola dischi bilanciere</button>
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openLinkPicker(${exi})">${ICON_LINK} Collega esercizio</button>
+      <div class="ex-context-group-label">Azioni</div>
+      <button class="ex-context-action" onclick="closeExerciseContextMenu();openChart(${exi})">${ICON_CHART} Grafico progressione</button>
       <button class="ex-context-action" onclick="closeExerciseContextMenu();shareExercise(${exi})">${ICON_SHARE} Condividi</button>
       <button class="ex-context-action danger" onclick="closeExerciseContextMenu();deleteExercise(${exi})">${ICON_TRASH} Elimina esercizio</button>
     </div>
@@ -1922,17 +1924,16 @@ const isFutureWeek = w > state.currentWeek;
   </button>
 
 
-  <div class="week-body ${isCollapsed?'collapsed':''}">
-    <button type="button" class="week-quick-summary" onclick="toggleWeekConfig(this)" aria-expanded="false">
-      <span>${escapeHtml(exA.schema[w] || 'Schema libero')} <i>·</i> ${escapeHtml(exA.recupero[w] || 'Recupero libero')}</span><small>Opzioni</small>
-    </button>
-    <div class="week-config">
+  <div class="week-body ${isCollapsed?'collapsed':''}" data-exi="${exiA}" data-week="${w}">
+    <div class="week-quick-summary"><span>${escapeHtml(exA.schema[w] || 'Schema libero')} <i>·</i> ${escapeHtml(exA.recupero[w] || 'Recupero libero')}</span><button type="button" onclick="toggleWeekNote(this)">Nota</button></div>
+    <div class="week-note-wrap">
     <input class="week-note"
     placeholder="nota settimana (facoltativo)"
     value="${escapeAttr((exA.weekNote && exA.weekNote[w]) ?? '')}"
     onchange="updateWeekNote(${exiA},${w},this.value);updateWeekNote(${exiB},${w},this.value)">
 
-    ${isCurrentWeek && !weekDone && !weekSkipped ? (()=>{ const hint = computeProgressionHint(exA, w); return hint ? `<div class="progression-hint">${escapeHtml(hint.text)} ${hint.icon}</div>` : ''; })() : ''}
+    </div>
+    <div class="week-config">
 
     <div class="meta-row-schema">
       <span class="meta-label small">Serie</span>
@@ -1999,13 +2000,6 @@ const isFutureWeek = w > state.currentWeek;
 
       <div class="set-btns-secondary">
 
-        <button class="max-toggle"
-        onclick="toggleMax(${exiA},${w});toggleMax(${exiB},${w})">
-
-          ${ICON_PLATE} ${maxShown?'nascondi max':'max'}
-
-        </button>
-
         <div class="set-btns-right">
 
           <button class="add-ex small"
@@ -2014,6 +2008,8 @@ const isFutureWeek = w > state.currentWeek;
           + serie
 
           </button>
+
+          <button class="week-actions-btn" onclick="openExerciseContextMenu(${exiA}, '${escapeJs(exA.nome||'')}', ${w}, ${exiB})" aria-label="Azioni esercizio">${ICON_MORE}</button>
 
           <button class="add-ex small danger"
           onclick="removeSet(${exiA},${w});removeSet(${exiB},${w})">
@@ -2043,13 +2039,11 @@ const isFutureWeek = w > state.currentWeek;
   return `<div class="card linked-group" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
     <div class="linked-pair-frame">
       <div class="card-head linked-head compact">
-        <button class="ex-more-btn" onclick="openExerciseContextMenu(${exiA}, '${escapeJs(exA.nome||'')}')" title="Altre azioni" aria-label="Altre azioni">${ICON_MORE}</button>
         ${prBadgeA}
         <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiA},this.value)">${escapeHtml(exA.commento??'')}</textarea>
       </div>
       <button class="link-type-divider" onclick="openLinkPicker(${exiA})" title="Gestisci collegamento"><span class="link-type-pill" style="background:${accent.d}">${ICON_LIGHTNING} ${typeLabel} <span class="link-type-manage">${ICON_LINK} gestisci</span></span></button>
       <div class="card-head linked-head compact">
-        <button class="ex-more-btn" onclick="openExerciseContextMenu(${exiB}, '${escapeJs(exB.nome||'')}')" title="Altre azioni" aria-label="Altre azioni">${ICON_MORE}</button>
         ${prBadgeB}
         <textarea class="ex-comment compact" placeholder="Note / tecnica (facoltativo)" onchange="updateComment(${exiB},this.value)">${escapeHtml(exB.commento??'')}</textarea>
       </div>
