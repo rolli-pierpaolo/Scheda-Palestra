@@ -128,9 +128,21 @@ let calendarLog = {};
 // riaprendo l'app da chiusa, si deve tornare dritti dove si era rimasti
 // oppure mostrare la Home, vedi js/app-init.js
 const WORKOUT_IN_PROGRESS_KEY = "scheda_wo18_workout_in_progress_v1";
+const WORKOUT_STARTED_AT_KEY = "scheda_wo18_workout_started_at_v1";
 let workoutInProgress = false;
+let workoutStartedAt = 0;
 function saveWorkoutInProgress(){
   localStorage.setItem(WORKOUT_IN_PROGRESS_KEY, workoutInProgress ? '1' : '0');
+}
+function saveWorkoutStartedAt(){
+  if(workoutStartedAt) localStorage.setItem(WORKOUT_STARTED_AT_KEY, String(workoutStartedAt));
+  else localStorage.removeItem(WORKOUT_STARTED_AT_KEY);
+}
+function clearWorkoutSession(){
+  workoutInProgress = false;
+  workoutStartedAt = 0;
+  saveWorkoutInProgress();
+  saveWorkoutStartedAt();
 }
 // segna l'allenamento come davvero iniziato: chiamata solo da chi scrive
 // un peso, updateSet, stepSet, updateMax in js/exercise-card.js, mai dalle
@@ -141,7 +153,9 @@ function saveWorkoutInProgress(){
 function markWorkoutStartedByWeight(){
   if(!workoutInProgress){
     workoutInProgress = true;
+    workoutStartedAt = Date.now();
     saveWorkoutInProgress();
+    saveWorkoutStartedAt();
   }
 }
 // workoutInProgress è unico per tutto il blocco, non per singolo giorno: una

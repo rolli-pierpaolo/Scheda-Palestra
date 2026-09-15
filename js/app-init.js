@@ -30,6 +30,10 @@ try{
   // rimasti, gli obiettivi sbloccati, e fa partire subito il primo disegno
   // delle varie parti della pagina
   loadState();
+  // La durata dell'allenamento resta corretta anche se si chiude e riapre
+  // l'app durante una pausa: il timestamp viene cancellato solo alla vera
+  // conferma di fine allenamento.
+  workoutStartedAt = Number(localStorage.getItem(WORKOUT_STARTED_AT_KEY)) || 0;
   loadActivePos();
   loadAchievements();
   maybeAutoBackup();

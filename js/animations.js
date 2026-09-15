@@ -160,6 +160,7 @@ const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
     <div class="finish-recap">
       <div class="finish-recap-stat"><span class="finish-recap-num">${stats.setsCount}</span><span class="finish-recap-label">serie</span></div>
       <div class="finish-recap-stat"><span class="finish-recap-num">${stats.volume.toLocaleString('it-IT')}</span><span class="finish-recap-label">kg volume</span></div>
+      <div class="finish-recap-stat"><span class="finish-recap-num">${stats.durationMins}'</span><span class="finish-recap-label">durata</span></div>
       ${sessionPRs.length ? `<div class="finish-recap-stat"><span class="finish-recap-num">${sessionPRs.length}</span><span class="finish-recap-label">record</span></div>` : ''}
     </div>
     ${sessionPRs.length ? `<div class="finish-recap-prs">${ICON_PLATE} ${sessionPRs.map(p=>escapeHtml(p.name)+(p.weight!=null?' '+String(p.weight).replace('.',',')+'kg':'')).join(' · ')}</div>` : ''}
@@ -555,8 +556,7 @@ if(weekFinished){
 
     saveActivePos();
 
-    workoutInProgress = false;
-    saveWorkoutInProgress();
+    clearWorkoutSession();
     sessionPRs = [];
 
     renderDayTabs();
