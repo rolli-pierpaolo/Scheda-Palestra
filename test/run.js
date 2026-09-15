@@ -635,6 +635,18 @@ test('un conflitto cloud con modifiche locali offre entrambe le copie, senza ric
   assert.ok(el.textContent.includes('Tieni questa copia'), 'deve rendere disponibile anche la copia locale');
 });
 
+test('le preferenze di accessibilità si applicano senza modificare la scheda', () => {
+  const window = loadApp();
+  const before = JSON.stringify(window.__bridge.state);
+  window.setAccessibilityPref('largeText', true);
+  window.setAccessibilityPref('highContrast', true);
+  window.setAccessibilityPref('reduceMotion', true);
+  assert.ok(window.document.body.classList.contains('a11y-large-text'));
+  assert.ok(window.document.body.classList.contains('a11y-high-contrast'));
+  assert.ok(window.document.body.classList.contains('a11y-reduce-motion'));
+  assert.strictEqual(JSON.stringify(window.__bridge.state), before, 'le preferenze visive non devono alterare allenamenti o dati');
+});
+
 test('checkRemoteUpdateOnBoot al PRIMISSIMO controllo (mai registrato un invio da qui prima) non deve avvisare, solo registrare il punto di partenza', async () => {
   const window = loadApp();
   window.__bridge.syncSession = { user: { id:'u1', email:'a@b.com' } };

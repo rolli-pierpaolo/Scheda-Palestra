@@ -30,6 +30,7 @@ try{
   // rimasti, gli obiettivi sbloccati, e fa partire subito il primo disegno
   // delle varie parti della pagina
   loadState();
+  loadAccessibilityPrefs();
   // La durata dell'allenamento resta corretta anche se si chiude e riapre
   // l'app durante una pausa: il timestamp viene cancellato solo alla vera
   // conferma di fine allenamento.

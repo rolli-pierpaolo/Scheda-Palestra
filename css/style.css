@@ -65,6 +65,22 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 button{transition:transform .1s ease;}
 button:active{transform:scale(.96);}
 html,body{margin:0;padding:0;background:var(--bg-black);color:var(--text);font-family:var(--font-body);}
+/* Preferenze di accessibilità, attivabili dalle Impostazioni. Le classi
+   vivono sul body così valgono ovunque, anche dentro ai modali. */
+body.a11y-high-contrast{--bg-black:#000;--panel:#141414;--panel2:#202020;--row-dark:#080808;--line:#767676;--text:#fff;--muted:#e0e0e0;--green:#a7dc55;--green-dark:#405c12;}
+body.a11y-large-text{font-size:18px;}
+body.a11y-large-text button,body.a11y-large-text input,body.a11y-large-text textarea,body.a11y-large-text select{font-size:1.08em;}
+body.a11y-large-text .footer-note,body.a11y-large-text .meta-label,body.a11y-large-text .finish-subtitle{font-size:14px;}
+body.a11y-large-text .day-btn,body.a11y-large-text .bottom-nav-btn,body.a11y-large-text .home-day-card{font-size:14px;}
+body.a11y-reduce-motion *,body.a11y-reduce-motion *::before,body.a11y-reduce-motion *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;}
+.a11y-setting-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer;}
+.a11y-setting-row:last-child{border-bottom:none;}
+.a11y-setting-row span{display:flex;flex-direction:column;gap:3px;}
+.a11y-setting-row small{color:var(--muted);font-size:11px;line-height:1.35;}
+.a11y-setting-row input{appearance:none;width:42px;height:24px;flex:0 0 auto;border-radius:20px;background:var(--line);position:relative;cursor:pointer;}
+.a11y-setting-row input::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .18s ease;}
+.a11y-setting-row input:checked{background:var(--green);}
+.a11y-setting-row input:checked::after{left:21px;}
 /* spazio per lo stack fisso in fondo: barra di navigazione + savebar, cosi'
    il contenuto scrollato in fondo alla pagina non ci finisce mai sotto.
    La texture e' una grana finissima (rumore, ripetuta in un tile minuscolo)

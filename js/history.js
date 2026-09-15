@@ -22,6 +22,7 @@ function showHistSection(section){
 // apre il modale Impostazioni, aggiornando prima lo stato di condivisione
 // e notifiche così sono sempre freschi
 function openSettingsModal(){
+  if(typeof renderAccessibilitySettings === 'function') renderAccessibilitySettings();
   if(typeof renderSharingSection === 'function') renderSharingSection();
   if(typeof renderPushStatus === 'function') renderPushStatus();
   if(typeof renderAutoBackupStatus === 'function') renderAutoBackupStatus();

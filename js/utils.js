@@ -64,7 +64,7 @@ function showCelebration(opts){
   sub.textContent = opts.subtitle || '';
   sub.style.display = opts.subtitle ? '' : 'none';
 
-  const reduceMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduceMotion = typeof prefersReducedMotion === 'function' ? prefersReducedMotion() : (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const burst = overlay.querySelector('.celebration-burst');
   burst.innerHTML = '';
   if(!reduceMotion){
@@ -157,6 +157,7 @@ const ICON_HOME = svgIcon('<path d="M4 11 L12 4 L20 11 V20 H4 Z"/><path d="M9.5 
 // giorno terminato: silenziosa se il dispositivo o il browser non la
 // supporta, per esempio iOS Safari, che non implementa la Vibration API
 function vibrate(pattern){
+  if(typeof accessibilityPrefs !== 'undefined' && !accessibilityPrefs.vibration) return;
   if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
 }
 // auto-avanzamento del focus dal campo kg al campo rip della stessa riga: le

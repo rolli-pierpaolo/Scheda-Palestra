@@ -508,6 +508,7 @@ const total = weekly.total;
   ontouchstart="this.classList.add('pressed')"
   ontouchend="this.classList.remove('pressed')"
   onclick="startDayFromHome(${suggestedIdx})">
+<span class="home-suggested-label">INIZIA ALLENAMENTO</span>
 <span class="home-suggested-name accent-shine">${escapeHtml(suggestedDay.name)}</span></button>
     ${motivationSplit ? `<div class="home-motivation" style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}"><span class="accent-shine">${escapeHtml(motivationSplit.text)}</span> ${motivationSplit.icon}</div>` : ''}` : '';
   // piccolo assaggio della dashboard Andamenti direttamente in Home, invece
@@ -577,4 +578,3 @@ const total = weekly.total;
   });
 }
 }
-
