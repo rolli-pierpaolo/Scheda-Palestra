@@ -544,9 +544,9 @@ function maxEntriesAfter(ex, w, si){
 function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek){
   const entries = maxEntriesAfter(ex,w,si);
   if(!entries.length) return '';
-  const fields = (field,label) => `<div class="max-attempt-row" style="grid-template-columns:22px repeat(${entries.length},minmax(0,1fr))"><span>${label}</span>${entries.map(({entry,index},attempt)=>
-    `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="${label.toLowerCase()} ${attempt+1}" value="${escapeAttr(entry[field]??'')}" onchange="updateMaxEntry(${exi},${w},${index},'${field}',this.value)">`).join('')}</div>`;
-  return `<div class="max-entry-box">${fields('peso','MAX KG')}${fields('rip','MAX RIP')}</div>`;
+  const fields = (field,label) => entries.map(({entry,index},attempt)=>
+    `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="${label} ${attempt+1}" value="${escapeAttr(entry[field]??'')}" onchange="updateMaxEntry(${exi},${w},${index},'${field}',this.value)">`).join('');
+  return `<div class="max-entry-box"><div class="set-row max-entry-row"><span class="set-label max-label">MAX</span><div class="max-cell">${fields('peso','kg')}</div><div class="max-cell">${fields('rip','rip')}</div></div></div>`;
 }
 function exerciseCard(ex, exi, accent){
 

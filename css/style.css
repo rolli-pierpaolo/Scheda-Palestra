@@ -631,9 +631,9 @@ body.training-focus .week-block{margin-top:10px;}
 .set-series-group.has-max{border:1px dashed color-mix(in srgb,var(--amber) 72%,var(--line));border-radius:7px;padding:5px 6px 6px;background:transparent;}
 .set-series-group.has-max .set-row{margin-bottom:4px;}
 .max-entry-box{padding:2px 0 0;background:transparent;}
-.max-attempt-row{display:grid;gap:4px;align-items:center;margin-top:3px;}
-.max-attempt-row>span{font-size:8px;font-weight:800;color:var(--amber);text-align:center;line-height:1.05;}
-.max-attempt-row .max-input{width:100%;padding:4px 1px;font-size:10px;min-height:26px;}
+.max-attempt-row{margin:0;align-items:center;}
+.max-attempt-row .max-cell{display:flex;gap:3px;min-width:0;justify-content:stretch;}
+.max-attempt-row .max-input{width:auto;min-width:0;flex:1 1 0;padding:4px 1px;font-size:10px;min-height:26px;}
 .max-label{color:var(--amber)!important;font-size:9px!important;letter-spacing:.4px;}
 /* scoped a .set-btns cosi' non tocca altri bottoni "add-ex small" nel resto della pagina */
 .set-btns .add-ex.small{flex:none;width:auto;padding:5px 10px;font-size:10px;margin-top:0;border-width:1px;border-style:solid;}
