@@ -66,7 +66,7 @@ function renderDayExerciseStrip(progress, accent, activeExi){
     const ex = day.esercizi[it.exi];
     const isCurrent = it.exi===activeExi;
     const cls = ['day-ex-chip', it.isDone?'done':'', isCurrent?'current':''].filter(Boolean).join(' ');
-    return `<button class="${cls}" style="--accent:${accent}" onclick="goToExerciseSlide(${it.exi})">${escapeHtml(ex.nome||('Esercizio '+it.pos))}</button>`;
+    return `<button class="${cls}" style="--accent:${accent}" onclick="goToExerciseSlide(${it.exi})" aria-label="Esercizio ${it.pos}: ${escapeAttr(ex.nome||'senza nome')}"><span class="day-ex-chip-pos">${it.pos}</span><span class="day-ex-chip-name">${escapeHtml(ex.nome||'Esercizio')}</span></button>`;
   }).join('');
   return `<div class="day-ex-strip" id="dayExStrip">${chips}</div>`;
 }
@@ -189,7 +189,6 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   const activeItem = progress.items.find(it => it.exi===activeExerciseIdx);
   const activeSlideIdx = activeItem ? progress.items.indexOf(activeItem) : 0;
   const stickyHeaderHtml = renderExerciseStickyHeader(activeExerciseIdx);
-  const jumpIndexHtml = renderExerciseJumpIndex(progress, a.c);
 
   let slidesHtml = '';
   progress.items.forEach((it, slideIdx) => {
@@ -207,7 +206,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   // l'esercizio corrente (fine del carosello), non separate in fondo pagina
   // con un grande stacco
   const focusModeBtn = `<button class="training-focus-toggle ${trainingFocusMode?'active':''}" onclick="toggleTrainingFocusMode()" aria-pressed="${trainingFocusMode}">${trainingFocusMode ? '↙ Vista normale' : '⛶ Modalità allenamento grande'}</button>`;
-  main.innerHTML = dayExStripHtml + jumpIndexHtml + stickyHeaderHtml + focusModeBtn + switchTrainingDay + emptyState + carouselHtml +
+  main.innerHTML = dayExStripHtml + stickyHeaderHtml + focusModeBtn + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -564,8 +563,9 @@ function exerciseCard(ex, exi, accent){
       : null;
 
 
+      const setFilled = String(s.peso??'').trim() && String(s.rip??'').trim();
       return `
-      <div class="set-row">
+      <div class="set-row${setFilled?' filled':''}">
 
 
         <button type="button" class="set-label${s.dropset?' dropset':''}" ${isReadOnlyWeek?'disabled':''} onclick="toggleDropset(${exi},${w},${si},this)" title="Segna/togli come dropset">${roman}</button>
@@ -601,7 +601,7 @@ function exerciseCard(ex, exi, accent){
           oninput="scheduleAutoAdvance(this)"
           placeholder="kg"
           value="${escapeAttr(s.peso ?? '')}"
-          onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+          onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr});markSetVisualState(this)">
 
         </div>
 
@@ -617,7 +617,7 @@ function exerciseCard(ex, exi, accent){
         ${isReadOnlyWeek?'disabled':''}
         placeholder="rip"
         value="${escapeAttr(s.rip ?? '')}"
-        onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
+        onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this);markSetVisualState(this)">
 
         <button type="button" class="rpe-chip ${s.rpe?'filled':''}" ${isReadOnlyWeek?'disabled':''} onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
         </div>
@@ -1232,6 +1232,15 @@ function updateRepCompareAvailability(input){
   const output = cell.querySelector('.rep-comparison');
   if(btn) btn.disabled = !String(input.value||'').trim();
   if(output){ output.hidden = true; output.textContent = ''; }
+}
+// Feedback leggero: quando peso e ripetizioni della stessa serie sono pieni,
+// la riga si accende appena. Non segna la serie come completata nei dati,
+// è solo un riscontro visivo immediato.
+function markSetVisualState(input){
+  const row = input.closest('.set-row');
+  if(!row) return;
+  const values = [...row.querySelectorAll('.set-input:not(.max-input)')].map(el=>String(el.value||'').trim());
+  row.classList.toggle('filled', values.length >= 2 && values.every(Boolean));
 }
 function showRepComparison(exi, w, si, btn){
   const ex = state.days[activeDayIdx] && state.days[activeDayIdx].esercizi[exi];

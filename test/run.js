@@ -387,9 +387,10 @@ test('il carosello Allenamento mostra un esercizio a schermo e naviga con goToEx
   assert.ok(track, 'il carosello deve essere in pagina');
   assert.strictEqual(track.style.transform, 'translateX(-0%)', 'la prima slide deve partire in posizione 0');
   assert.strictEqual(window.document.getElementById('exStickyHeaderOuter').textContent.trim(), 'Ex A');
-  // prima slide: non c'e' un esercizio precedente, la freccia indietro non deve esserci
-  assert.strictEqual(window.document.querySelector('.ex-nav-arrow.prev').getAttribute('onclick'), null, 'nessuna freccia indietro sulla prima slide');
-  assert.ok(window.document.querySelector('.ex-nav-arrow.next').getAttribute('onclick'), 'la freccia avanti deve esserci (c\'e\' un esercizio dopo)');
+  // La navigazione avviene dai riquadri esercizio in alto: niente doppio
+  // indice a pallini/frecce, che era ridondante e rubava spazio.
+  assert.strictEqual(window.document.querySelector('.ex-carousel-nav'), null, 'non deve restare il vecchio indice a pallini');
+  assert.strictEqual(window.document.querySelectorAll('.day-ex-chip').length, 3, 'i riquadri in alto sono l\'unico indice degli esercizi');
 
   // saltare direttamente all'ultimo esercizio (come un tap su un pallino, una
   // freccia, o uno swipe) sposta il carosello senza un renderActive completo
@@ -398,8 +399,7 @@ test('il carosello Allenamento mostra un esercizio a schermo e naviga con goToEx
   track = window.document.getElementById('exCarouselTrack');
   assert.strictEqual(track.style.transform, 'translateX(-200%)', 'la terza slide deve essere alla posizione 2');
   assert.strictEqual(window.document.getElementById('exStickyHeaderOuter').textContent.trim(), 'Ex C');
-  // ultima slide: non c'e' un esercizio successivo, la freccia avanti non deve esserci
-  assert.strictEqual(window.document.querySelector('.ex-nav-arrow.next').getAttribute('onclick'), null, 'nessuna freccia avanti sull\'ultima slide');
+  assert.strictEqual(window.document.querySelector('.ex-carousel-nav'), null, 'anche dopo il cambio slide non devono tornare pallini o frecce');
 
   // completare la settimana corrente sul primo esercizio non fa scattare
   // subito il salto al prossimo (e' rimandato di 250ms, vedi toggleWeekDone):
@@ -985,8 +985,9 @@ test('striscia esercizi del giorno: ordine vero, fatto = colorato/piccolo, corre
   };
   window.renderActive();
   const chips = [...window.document.querySelectorAll('.day-ex-chip')];
-  const names = chips.map(c=>c.textContent.trim());
+  const names = chips.map(c=>c.querySelector('.day-ex-chip-name').textContent.trim());
   assert.strictEqual(names.join(','), 'Panca piana,Military press,Alzate laterali', 'l\'ordine deve essere quello vero degli esercizi del giorno');
+  assert.strictEqual(chips.map(c=>c.querySelector('.day-ex-chip-pos').textContent).join(','), '1,2,3', 'ogni riquadro deve mostrare il numero esercizio sopra al nome');
   assert.ok(chips[0].classList.contains('done'), 'il primo (weekDone) deve risultare fatto');
   assert.ok(!chips[0].classList.contains('current'), 'quello fatto non deve essere segnato come corrente');
   assert.ok(chips[1].classList.contains('current'), 'quello su cui si e\' (activeExerciseIdx) deve essere segnato come corrente');
