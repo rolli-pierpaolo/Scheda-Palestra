@@ -620,14 +620,19 @@ body.training-focus .week-block{margin-top:10px;}
 .week-done-wrap{display:flex;flex-direction:row;justify-content:center;gap:22px;}
 .week-status-col{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .week-done-label{font-size:11px;color:var(--muted);opacity:.7;text-align:center;}
-.set-btns-secondary{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;}
+.set-btns-secondary{position:relative;display:flex;align-items:center;justify-content:center;min-height:30px;}
 .set-btns-right{display:contents;}
-.set-btns-right .add-ex.small:first-child{grid-column:1;justify-self:start;}
-.set-btns-right .week-actions-btn{grid-column:2;justify-self:center;}
-.set-btns-right .add-ex.small.danger{grid-column:3;justify-self:end;}
+.set-btns-right .add-ex.small:first-child{position:absolute;left:54px;}
+.set-btns-right .week-actions-btn{position:absolute;left:50%;transform:translateX(-50%);}
+.set-btns-right .add-ex.small.danger{position:absolute;left:0;}
 .week-actions-btn{width:32px;height:30px;padding:0;background:var(--panel);border:1.5px solid var(--accent,var(--green));border-radius:8px;color:var(--accent,var(--green));display:inline-flex;align-items:center;justify-content:center;}
 .week-actions-btn svg{width:17px;height:17px;}
-.max-entry-row{margin:5px 0 7px;padding:5px 0;border-top:1px dashed rgba(255,255,255,.12);border-bottom:1px dashed rgba(255,255,255,.12);}
+.max-entry-box{margin:6px 0 8px;padding:7px;border:1px dashed color-mix(in srgb,var(--amber) 70%,var(--line));border-radius:7px;background:color-mix(in srgb,var(--amber) 5%,transparent);}
+.max-entry-heading{font-size:9px;font-weight:900;letter-spacing:.5px;color:var(--amber);text-transform:uppercase;margin-bottom:5px;}
+.max-entry-heading span{color:var(--muted);font-weight:700;letter-spacing:0;text-transform:none;margin-left:4px;}
+.max-attempt-row{display:grid;grid-template-columns:22px repeat(2,minmax(0,1fr));gap:4px;align-items:center;margin-top:4px;}
+.max-attempt-row>span{font-size:9px;font-weight:800;color:var(--muted);text-align:center;}
+.max-attempt-row .max-input{width:100%;padding:6px 2px;}
 .max-label{color:var(--amber)!important;font-size:9px!important;letter-spacing:.4px;}
 /* scoped a .set-btns cosi' non tocca altri bottoni "add-ex small" nel resto della pagina */
 .set-btns .add-ex.small{flex:none;width:auto;padding:5px 10px;font-size:10px;margin-top:0;border-width:1px;border-style:solid;}

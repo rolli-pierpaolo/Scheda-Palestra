@@ -542,12 +542,11 @@ function maxEntriesAfter(ex, w, si){
   return getMaxEntries(ex,w).map((entry,index)=>({entry,index})).filter(item=>item.entry.afterSet===si);
 }
 function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek){
-  return maxEntriesAfter(ex,w,si).map(({entry,index})=>`
-    <div class="set-row max-entry-row">
-      <span class="set-label max-label">MAX</span>
-      <div class="kg-cell"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="kg" value="${escapeAttr(entry.peso??'')}" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)"></div>
-      <div class="rip-cell"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="rip" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value)"></div>
-    </div>`).join('');
+  const entries = maxEntriesAfter(ex,w,si);
+  if(!entries.length) return '';
+  const fields = (field,label) => `<div class="max-attempt-row"><span>${label}</span>${entries.map(({entry,index},attempt)=>
+    `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="${label.toLowerCase()} ${attempt+1}" value="${escapeAttr(entry[field]??'')}" onchange="updateMaxEntry(${exi},${w},${index},'${field}',this.value)">`).join('')}</div>`;
+  return `<div class="max-entry-box"><div class="max-entry-heading">MAX <span>dopo serie ${si+1}</span></div>${fields('peso','KG')}${fields('rip','RIP')}</div>`;
 }
 function exerciseCard(ex, exi, accent){
 
@@ -1379,10 +1378,15 @@ function requestAddMax(exi, w, partnerExi){
     alert(`Inserisci un numero da 1 a ${nSets}.`);
     return;
   }
-  getMaxEntries(ex,w).push({afterSet:afterSet-1,peso:'',rip:''});
+  const entries = getMaxEntries(ex,w);
+  // Il primo Max su quella serie apre i due tentativi base; se esiste gia'
+  // un gruppo Max sulla stessa serie, il nuovo tocco aggiunge un solo tentativo.
+  const amount = entries.some(entry=>entry.afterSet===afterSet-1) ? 1 : 2;
+  for(let i=0;i<amount;i++) entries.push({afterSet:afterSet-1,peso:'',rip:''});
   if(typeof partnerExi==='number'){
     const partner = state.days[activeDayIdx].esercizi[partnerExi];
-    getMaxEntries(partner,w).push({afterSet:afterSet-1,peso:'',rip:''});
+    const partnerEntries = getMaxEntries(partner,w);
+    for(let i=0;i<amount;i++) partnerEntries.push({afterSet:afterSet-1,peso:'',rip:''});
   }
   saveState();
   renderActive();
@@ -1391,18 +1395,30 @@ function requestRemoveMax(exi, w, partnerExi){
   const ex = state.days[activeDayIdx].esercizi[exi];
   const entries = getMaxEntries(ex,w);
   if(!entries.length) return;
-  const choices = entries.map((entry,i)=>`${i+1}: dopo serie ${entry.afterSet+1}`).join('\n');
-  const raw = prompt(`Quale serie Max vuoi rimuovere?\n${choices}`, '1');
-  if(raw===null) return;
-  const index = Number.parseInt(String(raw).trim(),10)-1;
-  if(!Number.isInteger(index) || index<0 || index>=entries.length){
-    alert('Seleziona uno dei Max indicati.');
-    return;
+  const series = [...new Set(entries.map(entry=>entry.afterSet))].sort((a,b)=>a-b);
+  let afterSet;
+  if(series.length===1){
+    afterSet = series[0];
+    if(!confirm(`Vuoi eliminare il Max dopo la serie ${afterSet+1}?`)) return;
+  } else {
+    const choices = series.map((set,index)=>`${index+1}: Max dopo serie ${set+1}`).join('\n');
+    const raw = prompt(`Quale gruppo Max vuoi rimuovere?\n${choices}`, '1');
+    if(raw===null) return;
+    const choice = Number.parseInt(String(raw).trim(),10)-1;
+    if(!Number.isInteger(choice) || choice<0 || choice>=series.length){
+      alert('Seleziona uno dei Max indicati.');
+      return;
+    }
+    afterSet = series[choice];
   }
-  entries.splice(index,1);
+  const toRemove = entries.filter(entry=>entry.afterSet===afterSet);
+  const partnerEntries = typeof partnerExi==='number' ? getMaxEntries(state.days[activeDayIdx].esercizi[partnerExi],w) : [];
+  const hasData = [...toRemove, ...partnerEntries.filter(entry=>entry.afterSet===afterSet)]
+    .some(entry=>String(entry.peso||'').trim() || String(entry.rip||'').trim());
+  if(hasData && !confirm('Questo Max contiene kg o ripetizioni. Vuoi eliminarlo comunque?')) return;
+  ex.maxEntries[w] = entries.filter(entry=>entry.afterSet!==afterSet);
   if(typeof partnerExi==='number'){
-    const partnerEntries = getMaxEntries(state.days[activeDayIdx].esercizi[partnerExi],w);
-    if(index<partnerEntries.length) partnerEntries.splice(index,1);
+    state.days[activeDayIdx].esercizi[partnerExi].maxEntries[w] = partnerEntries.filter(entry=>entry.afterSet!==afterSet);
   }
   saveState();
   renderActive();
