@@ -25,7 +25,7 @@ function openDaysModal(){
 </div>
 <div class="days-row">
   <span class="days-label">Settimane</span>
-  <input class="meta-input" type="number" inputmode="numeric" min="${state.weeksPerBlock||4}" max="12"
+  <input class="meta-input" type="text"
     value="${state.weeksPerBlock||4}"
     onchange="handleExtendWeeksInput(this)">
 </div>

@@ -177,30 +177,42 @@ function importBackupFile(event){
 }
 
 // ---------------- BACKUP AUTOMATICO GIORNALIERO ----------------
-// una pagina web non può salvare file da sola in modo del tutto invisibile,
-// il telefono o il browser mostra comunque il download, però possiamo
-// evitare di doverci pensare noi: alla prima apertura della giornata, 24 ore
-// dall'ultimo backup automatico, scarichiamo da soli un file col backup,
-// stesso formato di "Esporta backup", così c'è sempre una copia recente
-// anche se ce ne dimentichiamo
+// Una PWA non può creare un file nei Download senza che il telefono lo mostri
+// o lo chieda. Il backup automatico quindi non scarica più nulla: aggiorna
+// una copia di sicurezza interna ogni giorno. Con un account, saveState()
+// invia già gli stessi dati al cloud in automatico dopo ogni modifica.
 const AUTO_BACKUP_KEY = "scheda_wo18_last_autobackup_v1";
+const AUTO_BACKUP_SNAPSHOT_KEY = "scheda_wo18_autobackup_snapshot_v1";
+function formatAutoBackupDate(timestamp){
+  if(!timestamp) return 'nessun backup automatico creato ancora';
+  return new Date(timestamp).toLocaleString('it-IT', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+function renderAutoBackupStatus(){
+  const el = document.getElementById('autoBackupStatus');
+  if(!el) return;
+  let last = 0;
+  try{ last = parseInt(localStorage.getItem(AUTO_BACKUP_KEY),10) || 0; }catch(e){}
+  el.textContent = 'Copia di sicurezza automatica attiva. Ultima: ' + formatAutoBackupDate(last) + '. Con account, i dati sono anche sincronizzati nel cloud.';
+}
+function createAutoBackupNow(){
+  const json = JSON.stringify(buildBackupPayload());
+  downloadBackupFile(json, 'scheda-wo-backup.json');
+  saveAutomaticBackupSnapshot(json);
+}
+function saveAutomaticBackupSnapshot(json){
+  try{
+    localStorage.setItem(AUTO_BACKUP_SNAPSHOT_KEY, json || JSON.stringify(buildBackupPayload()));
+    localStorage.setItem(AUTO_BACKUP_KEY, String(Date.now()));
+  }catch(e){}
+  renderAutoBackupStatus();
+}
 // scarica in automatico un backup se non è già stato fatto nelle ultime 24 ore
 function maybeAutoBackup(){
   let last = 0;
   try{ last = parseInt(localStorage.getItem(AUTO_BACKUP_KEY),10) || 0; }catch(e){}
   if(Date.now() - last < 24*60*60*1000) return; // già fatto nelle ultime 24 ore
   try{
-    // niente più alert() prima: bloccava l'apertura dell'app finché non si
-    // toccava "OK", ogni volta. Il download parte subito, il tocco di
-    // spiegazione resta solo nel piccolo avviso che sparisce da solo,
-    // showAutoBackupToast - il download in sé il browser o il telefono lo
-    // segnala comunque a modo suo, barra scaricamenti o notifica di sistema,
-    // nessuna pagina web può salvare un file del tutto invisibile: quella
-    // parte non dipende da noi
-    const json = JSON.stringify(buildBackupPayload());
-    downloadBackupFile(json, 'scheda-wo-backup.json');
-    localStorage.setItem(AUTO_BACKUP_KEY, String(Date.now()));
-    showAutoBackupToast();
+    saveAutomaticBackupSnapshot();
   }catch(e){} // se qualcosa va storto va bene lo stesso: c'è sempre "Esporta backup" a mano
 }
 // crea e scarica un file di testo generico, usata sia dal backup json che dal csv
@@ -273,4 +285,3 @@ function showAutoBackupToast(){
   clearTimeout(window._autoBackupToastTimer);
   window._autoBackupToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2600);
 }
-

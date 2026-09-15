@@ -374,6 +374,7 @@ function extendWeeksPerBlock(newTotal){
     });
   });
   state.weeksPerBlock = newTotal;
+  state.blockCompletionPromptDismissed = false;
   saveState();
   return true;
 }

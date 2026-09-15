@@ -18,10 +18,13 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.20</span>
+  <span class="app-version" id="appVersion">v1.23</span>
   <h1>Viridis</h1>
   <button id="settingsBtn" class="account-btn settings-btn" onclick="openSettingsModal()" title="Impostazioni" aria-label="Impostazioni">
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 4 V6.5"/><path d="M12 17.5 V20"/><path d="M4 12 H6.5"/><path d="M17.5 12 H20"/><path d="M6.3 6.3 L8.1 8.1"/><path d="M15.9 15.9 L17.7 17.7"/><path d="M17.7 6.3 L15.9 8.1"/><path d="M8.1 15.9 L6.3 17.7"/></svg>
+  </button>
+  <button id="searchBtn" class="account-btn search-btn" onclick="openGlobalSearch()" title="Cerca esercizi" aria-label="Cerca esercizi">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M16 16 L21 21"/></svg>
   </button>
   <button id="accountBtn" class="account-btn" onclick="openAuthModal()" title="Account e sincronizzazione" aria-label="Account e sincronizzazione">
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20 C4 15.5 7.5 13 12 13 C16.5 13 20 15.5 20 20"/></svg>
@@ -100,6 +103,8 @@
     </div>
     <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 4.5 H16 L19 7.5 V19 A0.8 0.8 0 0 1 18.2 19.8 H5.8 A0.8 0.8 0 0 1 5 19 V4.5 Z"/><path d="M7.5 4.5 V9.5 H15 V4.5"/><path d="M8.5 13.5 H15.5 V19.5 H8.5 Z"/></svg> Backup</div>
     <div class="hist-panel backup-row">
+      <div id="autoBackupStatus" class="footer-note backup-auto-status"></div>
+      <button class="add-ex small2" onclick="createAutoBackupNow()">Scarica backup ora</button>
       <button class="add-ex small2" onclick="exportBackup()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M12 4 V15"/><path d="M7 11 L12 16 L17 11"/><path d="M5 20 H19"/></svg> Esporta backup</button>
       <button class="add-ex small2" onclick="exportBackupFile()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M5 4.5 H16 L19 7.5 V19 A0.8 0.8 0 0 1 18.2 19.8 H5.8 A0.8 0.8 0 0 1 5 19 V4.5 Z"/><path d="M7.5 4.5 V9.5 H15 V4.5"/><path d="M8.5 13.5 H15.5 V19.5 H8.5 Z"/></svg> Salva su file</button>
       <button class="add-ex small2" onclick="exportCSV()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><rect x="4" y="4.5" width="16" height="15" rx="1.5"/><path d="M4 9.5 H20"/><path d="M9.5 9.5 V19.5"/></svg> Esporta CSV</button>
@@ -114,6 +119,15 @@
       <button class="add-ex small2" onclick="archiveAndReset()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/></svg> Archivia ed inizia un nuovo mese</button>
     </div>
     <div class="footer-note" style="margin-top:4px;">Aggiungi questa pagina alla schermata Home per aprirla come un'app. Fai un backup ogni tanto: se cancelli i dati del browser o cambi telefono, senza backup li perdi.</div>
+    </div>
+  </div>
+</div>
+<div id="globalSearchModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Ricerca globale" style="display:none;" onclick="if(event.target===this) closeGlobalSearch()">
+  <div class="modal-box">
+    <div class="modal-head"><span>Ricerca globale</span><button onclick="closeGlobalSearch()" aria-label="Chiudi">×</button></div>
+    <div class="modal-body">
+      <input id="globalSearchInput" class="meta-input global-search-input" type="search" placeholder="Cerca esercizio o giorno..." autocomplete="off" oninput="renderGlobalSearchResults(this.value)">
+      <div id="globalSearchResults" class="global-search-results"></div>
     </div>
   </div>
 </div>
@@ -175,7 +189,7 @@
   </div>
 </div>
 <div id="finishWorkoutModal"
-class="modal-overlay"
+class="modal-overlay finish-workout-overlay"
 role="dialog" aria-modal="true" aria-label="Fine allenamento"
 style="display:none;"
 onclick="if(event.target===this) closeFinishWorkoutModal()">
@@ -212,9 +226,15 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 </div>
 
 
-<div id="weekDoneModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Conferma settimana" style="display:none;">
+<div id="weekDoneModal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Conferma settimana" style="display:none;" onclick="if(event.target===this) closeWeekDoneConfirm(false)">
   <div class="modal-box finish-modal">
     <div id="weekDoneModalBody"></div>
+  </div>
+</div>
+
+<div id="blockCompleteModal" class="modal-overlay finish-workout-overlay" role="dialog" aria-modal="true" aria-label="Scheda completata" style="display:none;" onclick="if(event.target===this) leaveCompletedBlockAsIs()">
+  <div class="modal-box finish-modal">
+    <div id="blockCompleteBody"></div>
   </div>
 </div>
 
@@ -224,21 +244,26 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
   <button onclick="undoDeleteExercise()">Annulla</button>
 </div>
 
+<div id="appUpdateBanner" class="app-update-banner" role="status" aria-live="polite" hidden>
+  <span>È disponibile una nuova versione.</span>
+  <button type="button" onclick="applyAppUpdate()">Aggiorna ora</button>
+</div>
 
-<div class="bottom-nav">
+
+<nav class="bottom-nav" aria-label="Navigazione principale">
   <button class="bottom-nav-btn" id="tabHomeBtn" onclick="showHome()" title="Home" aria-label="Home">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M4 11 L12 4 L20 11 V20 H4 Z"/><path d="M9.5 20 V13 H14.5 V20"/></svg>
     <span>Home</span>
   </button>
-  <button class="bottom-nav-btn" id="tabActiveBtn" onclick="goToActiveTab()">
+  <button class="bottom-nav-btn" id="tabActiveBtn" onclick="goToActiveTab()" aria-label="Allenamento">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M6 9 V15"/><path d="M3.5 10.5 V13.5"/><path d="M18 9 V15"/><path d="M20.5 10.5 V13.5"/><path d="M6 12 H18"/></svg>
     <span id="tabActiveLabel">Allenamento</span>
   </button>
-  <button class="bottom-nav-btn" id="tabHistBtn" onclick="showView('hist')">
+  <button class="bottom-nav-btn" id="tabHistBtn" onclick="showView('hist')" aria-label="Progressi">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M4 20 V4"/><path d="M4 20 H20"/><path d="M6.5 15 L11 10.5 L14 13.5 L19 7.5"/></svg>
     <span>Progressi</span>
   </button>
-</div>
+</nav>
 
 
 <div id="workoutCompleteFx"></div>
@@ -263,6 +288,7 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/days-modal.js"></script>    <!-- modifica categorie giorni (nome/colore/aggiungi/elimina) -->
 <script src="js/exercise-card.js"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
 <script src="js/history.js"></script>       <!-- tab Storico: elenco ed esercizi dei WO archiviati -->
+<script src="js/search.js"></script>        <!-- ricerca in scheda attiva e storico -->
 <script src="js/calendar.js"></script>      <!-- calendario mensile dei giorni di allenamento terminati -->
 <script src="js/plate-calc.js"></script>    <!-- calcolatore dischi bilanciere per esercizio -->
 <script src="js/exercise-library.js"></script> <!-- libreria esercizi: ricerca, filtro gruppo muscolare, aggiungi/rimuovi -->

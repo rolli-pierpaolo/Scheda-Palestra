@@ -40,6 +40,29 @@
     lastFocusedBeforeModal = null;
   }
 
+  // Il Tab non deve mai finire nei controlli della pagina dietro al modale.
+  // Shift+Tab dal primo torna all'ultimo e Tab dall'ultimo ritorna al primo,
+  // come in una finestra nativa.
+  function trapFocus(e, modalEl){
+    if(e.key !== 'Tab') return;
+    const box = modalEl.querySelector('.modal-box') || modalEl;
+    const focusables = [...getFocusable(box)].filter(el => !el.hidden);
+    if(!focusables.length){
+      e.preventDefault();
+      box.focus();
+      return;
+    }
+    const first = focusables[0];
+    const last = focusables[focusables.length-1];
+    if(e.shiftKey && document.activeElement === first){
+      e.preventDefault();
+      last.focus();
+    } else if(!e.shiftKey && document.activeElement === last){
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
   // i modali di questa app usano sempre e solo display:none (chiuso) o
   // display:flex (aperto), mai altri valori - vedi tutte le funzioni open*/close*
   function isOpen(el){
@@ -63,8 +86,22 @@
   // tastiera - senza dover sapere quale specifica funzione closeX() usare,
   // basta simulare il click sullo sfondo, che ogni modale gestisce già da solo
   document.addEventListener('keydown', (e)=>{
-    if(e.key !== 'Escape') return;
     const openModal = [...document.querySelectorAll('.modal-overlay')].find(isOpen);
-    if(openModal) openModal.click();
+    if(!openModal) return;
+    if(e.key === 'Tab'){
+      trapFocus(e, openModal);
+      return;
+    }
+    if(e.key !== 'Escape') return;
+    e.preventDefault();
+    // I modali normali si chiudono già cliccando il loro sfondo. Quello di
+    // conferma settimana non può farlo per errore, quindi usa il suo bottone
+    // "No, non ancora" come annullamento sicuro.
+    const closeButton = openModal.querySelector('.modal-head button') ||
+      [...getFocusable(openModal)].find(el =>
+        el.tagName === 'BUTTON' && /annulla|no, non/i.test(el.textContent || '')
+      );
+    if(closeButton) closeButton.click();
+    else openModal.click();
   });
 })();

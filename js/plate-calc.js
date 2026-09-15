@@ -86,7 +86,7 @@ function renderPlateBody(){
   const calc = total!=='' && !isNaN(parsedTotal) ? computePlatesPerSide(parsedTotal, ex.barKg) : null;
   body.innerHTML = `
     <div class="footer-note" style="padding:0 0 8px;text-align:left;">Bilanciere: <b style="color:var(--text)">${ex.barKg} kg</b> — <button class="link-btn" onclick="resetExerciseBarKg()">cambia</button></div>
-    <div class="meta-row"><span class="meta-label">Peso totale</span><input class="meta-input" inputmode="decimal" placeholder="es. 82.5" value="${escapeAttr(total)}" oninput="onPlateTotalInput(this.value)"></div>
+    <div class="meta-row"><span class="meta-label">Peso totale</span><input type="text" class="meta-input" placeholder="es. 82.5" value="${escapeAttr(total)}" oninput="onPlateTotalInput(this.value)"></div>
     ${calc ? `<div class="plate-result">${calc.plates.length ? calc.plates.map(p=>`<span class="plate-chip">${p}</span>`).join('') : 'nessun disco'} per lato${calc.leftover>0.01 ? `<div class="footer-note" style="padding-top:6px;">(${calc.leftover} kg non ottenibili con i dischi standard)</div>` : ''}</div>` : ''}
   `;
 }

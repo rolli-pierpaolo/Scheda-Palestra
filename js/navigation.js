@@ -1,14 +1,18 @@
+// ---------------- NAVIGAZIONE: TAB, VISTE, POSIZIONE ATTIVA ----------------
 let activeDayIdx = 0;
 let activeFirstAnimation = true;
 let selectedTrainingOrder = [];
 // ---------------- POSIZIONE ATTIVA (giorno + esercizio) ----------------
-// ricorda in che giorno/esercizio ero rimasto, per riaprire il file esattamente li'
+// ricorda in che giorno ed esercizio ero rimasto, per riaprire l'app
+// esattamente lì
 const ACTIVE_POS_KEY = "scheda_wo18_active_pos_v1";
 let activeExerciseIdx = null;
+// salva su localStorage il giorno e l'esercizio attivi in questo momento
 function saveActivePos(){
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
   try{ localStorage.setItem(ACTIVE_POS_KEY, JSON.stringify({dayIdx:activeDayIdx, exi:activeExerciseIdx})); }catch(e){}
 }
+// legge da localStorage l'ultima posizione salvata, se ancora valida
 function loadActivePos(){
   let pos = null;
   try{ const raw = localStorage.getItem(ACTIVE_POS_KEY); if(raw) pos = JSON.parse(raw); }catch(e){}
@@ -17,19 +21,19 @@ function loadActivePos(){
     if(typeof pos.exi === 'number' && state.days[activeDayIdx].esercizi[pos.exi]) activeExerciseIdx = pos.exi;
   }
 }
-// "titolo grande" che si restringe scorrendo, come le app native iOS
-// (Impostazioni, Mail...): solo un cambio di classe qui, il resto lo fa la
-// transizione CSS gia' pronta su .topbar/.topbar h1. --topbar-h (l'altezza
+// titolo grande che si restringe scorrendo, come le app native iOS,
+// Impostazioni, Mail: solo un cambio di classe qui, il resto lo fa la
+// transizione CSS già pronta su .topbar e .topbar h1. --topbar-h, l'altezza
 // usata per posizionare l'header sticky di ogni esercizio subito sotto,
-// vedi updateTopbarHeightVar in js/app-init.js) va ricalcolata quando la
+// vedi updateTopbarHeightVar in js/app-init.js, va ricalcolata quando la
 // topbar cambia altezza, altrimenti l'header sticky resterebbe posizionato
-// in base all'altezza vecchia - solo quando lo stato CAMBIA davvero (non a
-// ogni scroll), sia subito che a transizione finita (300ms dopo)
+// in base all'altezza vecchia - solo quando lo stato cambia davvero, non a
+// ogni scroll, sia subito che a transizione finita, 300 millisecondi dopo
 let topbarScrolled = false;
 window.addEventListener('scroll', function(){
-  // due soglie diverse (non una sola) apposta: scrollando avanti e indietro
+  // due soglie diverse, non una sola, apposta: scrollando avanti e indietro
   // proprio sul bordo di una soglia unica, lo stato cambierebbe a ogni
-  // pixel avanti/indietro, facendo scattare/tremolare l'header in continuazione
+  // pixel avanti e indietro, facendo tremolare l'header in continuazione
   const scrolled = topbarScrolled ? (window.scrollY > 8) : (window.scrollY > 20);
   if(scrolled === topbarScrolled) return;
   topbarScrolled = scrolled;
@@ -38,12 +42,15 @@ window.addEventListener('scroll', function(){
   updateTopbarHeightVar();
   setTimeout(updateTopbarHeightVar, 300);
 }, {passive:true});
-// pensato per il telefono (il pollice puo' far scrollare per sbaglio mentre si
-// tiene in mano): su PC, dove lo scroll e' sempre volontario (mouse/tastiera),
-// un salto automatico della pagina e' solo fastidioso, quindi li' resta disattivo
+// pensato per il telefono, il pollice può far scrollare per sbaglio mentre si
+// tiene in mano: su PC, dove lo scroll è sempre volontario, mouse o
+// tastiera, un salto automatico della pagina è solo fastidioso, quindi lì
+// resta disattivo
 function isDesktopDevice(){
   return window.matchMedia && window.matchMedia('(pointer: coarse)').matches === false;
 }
+// cambia la vista visibile, Home, Allenamento o Progressi, con una
+// dissolvenza incrociata tra la vecchia e la nuova
 function showView(v){
   // Se sono già in Allenamento e premo di nuovo il pulsante,
   // torno in cima alla pagina.
@@ -73,6 +80,11 @@ function showView(v){
     document.getElementById('tabActiveBtn').classList.toggle('active', v==='active');
     document.getElementById('tabHistBtn').classList.toggle('active', v==='hist');
     document.getElementById('tabHomeBtn').classList.toggle('active', v==='home');
+    // Espone la vista corrente anche a screen reader: il colore da solo non
+    // basta a capire quale sezione sia aperta quando si naviga da tastiera.
+    document.getElementById('tabActiveBtn').setAttribute('aria-current', v==='active' ? 'page' : 'false');
+    document.getElementById('tabHistBtn').setAttribute('aria-current', v==='hist' ? 'page' : 'false');
+    document.getElementById('tabHomeBtn').setAttribute('aria-current', v==='home' ? 'page' : 'false');
 
     document.body.classList.toggle('on-home', v==='home');
     if(v === 'home'){
@@ -250,14 +262,12 @@ function renderDayTabs(){
 
   }).join('');
 
-  // icona rotonda dopo l'ultimo giorno: "Termina blocco" (l'intero mese, non
-  // il singolo giorno - quello resta sul bottone sotto l'esercizio), sempre
-  // in vista invece che sepolta in Impostazioni (vedi updateBlockFinishTab
-  // per come cambia aspetto, e archiveAndReset per l'avviso di sicurezza se
-  // il blocco non e' ancora completo)
+  // Azione sul blocco intero, con un'etichetta leggibile: l'icona da sola
+  // sembrava un comando generico e non faceva capire che archivia la scheda.
   el.innerHTML = dayButtonsHtml + `
-    <button id="blockFinishTab" class="block-finish-btn" onclick="archiveAndReset()" title="Termina il blocco e inizia un nuovo mese" aria-label="Termina il blocco e inizia un nuovo mese">
+    <button id="blockFinishTab" class="block-finish-btn" onclick="openBlockCompletionFlow()" title="Gestisci, archivia o prolunga la scheda" aria-label="Gestisci, archivia o prolunga la scheda">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/></svg>
+      <span class="block-finish-label">Gestisci scheda</span>
     </button>`;
 
   updateBlockFinishTab();
@@ -637,7 +647,5 @@ function computeCurrentDoingExerciseIdx(dayIdx){
   }
   return day.esercizi.length - 1;
 }
-
-
 
 

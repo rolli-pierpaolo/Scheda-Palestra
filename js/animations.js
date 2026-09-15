@@ -217,17 +217,9 @@ const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
 
 
   gsap.fromTo(
-    ".finish-modal",
-    {
-      y:"100%",
-      opacity:0
-    },
-    {
-      y:0,
-      opacity:1,
-      duration:.4,
-      ease:"power3.out"
-    }
+    "#finishWorkoutModal .finish-modal",
+    { y:20, opacity:0, scale:.96 },
+    { y:0, opacity:1, scale:1, duration:.32, ease:"power3.out" }
   );
 
 }
@@ -510,8 +502,9 @@ function closeFinishWorkoutModal(){
 
   gsap.to("#finishWorkoutModal .finish-modal",{
 
-    y:"100%",
+    y:20,
     opacity:0,
+    scale:.96,
     duration:.25,
     ease:"power2.in",
 
@@ -569,6 +562,10 @@ if(weekFinished){
     renderDayTabs();
     renderActive();
     showHome();
+
+    // Dopo l'ultimo giorno dell'ultima settimana, mostra le scelte di fine
+    // scheda invece di lasciare solo un'icona poco chiara nella riga giorni.
+    maybePromptBlockCompletion();
 
     animateWorkoutComplete();
     vibrate([50,60,50,60,150]);

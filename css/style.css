@@ -191,6 +191,7 @@ body.on-home .topbar h1{
    si sovrappongono: l'icona a ingranaggio segnala "impostazioni" senza
    bisogno di una scritta accanto */
 .settings-btn{right:48px;}
+.search-btn{right:86px;}
 /* avviso "dati aggiornati da un altro dispositivo" (vedi js/sync.js): resta
    nascosto (show la mostra) finche' non arriva davvero un aggiornamento
    remoto, mai una sovrascrittura automatica e silenziosa */
@@ -225,7 +226,7 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
    incompleto: archiveAndReset stesso avvisa e chiede conferma in quel
    caso), si accende solo come richiamo quando tutte le settimane del
    blocco risultano gia' completate */
-.block-finish-btn{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);display:flex;align-items:center;justify-content:center;padding:0;transition:box-shadow .2s ease, border-color .2s ease, color .2s ease;}
+.block-finish-btn{flex:0 0 auto;min-height:34px;border-radius:9px;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);display:flex;align-items:center;justify-content:center;gap:5px;padding:0 9px;font-size:10px;font-weight:800;white-space:nowrap;transition:box-shadow .2s ease, border-color .2s ease, color .2s ease;}
 .block-finish-btn.ready{border-color:var(--accent,var(--green));color:var(--accent,var(--green));background:var(--panel2);box-shadow:0 0 14px 1px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent);}
 .block-finish-btn:active{transform:scale(.94);}
 main{padding:12px;}
@@ -519,6 +520,20 @@ main{padding:12px;}
 .set-label.dropset{color:var(--amber);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
 .set-input{background:#fff;color:#141414;border:none;border-radius:6px;padding:5px 2px;font-size:13px;font-weight:700;text-align:center;width:100%;min-width:0;box-sizing:border-box;}
 .set-input::placeholder{color:#999;font-weight:400;}
+/* Interruttore della prova "Allenamento grande": aumenta le zone toccabili
+   senza cambiare dati o struttura della scheda. */
+.training-focus-toggle{display:block;width:100%;margin:4px 0 8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--muted);padding:8px 10px;font-size:11px;font-weight:800;}
+.training-focus-toggle.active{border-color:var(--green);color:var(--green);background:var(--green-dark);}
+body.training-focus .day-ex-strip,body.training-focus .ex-carousel-nav{display:none;}
+body.training-focus .ex-sticky-header{font-size:18px;padding:10px 14px;margin-bottom:8px;}
+body.training-focus .week-toggle{padding:10px 12px;font-size:15px;}
+body.training-focus .set-row{grid-template-columns:26px minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px;}
+body.training-focus .set-label{font-size:13px;}
+body.training-focus .set-input{min-height:48px;padding:9px 4px;font-size:21px;border-radius:8px;}
+body.training-focus .stepper{flex-basis:30px;width:30px;font-size:19px;border-radius:7px;}
+body.training-focus .rpe-chip{min-width:48px;font-size:12px;border-radius:8px;}
+body.training-focus .kg-fill-chip{min-height:30px;font-size:11px;}
+body.training-focus .week-block{margin-top:10px;}
 /* .kg-cell impila kg-wrap (stepper+input) sopra al chip "ultimo peso"
    invece di farli stare tutti sulla stessa riga: su telefono stretto,
    stepper+input+chip appiattiti in fila lasciavano il chip largo si' e no
@@ -709,7 +724,19 @@ main{padding:12px;}
 .combo-add{padding:10px 12px;font-size:13px;color:var(--green);font-weight:800;background:var(--row-dark);border-top:1px dashed var(--line);}
 .combo-add:active{background:var(--green-dark);}
 .combo-empty{padding:10px 12px;font-size:12px;color:var(--muted);font-style:italic;}
+.global-search-input{margin-bottom:10px;text-align:left;color:var(--text);font-size:16px;padding:11px 12px;}
+.global-search-results{display:flex;flex-direction:column;gap:6px;}
+.global-search-help{padding:14px 4px;text-align:left;}
+.global-search-result{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;background:var(--row-dark);border:1px solid var(--line);border-radius:8px;padding:11px 12px;color:var(--text);text-align:left;}
+.global-search-name{font-size:14px;font-weight:800;}
+.global-search-meta{font-size:11px;color:var(--muted);}
+.backup-auto-status{grid-column:1 / -1;margin:0 0 2px;text-align:left;}
 .savebar b{color:var(--green);}
+/* Aggiornamento PWA senza dover chiudere l'app: appare solo quando il
+   service worker ha già scaricato una versione nuova ed è pronta da usare. */
+.app-update-banner{position:fixed;left:12px;right:12px;bottom:calc(106px + env(safe-area-inset-bottom));z-index:80;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel2);border:1.5px solid var(--green);border-radius:10px;padding:10px 12px;color:var(--text);font-size:12px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.45);}
+.app-update-banner[hidden]{display:none;}
+.app-update-banner button{flex:0 0 auto;background:var(--green);border:none;border-radius:7px;padding:7px 10px;color:#0D0D0D;font:inherit;font-weight:900;}
 /* ---------------- RECORD PERSONALI: badge sulla scheda + toast di festeggiamento ---------------- */
 .pr-badge{margin:2px 0 2px;font-size:11px;font-weight:800;color:var(--amber);text-shadow:0 0 8px rgba(232,151,28,.55);}
 .pr-toast{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%) translateY(-14px);background:var(--green);color:#0D0D0D;padding:10px 18px;border-radius:10px;font-weight:800;font-size:13px;z-index:60;opacity:0;transition:opacity .25s, transform .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.45);text-align:center;max-width:80%;}
@@ -792,6 +819,13 @@ main{padding:12px;}
   max-width:360px;
   text-align:center;
 }
+/* Conferma di fine giornata: è un passaggio importante, quindi resta ben
+   visibile al centro anziché confondersi con un normale foglio in basso. */
+.finish-workout-overlay{align-items:center;padding:18px;}
+.finish-workout-overlay .finish-modal{max-width:400px;border:2px solid var(--green);border-radius:18px;box-shadow:0 18px 54px rgba(0,0,0,.62),0 0 26px rgba(126,168,60,.2);}
+.finish-workout-overlay .finish-modal::before{display:none;}
+#finishWorkoutBody{padding:24px 20px 20px;}
+.block-weeks-input{max-width:130px;margin:0 auto;text-align:center;font-size:22px;padding:10px;}
 
 
 .finish-title{
@@ -1051,4 +1085,25 @@ main{padding:12px;}
 .week-toggle.future-week{
   opacity:.35;
   filter:grayscale(.7);
+}
+
+/* Desktop: su schermi larghi l'app usa lo spazio orizzontale senza perdere
+   l'impianto compatto da telefono. La navigazione diventa una barra laterale,
+   mentre contenuto e modali acquistano una larghezza utile per tastiera e mouse. */
+@media (min-width:900px) and (pointer:fine){
+  body{padding:0 28px 28px 104px;}
+  .topbar{margin-left:-104px;margin-right:-28px;padding-left:118px;padding-right:42px;}
+  .day-tabs,#viewActive,#viewHist,#viewHome{width:min(100%,1120px);margin-left:auto;margin-right:auto;}
+  #viewHome{padding-left:24px;padding-right:24px;}
+  .bottom-nav{top:0;bottom:0;left:0;right:auto;width:80px;flex-direction:column;justify-content:center;gap:10px;border-top:none;border-right:2px solid var(--green);padding:18px 8px;}
+  .bottom-nav-btn{flex:0 0 auto;min-height:64px;padding:8px 4px;}
+  .bottom-nav-btn:hover{background:var(--panel);color:var(--text);}
+  .bottom-nav-btn.active{background:var(--green-dark);color:var(--green);}
+  .savebar{left:80px;bottom:0;}
+  .app-update-banner{left:96px;right:auto;bottom:18px;width:auto;}
+  .modal-overlay{align-items:center;padding:28px;}
+  .modal-box{max-width:720px;max-height:min(82vh,820px);border:1px solid var(--line);border-radius:16px;padding-bottom:0;box-shadow:0 18px 48px rgba(0,0,0,.58);}
+  .modal-box::before{display:none;}
+  .finish-modal{max-width:480px;}
+  .settings-row{grid-template-columns:repeat(3,minmax(0,1fr));}
 }

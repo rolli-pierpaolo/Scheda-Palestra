@@ -1,3 +1,15 @@
+// Modalità pensata per l'uso con sudore, guanti o telefono lontano: resta una
+// preferenza locale, quindi non modifica la scheda né viene sincronizzata.
+const TRAINING_FOCUS_MODE_KEY = 'scheda_wo18_training_focus_v1';
+let trainingFocusMode = localStorage.getItem(TRAINING_FOCUS_MODE_KEY) === '1';
+document.body.classList.toggle('training-focus', trainingFocusMode);
+function toggleTrainingFocusMode(){
+  trainingFocusMode = !trainingFocusMode;
+  document.body.classList.toggle('training-focus', trainingFocusMode);
+  localStorage.setItem(TRAINING_FOCUS_MODE_KEY, trainingFocusMode ? '1' : '0');
+  renderActive();
+}
+
 // stato dell'icona "Termina blocco" nella riga dei giorni (vedi css
 // .block-finish-btn): apre archiveAndReset (l'intero mese/blocco, NON il
 // singolo giorno - il cambio giorno resta ai tab Push/Pull/ecc e al
@@ -15,8 +27,11 @@ function updateBlockFinishTab(){
   const day = state.days[activeDayIdx];
   const blockComplete = (state.completedWeeks||[]).length >= (state.weeksPerBlock||4);
   btn.classList.toggle('ready', blockComplete);
+  const label = btn.querySelector('.block-finish-label');
+  if(label) label.textContent = blockComplete ? 'Scheda completata' : 'Gestisci scheda';
   if(day) btn.style.setProperty('--accent', dayAccent(day, activeDayIdx).c);
-  btn.title = blockComplete ? "Blocco completato: termina e inizia un nuovo mese" : "Termina il blocco e inizia un nuovo mese";
+  btn.title = blockComplete ? "Scheda completata: archivia o aggiungi settimane" : "Gestisci, archivia o prolunga la scheda";
+  btn.setAttribute('aria-label', btn.title);
 }
 // stesso conteggio degli esercizi "chiusi" gia' usato altrove (allExercisesClosed,
 // computeCurrentDoingExerciseIdx): una coppia collegata (super/jump set) conta
@@ -191,7 +206,8 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   // azioni del giorno (aggiungi/riordina/termina) subito ATTACCATE sotto
   // l'esercizio corrente (fine del carosello), non separate in fondo pagina
   // con un grande stacco
-  main.innerHTML = dayExStripHtml + jumpIndexHtml + stickyHeaderHtml + switchTrainingDay + emptyState + carouselHtml +
+  const focusModeBtn = `<button class="training-focus-toggle ${trainingFocusMode?'active':''}" onclick="toggleTrainingFocusMode()" aria-pressed="${trainingFocusMode}">${trainingFocusMode ? '↙ Vista normale' : '⛶ Modalità allenamento grande'}</button>`;
+  main.innerHTML = dayExStripHtml + jumpIndexHtml + stickyHeaderHtml + focusModeBtn + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -327,6 +343,92 @@ function suggestNextTitle(t){
   const m = /^(.*?)(\d+)(\D*)$/.exec(t || "");
   if(m){ return m[1] + (parseInt(m[2],10)+1) + m[3]; }
   return (t || "WO") + " nuovo";
+}
+
+function isBlockComplete(){
+  return (state.completedWeeks||[]).length >= (state.weeksPerBlock||4);
+}
+function closeBlockCompleteModal(){
+  document.getElementById('blockCompleteModal').style.display = 'none';
+}
+// Accesso dal comando esplicito in alto: prima del completamento conserva il
+// flusso protetto già esistente; a scheda conclusa apre invece le scelte utili.
+function openBlockCompletionFlow(){
+  if(!isBlockComplete()){
+    archiveAndReset();
+    return;
+  }
+  openBlockCompleteModal();
+}
+function openBlockCompleteModal(){
+  const modal = document.getElementById('blockCompleteModal');
+  const body = document.getElementById('blockCompleteBody');
+  if(!modal || !body || modal.style.display !== 'none') return;
+  const weeks = state.weeksPerBlock || 4;
+  body.innerHTML = `
+    <div class="finish-title-row">${ICON_TROPHY}<span class="finish-title-text">Scheda completata!</span></div>
+    <div class="finish-subtitle">Hai completato tutti gli allenamenti delle ${weeks} settimane previste.</div>
+    <div class="finish-message">Vuoi archiviare l'allenamento e iniziarne uno nuovo?</div>
+    <div class="finish-buttons">
+      <button class="add-ex small2" onclick="askAddWeeksAfterBlock()">No</button>
+      <button class="finish-confirm-btn" onclick="closeBlockCompleteModal();archiveAndReset()">Sì, archivia</button>
+    </div>`;
+  modal.style.display = 'flex';
+}
+function askAddWeeksAfterBlock(){
+  const body = document.getElementById('blockCompleteBody');
+  body.innerHTML = `
+    <div class="finish-title" style="font-size:21px;">Vuoi continuare?</div>
+    <div class="finish-message">Vuoi aggiungere altre settimane a questo allenamento?</div>
+    <div class="finish-buttons">
+      <button class="add-ex small2" onclick="leaveCompletedBlockAsIs()">No, lasciala così</button>
+      <button class="finish-confirm-btn" onclick="showAddWeeksForm()">Sì, aggiungi settimane</button>
+    </div>`;
+}
+function showAddWeeksForm(){
+  const current = state.weeksPerBlock || 4;
+  const available = Math.max(1, 12-current);
+  const body = document.getElementById('blockCompleteBody');
+  body.innerHTML = `
+    <div class="finish-title" style="font-size:21px;">Aggiungi settimane</div>
+    <div class="finish-message">Quante settimane vuoi aggiungere? Puoi arrivare fino a 12 settimane totali.</div>
+    <input id="addWeeksInput" class="meta-input block-weeks-input" type="text" value="1" aria-label="Numero di settimane da aggiungere">
+    <div class="finish-buttons" style="margin-top:14px;">
+      <button class="add-ex small2" onclick="askAddWeeksAfterBlock()">Indietro</button>
+      <button class="finish-confirm-btn" onclick="confirmAddWeeksAfterBlock(${current},${available})">Conferma</button>
+    </div>`;
+  setTimeout(()=>document.getElementById('addWeeksInput')?.focus(), 0);
+}
+function confirmAddWeeksAfterBlock(current, available){
+  const input = document.getElementById('addWeeksInput');
+  let extra = parseInt((input && input.value) || '', 10);
+  if(!Number.isInteger(extra) || extra < 1 || extra > available){
+    alert(`Inserisci un numero da 1 a ${available}.`);
+    return;
+  }
+  extendWeeksPerBlock(current + extra);
+  // La settimana appena conclusa resta nello storico del blocco; si entra
+  // direttamente nella prima delle settimane aggiunte, pronta da compilare.
+  state.currentWeek = current;
+  state.completedTrainingDays = [];
+  state.trainingQueue = state.days.map((_,i)=>i);
+  state.currentTrainingDayIdx = state.trainingQueue[0] ?? null;
+  state.blockCompletionPromptDismissed = false;
+  saveState();
+  closeBlockCompleteModal();
+  activeDayIdx = computeSuggestedDayIdx();
+  renderDayTabs();
+  renderActive();
+  showView('active');
+}
+function leaveCompletedBlockAsIs(){
+  state.blockCompletionPromptDismissed = true;
+  saveState();
+  closeBlockCompleteModal();
+}
+function maybePromptBlockCompletion(){
+  if(!isBlockComplete() || state.blockCompletionPromptDismissed) return;
+  setTimeout(()=>openBlockCompleteModal(), 500);
 }
 
 // prima di qualunque prompt: se il blocco non e' ancora completo (settimane
@@ -494,16 +596,9 @@ function exerciseCard(ex, exi, accent){
 
 
 
-          <input class="set-input"
+          <input type="text" class="set-input"
           ${isReadOnlyWeek?'disabled':''}
-          onpointerdown="onSetInputPointerDown(event,this)"
-          onpointermove="onSetInputPointerMove(event)"
-          onpointerup="onSetInputPointerCancel()"
-          onpointerleave="onSetInputPointerCancel()"
-          onpointercancel="onSetInputPointerCancel()"
-          onblur="resetFieldKeyboard(this)"
           oninput="scheduleAutoAdvance(this)"
-          inputmode="decimal"
           placeholder="kg"
           value="${escapeAttr(s.peso ?? '')}"
           onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
@@ -518,15 +613,8 @@ function exerciseCard(ex, exi, accent){
 
         <div class="rip-wrap">
 
-        <input class="set-input"
+        <input type="text" class="set-input"
         ${isReadOnlyWeek?'disabled':''}
-        onpointerdown="onSetInputPointerDown(event,this)"
-        onpointermove="onSetInputPointerMove(event)"
-        onpointerup="onSetInputPointerCancel()"
-        onpointerleave="onSetInputPointerCancel()"
-        onpointercancel="onSetInputPointerCancel()"
-        onblur="resetFieldKeyboard(this)"
-        inputmode="numeric"
         placeholder="rip"
         value="${escapeAttr(s.rip ?? '')}"
         onchange="updateSet(${exi},${w},${si},'rip',this.value)">
@@ -594,30 +682,16 @@ function exerciseCard(ex, exi, accent){
       <div class="max-cell">
 
 
-        <input class="set-input max-input"
+        <input type="text" class="set-input max-input"
         ${isReadOnlyWeek?'disabled':''}
-        onpointerdown="onSetInputPointerDown(event,this)"
-        onpointermove="onSetInputPointerMove(event)"
-        onpointerup="onSetInputPointerCancel()"
-        onpointerleave="onSetInputPointerCancel()"
-        onpointercancel="onSetInputPointerCancel()"
-        onblur="resetFieldKeyboard(this)"
-        inputmode="decimal"
         placeholder="${maxKgPlaceholder[0]}"
         value="${escapeAttr(maxPair[0].peso??'')}"
         onchange="updateMax(${exi},${w},0,'peso',this.value)">
 
 
 
-        <input class="set-input max-input"
+        <input type="text" class="set-input max-input"
         ${isReadOnlyWeek?'disabled':''}
-        onpointerdown="onSetInputPointerDown(event,this)"
-        onpointermove="onSetInputPointerMove(event)"
-        onpointerup="onSetInputPointerCancel()"
-        onpointerleave="onSetInputPointerCancel()"
-        onpointercancel="onSetInputPointerCancel()"
-        onblur="resetFieldKeyboard(this)"
-        inputmode="decimal"
         placeholder="${maxKgPlaceholder[1]}"
         value="${escapeAttr(maxPair[1].peso??'')}"
         onchange="updateMax(${exi},${w},1,'peso',this.value)">
@@ -630,30 +704,16 @@ function exerciseCard(ex, exi, accent){
       <div class="max-cell">
 
 
-        <input class="set-input max-input"
+        <input type="text" class="set-input max-input"
         ${isReadOnlyWeek?'disabled':''}
-        onpointerdown="onSetInputPointerDown(event,this)"
-        onpointermove="onSetInputPointerMove(event)"
-        onpointerup="onSetInputPointerCancel()"
-        onpointerleave="onSetInputPointerCancel()"
-        onpointercancel="onSetInputPointerCancel()"
-        onblur="resetFieldKeyboard(this)"
-        inputmode="numeric"
         placeholder="max rip"
         value="${escapeAttr(maxPair[0].rip??'')}"
         onchange="updateMax(${exi},${w},0,'rip',this.value)">
 
 
 
-        <input class="set-input max-input"
+        <input type="text" class="set-input max-input"
         ${isReadOnlyWeek?'disabled':''}
-        onpointerdown="onSetInputPointerDown(event,this)"
-        onpointermove="onSetInputPointerMove(event)"
-        onpointerup="onSetInputPointerCancel()"
-        onpointerleave="onSetInputPointerCancel()"
-        onpointercancel="onSetInputPointerCancel()"
-        onblur="resetFieldKeyboard(this)"
-        inputmode="numeric"
         placeholder="max rip"
         value="${escapeAttr(maxPair[1].rip??'')}"
         onchange="updateMax(${exi},${w},1,'rip',this.value)">
@@ -1166,6 +1226,26 @@ function isLastSetOfWeekFilled(ex, w){
 // aperta sopra, illeggibile - qui si chiude prima la tastiera (blur) e si apre
 // un modale vero, sempre visibile e leggibile
 let weekDoneConfirmTarget = null;
+let finishWorkoutPromptTimer = null;
+
+// Appena l'ultimo esercizio del giorno viene fatto o saltato, il piccolo
+// bottone "Giorno terminato" non deve essere l'unico indizio: mostra una
+// conferma grande, ma una sola volta e solo per la settimana corrente.
+function promptFinishWorkoutWhenReady(dayIdx, weekIdx){
+  const day = state.days[dayIdx];
+  if(!day || weekIdx !== state.currentWeek || !day.esercizi.length || !allExercisesClosed(day)) return;
+  if((state.completedTrainingDays||[]).includes(dayIdx)) return;
+  const modal = document.getElementById('finishWorkoutModal');
+  if(!modal || modal.style.display !== 'none') return;
+  clearTimeout(finishWorkoutPromptTimer);
+  finishWorkoutPromptTimer = setTimeout(()=>{
+    const currentDay = state.days[dayIdx];
+    if(weekIdx !== state.currentWeek || !currentDay || !allExercisesClosed(currentDay)) return;
+    if((state.completedTrainingDays||[]).includes(dayIdx)) return;
+    if(modal.style.display === 'none') openFinishWorkoutModal(dayIdx);
+  }, 350);
+}
+
 function askWeekDoneConfirm(exi, w, exName){
   weekDoneConfirmTarget = {exi, w};
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
@@ -1340,6 +1420,7 @@ function toggleWeekDone(exi, w){
     pulseWeekDoneBtn(exi, w);
     checkAchievements();
     if(exerciseFullyClosed(ex)) celebrateExerciseDone(ex.nome);
+    promptFinishWorkoutWhenReady(activeDayIdx, w);
   }
   // segnare completata la settimana che si sta davvero svolgendo oggi avanza
   // da sola il carosello al prossimo esercizio, con la stessa animazione di
@@ -1409,6 +1490,7 @@ function toggleWeekSkipped(exi, w){
     pulseWeekSkipBtn(exi, w);
     checkAchievements();
     if(exerciseFullyClosed(ex)) celebrateExerciseDone(ex.nome);
+    promptFinishWorkoutWhenReady(activeDayIdx, w);
   }
   // stesso principio di toggleWeekDone qui sopra: saltare di proposito la
   // settimana di oggi avanza comunque il carosello, non e' un'azione minore
@@ -1668,12 +1750,12 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
         <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
         <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
       </div>
-      <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" oninput="scheduleAutoAdvance(this)" inputmode="decimal" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+      <input type="text" class="set-input" oninput="scheduleAutoAdvance(this)" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
     </div>
     ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
     </div>
     <div class="rip-wrap">
-    <input class="set-input" onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)" inputmode="numeric" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">
+    <input type="text" class="set-input" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value)">
     <button type="button" class="rpe-chip ${s.rpe?'filled':''}" onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
     </div>`;
 }
@@ -1727,20 +1809,19 @@ const isFutureWeek = w > state.currentWeek;
       const maxB = ((exB.maxExtra && exB.maxExtra[w]) || [])[0] || {};
       const maxAKgPh = (!maxA.peso && maxA.peso!==0 && suggestNextMaxWeight(exA,w,0)!==null) ? ('ultimo: '+suggestNextMaxWeight(exA,w,0)) : 'max kg';
       const maxBKgPh = (!maxB.peso && maxB.peso!==0 && suggestNextMaxWeight(exB,w,0)!==null) ? ('ultimo: '+suggestNextMaxWeight(exB,w,0)) : 'max kg';
-      const pointerAttrs = `onpointerdown="onSetInputPointerDown(event,this)" onpointermove="onSetInputPointerMove(event)" onpointerup="onSetInputPointerCancel()" onpointerleave="onSetInputPointerCancel()" onpointercancel="onSetInputPointerCancel()" onblur="resetFieldKeyboard(this)"`;
       maxRowHtml = `<div class="linked-set-group">
         <div class="linked-set-wrap">
           <div class="set-label">max</div>
           <div class="linked-sub-rows">
             <div class="linked-sub-row">
               <span class="linked-tag" title="${escapeAttr(exA.nome||'')}">${escapeHtml(exA.nome||'—')}</span>
-              <input class="set-input max-input" ${pointerAttrs} inputmode="decimal" placeholder="${maxAKgPh}" value="${escapeAttr(maxA.peso??'')}" onchange="updateMax(${exiA},${w},0,'peso',this.value)">
-              <input class="set-input max-input" ${pointerAttrs} inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxA.rip??'')}" onchange="updateMax(${exiA},${w},0,'rip',this.value)">
+              <input type="text" class="set-input max-input" placeholder="${maxAKgPh}" value="${escapeAttr(maxA.peso??'')}" onchange="updateMax(${exiA},${w},0,'peso',this.value)">
+              <input type="text" class="set-input max-input" placeholder="max rip" value="${escapeAttr(maxA.rip??'')}" onchange="updateMax(${exiA},${w},0,'rip',this.value)">
             </div>
             <div class="linked-sub-row">
               <span class="linked-tag" title="${escapeAttr(exB.nome||'')}">${escapeHtml(exB.nome||'—')}</span>
-              <input class="set-input max-input" ${pointerAttrs} inputmode="decimal" placeholder="${maxBKgPh}" value="${escapeAttr(maxB.peso??'')}" onchange="updateMax(${exiB},${w},0,'peso',this.value)">
-              <input class="set-input max-input" ${pointerAttrs} inputmode="numeric" placeholder="max rip" value="${escapeAttr(maxB.rip??'')}" onchange="updateMax(${exiB},${w},0,'rip',this.value)">
+              <input type="text" class="set-input max-input" placeholder="${maxBKgPh}" value="${escapeAttr(maxB.peso??'')}" onchange="updateMax(${exiB},${w},0,'peso',this.value)">
+              <input type="text" class="set-input max-input" placeholder="max rip" value="${escapeAttr(maxB.rip??'')}" onchange="updateMax(${exiB},${w},0,'rip',this.value)">
             </div>
           </div>
         </div>
@@ -1910,4 +1991,3 @@ const isFutureWeek = w > state.currentWeek;
     <div class="weeks">${weeksHtml}</div>
   </div>`;
 }
-

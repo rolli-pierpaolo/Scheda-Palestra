@@ -24,6 +24,7 @@ function showHistSection(section){
 function openSettingsModal(){
   if(typeof renderSharingSection === 'function') renderSharingSection();
   if(typeof renderPushStatus === 'function') renderPushStatus();
+  if(typeof renderAutoBackupStatus === 'function') renderAutoBackupStatus();
   document.getElementById('settingsModal').style.display = 'flex';
 }
 function closeSettingsModal(){
@@ -99,4 +100,3 @@ function renderHistBody(){
     </div>`;
   }).join('');
 }
-

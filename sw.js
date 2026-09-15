@@ -11,7 +11,10 @@
 // sembrava "il fix non funziona" quando in realta' il telefono stava ancora
 // eseguendo il codice di prima. Offline resta comunque supportato: quando la
 // rete manca, si ripiega sulla cache esattamente come prima
-const CACHE_NAME = 'logbook-cache-v1';
+// Nuova cache per la 1.21: forza l'app installata ad abbandonare gli script
+// che aprivano il tastierino numerico, anche su telefoni che erano rimasti
+// offline o con una vecchia risposta del browser in memoria.
+const CACHE_NAME = 'logbook-cache-v3';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -36,6 +39,7 @@ const CORE_ASSETS = [
   './js/days-modal.js',
   './js/exercise-card.js',
   './js/history.js',
+  './js/search.js',
   './js/calendar.js',
   './js/plate-calc.js',
   './js/exercise-library.js',

@@ -1002,6 +1002,25 @@ test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su u
   assert.strictEqual(window.__bridge.activeDayIdx, 1, 'con un allenamento gia\' in corso su un giorno preciso, quella scelta va rispettata');
 });
 
+test('ricerca globale trova esercizi sia nella scheda attiva sia nello storico', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    weeksPerBlock:4, currentWeek:0,
+    days:[{name:'Push', esercizi:[{nome:'Panca piana', recupero:[], sets:[]}]}]
+  };
+  window.__bridge.DATA.storico = {
+    'WO passato': [{name:'Pull', esercizi:[{nome:'Rematore bilanciere', recupero:[], sets:[]}]}]
+  };
+  window.openGlobalSearch();
+  window.renderGlobalSearchResults('rematore');
+  const results = window.document.querySelectorAll('.global-search-result');
+  assert.strictEqual(results.length, 1);
+  assert.match(results[0].textContent, /WO passato/);
+  window.renderGlobalSearchResults('panca');
+  assert.strictEqual(window.document.querySelectorAll('.global-search-result').length, 1);
+  assert.match(window.document.querySelector('.global-search-result').textContent, /Scheda attiva/);
+});
+
 // ---------------- runner ----------------
 // async per poter "await t.fn()": i test sincroni di sempre continuano a
 // funzionare identici (await su un valore non-Promise si risolve subito),
