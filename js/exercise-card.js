@@ -800,6 +800,10 @@ function exerciseCard(ex, exi, accent){
           </div>
         </div>
 
+        <div class="set-btns-secondary">
+          <button class="week-actions-btn" ${isReadOnlyWeek?'disabled':''} onclick="openExerciseContextMenu(${exi}, '${escapeJs(ex.nome||'')}', ${w})" aria-label="Azioni esercizio">${ICON_MORE}</button>
+        </div>
+
       </div>
 
       </div>
@@ -841,38 +845,6 @@ function exerciseCard(ex, exi, accent){
           </div>
 
         </div>
-
-        <div class="set-btns-secondary">
-
-        <div class="set-btns-right">
-
-
-          <button class="add-ex small"
-          ${isReadOnlyWeek?'disabled':''}
-          onclick="addSet(${exi},${w})">
-
-          + serie
-
-          </button>
-
-          <button class="week-actions-btn" ${isReadOnlyWeek?'disabled':''} onclick="openExerciseContextMenu(${exi}, '${escapeJs(ex.nome||'')}', ${w})" aria-label="Azioni esercizio">${ICON_MORE}</button>
-
-
-          <button class="add-ex small danger"
-          ${isReadOnlyWeek?'disabled':''}
-          onclick="removeSet(${exi},${w})">
-
-          − serie
-
-          </button>
-
-
-
-        </div>
-
-        </div>
-
-
 
       </div>
 
@@ -983,7 +955,7 @@ function renderExerciseStickyHeader(exi){
 function syncExerciseStickyHeaderSpace(){
   const slot = document.getElementById('exStickyHeaderSlot');
   const header = document.getElementById('exStickyHeaderOuter');
-  if(!slot || !header || !window.matchMedia || !window.matchMedia('(max-width:899px)').matches) return;
+  if(!slot || !header) return;
   requestAnimationFrame(()=>{ slot.style.height = (header.offsetHeight + 8) + 'px'; });
 }
 
@@ -1096,6 +1068,8 @@ function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
       <div class="ex-context-group-label">Questo esercizio</div>
       ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();requestAddMax(${exi},${weekIdx}${typeof partnerExi==='number'?`,`+partnerExi:''})">${ICON_PLATE} Aggiungi serie Max</button>` : ''}
       ${typeof weekIdx==='number' && getMaxEntries(state.days[activeDayIdx].esercizi[exi],weekIdx).length ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();requestRemoveMax(${exi},${weekIdx}${typeof partnerExi==='number'?`,`+partnerExi:''})">${ICON_TRASH} Rimuovi serie Max</button>` : ''}
+      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();addSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;addSet(${partnerExi},${weekIdx})`:''}">＋ Aggiungi serie</button>` : ''}
+      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();removeSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;removeSet(${partnerExi},${weekIdx})`:''}">− Rimuovi serie</button>` : ''}
       ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();toggleExerciseEditMode(${exi})">${ICON_GEAR} Modifica esercizio</button>` : ''}
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openPlateCalc(${exi})">${ICON_PLATE} Calcola dischi bilanciere</button>
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openLinkPicker(${exi})">${ICON_LINK} Collega esercizio</button>
@@ -2056,6 +2030,10 @@ const isFutureWeek = w > state.currentWeek;
         </div>
       </div>
 
+      <div class="set-btns-secondary">
+        <button class="week-actions-btn" onclick="openExerciseContextMenu(${exiA}, '${escapeJs(exA.nome||'')}', ${w}, ${exiB})" aria-label="Azioni esercizio">${ICON_MORE}</button>
+      </div>
+
     </div>
 
     </div>
@@ -2087,30 +2065,6 @@ const isFutureWeek = w > state.currentWeek;
           ⏭
           <span>Salta</span>
           </button>
-        </div>
-
-      </div>
-
-      <div class="set-btns-secondary">
-
-        <div class="set-btns-right">
-
-          <button class="add-ex small"
-          onclick="addSet(${exiA},${w});addSet(${exiB},${w})">
-
-          + serie
-
-          </button>
-
-          <button class="week-actions-btn" onclick="openExerciseContextMenu(${exiA}, '${escapeJs(exA.nome||'')}', ${w}, ${exiB})" aria-label="Azioni esercizio">${ICON_MORE}</button>
-
-          <button class="add-ex small danger"
-          onclick="removeSet(${exiA},${w});removeSet(${exiB},${w})">
-
-          − serie
-
-          </button>
-
         </div>
 
       </div>
