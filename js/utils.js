@@ -164,13 +164,22 @@ function vibrate(pattern){
 // campi peso/ripetizioni, quindi non costringe mai il telefono al tastierino.
 let quickNumberInput = null;
 function isQuickNumberTarget(el){ return el && el.matches && el.matches('input.set-input:not(:disabled)'); }
+function positionQuickNumberBar(){
+  const bar = document.getElementById('quickNumberBar');
+  if(!bar || bar.hidden) return;
+  const viewport = window.visualViewport;
+  const keyboardInset = viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0;
+  // Con tastiera aperta il bottom del layout resta spesso quello originale:
+  // spostiamo quindi la barra appena sopra la tastiera, non sotto di essa.
+  bar.style.bottom = keyboardInset > 40 ? (keyboardInset + 8) + 'px' : '';
+}
 function syncQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
   if(!bar) return;
-  const isTouchDevice = !window.matchMedia || window.matchMedia('(pointer:coarse)').matches;
   const active = document.activeElement;
-  quickNumberInput = isTouchDevice && isQuickNumberTarget(active) ? active : null;
+  quickNumberInput = isQuickNumberTarget(active) ? active : null;
   bar.hidden = !quickNumberInput;
+  positionQuickNumberBar();
 }
 function commitQuickNumberInput(input){
   input.dispatchEvent(new Event('input',{bubbles:true}));
@@ -197,6 +206,7 @@ function deleteQuickNumber(){
 }
 document.addEventListener('focusin', syncQuickNumberBar);
 document.addEventListener('focusout', ()=>setTimeout(syncQuickNumberBar,0));
+if(window.visualViewport){ window.visualViewport.addEventListener('resize', positionQuickNumberBar); window.visualViewport.addEventListener('scroll', positionQuickNumberBar); }
 // hash minimo e stabile, non Math.random: la stessa frase resta la stessa
 // finché non cambia il seme, esercizio più settimana, invece di saltare a
 // caso a ogni render - stesso principio di pickMotivationalPhrase in js/home.js
