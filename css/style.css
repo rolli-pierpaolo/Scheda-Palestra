@@ -477,10 +477,12 @@ main{padding:12px;}
 .week-body{padding:8px;width:100%;box-sizing:border-box;max-height:2000px;opacity:1;overflow:hidden;transition:max-height .22s ease, opacity .18s ease, padding .22s ease;}
 .week-body.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;}
 .week-quick-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border-bottom:1px solid rgba(255,255,255,.10);color:var(--text);padding:2px 2px 8px;margin:0 0 7px;font-size:12px;font-weight:700;}
-.week-quick-summary span{min-width:0;line-height:1.35;}
+.week-summary-metas{min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:2px;line-height:1.35;}
 .week-quick-summary b{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.25px;margin-right:2px;}
 .week-quick-summary i{color:var(--muted);font-style:normal;padding:0 2px;}
 .week-quick-summary button{flex:0 0 auto;background:transparent;border:none;color:var(--accent,var(--green));font-size:10px;font-weight:800;padding:4px 2px;}
+.week-quick-summary .week-meta-trigger{min-width:0;color:var(--text);font-size:12px;text-align:left;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;}
+.week-quick-summary .week-meta-trigger:focus-visible{outline:2px solid var(--accent,var(--green));outline-offset:2px;border-radius:3px;}
 .week-note-wrap{display:none;}
 .week-body.show-note .week-note-wrap{display:block;}
 .week-config{display:none;}

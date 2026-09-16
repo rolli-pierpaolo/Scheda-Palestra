@@ -723,7 +723,7 @@ function exerciseCard(ex, exi, accent){
 
 
       <div class="week-body ${isCollapsed?'collapsed':''}" data-exi="${exi}" data-week="${w}">
-      <div class="week-quick-summary"><span><b>Serie</b> ${escapeHtml(ex.schema[w] || 'libere')} <i>·</i> <b>Recupero</b> ${escapeHtml(ex.recupero[w] || 'libero')}</span><button type="button" onclick="toggleWeekNote(this)">Nota</button></div>
+      <div class="week-quick-summary"><div class="week-summary-metas"><button type="button" class="week-meta-trigger" onclick="openWeekConfig(${exi},${w},'schema')"><b>Serie</b> ${escapeHtml(ex.schema[w] || 'libere')}</button><i>·</i><button type="button" class="week-meta-trigger" onclick="openWeekConfig(${exi},${w},'recupero')"><b>Recupero</b> ${escapeHtml(ex.recupero[w] || 'libero')}</button></div><button type="button" class="week-note-trigger" onclick="toggleWeekNote(this)">Nota</button></div>
       <div class="week-note-wrap">
       <input class="week-note"
       ${isReadOnlyWeek?'disabled':''}
@@ -967,9 +967,15 @@ function toggleWeekNote(btn){
   btn.textContent = open ? 'Chiudi nota' : 'Nota';
   if(open){ const input = body.querySelector('.week-note'); if(input) input.focus(); }
 }
-function openWeekConfig(exi, w){
+function openWeekConfig(exi, w, field){
   const body = document.querySelector(`.week-body[data-exi="${exi}"][data-week="${w}"]`);
-  if(body) body.classList.add('show-config');
+  if(!body) return;
+  body.classList.add('show-config');
+  const target = field==='schema' ? body.querySelector('textarea.meta-input.schema') : body.querySelector('input.meta-input');
+  if(target){
+    target.focus();
+    if(typeof target.select==='function') target.select();
+  }
 }
 
 // pressione prolungata sul nome esercizio: apre un menu contestuale con le
@@ -1925,7 +1931,7 @@ const isFutureWeek = w > state.currentWeek;
 
 
   <div class="week-body ${isCollapsed?'collapsed':''}" data-exi="${exiA}" data-week="${w}">
-    <div class="week-quick-summary"><span><b>Serie</b> ${escapeHtml(exA.schema[w] || 'libere')} <i>·</i> <b>Recupero</b> ${escapeHtml(exA.recupero[w] || 'libero')}</span><button type="button" onclick="toggleWeekNote(this)">Nota</button></div>
+    <div class="week-quick-summary"><div class="week-summary-metas"><button type="button" class="week-meta-trigger" onclick="openWeekConfig(${exiA},${w},'schema')"><b>Serie</b> ${escapeHtml(exA.schema[w] || 'libere')}</button><i>·</i><button type="button" class="week-meta-trigger" onclick="openWeekConfig(${exiA},${w},'recupero')"><b>Recupero</b> ${escapeHtml(exA.recupero[w] || 'libero')}</button></div><button type="button" class="week-note-trigger" onclick="toggleWeekNote(this)">Nota</button></div>
     <div class="week-note-wrap">
     <input class="week-note"
     placeholder="nota settimana (facoltativo)"
