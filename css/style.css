@@ -372,6 +372,7 @@ main{padding:12px;}
 /* transition su top: quando la topbar si accorcia scorrendo (vedi il
    listener in js/navigation.js che ricalcola --topbar-h), l'header sticky
    scivola alla nuova posizione invece di scattarci di colpo */
+.ex-sticky-header-slot{width:100%;}
 .ex-sticky-header{position:sticky;top:var(--topbar-h, 80px);z-index:15;background:var(--panel2);border:1px solid var(--accent,var(--green));border-radius:8px;padding:6px 12px;margin-bottom:4px;font-size:14.4px;font-weight:800;color:var(--accent,var(--green));text-transform:uppercase;letter-spacing:.3px;white-space:normal;overflow:visible;text-overflow:clip;box-shadow:0 4px 10px rgba(0,0,0,.35);transition:top .2s ease;}
 /* esercizi collegati: tre righe impilate (esercizio A / tipo / esercizio B)
    invece del vecchio "A + B" su una riga, quindi qui l'header non tronca piu'
@@ -391,6 +392,17 @@ main{padding:12px;}
 .ex-sticky-name-input{width:100%;background:var(--row-dark);border:1px solid var(--accent,var(--green));border-radius:5px;color:var(--text);font-size:14.4px;font-weight:700;text-transform:none;letter-spacing:0;padding:4px 6px;resize:none;}
 .ex-sticky-linktype-btn{display:block;width:100%;background:none;border:1px dashed var(--accent,var(--green));border-radius:5px;color:var(--accent,var(--green));font-size:10px;font-weight:700;text-transform:none;padding:3px 8px;margin:3px 0;}
 .ex-sticky-confirm-btn{display:block;width:100%;background:var(--accent,var(--green));color:#0D0D0D;border:none;border-radius:5px;font-size:11px;font-weight:800;padding:5px 10px;margin-top:3px;}
+/* Sul telefono il titolo non dipende più dal limite del contenitore sticky:
+   è una barra centrale realmente fissa, con uno spazio gemello nel flusso. */
+@media(max-width:899px){
+  .ex-sticky-header-slot{height:64px;}
+  .ex-sticky-header{position:fixed;top:calc(var(--topbar-h, 54px) + 6px);left:50%;transform:translateX(-50%);width:min(calc(100% - 24px),680px);z-index:35;margin:0;padding:8px 42px 8px 14px;text-align:center;box-shadow:0 7px 20px rgba(0,0,0,.58);}
+  .ex-sticky-top{justify-content:center;}
+  .ex-sticky-name-area{width:100%;text-align:center;}
+  .ex-edit-mode-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);}
+  .ex-sticky-header.linked{padding-right:42px;}
+  .ex-sticky-header.linked .ex-sticky-name-input{width:100%;text-align:left;}
+}
 /* bordo pieno nel colore del giorno invece del filo sottile + strisciolina
    sopra di prima (lo schema "rounded-lg + accento solo in cima" e' quello
    di qualsiasi dashboard generica) - angoli meno arrotondati, piu' vicini a

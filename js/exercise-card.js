@@ -140,12 +140,13 @@ function goToExerciseSlide(exi){
   const track = document.getElementById('exCarouselTrack');
   if(!track){ renderActive(); return; }
   track.style.transform = 'translateX(-'+(slideIdx*100)+'%)';
-  const headerOuter = document.getElementById('exStickyHeaderOuter');
+  const headerOuter = document.getElementById('exStickyHeaderSlot');
   if(headerOuter) headerOuter.outerHTML = renderExerciseStickyHeader(exi);
   const navWrap = document.getElementById('exCarouselNav');
   if(navWrap) navWrap.outerHTML = renderExerciseJumpIndex(progress, dayAccent(day, activeDayIdx).c);
   const stripWrap = document.getElementById('dayExStrip');
   if(stripWrap) stripWrap.outerHTML = renderDayExerciseStrip(progress, dayAccent(day, activeDayIdx).c, exi);
+  syncExerciseStickyHeaderSpace();
   requestAnimationFrame(()=>{
     const currentChip = document.querySelector('#dayExStrip .day-ex-chip.current');
     if(currentChip && typeof currentChip.scrollIntoView === 'function') currentChip.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
@@ -225,7 +226,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   // l'esercizio corrente (fine del carosello), non separate in fondo pagina
   // con un grande stacco
   const focusModeBtn = `<button class="training-focus-toggle ${trainingFocusMode?'active':''}" onclick="toggleTrainingFocusMode()" aria-pressed="${trainingFocusMode}">${trainingFocusMode ? '↙ Vista normale' : '⛶ Modalità allenamento grande'}</button>`;
-  main.innerHTML = dayExStripHtml + stickyHeaderHtml + focusModeBtn + switchTrainingDay + emptyState + carouselHtml +
+  main.innerHTML = stickyHeaderHtml + dayExStripHtml + focusModeBtn + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -237,6 +238,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
 
   updateBlockFinishTab();
   pulseCurrentExerciseChip();
+  syncExerciseStickyHeaderSpace();
 
   if(typeof gsap !== "undefined" && activeFirstAnimation){
   activeFirstAnimation = false;
@@ -966,14 +968,23 @@ function renderExerciseStickyHeader(exi){
   if(partnerExi !== null){
     const exB = day.esercizi[partnerExi];
     const typeLabel = ex.linkType === 'jumpset' ? 'Jump set' : 'Super set';
-    return `<div class="ex-sticky-header linked" id="exStickyHeaderOuter" style="--accent:${accent}">
+    return `<div class="ex-sticky-header-slot" id="exStickyHeaderSlot"><div class="ex-sticky-header linked" id="exStickyHeaderOuter" style="--accent:${accent}">
       <div class="ex-sticky-top"><div class="ex-sticky-name-area">${isEditing ? `<textarea class="ex-sticky-name-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome??'')}</textarea>` : `<div class="ex-sticky-line">${escapeHtml(ex.nome||'Esercizio')}</div>`}</div>${editBtn}</div>
       <div class="ex-sticky-line ex-sticky-linktype">${typeLabel}</div>
       ${isEditing ? `<textarea class="ex-sticky-name-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${partnerExi},this.value)">${escapeHtml(exB.nome??'')}</textarea>` : `<div class="ex-sticky-line">${escapeHtml(exB.nome||'Esercizio')}</div>`}
-    </div>`;
+    </div></div>`;
   }
-  return `<div class="ex-sticky-header" id="exStickyHeaderOuter" style="--accent:${accent}">
-    <div class="ex-sticky-top"><div class="ex-sticky-name-area">${isEditing ? `<textarea class="ex-sticky-name-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome??'')}</textarea>` : escapeHtml(ex.nome||'Esercizio')}</div>${editBtn}</div></div>`;
+  return `<div class="ex-sticky-header-slot" id="exStickyHeaderSlot"><div class="ex-sticky-header" id="exStickyHeaderOuter" style="--accent:${accent}">
+    <div class="ex-sticky-top"><div class="ex-sticky-name-area">${isEditing ? `<textarea class="ex-sticky-name-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome??'')}</textarea>` : escapeHtml(ex.nome||'Esercizio')}</div>${editBtn}</div></div></div>`;
+}
+
+// Su telefono il titolo è fissato sotto la topbar; il suo spazio nel flusso
+// cresce con un nome di una o più righe, così non copre mai le serie sotto.
+function syncExerciseStickyHeaderSpace(){
+  const slot = document.getElementById('exStickyHeaderSlot');
+  const header = document.getElementById('exStickyHeaderOuter');
+  if(!slot || !header || !window.matchMedia || !window.matchMedia('(max-width:899px)').matches) return;
+  requestAnimationFrame(()=>{ slot.style.height = (header.offsetHeight + 8) + 'px'; });
 }
 
 function toggleExerciseEditMode(exi){
