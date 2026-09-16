@@ -489,6 +489,9 @@ main{padding:12px;}
 .week-block.completed-week-block .week-toggle{min-height:26px;padding:3px 8px;background:transparent!important;font-size:10px;color:var(--muted);}
 .week-block.completed-week-block .week-toggle-schema{font-size:9px;}
 .week-block.completed-week-block .week-toggle .chev{font-size:10px;opacity:.55;}
+.week-block.completed-week-block .week-toggle.done{color:color-mix(in srgb,var(--green) 72%,var(--text));filter:none;}
+.week-block.completed-week-block .week-toggle.done::before{content:'✓';font-size:10px;color:var(--green);margin-right:5px;}
+.week-block.completed-week-block .week-toggle.skipped{color:var(--amber);opacity:.62;filter:none;}
 .week-block.future-week-block{margin-top:6px;border-color:color-mix(in srgb,var(--line) 70%,transparent);}
 .week-block.future-week-block .week-toggle{padding:5px 9px;font-size:11px;}
 .week-block.current-week-block{margin:22px -2px 24px;border-color:var(--accent,var(--green));border-radius:11px;background:color-mix(in srgb,var(--accent,var(--green)) 5%,var(--panel2));box-shadow:0 12px 28px rgba(0,0,0,.25),0 0 18px color-mix(in srgb,var(--accent,var(--green)) 20%,transparent);}
@@ -496,6 +499,10 @@ main{padding:12px;}
 .week-block.current-week-block .week-toggle.current-week{border:none!important;box-shadow:none!important;transform:none;}
 .week-block.current-week-block .week-body{padding:14px 12px 16px;}
 .week-block.current-week-block .week-quick-summary{margin-bottom:12px;padding-bottom:10px;}
+@keyframes weekCompleteIn{0%{transform:scale(1.025);filter:brightness(1.25)}100%{transform:scale(1);filter:brightness(1)}}
+@keyframes weekSkipIn{0%{transform:translateX(7px);opacity:.25}100%{transform:translateX(0);opacity:1}}
+.week-block.week-complete-in{animation:weekCompleteIn .48s cubic-bezier(.2,.9,.3,1);}
+.week-block.week-skip-in{animation:weekSkipIn .4s ease-out;}
 .week-quick-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border-bottom:1px solid rgba(255,255,255,.10);color:var(--text);padding:2px 2px 8px;margin:0 0 7px;font-size:12px;font-weight:700;}
 .week-summary-metas{flex:1 1 auto;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:2px;line-height:1.35;}
 .week-quick-summary b{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.25px;margin-right:2px;}
@@ -653,6 +660,8 @@ body.training-focus .week-block{margin-top:10px;}
 .set-series-group{margin-bottom:3px;}
 .set-series-group.has-max{border:1px dashed color-mix(in srgb,var(--amber) 58%,var(--line));border-radius:6px;padding:3px 5px 4px;background:transparent;}
 .set-series-group.has-max .set-row{margin-bottom:1px;}
+.set-series-group.max-enter{animation:maxExtendIn .36s cubic-bezier(.2,.9,.3,1);transform-origin:top center;}
+@keyframes maxExtendIn{0%{opacity:0;transform:translateY(-5px) scaleY(.72)}100%{opacity:1;transform:translateY(0) scaleY(1)}}
 .max-entry-box{padding:0;background:transparent;}
 .max-attempt-row{margin:0;align-items:center;}
 .max-attempt-row .max-cell{display:flex;gap:3px;min-width:0;justify-content:flex-end;}

@@ -3,6 +3,7 @@
 const TRAINING_FOCUS_MODE_KEY = 'scheda_wo18_training_focus_v1';
 let trainingFocusMode = localStorage.getItem(TRAINING_FOCUS_MODE_KEY) === '1';
 let editingExerciseIdx = null;
+let pendingWeekVisual = null;
 document.body.classList.toggle('training-focus', trainingFocusMode);
 function toggleTrainingFocusMode(){
   trainingFocusMode = !trainingFocusMode;
@@ -215,6 +216,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
      ${finishBtn}`;
     autoGrowAllExNames();
     autoGrowAllExSchema();
+  applyPendingWeekVisual();
 
   updateBlockFinishTab();
   pulseCurrentExerciseChip();
@@ -228,6 +230,19 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
     duration:0.55,
     ease:"power2.out"
   });
+}
+function applyPendingWeekVisual(){
+  const effect = pendingWeekVisual;
+  pendingWeekVisual = null;
+  if(!effect) return;
+  const selector = effect.type==='max'
+    ? `.set-series-group[data-exi="${effect.exi}"][data-week="${effect.w}"][data-set="${effect.si}"]`
+    : `.week-block[data-exi="${effect.exi}"][data-week="${effect.w}"]`;
+  const el = document.querySelector(selector);
+  if(!el) return;
+  const cls = effect.type==='max' ? 'max-enter' : effect.type==='done' ? 'week-complete-in' : 'week-skip-in';
+  el.classList.add(cls);
+  setTimeout(()=>el.classList.remove(cls), 520);
 }
 }
 // quale esercizio mostrare come slide attiva: quello salvato/toccato per
@@ -596,7 +611,7 @@ function exerciseCard(ex, exi, accent){
       const setFilled = String(s.peso??'').trim() && String(s.rip??'').trim();
       const maxHtml = renderMaxEntries(ex,exi,w,si,isReadOnlyWeek);
       return `
-      <div class="set-series-group${maxHtml?' has-max':''}">
+      <div class="set-series-group${maxHtml?' has-max':''}" data-exi="${exi}" data-week="${w}" data-set="${si}">
       <div class="set-row${setFilled?' filled':''}">
 
 
@@ -687,7 +702,7 @@ function exerciseCard(ex, exi, accent){
 
     return `
 
-    <div class="week-block ${isCurrentWeek?'current-week-block':''} ${isCompletedWeek?'completed-week-block':''} ${isFutureWeek?'future-week-block':''}">
+    <div class="week-block ${isCurrentWeek?'current-week-block':''} ${isCompletedWeek?'completed-week-block':''} ${isFutureWeek?'future-week-block':''}" data-exi="${exi}" data-week="${w}">
 
 
       <button class="week-toggle
@@ -1433,6 +1448,7 @@ function requestAddMax(exi, w, partnerExi){
     const partnerEntries = getMaxEntries(partner,w);
     for(let i=0;i<amount;i++) partnerEntries.push({afterSet:afterSet-1,peso:'',rip:''});
   }
+  pendingWeekVisual = {type:'max',exi,w,si:afterSet-1};
   saveState();
   renderActive();
 }
@@ -1519,6 +1535,7 @@ function toggleWeekDone(exi, w){
   ex.weekDone[w] = nowDone;
   // completata e saltata sono mutuamente esclusive: segnarne una toglie l'altra
   if(nowDone && ex.weekSkipped) ex.weekSkipped[w] = false;
+  if(nowDone) pendingWeekVisual = {type:'done',exi,w};
 
   // l'allenamento si considera "iniziato" solo quando si segna davvero
   // completata almeno una settimana, non solo toccando/guardando un campo
@@ -1591,6 +1608,7 @@ function toggleWeekSkipped(exi, w){
   const nowSkipped = !ex.weekSkipped[w];
   ex.weekSkipped[w] = nowSkipped;
   if(nowSkipped && ex.weekDone) ex.weekDone[w] = false;
+  if(nowSkipped) pendingWeekVisual = {type:'skipped',exi,w};
 
   if(nowSkipped && !workoutInProgress){
     workoutInProgress = true;
@@ -1936,7 +1954,7 @@ const isFutureWeek = w > state.currentWeek;
     }
     return `
 
-<div class="week-block ${isCurrentWeek?'current-week-block':''} ${isPastWeek?'completed-week-block':''} ${isFutureWeek?'future-week-block':''}">
+<div class="week-block ${isCurrentWeek?'current-week-block':''} ${isPastWeek?'completed-week-block':''} ${isFutureWeek?'future-week-block':''}" data-exi="${exiA}" data-week="${w}">
 
   <button class="week-toggle
   ${isCollapsed?'collapsed':''}
