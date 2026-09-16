@@ -545,9 +545,11 @@ function maxEntriesAfter(ex, w, si){
 function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek){
   const entries = maxEntriesAfter(ex,w,si);
   if(!entries.length) return '';
-  const fields = (field,label) => entries.map(({entry,index},attempt)=>
-    `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="${label} ${attempt+1}" value="${escapeAttr(entry[field]??'')}" onchange="updateMaxEntry(${exi},${w},${index},'${field}',this.value)">`).join('');
-  return `<div class="max-entry-box"><div class="set-row max-entry-row"><span class="set-label max-label">MAX</span><div class="max-cell">${fields('peso','kg')}</div><div class="max-cell">${fields('rip','rip')}</div></div></div>`;
+  const kgFields = entries.map(({entry,index},attempt)=>
+    `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="kg ${attempt+1}" value="${escapeAttr(entry.peso??'')}" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)">`).join('');
+  const ripFields = entries.map(({entry,index},attempt)=>
+    `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="rip ${attempt+1}" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)"><button type="button" class="rep-compare-btn max-compare-btn" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">Confronta</button></div>`).join('');
+  return `<div class="max-entry-box"><div class="set-row max-entry-row"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
 }
 function exerciseCard(ex, exi, accent){
 
@@ -650,8 +652,8 @@ function exerciseCard(ex, exi, accent){
         onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this);markSetVisualState(this)">
 
         <button type="button" class="rpe-chip ${s.rpe?'filled':''}" ${isReadOnlyWeek?'disabled':''} onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
-        </div>
         <button type="button" class="rep-compare-btn" ${isReadOnlyWeek || !String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>
+        </div>
         <span class="rep-comparison" aria-live="polite" hidden></span>
         </div>
 
@@ -1213,6 +1215,11 @@ function updateRepCompareAvailability(input){
   if(btn) btn.disabled = !String(input.value||'').trim();
   if(output){ output.hidden = true; output.textContent = ''; }
 }
+function updateMaxRepCompareAvailability(input){
+  const wrap = input.closest('.max-rip-compare');
+  const btn = wrap && wrap.querySelector('.max-compare-btn');
+  if(btn) btn.disabled = !String(input.value||'').trim();
+}
 // Feedback leggero: quando peso e ripetizioni della stessa serie sono pieni,
 // la riga si accende appena. Non segna la serie come completata nei dati,
 // è solo un riscontro visivo immediato.
@@ -1240,6 +1247,22 @@ function showRepComparison(exi, w, si, btn){
     output.textContent = `Settimana scorsa: ${previous} rip${deltaText}`;
   }
   output.hidden = false;
+}
+function showMaxRepComparison(exi, w, index){
+  const ex = state.days[activeDayIdx] && state.days[activeDayIdx].esercizi[exi];
+  if(!ex) return;
+  const current = getMaxEntries(ex,w)[index];
+  if(!current || !String(current.rip||'').trim()) return;
+  const previous = w>0 ? (getMaxEntries(ex,w-1)[index] || null) : null;
+  if(!previous || !String(previous.rip||'').trim()){
+    showQuickToast('Nessun Max corrispondente la settimana scorsa');
+    return;
+  }
+  const nowNum = Number(String(current.rip).replace(',','.'));
+  const prevNum = Number(String(previous.rip).replace(',','.'));
+  const delta = Number.isFinite(nowNum) && Number.isFinite(prevNum) ? nowNum-prevNum : null;
+  const deltaText = delta===null || delta===0 ? '' : ` · ${delta>0?'+':''}${String(delta).replace('.',',')}`;
+  showQuickToast(`Max settimana scorsa: ${previous.rip} rip${deltaText}`);
 }
 function isLastSetOfWeekFilled(ex, w){
   const sets = ex.sets && ex.sets[w];
@@ -1848,8 +1871,8 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
     <div class="rip-wrap">
     <input type="text" class="set-input" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
     <button type="button" class="rpe-chip ${s.rpe?'filled':''}" onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
-    </div>
     <button type="button" class="rep-compare-btn" ${!String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>
+    </div>
     <span class="rep-comparison" aria-live="polite" hidden></span>
     </div>`;
 }
