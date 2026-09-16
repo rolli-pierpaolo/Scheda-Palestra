@@ -160,6 +160,43 @@ function vibrate(pattern){
   if(typeof accessibilityPrefs !== 'undefined' && !accessibilityPrefs.vibration) return;
   if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
 }
+// Tastiera di sistema normale + riga numerica dell'app: compare solo nei
+// campi peso/ripetizioni, quindi non costringe mai il telefono al tastierino.
+let quickNumberInput = null;
+function isQuickNumberTarget(el){ return el && el.matches && el.matches('input.set-input:not(:disabled)'); }
+function syncQuickNumberBar(){
+  const bar = document.getElementById('quickNumberBar');
+  if(!bar) return;
+  const isTouchDevice = !window.matchMedia || window.matchMedia('(pointer:coarse)').matches;
+  const active = document.activeElement;
+  quickNumberInput = isTouchDevice && isQuickNumberTarget(active) ? active : null;
+  bar.hidden = !quickNumberInput;
+}
+function commitQuickNumberInput(input){
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+  input.dispatchEvent(new Event('change',{bubbles:true}));
+}
+function insertQuickNumber(value){
+  const input = quickNumberInput;
+  if(!input || input.disabled) return;
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? start;
+  input.setRangeText(value,start,end,'end');
+  commitQuickNumberInput(input);
+  input.focus({preventScroll:true});
+}
+function deleteQuickNumber(){
+  const input = quickNumberInput;
+  if(!input || input.disabled) return;
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? start;
+  if(start===0 && end===0) return;
+  input.setRangeText('',start===end ? start-1 : start,end,'end');
+  commitQuickNumberInput(input);
+  input.focus({preventScroll:true});
+}
+document.addEventListener('focusin', syncQuickNumberBar);
+document.addEventListener('focusout', ()=>setTimeout(syncQuickNumberBar,0));
 // hash minimo e stabile, non Math.random: la stessa frase resta la stessa
 // finché non cambia il seme, esercizio più settimana, invece di saltare a
 // caso a ogni render - stesso principio di pickMotivationalPhrase in js/home.js

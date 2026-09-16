@@ -213,6 +213,12 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .bottom-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--muted);font-size:10px;font-weight:700;padding:6px 4px;border-radius:8px;}
 .bottom-nav-btn svg{width:22px;height:22px;}
 .bottom-nav-btn.active{color:var(--green);}
+.quick-number-bar{position:fixed;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:40;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;padding:5px;background:color-mix(in srgb,var(--panel2) 96%,#000);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,.48);}
+.quick-number-bar[hidden]{display:none;}
+.quick-number-bar button{min-height:34px;padding:0;background:var(--row-dark);border:1px solid var(--line);border-radius:6px;color:var(--text);font-size:15px;font-weight:800;}
+.quick-number-bar button:active{background:var(--accent,var(--green));color:#0D0D0D;}
+.quick-number-bar .quick-number-delete{color:var(--amber);}
+@media(min-width:900px) and (pointer:fine){.quick-number-bar{display:none!important;}}
 .day-tabs{display:flex;gap:6px;padding:10px 10px 0;overflow-x:auto;}
 .day-btn{flex:0 0 auto;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:12px;font-weight:700;white-space:nowrap;}
 .day-btn.active{background:var(--accent,var(--green));color:#0D0D0D;border-color:var(--accent,var(--green));}
