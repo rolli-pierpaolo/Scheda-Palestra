@@ -950,13 +950,11 @@ function renderExerciseStickyHeader(exi){
     <div class="ex-sticky-top"><div class="ex-sticky-name-area">${isEditing ? `<textarea class="ex-sticky-name-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome??'')}</textarea>` : escapeHtml(ex.nome||'Esercizio')}</div>${editBtn}</div></div></div>`;
 }
 
-// Su telefono il titolo è fissato sotto la topbar; il suo spazio nel flusso
-// cresce con un nome di una o più righe, così non copre mai le serie sotto.
+// Il titolo resta nel flusso della pagina e lo sticky lo aggancia sotto la
+// topbar: nessuno spazio artificiale, quindi non può sovrapporsi alle serie.
 function syncExerciseStickyHeaderSpace(){
   const slot = document.getElementById('exStickyHeaderSlot');
-  const header = document.getElementById('exStickyHeaderOuter');
-  if(!slot || !header) return;
-  requestAnimationFrame(()=>{ slot.style.height = (header.offsetHeight + 8) + 'px'; });
+  if(slot) slot.style.height = '';
 }
 
 function toggleExerciseEditMode(exi){
