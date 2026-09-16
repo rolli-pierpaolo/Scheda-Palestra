@@ -557,13 +557,13 @@ function getMaxEntries(ex, w){
 function maxEntriesAfter(ex, w, si){
   return getMaxEntries(ex,w).map((entry,index)=>({entry,index})).filter(item=>item.entry.afterSet===si);
 }
-function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek){
+function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
   const entries = maxEntriesAfter(ex,w,si);
   if(!entries.length) return '';
   const kgFields = entries.map(({entry,index},attempt)=>
     `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="kg ${attempt+1}" value="${escapeAttr(entry.peso??'')}" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)">`).join('');
   const ripFields = entries.map(({entry,index},attempt)=>
-    `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="rip ${attempt+1}" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)"><button type="button" class="rep-compare-btn max-compare-btn" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">Confronta</button></div>`).join('');
+    `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="rip ${attempt+1}" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)">${showComparison ? `<button type="button" class="rep-compare-btn max-compare-btn" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">Confronta</button>` : ''}</div>`).join('');
   return `<div class="max-entry-box"><div class="set-row max-entry-row" style="--max-count:${entries.length}"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
 }
 function exerciseCard(ex, exi, accent){
@@ -609,7 +609,7 @@ function exerciseCard(ex, exi, accent){
 
 
       const setFilled = String(s.peso??'').trim() && String(s.rip??'').trim();
-      const maxHtml = renderMaxEntries(ex,exi,w,si,isReadOnlyWeek);
+      const maxHtml = renderMaxEntries(ex,exi,w,si,isReadOnlyWeek,isCurrentWeek);
       return `
       <div class="set-series-group${maxHtml?' has-max':''}" data-exi="${exi}" data-week="${w}" data-set="${si}">
       <div class="set-row${setFilled?' filled':''}">
@@ -667,7 +667,7 @@ function exerciseCard(ex, exi, accent){
         onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this);markSetVisualState(this)">
 
         <button type="button" class="rpe-chip ${s.rpe?'filled':''}" ${isReadOnlyWeek?'disabled':''} onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
-        <button type="button" class="rep-compare-btn" ${isReadOnlyWeek || !String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>
+        ${isCurrentWeek ? `<button type="button" class="rep-compare-btn" ${isReadOnlyWeek || !String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
         </div>
         <span class="rep-comparison" aria-live="polite" hidden></span>
         </div>
@@ -1889,7 +1889,7 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
     <div class="rip-wrap">
     <input type="text" class="set-input" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
     <button type="button" class="rpe-chip ${s.rpe?'filled':''}" onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
-    <button type="button" class="rep-compare-btn" ${!String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>
+    ${w===state.currentWeek ? `<button type="button" class="rep-compare-btn" ${!String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
     </div>
     <span class="rep-comparison" aria-live="polite" hidden></span>
     </div>`;
