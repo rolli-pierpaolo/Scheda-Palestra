@@ -1,19 +1,8 @@
-// Fallback per viewer HTML che ignorano il meta viewport: forza la scala corretta
-// misurando l'overflow reale e applicando uno zoom compensativo.
+// I browser mobili moderni rispettano il meta viewport. Non applichiamo zoom
+// via JavaScript: durante l'apertura della tastiera iOS/Android ridimensionano
+// la viewport e quel vecchio correttivo poteva lasciare una fascia nera.
 (function(){
-  function fitToScreen(){
-    var sw = window.innerWidth || document.documentElement.clientWidth;
-    var dw = document.documentElement.scrollWidth;
-    if(dw > sw + 4){
-      document.documentElement.style.zoom = String(sw/dw);
-    } else {
-      document.documentElement.style.zoom = "";
-    }
-  }
-  document.addEventListener('DOMContentLoaded', function(){ setTimeout(fitToScreen, 50); });
-  window.addEventListener('load', fitToScreen);
-  window.addEventListener('resize', fitToScreen);
-  window.addEventListener('orientationchange', function(){ setTimeout(fitToScreen, 200); });
+  document.documentElement.style.zoom = '';
 
   // service worker per funzionare anche offline (vedi sw.js): richiede una
   // connessione "sicura" (https, o localhost) - su file:// il browser non lo

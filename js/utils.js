@@ -160,24 +160,6 @@ function vibrate(pattern){
   if(typeof accessibilityPrefs !== 'undefined' && !accessibilityPrefs.vibration) return;
   if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
 }
-// auto-avanzamento del focus dal campo kg al campo rip della stessa riga: le
-// tastiere numeriche di solito non hanno un tasto "avanti", quindi qui si
-// usa una piccola pausa dopo l'ultimo tasto premuto - se dopo quella pausa
-// il focus è ancora sul campo kg, l'utente non è già passato oltre da solo,
-// si salta al campo successivo della riga
-function scheduleAutoAdvance(input){
-  clearTimeout(input._advanceTimer);
-  if(!input.value) return;
-  input._advanceTimer = setTimeout(()=>{
-    if(document.activeElement !== input) return;
-    const row = input.closest('.set-row, .linked-sub-row');
-    if(!row) return;
-    const fields = row.querySelectorAll('.set-input:not(.max-input)');
-    const idx = Array.prototype.indexOf.call(fields, input);
-    const next = fields[idx+1];
-    if(next) next.focus();
-  }, 700);
-}
 // hash minimo e stabile, non Math.random: la stessa frase resta la stessa
 // finché non cambia il seme, esercizio più settimana, invece di saltare a
 // caso a ogni render - stesso principio di pickMotivationalPhrase in js/home.js

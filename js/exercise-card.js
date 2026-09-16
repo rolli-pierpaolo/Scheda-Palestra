@@ -68,7 +68,7 @@ function renderDayExerciseStrip(progress, accent, activeExi){
     const ex = day.esercizi[it.exi];
     const isCurrent = it.exi===activeExi;
     const cls = ['day-ex-chip', it.isDone?'done':'', isCurrent?'current':''].filter(Boolean).join(' ');
-    return `<button class="${cls}" style="--accent:${accent}" onclick="goToExerciseSlide(${it.exi})" aria-label="Esercizio ${it.pos}: ${escapeAttr(ex.nome||'senza nome')}"><span class="day-ex-chip-pos">${it.pos}</span><span class="day-ex-chip-name">${escapeHtml(ex.nome||'Esercizio')}</span></button>`;
+    return `<button class="${cls}" style="--accent:${accent}" onpointerdown="startExerciseStripGesture(event)" onpointermove="trackExerciseStripGesture(event)" onpointerup="endExerciseStripGesture()" onclick="activateExerciseChip(${it.exi})" aria-label="Esercizio ${it.pos}: ${escapeAttr(ex.nome||'senza nome')}"><span class="day-ex-chip-pos">${it.pos}</span><span class="day-ex-chip-name">${escapeHtml(ex.nome||'Esercizio')}</span></button>`;
   }).join('');
   return `<div class="day-ex-strip" id="dayExStrip">${chips}</div>`;
 }
@@ -88,6 +88,19 @@ function pulseCurrentExerciseChip(){
     ease: "sine.inOut"
   });
 }
+// La striscia in alto è anche scorrevole: separiamo uno swipe da un tap per
+// evitare che, arrivando agli ultimi esercizi, uno scorrimento cambi scheda.
+let exerciseStripGesture = {startX:0,startY:0,moved:false};
+function startExerciseStripGesture(event){
+  exerciseStripGesture.startX = event.clientX;
+  exerciseStripGesture.startY = event.clientY;
+  exerciseStripGesture.moved = false;
+}
+function trackExerciseStripGesture(event){
+  if(Math.abs(event.clientX-exerciseStripGesture.startX)>8 || Math.abs(event.clientY-exerciseStripGesture.startY)>8) exerciseStripGesture.moved = true;
+}
+function endExerciseStripGesture(){ setTimeout(()=>{ exerciseStripGesture.moved = false; },0); }
+function activateExerciseChip(exi){ if(!exerciseStripGesture.moved) goToExerciseSlide(exi); }
 // indice a pallini + frecce prev/next, sempre visibile (prima solo da 6
 // esercizi in su): ora e' il modo principale per muoversi nel carosello, non
 // solo una scorciatoia per i giorni lunghi. Freccia sinistra assente (non
@@ -133,6 +146,10 @@ function goToExerciseSlide(exi){
   if(navWrap) navWrap.outerHTML = renderExerciseJumpIndex(progress, dayAccent(day, activeDayIdx).c);
   const stripWrap = document.getElementById('dayExStrip');
   if(stripWrap) stripWrap.outerHTML = renderDayExerciseStrip(progress, dayAccent(day, activeDayIdx).c, exi);
+  requestAnimationFrame(()=>{
+    const currentChip = document.querySelector('#dayExStrip .day-ex-chip.current');
+    if(currentChip && typeof currentChip.scrollIntoView === 'function') currentChip.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  });
   pulseCurrentExerciseChip();
 }
 function renderActive(){
@@ -562,8 +579,11 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
   if(!entries.length) return '';
   const kgFields = entries.map(({entry,index},attempt)=>
     `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="kg ${attempt+1}" value="${escapeAttr(entry.peso??'')}" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)">`).join('');
-  const ripFields = entries.map(({entry,index},attempt)=>
-    `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="rip ${attempt+1}" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)">${showComparison ? `<button type="button" class="rep-compare-btn max-compare-btn" aria-label="Confronta ripetizioni Max" title="Confronta con la settimana scorsa" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">↺</button>` : ''}</div>`).join('');
+  const ripFields = entries.map(({entry,index},attempt)=>{
+    const previous = w>0 ? getMaxEntries(ex,w-1)[index] : null;
+    const canCompare = showComparison && String(previous?.rip??'').trim();
+    return `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="rip ${attempt+1}" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)">${canCompare ? `<button type="button" class="rep-compare-btn max-compare-btn" aria-label="Confronta ripetizioni Max" title="Confronta con la settimana scorsa" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">↺</button>` : ''}</div>`;
+  }).join('');
   return `<div class="max-entry-box"><div class="set-row max-entry-row" style="--max-count:${entries.length}"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
 }
 function exerciseCard(ex, exi, accent){
@@ -645,7 +665,6 @@ function exerciseCard(ex, exi, accent){
 
           <input type="text" class="set-input"
           ${isReadOnlyWeek?'disabled':''}
-          oninput="scheduleAutoAdvance(this)"
           placeholder="kg"
           value="${escapeAttr(s.peso ?? '')}"
           onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr});markSetVisualState(this)">
@@ -667,7 +686,7 @@ function exerciseCard(ex, exi, accent){
         onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this);markSetVisualState(this)">
 
         <button type="button" class="rpe-chip ${s.rpe?'filled':''}" ${isReadOnlyWeek?'disabled':''} onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
-        ${isCurrentWeek ? `<button type="button" class="rep-compare-btn" ${isReadOnlyWeek || !String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
+        ${isCurrentWeek && getPreviousWeekRep(ex,w,si) ? `<button type="button" class="rep-compare-btn" ${isReadOnlyWeek || !String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
         </div>
         <span class="rep-comparison" aria-live="polite" hidden></span>
         </div>
@@ -798,22 +817,24 @@ function exerciseCard(ex, exi, accent){
         <div class="week-done-wrap">
 
           <div class="week-status-col">
-            <span class="week-done-label">completata</span>
             <button class="week-done-btn ${weekDone?'checked':''}"
             data-exi="${exi}" data-w="${w}"
+            aria-pressed="${weekDone?'true':'false'}"
             ${isReadOnlyWeek?'disabled':''}
             onclick="toggleWeekDone(${exi},${w})">
             ${ICON_CHECK}
+            <span>Fatta</span>
             </button>
           </div>
 
           <div class="week-status-col">
-            <span class="week-done-label">saltata</span>
             <button class="week-skip-btn ${weekSkipped?'checked':''}"
             data-exi="${exi}" data-w="${w}"
+            aria-pressed="${weekSkipped?'true':'false'}"
             ${isReadOnlyWeek?'disabled':''}
             onclick="toggleWeekSkipped(${exi},${w})">
             ⏭
+            <span>Salta</span>
             </button>
           </div>
 
@@ -1881,7 +1902,7 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
         <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
         <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
       </div>
-      <input type="text" class="set-input" oninput="scheduleAutoAdvance(this)" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+      <input type="text" class="set-input" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
     </div>
     ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
     </div>
@@ -1889,7 +1910,7 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
     <div class="rip-wrap">
     <input type="text" class="set-input" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
     <button type="button" class="rpe-chip ${s.rpe?'filled':''}" onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
-    ${w===state.currentWeek ? `<button type="button" class="rep-compare-btn" ${!String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
+    ${w===state.currentWeek && getPreviousWeekRep(ex,w,si) ? `<button type="button" class="rep-compare-btn" ${!String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
     </div>
     <span class="rep-comparison" aria-live="polite" hidden></span>
     </div>`;
@@ -2038,20 +2059,22 @@ const isFutureWeek = w > state.currentWeek;
       <div class="week-done-wrap">
 
         <div class="week-status-col">
-          <span class="week-done-label">completata</span>
           <button class="week-done-btn ${weekDone?'checked':''}"
           data-exi="${exiA}" data-w="${w}"
+          aria-pressed="${weekDone?'true':'false'}"
           onclick="toggleWeekDone(${exiA},${w});toggleWeekDone(${exiB},${w})">
           ${ICON_CHECK}
+          <span>Fatta</span>
           </button>
         </div>
 
         <div class="week-status-col">
-          <span class="week-done-label">saltata</span>
           <button class="week-skip-btn ${weekSkipped?'checked':''}"
           data-exi="${exiA}" data-w="${w}"
+          aria-pressed="${weekSkipped?'true':'false'}"
           onclick="toggleWeekSkipped(${exiA},${w});toggleWeekSkipped(${exiB},${w})">
           ⏭
+          <span>Salta</span>
           </button>
         </div>
 
