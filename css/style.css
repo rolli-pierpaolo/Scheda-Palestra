@@ -655,9 +655,9 @@ body.training-focus .week-block{margin-top:10px;}
 .set-series-group.has-max .set-row{margin-bottom:1px;}
 .max-entry-box{padding:0;background:transparent;}
 .max-attempt-row{margin:0;align-items:center;}
-.max-attempt-row .max-cell{display:flex;gap:3px;min-width:0;justify-content:stretch;}
-.max-attempt-row .max-input{width:auto;min-width:0;flex:1 1 0;padding:2px 1px;font-size:9px;min-height:22px;}
-.max-rip-compare{display:flex;align-items:stretch;gap:1px;min-width:0;flex:1 1 0;}
+.max-attempt-row .max-cell{display:flex;gap:3px;min-width:0;justify-content:flex-end;}
+.max-attempt-row>.max-cell>.max-input{width:auto;min-width:0;flex:0 1 calc(58% / var(--max-count));padding:2px 1px;font-size:9px;min-height:22px;}
+.max-rip-compare{display:flex;align-items:stretch;gap:1px;min-width:0;flex:0 1 calc(58% / var(--max-count));}
 .max-rip-compare .max-input{min-width:0;}
 .max-compare-btn{font-size:7px;padding:0 2px;}
 .max-label{color:var(--amber)!important;font-size:8px!important;letter-spacing:.3px;margin-top:3px;}

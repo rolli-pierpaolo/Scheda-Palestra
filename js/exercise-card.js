@@ -549,7 +549,7 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek){
     `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="kg ${attempt+1}" value="${escapeAttr(entry.peso??'')}" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)">`).join('');
   const ripFields = entries.map(({entry,index},attempt)=>
     `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="rip ${attempt+1}" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)"><button type="button" class="rep-compare-btn max-compare-btn" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">Confronta</button></div>`).join('');
-  return `<div class="max-entry-box"><div class="set-row max-entry-row"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
+  return `<div class="max-entry-box"><div class="set-row max-entry-row" style="--max-count:${entries.length}"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
 }
 function exerciseCard(ex, exi, accent){
 
