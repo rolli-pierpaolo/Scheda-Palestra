@@ -663,12 +663,17 @@ body.training-focus .week-block{margin-top:10px;}
 .set-series-group.max-enter{animation:maxExtendIn .36s cubic-bezier(.2,.9,.3,1);transform-origin:top center;}
 @keyframes maxExtendIn{0%{opacity:0;transform:translateY(-5px) scaleY(.72)}100%{opacity:1;transform:translateY(0) scaleY(1)}}
 .max-entry-box{padding:0;background:transparent;}
-.max-attempt-row{margin:0;align-items:center;}
-.max-attempt-row .max-cell{display:flex;gap:3px;min-width:0;justify-content:flex-end;}
-.max-attempt-row>.max-cell>.max-input{width:auto;min-width:0;flex:0 1 calc(58% / var(--max-count));padding:2px 1px;font-size:9px;min-height:22px;}
-.max-rip-compare{display:flex;align-items:stretch;gap:1px;min-width:0;flex:0 1 calc(58% / var(--max-count));}
-.max-rip-compare .max-input{min-width:0;}
-.max-compare-btn{font-size:7px;padding:0 2px;}
+/* Le righe MAX usano la stessa griglia di una serie: su telefono i campi
+   restano la cosa da leggere e toccare, non il comando di confronto. */
+.max-entry-row{margin:0;align-items:center;}
+.max-entry-row .max-cell{display:flex;gap:3px;min-width:0;justify-content:flex-end;}
+.max-entry-row>.max-cell>.max-input{width:auto;min-width:0;flex:0 1 calc(88% / var(--max-count));padding:4px 2px;font-size:11px;min-height:30px;}
+.max-rip-compare{position:relative;display:flex;align-items:stretch;min-width:0;flex:0 1 calc(88% / var(--max-count));}
+.max-rip-compare .max-input{width:100%;min-width:0;padding:4px 17px 4px 2px;font-size:11px;min-height:30px;}
+/* Icona compatta sovrapposta al margine del campo: "Confronta" resta
+   disponibile ma non ruba più la larghezza necessaria alle ripetizioni. */
+.max-compare-btn{position:absolute;right:1px;top:50%;transform:translateY(-50%);width:14px;min-width:14px;height:20px;padding:0;border-left:0;font-size:12px;line-height:1;text-decoration:none;}
+@media(max-width:380px){.max-entry-row>.max-cell>.max-input,.max-rip-compare .max-input{font-size:10px;min-height:28px;}.max-rip-compare .max-input{padding-right:15px;}.max-compare-btn{width:12px;min-width:12px;font-size:11px;}}
 .max-label{color:var(--amber)!important;font-size:8px!important;letter-spacing:.3px;margin-top:3px;}
 /* scoped a .set-btns cosi' non tocca altri bottoni "add-ex small" nel resto della pagina */
 .set-btns .add-ex.small{flex:none;width:auto;padding:5px 10px;font-size:10px;margin-top:0;border-width:1px;border-style:solid;}
