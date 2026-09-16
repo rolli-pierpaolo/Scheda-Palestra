@@ -2,6 +2,7 @@
 // preferenza locale, quindi non modifica la scheda né viene sincronizzata.
 const TRAINING_FOCUS_MODE_KEY = 'scheda_wo18_training_focus_v1';
 let trainingFocusMode = localStorage.getItem(TRAINING_FOCUS_MODE_KEY) === '1';
+let editingExerciseIdx = null;
 document.body.classList.toggle('training-focus', trainingFocusMode);
 function toggleTrainingFocusMode(){
   trainingFocusMode = !trainingFocusMode;
@@ -723,7 +724,7 @@ function exerciseCard(ex, exi, accent){
 
 
       <div class="week-body ${isCollapsed?'collapsed':''}" data-exi="${exi}" data-week="${w}">
-      <div class="week-quick-summary"><div class="week-summary-metas"><button type="button" class="week-meta-trigger" onclick="openWeekConfig(${exi},${w},'schema')"><b>Serie</b> ${escapeHtml(ex.schema[w] || 'libere')}</button><i>·</i><button type="button" class="week-meta-trigger" onclick="openWeekConfig(${exi},${w},'recupero')"><b>Recupero</b> ${escapeHtml(ex.recupero[w] || 'libero')}</button></div><button type="button" class="week-note-trigger" onclick="toggleWeekNote(this)">Nota</button></div>
+      ${renderWeekQuickSummary(exi,w,ex)}
       <div class="week-note-wrap">
       <input class="week-note"
       ${isReadOnlyWeek?'disabled':''}
@@ -921,20 +922,33 @@ function renderExerciseStickyHeader(exi){
   // rimosso), senza questo l'header cade sul fallback var(--green) e diventa
   // sempre verde invece del colore del giorno
   const accent = dayAccent(day, activeDayIdx).c;
+  const isEditing = editingExerciseIdx === exi;
+  const editBtn = `<button class="ex-edit-mode-btn ${isEditing?'active':''}" onclick="toggleExerciseEditMode(${exi})" aria-label="${isEditing?'Chiudi modifica':'Modifica esercizio'}" title="${isEditing?'Chiudi modifica':'Modifica esercizio'}">${isEditing ? ICON_CHECK : ICON_GEAR}</button>`;
   const partnerExi = (ex.linkGroupId && day.esercizi[exi+1] && day.esercizi[exi+1].linkGroupId===ex.linkGroupId) ? exi+1 : null;
   if(partnerExi !== null){
     const exB = day.esercizi[partnerExi];
     const typeLabel = ex.linkType === 'jumpset' ? 'Jump set' : 'Super set';
-    return `<div class="ex-sticky-header linked" id="exStickyHeaderOuter" style="--accent:${accent}"
-    ondblclick="startEditLinkedSticky(${exi},${partnerExi})">
-      <div class="ex-sticky-line">${escapeHtml(ex.nome||'Esercizio')}</div>
+    return `<div class="ex-sticky-header linked" id="exStickyHeaderOuter" style="--accent:${accent}">
+      <div class="ex-sticky-top"><div class="ex-sticky-name-area">${isEditing ? `<textarea class="ex-sticky-name-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome??'')}</textarea>` : `<div class="ex-sticky-line">${escapeHtml(ex.nome||'Esercizio')}</div>`}</div>${editBtn}</div>
       <div class="ex-sticky-line ex-sticky-linktype">${typeLabel}</div>
-      <div class="ex-sticky-line">${escapeHtml(exB.nome||'Esercizio')}</div>
+      ${isEditing ? `<textarea class="ex-sticky-name-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${partnerExi},this.value)">${escapeHtml(exB.nome??'')}</textarea>` : `<div class="ex-sticky-line">${escapeHtml(exB.nome||'Esercizio')}</div>`}
     </div>`;
   }
-  return `<div class="ex-sticky-header" id="exStickyHeaderOuter" style="--accent:${accent}"
-  onpointerdown="onStickyPointerDown(event,${exi})" onpointermove="onStickyPointerMove(event)" onpointerup="onStickyPointerCancel()" onpointerleave="onStickyPointerCancel()" onpointercancel="onStickyPointerCancel()"
-  ondblclick="startEditStickyName(${exi})">${escapeHtml(ex.nome||'Esercizio')}</div>`;
+  return `<div class="ex-sticky-header" id="exStickyHeaderOuter" style="--accent:${accent}">
+    <div class="ex-sticky-top"><div class="ex-sticky-name-area">${isEditing ? `<textarea class="ex-sticky-name-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome??'')}</textarea>` : escapeHtml(ex.nome||'Esercizio')}</div>${editBtn}</div></div>`;
+}
+
+function toggleExerciseEditMode(exi){
+  editingExerciseIdx = editingExerciseIdx===exi ? null : exi;
+  renderActive();
+}
+function renderWeekQuickSummary(exi, w, ex, partnerExi){
+  const editing = editingExerciseIdx===exi;
+  const pairUpdate = (field, value) => typeof partnerExi==='number' ? `updateMeta(${exi},'${field}',${w},${value});updateMeta(${partnerExi},'${field}',${w},${value})` : `updateMeta(${exi},'${field}',${w},${value})`;
+  const content = editing
+    ? `<textarea class="week-inline-meta schema" rows="1" oninput="autoGrowTextarea(this)" onchange="${pairUpdate('schema','this.value')}">${escapeHtml(ex.schema[w]??'')}</textarea><i>·</i><input class="week-inline-meta" value="${escapeAttr(ex.recupero[w]??'')}" onchange="${pairUpdate('recupero','this.value')}">`
+    : `<span><b>Serie</b> ${escapeHtml(ex.schema[w] || 'libere')} <i>·</i> <b>Recupero</b> ${escapeHtml(ex.recupero[w] || 'libero')}</span>`;
+  return `<div class="week-quick-summary ${editing?'editing':''}"><div class="week-summary-metas">${content}</div><button type="button" class="week-note-trigger" onclick="toggleWeekNote(this)">Nota</button></div>`;
 }
 
 // apri/chiudi un blocco settimana: tocca solo le classi CSS (niente renderActive,
@@ -1033,7 +1047,7 @@ function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
       <div class="ex-context-group-label">Questo esercizio</div>
       ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();requestAddMax(${exi},${weekIdx}${typeof partnerExi==='number'?`,`+partnerExi:''})">${ICON_PLATE} Aggiungi serie Max</button>` : ''}
       ${typeof weekIdx==='number' && getMaxEntries(state.days[activeDayIdx].esercizi[exi],weekIdx).length ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();requestRemoveMax(${exi},${weekIdx}${typeof partnerExi==='number'?`,`+partnerExi:''})">${ICON_TRASH} Rimuovi serie Max</button>` : ''}
-      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();openWeekConfig(${exi},${weekIdx})">${ICON_GEAR} Modifica schema e recupero</button>` : ''}
+      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();toggleExerciseEditMode(${exi})">${ICON_GEAR} Modifica esercizio</button>` : ''}
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openPlateCalc(${exi})">${ICON_PLATE} Calcola dischi bilanciere</button>
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openLinkPicker(${exi})">${ICON_LINK} Collega esercizio</button>
       <div class="ex-context-group-label">Azioni</div>
@@ -1931,7 +1945,7 @@ const isFutureWeek = w > state.currentWeek;
 
 
   <div class="week-body ${isCollapsed?'collapsed':''}" data-exi="${exiA}" data-week="${w}">
-    <div class="week-quick-summary"><div class="week-summary-metas"><button type="button" class="week-meta-trigger" onclick="openWeekConfig(${exiA},${w},'schema')"><b>Serie</b> ${escapeHtml(exA.schema[w] || 'libere')}</button><i>·</i><button type="button" class="week-meta-trigger" onclick="openWeekConfig(${exiA},${w},'recupero')"><b>Recupero</b> ${escapeHtml(exA.recupero[w] || 'libero')}</button></div><button type="button" class="week-note-trigger" onclick="toggleWeekNote(this)">Nota</button></div>
+    ${renderWeekQuickSummary(exiA,w,exA,exiB)}
     <div class="week-note-wrap">
     <input class="week-note"
     placeholder="nota settimana (facoltativo)"
