@@ -800,10 +800,6 @@ function exerciseCard(ex, exi, accent){
           </div>
         </div>
 
-        <div class="set-btns-secondary">
-          <button class="week-actions-btn" ${isReadOnlyWeek?'disabled':''} onclick="openExerciseContextMenu(${exi}, '${escapeJs(ex.nome||'')}', ${w})" aria-label="Azioni esercizio">${ICON_MORE}</button>
-        </div>
-
       </div>
 
       </div>
@@ -844,6 +840,10 @@ function exerciseCard(ex, exi, accent){
             </button>
           </div>
 
+        </div>
+
+        <div class="set-btns-secondary">
+          <button class="week-actions-btn" ${isReadOnlyWeek?'disabled':''} onclick="openExerciseContextMenu(${exi}, '${escapeJs(ex.nome||'')}', ${w})" aria-label="Azioni esercizio">${ICON_MORE}</button>
         </div>
 
       </div>
@@ -2028,10 +2028,6 @@ const isFutureWeek = w > state.currentWeek;
         </div>
       </div>
 
-      <div class="set-btns-secondary">
-        <button class="week-actions-btn" onclick="openExerciseContextMenu(${exiA}, '${escapeJs(exA.nome||'')}', ${w}, ${exiB})" aria-label="Azioni esercizio">${ICON_MORE}</button>
-      </div>
-
     </div>
 
     </div>
@@ -2065,6 +2061,10 @@ const isFutureWeek = w > state.currentWeek;
           </button>
         </div>
 
+      </div>
+
+      <div class="set-btns-secondary">
+        <button class="week-actions-btn" onclick="openExerciseContextMenu(${exiA}, '${escapeJs(exA.nome||'')}', ${w}, ${exiB})" aria-label="Azioni esercizio">${ICON_MORE}</button>
       </div>
 
     </div>
