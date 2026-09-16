@@ -455,9 +455,9 @@ main{padding:12px;}
 .progression-hint{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--accent,var(--green));background:color-mix(in srgb, var(--accent, var(--green)) 12%, transparent);border-radius:6px;padding:6px 8px;margin-bottom:8px;}
 .progression-hint svg{flex:0 0 auto;width:14px;height:14px;}
 .week-note::placeholder{color:var(--muted);opacity:.6;}
-.weeks{padding:0 12px 10px;}
+.weeks{padding:4px 12px 18px;}
 /* ---------------- BLOCCO SETTIMANA (recupero, schema, righe serie) ---------------- */
-.week-block{border:1px solid var(--line);border-radius:8px;margin-top:6px;overflow:hidden;width:100%;}
+.week-block{border:1px solid var(--line);border-radius:8px;margin-top:10px;overflow:hidden;width:100%;transition:margin .2s ease,border-color .2s ease,box-shadow .2s ease;}
 .week-toggle{width:100%;background:var(--accent-dark,var(--green-dark));color:var(--text);border:none;padding:6px 10px;font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:8px;box-sizing:border-box;}
 /* schema (es. "4x8") della settimana appena segnata completata: si vede a
    colpo d'occhio cosa si e' fatto senza dover aprire il blocco - piu' piccolo
@@ -482,6 +482,20 @@ main{padding:12px;}
    misurare l'altezza reale in JS, semplice transizione CSS */
 .week-body{padding:8px;width:100%;box-sizing:border-box;max-height:2000px;opacity:1;overflow:hidden;transition:max-height .22s ease, opacity .18s ease, padding .22s ease;}
 .week-body.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;}
+/* Passato e futuro restano disponibili, ma non competono con l'area che si
+   sta compilando adesso. La settimana corrente ha volutamente molto piu'
+   aria: e' la sola zona di lavoro protagonista della schermata. */
+.week-block.completed-week-block{border-color:transparent;border-radius:6px;margin-top:3px;}
+.week-block.completed-week-block .week-toggle{min-height:26px;padding:3px 8px;background:transparent!important;font-size:10px;color:var(--muted);}
+.week-block.completed-week-block .week-toggle-schema{font-size:9px;}
+.week-block.completed-week-block .week-toggle .chev{font-size:10px;opacity:.55;}
+.week-block.future-week-block{margin-top:6px;border-color:color-mix(in srgb,var(--line) 70%,transparent);}
+.week-block.future-week-block .week-toggle{padding:5px 9px;font-size:11px;}
+.week-block.current-week-block{margin:22px -2px 24px;border-color:var(--accent,var(--green));border-radius:11px;background:color-mix(in srgb,var(--accent,var(--green)) 5%,var(--panel2));box-shadow:0 12px 28px rgba(0,0,0,.25),0 0 18px color-mix(in srgb,var(--accent,var(--green)) 20%,transparent);}
+.week-block.current-week-block .week-toggle{min-height:44px;padding:11px 13px;font-size:14px;}
+.week-block.current-week-block .week-toggle.current-week{border:none!important;box-shadow:none!important;transform:none;}
+.week-block.current-week-block .week-body{padding:14px 12px 16px;}
+.week-block.current-week-block .week-quick-summary{margin-bottom:12px;padding-bottom:10px;}
 .week-quick-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border-bottom:1px solid rgba(255,255,255,.10);color:var(--text);padding:2px 2px 8px;margin:0 0 7px;font-size:12px;font-weight:700;}
 .week-summary-metas{flex:1 1 auto;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:2px;line-height:1.35;}
 .week-quick-summary b{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.25px;margin-right:2px;}
@@ -1117,12 +1131,7 @@ body.training-focus .week-block{margin-top:10px;}
 /* SETTIMANA CORRENTE: stile "fluo" ma nel colore del giorno (--accent, impostato
    sulla card), non piu' sempre verde fisso - cosi' risalta la settimana senza
    stonare col resto della card quando il giorno ha un colore diverso */
-.week-toggle.current-week{
-  border:3px solid var(--accent, var(--green)) !important;
-  box-shadow:0 0 18px color-mix(in srgb, var(--accent, var(--green)) 45%, transparent) !important;
-  font-weight:800;
-  transform:scale(1.02);
-}
+.week-toggle.current-week{font-weight:800;}
 
 
 /* SETTIMANA COMPLETATA */

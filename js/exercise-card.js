@@ -685,7 +685,7 @@ function exerciseCard(ex, exi, accent){
 
     return `
 
-    <div class="week-block">
+    <div class="week-block ${isCurrentWeek?'current-week-block':''} ${isCompletedWeek?'completed-week-block':''} ${isFutureWeek?'future-week-block':''}">
 
 
       <button class="week-toggle
@@ -1913,7 +1913,7 @@ const isFutureWeek = w > state.currentWeek;
     }
     return `
 
-<div class="week-block">
+<div class="week-block ${isCurrentWeek?'current-week-block':''} ${isPastWeek?'completed-week-block':''} ${isFutureWeek?'future-week-block':''}">
 
   <button class="week-toggle
   ${isCollapsed?'collapsed':''}
