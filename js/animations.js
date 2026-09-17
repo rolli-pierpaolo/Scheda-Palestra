@@ -1,23 +1,12 @@
 // ---------------- ANIMAZIONI (GSAP) ----------------
-// avvia l'unica animazione permanente dell'app: il riflesso metallico che
-// scorre sul nome in alto, per sempre, avanti e indietro
+// La testata resta ferma: un'animazione infinita qui consumava frame anche
+// mentre l'utente compilava le serie.
 function initAnimations(){
-
-  if(typeof gsap === "undefined") return;
-
-  gsap.to(".topbar h1", {
-    "--shine": "240%",
-    duration: 9,
-    repeat: -1,
-    yoyo: true,
-    ease: "sine.inOut"
-  });
-
 }
 
 
-// fa comparire il bottone del giorno suggerito in Home con un piccolo
-// rimbalzo, poi lo fa pulsare piano per sempre finché resta in vista
+// Fa comparire il bottone del giorno suggerito una sola volta. Il feedback
+// continuo è affidato al tocco, non a un bagliore che resta sempre in moto.
 function animateSuggestedWorkout(){
 
   if(typeof gsap === "undefined") return;
@@ -26,35 +15,20 @@ function animateSuggestedWorkout(){
 
   if(!btn) return;
 
-  btn.classList.add("glow");
-
   // killTweensOf: showView('home') può richiamare questa funzione più volte,
   // ogni volta che si torna alla Home, altrimenti si accumulerebbero più
   // loop infiniti sullo stesso bottone
   gsap.killTweensOf(btn);
 
+  gsap.set(btn, {clearProps:"transform,opacity,boxShadow"});
   gsap.fromTo(btn,
     { opacity:0, y:20, scale:.95 },
     {
       opacity:1,
       y:0,
       scale:1,
-      duration:.7,
-      ease:"back.out(1.7)",
-      onComplete(){
-        // il respiro, stessa logica che prima era sulla card del giorno
-        // corrente, vedi renderHome in js/home.js, parte solo dopo l'entrata,
-        // mai in contemporanea: altrimenti le due animazioni si
-        // contenderebbero la stessa proprietà scale sullo stesso elemento
-        gsap.to(btn, {
-          scale:1.045,
-          boxShadow:"0 0 22px 5px var(--accent, var(--green))",
-          duration:1.1,
-          repeat:-1,
-          yoyo:true,
-          ease:"sine.inOut"
-        });
-      }
+      duration:.38,
+      ease:"power3.out"
     }
   );
 
