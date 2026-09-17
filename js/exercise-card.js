@@ -160,6 +160,8 @@ function updateWorkoutTopbarTitle(){
   const day = state.days[activeDayIdx];
   const ex = day && day.esercizi[activeExerciseIdx];
   if(!title || !editBtn || !activeView || activeView.style.display === 'none' || !ex) return;
+  const topbar = document.querySelector('.topbar');
+  if(topbar) topbar.style.setProperty('--workout-accent', dayAccent(day,activeDayIdx).c);
   if(editingExerciseIdx === activeExerciseIdx){
     title.innerHTML = `<textarea id="workoutTitleInput" class="workout-title-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${activeExerciseIdx},this.value)">${escapeHtml(ex.nome||'')}</textarea>`;
     editBtn.classList.add('active');

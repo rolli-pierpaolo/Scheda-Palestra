@@ -135,12 +135,13 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numer
 }
 /* In Allenamento la topbar diventa il riferimento costante: nome esercizio
    al centro, senza l'effetto "titolo che sparisce" del logo dell'app. */
-body.on-workout .topbar h1{font-family:var(--font-body);font-size:15px;line-height:1.2;letter-spacing:.2px;max-width:min(72vw,620px);margin:0 auto;text-transform:uppercase;overflow-wrap:anywhere;color:var(--text);text-shadow:none;}
+body.on-workout .topbar{border-bottom-color:var(--workout-accent,var(--green));}
+body.on-workout .topbar h1{font-family:var(--font-body);font-size:15px;line-height:1.2;letter-spacing:.2px;max-width:min(72vw,620px);margin:0 auto;text-transform:uppercase;overflow-wrap:anywhere;color:var(--workout-accent,var(--green));text-shadow:0 1px 8px color-mix(in srgb,var(--workout-accent,var(--green)) 34%,transparent);}
 body.on-workout .topbar.topbar-scrolled h1{font-size:15px;}
-.workout-title-edit{display:none;position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 8px);width:30px;height:30px;padding:0;border:1.5px solid var(--green);border-radius:50%;background:transparent;color:var(--green);align-items:center;justify-content:center;}
+.workout-title-edit{display:none;position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 8px);width:30px;height:30px;padding:0;border:1.5px solid var(--workout-accent,var(--green));border-radius:50%;background:transparent;color:var(--workout-accent,var(--green));align-items:center;justify-content:center;}
 body.on-workout .workout-title-edit:not([hidden]){display:flex;}
-.workout-title-edit.active{background:var(--green);color:#0D0D0D;}
-.workout-title-input{display:block;width:100%;min-height:28px;max-height:72px;resize:none;overflow:auto;background:var(--row-dark);border:1px solid var(--green);border-radius:5px;color:var(--text);font:inherit;font-size:16px;text-align:center;padding:3px 6px;}
+.workout-title-edit.active{background:var(--workout-accent,var(--green));color:#0D0D0D;}
+.workout-title-input{display:block;width:100%;min-height:28px;max-height:72px;resize:none;overflow:auto;background:var(--row-dark);border:1px solid var(--workout-accent,var(--green));border-radius:5px;color:var(--text);font:inherit;font-size:16px;text-align:center;padding:3px 6px;}
 
 
 /*@keyframes titleGlow{
