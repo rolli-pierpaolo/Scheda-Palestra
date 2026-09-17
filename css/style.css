@@ -140,6 +140,10 @@ body.on-workout .topbar h1{font-family:var(--font-body);font-size:15px;line-heig
 body.on-workout .topbar.topbar-scrolled h1{font-size:15px;}
 .workout-title-edit{display:none;position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 8px);width:30px;height:30px;padding:0;border:1.5px solid var(--workout-accent,var(--green));border-radius:50%;background:transparent;color:var(--workout-accent,var(--green));align-items:center;justify-content:center;}
 body.on-workout .workout-title-edit:not([hidden]){display:flex;}
+/* Quando la testata si compatta il pulsante deve restare nel suo riquadro,
+   senza scendere sopra al bordo colorato. */
+body.on-workout .topbar.topbar-scrolled .workout-title-edit{top:calc(env(safe-area-inset-top) + 3px);width:24px;height:24px;right:12px;}
+body.on-workout .topbar.topbar-scrolled .workout-title-edit svg{width:13px;height:13px;}
 .workout-title-edit.active{background:var(--workout-accent,var(--green));color:#0D0D0D;}
 .workout-title-input{display:block;width:100%;min-height:28px;max-height:72px;resize:none;overflow:auto;background:var(--row-dark);border:1px solid var(--workout-accent,var(--green));border-radius:5px;color:var(--text);font:inherit;font-size:16px;text-align:center;padding:3px 6px;}
 
