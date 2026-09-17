@@ -386,7 +386,7 @@ test('il carosello Allenamento mostra un esercizio a schermo e naviga con goToEx
   let track = window.document.getElementById('exCarouselTrack');
   assert.ok(track, 'il carosello deve essere in pagina');
   assert.strictEqual(track.style.transform, 'translateX(-0%)', 'la prima slide deve partire in posizione 0');
-  assert.strictEqual(window.document.getElementById('exStickyHeaderOuter').textContent.trim(), 'Ex A');
+  assert.strictEqual(window.document.getElementById('exStickyHeaderOuter'), null, 'il vecchio tab del titolo non deve più essere nella pagina');
   // La navigazione avviene dai riquadri esercizio in alto: niente doppio
   // indice a pallini/frecce, che era ridondante e rubava spazio.
   assert.strictEqual(window.document.querySelector('.ex-carousel-nav'), null, 'non deve restare il vecchio indice a pallini');
@@ -398,7 +398,6 @@ test('il carosello Allenamento mostra un esercizio a schermo e naviga con goToEx
   assert.strictEqual(window.__bridge.activeExerciseIdx, 2);
   track = window.document.getElementById('exCarouselTrack');
   assert.strictEqual(track.style.transform, 'translateX(-200%)', 'la terza slide deve essere alla posizione 2');
-  assert.strictEqual(window.document.getElementById('exStickyHeaderOuter').textContent.trim(), 'Ex C');
   assert.strictEqual(window.document.querySelector('.ex-carousel-nav'), null, 'anche dopo il cambio slide non devono tornare pallini o frecce');
 
   // completare la settimana corrente sul primo esercizio non fa scattare

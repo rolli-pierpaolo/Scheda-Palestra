@@ -133,6 +133,14 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numer
   color:var(--green);
   text-shadow:0 1px 7px rgba(126,168,60,.32);
 }
+/* In Allenamento la topbar diventa il riferimento costante: nome esercizio
+   al centro, senza l'effetto "titolo che sparisce" del logo dell'app. */
+body.on-workout .topbar h1{font-family:var(--font-body);font-size:15px;line-height:1.2;letter-spacing:.2px;max-width:min(72vw,620px);margin:0 auto;text-transform:uppercase;overflow-wrap:anywhere;color:var(--text);text-shadow:none;}
+body.on-workout .topbar.topbar-scrolled h1{font-size:15px;}
+.workout-title-edit{display:none;position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 8px);width:30px;height:30px;padding:0;border:1.5px solid var(--green);border-radius:50%;background:transparent;color:var(--green);align-items:center;justify-content:center;}
+body.on-workout .workout-title-edit:not([hidden]){display:flex;}
+.workout-title-edit.active{background:var(--green);color:#0D0D0D;}
+.workout-title-input{display:block;width:100%;min-height:28px;max-height:72px;resize:none;overflow:auto;background:var(--row-dark);border:1px solid var(--green);border-radius:5px;color:var(--text);font:inherit;font-size:16px;text-align:center;padding:3px 6px;}
 
 
 /*@keyframes titleGlow{
@@ -505,8 +513,8 @@ main{padding:12px;}
 .week-block.completed-week-block .week-toggle{min-height:26px;padding:3px 8px;background:transparent!important;font-size:10px;color:var(--muted);}
 .week-block.completed-week-block .week-toggle-schema{font-size:9px;}
 .week-block.completed-week-block .week-toggle .chev{font-size:10px;opacity:.55;}
-.week-block.completed-week-block .week-toggle.done{color:color-mix(in srgb,var(--green) 72%,var(--text));filter:none;}
-.week-block.completed-week-block .week-toggle.done::before{content:'✓';font-size:10px;color:var(--green);margin-right:5px;}
+.week-block.completed-week-block .week-toggle.done{color:color-mix(in srgb,var(--muted) 82%,var(--text));filter:none;}
+.week-block.completed-week-block .week-toggle.done::before{content:'✓';font-size:10px;color:var(--muted);margin-right:5px;}
 .week-block.completed-week-block .week-toggle.skipped{color:var(--amber);opacity:.62;filter:none;}
 .week-block.future-week-block{margin-top:6px;border-color:color-mix(in srgb,var(--line) 70%,transparent);}
 .week-block.future-week-block .week-toggle{padding:5px 9px;font-size:11px;}

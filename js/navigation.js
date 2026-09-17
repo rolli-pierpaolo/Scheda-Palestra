@@ -87,6 +87,15 @@ function showView(v){
     document.getElementById('tabHomeBtn').setAttribute('aria-current', v==='home' ? 'page' : 'false');
 
     document.body.classList.toggle('on-home', v==='home');
+    document.body.classList.toggle('on-workout', v==='active');
+    const topbarTitle = document.getElementById('topbarTitle');
+    const workoutEdit = document.getElementById('workoutTitleEditBtn');
+    if(v==='active'){
+      if(typeof updateWorkoutTopbarTitle==='function') updateWorkoutTopbarTitle();
+    } else {
+      if(topbarTitle) topbarTitle.textContent = 'Viridis';
+      if(workoutEdit) workoutEdit.hidden = true;
+    }
     if(v === 'home'){
       animateSuggestedWorkout();
     }
@@ -651,4 +660,3 @@ function computeCurrentDoingExerciseIdx(dayIdx){
   }
   return day.esercizi.length - 1;
 }
-

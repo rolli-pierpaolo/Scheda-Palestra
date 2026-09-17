@@ -140,18 +140,55 @@ function goToExerciseSlide(exi){
   const track = document.getElementById('exCarouselTrack');
   if(!track){ renderActive(); return; }
   track.style.transform = 'translateX(-'+(slideIdx*100)+'%)';
-  const headerOuter = document.getElementById('exStickyHeaderSlot');
-  if(headerOuter) headerOuter.outerHTML = renderExerciseStickyHeader(exi);
+  updateWorkoutTopbarTitle();
   const navWrap = document.getElementById('exCarouselNav');
   if(navWrap) navWrap.outerHTML = renderExerciseJumpIndex(progress, dayAccent(day, activeDayIdx).c);
   const stripWrap = document.getElementById('dayExStrip');
   if(stripWrap) stripWrap.outerHTML = renderDayExerciseStrip(progress, dayAccent(day, activeDayIdx).c, exi);
-  syncExerciseStickyHeaderSpace();
   requestAnimationFrame(()=>{
     const currentChip = document.querySelector('#dayExStrip .day-ex-chip.current');
     if(currentChip && typeof currentChip.scrollIntoView === 'function') currentChip.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
   });
   pulseCurrentExerciseChip();
+}
+// In Allenamento il titolo della topbar coincide con l'esercizio corrente:
+// resta nel punto più affidabile dell'app, senza una seconda barra nella pagina.
+function updateWorkoutTopbarTitle(){
+  const title = document.getElementById('topbarTitle');
+  const editBtn = document.getElementById('workoutTitleEditBtn');
+  const activeView = document.getElementById('viewActive');
+  const day = state.days[activeDayIdx];
+  const ex = day && day.esercizi[activeExerciseIdx];
+  if(!title || !editBtn || !activeView || activeView.style.display === 'none' || !ex) return;
+  if(editingExerciseIdx === activeExerciseIdx){
+    title.innerHTML = `<textarea id="workoutTitleInput" class="workout-title-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${activeExerciseIdx},this.value)">${escapeHtml(ex.nome||'')}</textarea>`;
+    editBtn.classList.add('active');
+    editBtn.setAttribute('aria-label','Conferma nome esercizio');
+    editBtn.title = 'Conferma';
+    requestAnimationFrame(()=>{ const input=document.getElementById('workoutTitleInput'); if(input) autoGrowTextarea(input); });
+  } else {
+    const partner = ex.linkGroupId && day.esercizi[activeExerciseIdx+1] && day.esercizi[activeExerciseIdx+1].linkGroupId===ex.linkGroupId ? day.esercizi[activeExerciseIdx+1] : null;
+    title.textContent = partner ? `${ex.nome||'Esercizio'} · ${partner.nome||'Esercizio'}` : (ex.nome||'Esercizio');
+    editBtn.classList.remove('active');
+    editBtn.setAttribute('aria-label','Modifica esercizio');
+    editBtn.title = 'Modifica esercizio';
+  }
+  editBtn.hidden = false;
+}
+function toggleWorkoutTopbarEdit(){
+  const day = state.days[activeDayIdx];
+  const ex = day && day.esercizi[activeExerciseIdx];
+  if(!ex) return;
+  if(editingExerciseIdx === activeExerciseIdx){
+    const input = document.getElementById('workoutTitleInput');
+    if(input) updateName(activeExerciseIdx,input.value);
+    editingExerciseIdx = null;
+    renderActive();
+    return;
+  }
+  editingExerciseIdx = activeExerciseIdx;
+  updateWorkoutTopbarTitle();
+  requestAnimationFrame(()=>{ const input=document.getElementById('workoutTitleInput'); if(input){ input.focus(); input.select(); } });
 }
 function renderActive(){
   const day = state.days[activeDayIdx];
@@ -208,8 +245,6 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   // invece di rifare un secondo loop separato che potrebbe disallinearsi
   const activeItem = progress.items.find(it => it.exi===activeExerciseIdx);
   const activeSlideIdx = activeItem ? progress.items.indexOf(activeItem) : 0;
-  const stickyHeaderHtml = renderExerciseStickyHeader(activeExerciseIdx);
-
   let slidesHtml = '';
   progress.items.forEach((it, slideIdx) => {
     const ex = day.esercizi[it.exi];
@@ -226,7 +261,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   // l'esercizio corrente (fine del carosello), non separate in fondo pagina
   // con un grande stacco
   const focusModeBtn = `<button class="training-focus-toggle ${trainingFocusMode?'active':''}" onclick="toggleTrainingFocusMode()" aria-pressed="${trainingFocusMode}">${trainingFocusMode ? '↙ Vista normale' : '⛶ Modalità allenamento grande'}</button>`;
-  main.innerHTML = stickyHeaderHtml + dayExStripHtml + focusModeBtn + switchTrainingDay + emptyState + carouselHtml +
+  main.innerHTML = dayExStripHtml + focusModeBtn + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -238,7 +273,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
 
   updateBlockFinishTab();
   pulseCurrentExerciseChip();
-  syncExerciseStickyHeaderSpace();
+  updateWorkoutTopbarTitle();
 
   if(typeof gsap !== "undefined" && activeFirstAnimation){
   activeFirstAnimation = false;
