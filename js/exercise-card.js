@@ -281,10 +281,11 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   activeFirstAnimation = false;
 
   gsap.from("#viewActive .ex-carousel-slide.current .card", {
-    y:35,
+    y:12,
     opacity:0,
-    duration:0.55,
-    ease:"power2.out"
+    duration:0.32,
+    ease:"power3.out",
+    overwrite:true
   });
 }
 function applyPendingWeekVisual(){
