@@ -108,9 +108,9 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numer
     position:sticky;
     top:0;
     z-index:20;
-    /* Stessa luminosita' dei pannelli dell'app: la barra non deve sembrare
-       una fascia nera sovrapposta al contenuto. */
-    background:#262626;
+    /* Testata nera piena: è una zona di orientamento separata dal contenuto,
+       così il titolo dell'esercizio resta netto anche sotto la status bar. */
+    background:#0D0D0D;
     background-image:none;
     border-bottom:2px solid var(--green);
     padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;

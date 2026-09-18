@@ -516,11 +516,11 @@ test('updateThemeColor segue l\'accent del giorno in Allenamento, torna neutro s
 
   window.document.getElementById('viewActive').style.display = 'none';
   window.updateThemeColor();
-  assert.strictEqual(meta.getAttribute('content'), '#262626', 'fuori da Allenamento deve restare sul colore neutro della testata');
+  assert.strictEqual(meta.getAttribute('content'), '#0D0D0D', 'fuori da Allenamento deve restare sul nero della testata');
 
   window.document.getElementById('viewActive').style.display = '';
   window.updateThemeColor();
-  assert.notStrictEqual(meta.getAttribute('content'), '#262626', 'in Allenamento deve seguire l\'accent del giorno, non restare neutro');
+  assert.notStrictEqual(meta.getAttribute('content'), '#0D0D0D', 'in Allenamento deve seguire l\'accent del giorno, non restare neutro');
 });
 
 test('su iPhone la status bar non usa il velo nero traslucido sopra l\'app', () => {

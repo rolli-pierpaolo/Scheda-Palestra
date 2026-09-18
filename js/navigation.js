@@ -205,9 +205,9 @@ function updateThemeColor(){
   if(onActive && state && state.days && state.days[activeDayIdx]){
     meta.setAttribute('content', dayAccent(state.days[activeDayIdx], activeDayIdx).d);
   } else {
-    // Il browser chrome deve partire dalla stessa tonalità della testata:
-    // #0D0D0D lo faceva apparire come una fascia nera staccata dall'app.
-    meta.setAttribute('content', '#262626');
+    // Il browser chrome parte dalla stessa testata nera, senza una fascia
+    // grigia differente tra l'area di sistema e il contenuto.
+    meta.setAttribute('content', '#0D0D0D');
   }
 }
 
