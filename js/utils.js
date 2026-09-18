@@ -166,6 +166,7 @@ function vibrate(pattern){
 let quickNumberInput = null;
 let quickKeyboardMode = 'numbers';
 let quickKeyboardOriginScrollY = null;
+let suppressQuickKeyboardClickUntil = 0;
 function isQuickNumberTarget(el){ return el && el.matches && el.matches('input.set-input:not(:disabled)'); }
 function positionQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
@@ -258,7 +259,19 @@ function finishQuickKeyboardInput(){
 document.addEventListener('pointerdown', event=>{
   const target = event.target;
   if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches && isQuickNumberTarget(target)) target.inputMode = 'none';
-  if(target && target.closest && target.closest('#quickNumberBar button')) event.preventDefault();
+  if(target && target.closest && target.closest('#quickNumberBar button')){
+    suppressQuickKeyboardClickUntil = Date.now()+600;
+    event.preventDefault();
+  }
+}, true);
+// I tasti della tastiera lavorano già su pointerdown. Se "Fine" la nasconde
+// prima del click sintetico del browser, quel click non deve mai arrivare al
+// bottone dell'app che si trova dietro al pannello (ghost tap).
+document.addEventListener('click', event=>{
+  if(Date.now() < suppressQuickKeyboardClickUntil || (event.target && event.target.closest && event.target.closest('#quickNumberBar'))){
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
 }, true);
 document.addEventListener('focusin', syncQuickNumberBar);
 document.addEventListener('focusout', event=>{
