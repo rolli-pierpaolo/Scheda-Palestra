@@ -14,11 +14,11 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="css/style.css?rev=20260917e">
+<link rel="stylesheet" href="css/style.css?rev=20260918a">
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.59</span>
+  <span class="app-version" id="appVersion">v1.60</span>
   <h1 id="topbarTitle">Viridis</h1>
   <button id="workoutTitleEditBtn" class="workout-title-edit" hidden onclick="toggleWorkoutTopbarEdit()" title="Modifica esercizio" aria-label="Modifica esercizio"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M4 20 L4.5 16.5 L15 6 A1.5 1.5 0 0 1 17 6 L18 7 A1 1 0 0 1 18 9 L7.5 19.5 Z"/><path d="M13.5 7.5 L16.5 10.5"/></svg></button>
   <button id="settingsBtn" class="account-btn settings-btn" onclick="openSettingsModal()" title="Impostazioni" aria-label="Impostazioni">
@@ -267,8 +267,14 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
     <span>Progressi</span>
   </button>
 </nav>
-<div id="quickNumberBar" class="quick-number-bar" hidden aria-label="Tastierino numerico rapido">
-  <button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber('1')">1</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber('2')">2</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber('3')">3</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber('4')">4</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber('5')">5</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber('6')">6</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber('7')">7</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber('8')">8</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber('9')">9</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber(',')">,</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickNumber('0')">0</button><button type="button" class="quick-number-delete" aria-label="Cancella ultimo carattere" onpointerdown="event.preventDefault()" onclick="deleteQuickNumber()">⌫</button>
+<div id="quickNumberBar" class="quick-number-bar" hidden aria-label="Tastiera rapida">
+  <div class="quick-keyboard-head"><button type="button" class="quick-keyboard-mode active" data-mode="numbers" onpointerdown="event.preventDefault()" onclick="setQuickKeyboardMode('numbers')">123</button><button type="button" class="quick-keyboard-mode" data-mode="letters" onpointerdown="event.preventDefault()" onclick="setQuickKeyboardMode('letters')">ABC</button><span>Inserimento rapido</span><button type="button" class="quick-keyboard-done" onpointerdown="event.preventDefault()" onclick="finishQuickKeyboardInput()">Fine</button></div>
+  <div class="quick-keyboard-grid quick-keyboard-numbers">
+    <button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickKey('1')">1</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickKey('2')">2</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickKey('3')">3</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickKey('4')">4</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickKey('5')">5</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickKey('6')">6</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickKey('7')">7</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickKey('8')">8</button><button type="button" onpointerdown="event.preventDefault()" onclick="insertQuickKey('9')">9</button><button type="button" onclick="insertQuickKey(',')">,</button><button type="button" onclick="insertQuickKey('0')">0</button><button type="button" class="quick-number-delete" aria-label="Cancella ultimo carattere" onpointerdown="event.preventDefault()" onclick="deleteQuickNumber()">⌫</button>
+  </div>
+  <div class="quick-keyboard-grid quick-keyboard-letters" hidden>
+    <button type="button" onclick="insertQuickKey('q')">Q</button><button type="button" onclick="insertQuickKey('w')">W</button><button type="button" onclick="insertQuickKey('e')">E</button><button type="button" onclick="insertQuickKey('r')">R</button><button type="button" onclick="insertQuickKey('t')">T</button><button type="button" onclick="insertQuickKey('y')">Y</button><button type="button" onclick="insertQuickKey('u')">U</button><button type="button" onclick="insertQuickKey('i')">I</button><button type="button" onclick="insertQuickKey('o')">O</button><button type="button" onclick="insertQuickKey('p')">P</button><button type="button" onclick="insertQuickKey('a')">A</button><button type="button" onclick="insertQuickKey('s')">S</button><button type="button" onclick="insertQuickKey('d')">D</button><button type="button" onclick="insertQuickKey('f')">F</button><button type="button" onclick="insertQuickKey('g')">G</button><button type="button" onclick="insertQuickKey('h')">H</button><button type="button" onclick="insertQuickKey('j')">J</button><button type="button" onclick="insertQuickKey('k')">K</button><button type="button" onclick="insertQuickKey('l')">L</button><button type="button" onclick="insertQuickKey('z')">Z</button><button type="button" onclick="insertQuickKey('x')">X</button><button type="button" onclick="insertQuickKey('c')">C</button><button type="button" onclick="insertQuickKey('v')">V</button><button type="button" onclick="insertQuickKey('b')">B</button><button type="button" onclick="insertQuickKey('n')">N</button><button type="button" onclick="insertQuickKey('m')">M</button><button type="button" class="quick-number-delete" onclick="deleteQuickNumber()">⌫</button>
+  </div>
 </div>
 
 
@@ -290,10 +296,10 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/chart.js"></script>         <!-- grafico di progressione -->
 <script src="js/trends.js?rev=20260915b"></script>        <!-- dashboard andamenti su tutta la cronologia -->
 <script src="js/backup.js?rev=20260915a"></script>        <!-- esporta/importa backup, manuale e automatico -->
-<script src="js/utils.js?rev=20260916d"></script>         <!-- escape html, altezza automatica delle textarea -->
+<script src="js/utils.js?rev=20260918a"></script>         <!-- escape html, altezza automatica delle textarea -->
 <script src="js/navigation.js?rev=20260917a"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
 <script src="js/days-modal.js?rev=20260915a"></script>    <!-- modifica categorie giorni (nome/colore/aggiungi/elimina) -->
-<script src="js/exercise-card.js?rev=20260917c"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
+<script src="js/exercise-card.js?rev=20260918a"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
 <script src="js/history.js?rev=20260915a"></script>       <!-- tab Storico: elenco ed esercizi dei WO archiviati -->
 <script src="js/search.js?rev=20260915a"></script>        <!-- ricerca in scheda attiva e storico -->
 <script src="js/calendar.js?rev=20260915a"></script>      <!-- calendario mensile dei giorni di allenamento terminati -->

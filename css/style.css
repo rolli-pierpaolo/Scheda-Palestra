@@ -230,9 +230,15 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .bottom-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--muted);font-size:10px;font-weight:700;padding:6px 4px;border-radius:8px;}
 .bottom-nav-btn svg{width:22px;height:22px;}
 .bottom-nav-btn.active{color:var(--accent,var(--green));background:color-mix(in srgb,var(--accent,var(--green)) 11%,transparent);}
-.quick-number-bar{position:fixed;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:40;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;padding:5px;background:color-mix(in srgb,var(--panel2) 96%,#000);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,.48);}
+.quick-number-bar{position:fixed;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:40;padding:7px;background:linear-gradient(145deg,color-mix(in srgb,var(--panel2) 97%,#000),#101010);border:1px solid color-mix(in srgb,var(--accent,var(--green)) 38%,var(--line));border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.06);}
 .quick-number-bar[hidden]{display:none;}
-.quick-number-bar button{min-height:34px;padding:0;background:var(--row-dark);border:1px solid var(--line);border-radius:6px;color:var(--text);font-size:15px;font-weight:800;}
+.quick-keyboard-head{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.quick-keyboard-head span{flex:1;min-width:0;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.55px;text-align:center;}
+.quick-keyboard-head button{min-height:28px;padding:0 9px;background:var(--row-dark);border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:11px;font-weight:900;}
+.quick-keyboard-head .quick-keyboard-mode.active,.quick-keyboard-head .quick-keyboard-done{background:color-mix(in srgb,var(--accent,var(--green)) 17%,var(--panel));border-color:var(--accent,var(--green));color:var(--accent,var(--green));}
+.quick-keyboard-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;}
+.quick-keyboard-grid button{min-height:42px;padding:0;background:linear-gradient(180deg,var(--panel2),var(--row-dark));border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:20px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);}
+.quick-keyboard-letters button{min-height:34px;font-size:14px;}
 .quick-number-bar button:active{background:var(--accent,var(--green));color:#0D0D0D;}
 .quick-number-bar .quick-number-delete{color:var(--amber);}
 @media(min-width:900px) and (pointer:fine){.quick-number-bar{display:none!important;}}
@@ -674,10 +680,9 @@ body.training-focus .week-block{margin-top:10px;}
 .week-done-btn.checked{background:color-mix(in srgb,var(--green) 18%,var(--panel2));border-color:var(--green);color:var(--green);}
 .week-skip-btn{border-color:color-mix(in srgb,var(--amber) 48%,var(--line));}
 .week-skip-btn.checked{background:color-mix(in srgb,var(--amber) 18%,var(--panel2));border-color:var(--amber);color:var(--amber);}
-/* riga 1: completata/saltata (l'azione che conta davvero, in evidenza).
-   riga 2 (.set-btns-secondary): max + aggiungi/rimuovi serie, azioni di
-   configurazione secondarie, tenute insieme sotto e meno in vista */
-.set-btns{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+/* Le opzioni stanno subito sotto alle serie cui appartengono; Fatta e Salta
+   restano alla fine della settimana, distinte dalla compilazione quotidiana. */
+.set-btns{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
 /* "completata" e "saltata" ognuna con la propria scritta sopra il proprio
    quadratino, affiancate - non piu' un'unica etichetta "completata / saltata"
    sopra i due bottoni. Gap largo apposta: i due bottoni segnano cose opposte,
@@ -685,12 +690,11 @@ body.training-focus .week-block{margin-top:10px;}
 .week-done-wrap{display:flex;flex-direction:row;justify-content:center;gap:8px;}
 .week-status-col{display:flex;flex:1;min-width:0;}
 .week-done-label{font-size:11px;color:var(--muted);opacity:.7;text-align:center;}
-.set-btns-secondary{position:relative;display:flex;align-items:center;justify-content:center;min-height:26px;}
+.set-btns-secondary{display:flex;align-items:center;justify-content:center;min-height:30px;margin:6px 0 2px;}
 .set-btns-right{display:contents;}
 .set-btns-right .add-ex.small:first-child{position:absolute;left:36px;}
-.set-btns-right .week-actions-btn{position:absolute;left:50%;transform:translateX(-50%);}
 .set-btns-right .add-ex.small.danger{position:absolute;left:0;}
-.week-actions-btn{width:26px;height:26px;padding:0;background:var(--panel);border:1px solid var(--accent,var(--green));border-radius:7px;color:var(--accent,var(--green));display:inline-flex;align-items:center;justify-content:center;}
+.week-actions-btn{width:28px;height:28px;padding:0;background:var(--panel);border:1px solid var(--accent,var(--green));border-radius:7px;color:var(--accent,var(--green));display:inline-flex;align-items:center;justify-content:center;}
 .week-actions-btn svg{width:14px;height:14px;}
 .set-series-group{margin-bottom:3px;}
 .set-series-group.has-max{border:1px dashed color-mix(in srgb,var(--amber) 58%,var(--line));border-radius:6px;padding:3px 5px 4px;background:transparent;}

@@ -160,9 +160,11 @@ function vibrate(pattern){
   if(typeof accessibilityPrefs !== 'undefined' && !accessibilityPrefs.vibration) return;
   if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
 }
-// Tastiera di sistema normale + riga numerica dell'app: compare solo nei
-// campi peso/ripetizioni, quindi non costringe mai il telefono al tastierino.
+// Tastiera dell'app per peso e ripetizioni: numeri grandi come vista iniziale,
+// lettere disponibili con un tocco. Evita la tastiera del sistema che su
+// alcuni telefoni copriva il campo o cambiava la viewport.
 let quickNumberInput = null;
+let quickKeyboardMode = 'numbers';
 function isQuickNumberTarget(el){ return el && el.matches && el.matches('input.set-input:not(:disabled)'); }
 function positionQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
@@ -179,21 +181,35 @@ function syncQuickNumberBar(){
   const active = document.activeElement;
   quickNumberInput = isQuickNumberTarget(active) ? active : null;
   bar.hidden = !quickNumberInput;
+  if(quickNumberInput && window.matchMedia && window.matchMedia('(pointer:coarse)').matches) quickNumberInput.inputMode = 'none';
   positionQuickNumberBar();
 }
 function commitQuickNumberInput(input){
   input.dispatchEvent(new Event('input',{bubbles:true}));
   input.dispatchEvent(new Event('change',{bubbles:true}));
 }
-function insertQuickNumber(value){
+function setQuickKeyboardMode(mode){
+  quickKeyboardMode = mode === 'letters' ? 'letters' : 'numbers';
+  const bar = document.getElementById('quickNumberBar');
+  if(!bar) return;
+  bar.querySelector('.quick-keyboard-numbers').hidden = quickKeyboardMode !== 'numbers';
+  bar.querySelector('.quick-keyboard-letters').hidden = quickKeyboardMode !== 'letters';
+  bar.querySelectorAll('.quick-keyboard-mode').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===quickKeyboardMode));
+}
+function insertQuickKey(value){
   const input = quickNumberInput;
   if(!input || input.disabled) return;
   const start = input.selectionStart ?? input.value.length;
   const end = input.selectionEnd ?? start;
   input.setRangeText(value,start,end,'end');
-  commitQuickNumberInput(input);
+  // Salviamo il valore solo quando l'utente chiude davvero la casella: così
+  // l'ultima ripetizione "12" non viene interpretata come "1" finita.
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+  input.dataset.quickKeyboardDirty = '1';
   input.focus({preventScroll:true});
 }
+// Compatibilità con il vecchio nome usato da eventuali cache già aperte.
+function insertQuickNumber(value){ insertQuickKey(value); }
 function deleteQuickNumber(){
   const input = quickNumberInput;
   if(!input || input.disabled) return;
@@ -201,11 +217,35 @@ function deleteQuickNumber(){
   const end = input.selectionEnd ?? start;
   if(start===0 && end===0) return;
   input.setRangeText('',start===end ? start-1 : start,end,'end');
-  commitQuickNumberInput(input);
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+  input.dataset.quickKeyboardDirty = '1';
   input.focus({preventScroll:true});
 }
+function finishQuickKeyboardInput(){
+  const input = quickNumberInput;
+  if(!input) return;
+  if(input.dataset.quickKeyboardDirty){
+    delete input.dataset.quickKeyboardDirty;
+    commitQuickNumberInput(input);
+  }
+  input.blur();
+}
+// inputmode va applicato PRIMA del focus: così sui telefoni non compare per
+// un attimo la tastiera di sistema sotto a quella personalizzata.
+document.addEventListener('pointerdown', event=>{
+  const target = event.target;
+  if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches && isQuickNumberTarget(target)) target.inputMode = 'none';
+  if(target && target.closest && target.closest('#quickNumberBar button')) event.preventDefault();
+}, true);
 document.addEventListener('focusin', syncQuickNumberBar);
-document.addEventListener('focusout', ()=>setTimeout(syncQuickNumberBar,0));
+document.addEventListener('focusout', event=>{
+  const input = event.target;
+  if(isQuickNumberTarget(input) && input.dataset.quickKeyboardDirty){
+    delete input.dataset.quickKeyboardDirty;
+    commitQuickNumberInput(input);
+  }
+  setTimeout(syncQuickNumberBar,0);
+});
 if(window.visualViewport){ window.visualViewport.addEventListener('resize', positionQuickNumberBar); window.visualViewport.addEventListener('scroll', positionQuickNumberBar); }
 // hash minimo e stabile, non Math.random: la stessa frase resta la stessa
 // finché non cambia il seme, esercizio più settimana, invece di saltare a

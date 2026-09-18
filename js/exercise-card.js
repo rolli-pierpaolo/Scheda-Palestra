@@ -91,6 +91,7 @@ function pulseCurrentExerciseChip(){
 // La striscia in alto è anche scorrevole: separiamo uno swipe da un tap per
 // evitare che, arrivando agli ultimi esercizi, uno scorrimento cambi scheda.
 let exerciseStripGesture = {startX:0,startY:0,moved:false};
+let exerciseStripIgnoreClickUntil = 0;
 function startExerciseStripGesture(event){
   exerciseStripGesture.startX = event.clientX;
   exerciseStripGesture.startY = event.clientY;
@@ -99,8 +100,11 @@ function startExerciseStripGesture(event){
 function trackExerciseStripGesture(event){
   if(Math.abs(event.clientX-exerciseStripGesture.startX)>8 || Math.abs(event.clientY-exerciseStripGesture.startY)>8) exerciseStripGesture.moved = true;
 }
-function endExerciseStripGesture(){ setTimeout(()=>{ exerciseStripGesture.moved = false; },0); }
-function activateExerciseChip(exi){ if(!exerciseStripGesture.moved) goToExerciseSlide(exi); }
+function endExerciseStripGesture(){
+  if(exerciseStripGesture.moved) exerciseStripIgnoreClickUntil = Date.now()+450;
+  setTimeout(()=>{ exerciseStripGesture.moved = false; },0);
+}
+function activateExerciseChip(exi){ if(Date.now() >= exerciseStripIgnoreClickUntil && !exerciseStripGesture.moved) goToExerciseSlide(exi); }
 // indice a pallini + frecce prev/next, sempre visibile (prima solo da 6
 // esercizi in su): ora e' il modo principale per muoversi nel carosello, non
 // solo una scorciatoia per i giorni lunghi. Freccia sinistra assente (non
@@ -847,6 +851,10 @@ function exerciseCard(ex, exi, accent){
 
       </div>
 
+      <div class="set-btns-secondary">
+        <button class="week-actions-btn" ${isReadOnlyWeek?'disabled':''} onclick="openExerciseContextMenu(${exi}, '${escapeJs(ex.nome||'')}', ${w})" aria-label="Azioni esercizio">${ICON_MORE}</button>
+      </div>
+
 
 
 
@@ -878,10 +886,6 @@ function exerciseCard(ex, exi, accent){
             </button>
           </div>
 
-        </div>
-
-        <div class="set-btns-secondary">
-          <button class="week-actions-btn" ${isReadOnlyWeek?'disabled':''} onclick="openExerciseContextMenu(${exi}, '${escapeJs(ex.nome||'')}', ${w})" aria-label="Azioni esercizio">${ICON_MORE}</button>
         </div>
 
       </div>
@@ -1253,7 +1257,7 @@ function updateSet(exi, w, si, field, val, recordPeso){
     // ancora di aver registrato il secondo esercizio della coppia
     const partner = findLinkedPartner(exi);
     const partnerReady = !partner || isLastSetOfWeekFilled(partner.ex, w);
-    if(partnerReady) askWeekDoneConfirm(exi, w, ex.nome);
+    if(partnerReady) requestWeekDoneConfirm(exi, w, ex.nome);
   }
 }
 
@@ -1376,6 +1380,19 @@ function askWeekDoneConfirm(exi, w, exName){
       gsap.fromTo('#weekDoneModal .finish-modal', {y:'100%',opacity:0}, {y:0,opacity:1,duration:.35,ease:'power3.out'});
     }
   }, 150);
+}
+// La domanda arriva solo quando l'utente ha davvero concluso la scrittura.
+// Con la tastiera interna ogni tasto aggiorna il campo, ma non può più
+// interrompere una ripetizione composta, ad esempio "12", dopo il primo "1".
+let weekDoneConfirmTimer = null;
+function requestWeekDoneConfirm(exi, w, exName){
+  clearTimeout(weekDoneConfirmTimer);
+  const active = document.activeElement;
+  if(typeof isQuickNumberTarget === 'function' && isQuickNumberTarget(active)){
+    active.addEventListener('blur', ()=>requestWeekDoneConfirm(exi,w,exName), {once:true});
+    return;
+  }
+  if(!weekDoneConfirmTarget) askWeekDoneConfirm(exi,w,exName);
 }
 function closeWeekDoneConfirm(confirmed){
   document.getElementById('weekDoneModal').style.display = 'none';
@@ -2075,6 +2092,10 @@ const isFutureWeek = w > state.currentWeek;
 
     </div>
 
+    <div class="set-btns-secondary">
+      <button class="week-actions-btn" onclick="openExerciseContextMenu(${exiA}, '${escapeJs(exA.nome||'')}', ${w}, ${exiB})" aria-label="Azioni esercizio">${ICON_MORE}</button>
+    </div>
+
     <div class="set-btns">
 
       <div class="week-done-wrap">
@@ -2099,10 +2120,6 @@ const isFutureWeek = w > state.currentWeek;
           </button>
         </div>
 
-      </div>
-
-      <div class="set-btns-secondary">
-        <button class="week-actions-btn" onclick="openExerciseContextMenu(${exiA}, '${escapeJs(exA.nome||'')}', ${w}, ${exiB})" aria-label="Azioni esercizio">${ICON_MORE}</button>
       </div>
 
     </div>
