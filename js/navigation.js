@@ -205,7 +205,9 @@ function updateThemeColor(){
   if(onActive && state && state.days && state.days[activeDayIdx]){
     meta.setAttribute('content', dayAccent(state.days[activeDayIdx], activeDayIdx).d);
   } else {
-    meta.setAttribute('content', '#0D0D0D');
+    // Il browser chrome deve partire dalla stessa tonalità della testata:
+    // #0D0D0D lo faceva apparire come una fascia nera staccata dall'app.
+    meta.setAttribute('content', '#262626');
   }
 }
 
