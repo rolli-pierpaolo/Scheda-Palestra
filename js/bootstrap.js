@@ -23,7 +23,10 @@
     window.addEventListener('load', function(){
       // Il numero di build nel URL evita che una cache HTTP troppo aggressiva
       // trattenga il service worker precedente dopo una nuova pubblicazione.
-      navigator.serviceWorker.register('sw.js?rev=20260915a').then(function(registration){
+      // Ogni pubblicazione cambia questa revisione: su iOS la URL identica
+      // poteva restare nella cache HTTP e lasciare attivo un service worker
+      // vecchio, quindi CSS e testata non ricevevano mai davvero il fix.
+      navigator.serviceWorker.register('sw.js?rev=20260918a').then(function(registration){
         if(registration.waiting) showAppUpdateBanner();
         registration.addEventListener('updatefound', function(){
           var worker = registration.installing;
