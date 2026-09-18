@@ -108,11 +108,14 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numer
     position:sticky;
     top:0;
     z-index:20;
-    background:linear-gradient(180deg,#101010 0%,#090909 100%);
+    /* Fondo pieno: la vecchia sfumatura in alto scuriva la parte superiore
+       del titolo su alcuni display OLED e lo faceva sembrare coperto. */
+    background:#111111;
     border-bottom:2px solid var(--green);
     padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;
-   text-align:center;
-   transition:padding .2s ease;
+    text-align:center;
+    box-shadow:none;
+    transition:padding .2s ease;
    }
 /* "titolo grande" che si restringe scorrendo (pattern nativo iOS): vedi il
    listener in js/navigation.js, che cambia solo questa classe */
