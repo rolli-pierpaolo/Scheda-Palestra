@@ -167,6 +167,8 @@ let quickNumberInput = null;
 let quickKeyboardMode = 'numbers';
 let quickKeyboardOriginScrollY = null;
 let suppressQuickKeyboardClickUntil = 0;
+let quickKeyboardCloseTimer = null;
+let quickKeyboardRestoreTimer = null;
 function isQuickNumberTarget(el){ return el && el.matches && el.matches('input.set-input:not(:disabled)'); }
 function positionQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
@@ -186,11 +188,31 @@ function revealQuickKeyboardInput(){
   const overlap = inputBox.bottom - (barBox.top - 14);
   if(overlap > 0) window.scrollBy({top:overlap,behavior:'smooth'});
 }
-function restoreQuickKeyboardScroll(){
+function restoreQuickKeyboardScroll(delay=0){
+  clearTimeout(quickKeyboardRestoreTimer);
   if(quickKeyboardOriginScrollY === null) return;
-  const originalY = quickKeyboardOriginScrollY;
-  quickKeyboardOriginScrollY = null;
-  window.scrollTo({top:originalY,behavior:'auto'});
+  quickKeyboardRestoreTimer = setTimeout(()=>{
+    const originalY = quickKeyboardOriginScrollY;
+    quickKeyboardOriginScrollY = null;
+    window.scrollTo({top:originalY,behavior:'auto'});
+  },delay);
+}
+function showQuickKeyboardBar(bar){
+  clearTimeout(quickKeyboardCloseTimer);
+  clearTimeout(quickKeyboardRestoreTimer);
+  bar.hidden = false;
+  bar.classList.remove('is-closing');
+}
+function hideQuickKeyboardBar(bar){
+  if(bar.hidden || bar.classList.contains('is-closing')) return;
+  bar.classList.add('is-closing');
+  clearTimeout(quickKeyboardCloseTimer);
+  quickKeyboardCloseTimer = setTimeout(()=>{
+    if(!quickNumberInput){
+      bar.hidden = true;
+      bar.classList.remove('is-closing');
+    }
+  },240);
 }
 function syncQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
@@ -199,12 +221,12 @@ function syncQuickNumberBar(){
   const nextInput = isQuickNumberTarget(active) ? active : null;
   if(nextInput && nextInput !== quickNumberInput && quickKeyboardOriginScrollY === null) quickKeyboardOriginScrollY = window.scrollY;
   quickNumberInput = nextInput;
-  bar.hidden = !quickNumberInput;
+  if(quickNumberInput) showQuickKeyboardBar(bar); else hideQuickKeyboardBar(bar);
   if(quickNumberInput && window.matchMedia && window.matchMedia('(pointer:coarse)').matches){
     quickNumberInput.inputMode = 'none';
     requestAnimationFrame(revealQuickKeyboardInput);
   } else {
-    restoreQuickKeyboardScroll();
+    restoreQuickKeyboardScroll(240);
   }
   positionQuickNumberBar();
 }
