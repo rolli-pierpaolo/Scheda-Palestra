@@ -230,9 +230,12 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .bottom-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--muted);font-size:10px;font-weight:700;padding:6px 4px;border-radius:8px;}
 .bottom-nav-btn svg{width:22px;height:22px;}
 .bottom-nav-btn.active{color:var(--accent,var(--green));background:color-mix(in srgb,var(--accent,var(--green)) 11%,transparent);}
-.quick-number-bar{position:fixed;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:40;padding:7px;background:linear-gradient(145deg,color-mix(in srgb,var(--panel2) 97%,#000),#101010);border:1px solid color-mix(in srgb,var(--accent,var(--green)) 38%,var(--line));border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.06);}
+.quick-number-bar{position:fixed;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:40;padding:7px;overflow:hidden;isolation:isolate;background:linear-gradient(145deg,color-mix(in srgb,var(--panel2) 97%,#000),#101010);border:1px solid color-mix(in srgb,var(--accent,var(--green)) 38%,var(--line));border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.06);}
 .quick-number-bar[hidden]{display:none;}
 .quick-number-bar [hidden]{display:none!important;}
+.quick-number-bar::before{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(115deg,transparent 5%,color-mix(in srgb,var(--green) 32%,transparent) 35%,color-mix(in srgb,#dff5a7 20%,transparent) 50%,color-mix(in srgb,var(--green) 30%,transparent) 65%,transparent 95%);background-size:240% 100%;background-position:0% 50%;opacity:.78;animation:keyboardAccentFlow 7s ease-in-out infinite;pointer-events:none;}
+.quick-number-bar>*{position:relative;z-index:1;}
+@keyframes keyboardAccentFlow{0%,100%{background-position:0% 50%;opacity:.45}50%{background-position:100% 50%;opacity:.9}}
 .quick-keyboard-head{display:flex;align-items:center;gap:5px;margin-bottom:8px;}
 .quick-keyboard-head span{flex:1;min-width:0;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.55px;text-align:center;}
 .quick-keyboard-head button{min-height:32px;padding:0 10px;background:var(--row-dark);border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.4px;}
