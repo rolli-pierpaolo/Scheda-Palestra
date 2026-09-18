@@ -165,6 +165,7 @@ function vibrate(pattern){
 // alcuni telefoni copriva il campo o cambiava la viewport.
 let quickNumberInput = null;
 let quickKeyboardMode = 'numbers';
+let quickKeyboardOriginScrollY = null;
 function isQuickNumberTarget(el){ return el && el.matches && el.matches('input.set-input:not(:disabled)'); }
 function positionQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
@@ -175,13 +176,35 @@ function positionQuickNumberBar(){
   // spostiamo quindi la barra appena sopra la tastiera, non sotto di essa.
   bar.style.bottom = keyboardInset > 40 ? (keyboardInset + 8) + 'px' : '';
 }
+function revealQuickKeyboardInput(){
+  const input = quickNumberInput;
+  const bar = document.getElementById('quickNumberBar');
+  if(!input || !bar || bar.hidden) return;
+  const inputBox = input.getBoundingClientRect();
+  const barBox = bar.getBoundingClientRect();
+  const overlap = inputBox.bottom - (barBox.top - 14);
+  if(overlap > 0) window.scrollBy({top:overlap,behavior:'smooth'});
+}
+function restoreQuickKeyboardScroll(){
+  if(quickKeyboardOriginScrollY === null) return;
+  const originalY = quickKeyboardOriginScrollY;
+  quickKeyboardOriginScrollY = null;
+  window.scrollTo({top:originalY,behavior:'auto'});
+}
 function syncQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
   if(!bar) return;
   const active = document.activeElement;
-  quickNumberInput = isQuickNumberTarget(active) ? active : null;
+  const nextInput = isQuickNumberTarget(active) ? active : null;
+  if(nextInput && nextInput !== quickNumberInput && quickKeyboardOriginScrollY === null) quickKeyboardOriginScrollY = window.scrollY;
+  quickNumberInput = nextInput;
   bar.hidden = !quickNumberInput;
-  if(quickNumberInput && window.matchMedia && window.matchMedia('(pointer:coarse)').matches) quickNumberInput.inputMode = 'none';
+  if(quickNumberInput && window.matchMedia && window.matchMedia('(pointer:coarse)').matches){
+    quickNumberInput.inputMode = 'none';
+    requestAnimationFrame(revealQuickKeyboardInput);
+  } else {
+    restoreQuickKeyboardScroll();
+  }
   positionQuickNumberBar();
 }
 function commitQuickNumberInput(input){
