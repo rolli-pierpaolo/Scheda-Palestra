@@ -229,7 +229,9 @@ function onExerciseSwipeStart(e){
   // niente swipe se il tocco parte da una zona che gestisce gia' un gesto suo
   // (indice a pallini scorrevole, stepper +/-, un campo di testo dove
   // trascinare serve a spostare il cursore): altrimenti confliggerebbero
-  if(e.target.closest('.ex-jump-index, .ex-carousel-nav, .stepper-pair, input, textarea')){ exSwipeStartX = null; return; }
+  // La riga in alto serve esclusivamente a scorrere e scegliere con un tap:
+  // uno swipe su quelle chip non deve mai passare all'esercizio successivo.
+  if(e.target.closest('.day-ex-strip, .ex-jump-index, .ex-carousel-nav, .stepper-pair, input, textarea')){ exSwipeStartX = null; return; }
   const t = e.touches[0];
   exSwipeStartX = t.clientX; exSwipeStartY = t.clientY; exSwipeStartTime = Date.now();
 }

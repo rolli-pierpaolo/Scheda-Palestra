@@ -140,7 +140,7 @@ body.on-workout .topbar{border-bottom-color:var(--workout-accent,var(--green));}
 /* In allenamento il riferimento deve restare fermo: cambiare altezza mentre
    si scrive o si scorre dava un piccolo scatto, più evidente su telefono. */
 body.on-workout .topbar.topbar-scrolled{padding-top:calc(env(safe-area-inset-top) + 10px);padding-bottom:10px;}
-body.on-workout .topbar h1{font-family:var(--font-body);font-size:15px;line-height:1.2;letter-spacing:.2px;max-width:min(72vw,620px);margin:0 auto;text-transform:uppercase;overflow-wrap:anywhere;color:var(--workout-accent,var(--green));text-shadow:0 1px 8px color-mix(in srgb,var(--workout-accent,var(--green)) 34%,transparent);}
+body.on-workout .topbar h1{font-family:var(--font-body);font-size:15px;line-height:1.2;letter-spacing:.2px;max-width:min(72vw,620px);margin:0 auto;text-transform:uppercase;overflow-wrap:anywhere;color:var(--workout-accent,var(--green));text-shadow:none;filter:none;opacity:1;}
 body.on-workout .topbar.topbar-scrolled h1{font-size:15px;}
 .workout-title-edit{display:none;position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 8px);width:30px;height:30px;padding:0;border:1.5px solid var(--workout-accent,var(--green));border-radius:50%;background:transparent;color:var(--workout-accent,var(--green));align-items:center;justify-content:center;}
 body.on-workout .workout-title-edit:not([hidden]){display:flex;}
@@ -494,11 +494,11 @@ main{padding:12px;}
 /* piccola di default (solo un accenno di riga): si espande per scriverci solo
    quando ci si clicca/tocca sopra, e torna piccola appena si esce dal campo -
    niente piu' spazio occupato in continuazione per una nota magari breve */
-.ex-comment{width:100%;background:var(--row-dark);border:none;color:var(--muted);font-style:italic;font-size:11px;padding:5px 8px;margin-top:4px;border-radius:6px;resize:none;height:22px;min-height:22px;overflow:hidden;box-sizing:border-box;transition:height .15s ease;}
-.ex-comment:focus{height:56px;min-height:56px;overflow:auto;}
+.ex-comment{width:100%;background:var(--row-dark);border:none;color:var(--muted);font-style:italic;font-size:10px;line-height:1.15;padding:3px 7px;margin-top:4px;border-radius:6px;resize:none;height:19px;min-height:19px;overflow:hidden;box-sizing:border-box;transition:height .15s ease;}
+.ex-comment:focus{height:52px;min-height:52px;overflow:auto;}
 /* nota per singola settimana: molto piu' minimale della nota/tecnica dell'esercizio,
    una riga sola, sfondo trasparente, solo un filo sottile sotto invece di un box vero */
-.week-note{width:100%;background:transparent;border:none;border-bottom:1px dashed var(--line);color:var(--muted);font-style:italic;font-size:11px;padding:2px 1px 5px;margin-bottom:8px;}
+.week-note{width:100%;background:transparent;border:none;border-bottom:1px dashed var(--line);color:var(--muted);font-style:italic;font-size:10px;line-height:1.15;padding:1px 1px 4px;margin-bottom:7px;}
 /* suggerimento di progressione: mai un numero legato alla volta scorsa (vedi
    computeProgressionHint in js/utils.js), solo una direzione da seguire */
 .progression-hint{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--accent,var(--green));background:color-mix(in srgb, var(--accent, var(--green)) 12%, transparent);border-radius:6px;padding:6px 8px;margin-bottom:8px;}
