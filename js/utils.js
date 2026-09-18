@@ -169,6 +169,8 @@ let quickKeyboardOriginScrollY = null;
 let suppressQuickKeyboardClickUntil = 0;
 let quickKeyboardCloseTimer = null;
 let quickKeyboardRestoreTimer = null;
+let quickKeyboardInteractionUntil = 0;
+let quickKeyboardFinishRequested = false;
 function isQuickNumberTarget(el){ return el && el.matches && el.matches('input.set-input:not(:disabled)'); }
 function positionQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
@@ -223,12 +225,19 @@ function syncQuickNumberBar(){
   if(!bar) return;
   const active = document.activeElement;
   const nextInput = isQuickNumberTarget(active) ? active : null;
+  if(!nextInput && Date.now() < quickKeyboardInteractionUntil && !quickKeyboardFinishRequested){
+    setTimeout(syncQuickNumberBar,Math.max(20,quickKeyboardInteractionUntil-Date.now()));
+    return;
+  }
   if(nextInput && nextInput !== quickNumberInput && quickKeyboardOriginScrollY === null) quickKeyboardOriginScrollY = window.scrollY;
   quickNumberInput = nextInput;
   if(quickNumberInput){
     updateQuickKeyboardAccent(bar);
     showQuickKeyboardBar(bar);
-  } else hideQuickKeyboardBar(bar);
+  } else {
+    hideQuickKeyboardBar(bar);
+    quickKeyboardFinishRequested = false;
+  }
   if(quickNumberInput && window.matchMedia && window.matchMedia('(pointer:coarse)').matches){
     quickNumberInput.inputMode = 'none';
     requestAnimationFrame(revealQuickKeyboardInput);
@@ -277,6 +286,7 @@ function deleteQuickNumber(){
 function finishQuickKeyboardInput(){
   const input = quickNumberInput;
   if(!input) return;
+  quickKeyboardFinishRequested = true;
   if(input.dataset.quickKeyboardDirty){
     delete input.dataset.quickKeyboardDirty;
     commitQuickNumberInput(input);
@@ -290,6 +300,7 @@ document.addEventListener('pointerdown', event=>{
   if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches && isQuickNumberTarget(target)) target.inputMode = 'none';
   if(target && target.closest && target.closest('#quickNumberBar button')){
     suppressQuickKeyboardClickUntil = Date.now()+600;
+    quickKeyboardInteractionUntil = Date.now()+120;
     vibrate(8);
     event.preventDefault();
   }
@@ -311,11 +322,12 @@ document.addEventListener('keydown', event=>{
 document.addEventListener('focusin', syncQuickNumberBar);
 document.addEventListener('focusout', event=>{
   const input = event.target;
-  if(isQuickNumberTarget(input) && input.dataset.quickKeyboardDirty){
+  const keyboardTapInProgress = Date.now() < quickKeyboardInteractionUntil && !quickKeyboardFinishRequested;
+  if(isQuickNumberTarget(input) && input.dataset.quickKeyboardDirty && !keyboardTapInProgress){
     delete input.dataset.quickKeyboardDirty;
     commitQuickNumberInput(input);
   }
-  setTimeout(syncQuickNumberBar,0);
+  setTimeout(syncQuickNumberBar,keyboardTapInProgress ? 130 : 0);
 });
 if(window.visualViewport){ window.visualViewport.addEventListener('resize', positionQuickNumberBar); window.visualViewport.addEventListener('scroll', positionQuickNumberBar); }
 // hash minimo e stabile, non Math.random: la stessa frase resta la stessa

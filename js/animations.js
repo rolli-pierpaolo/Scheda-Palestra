@@ -556,6 +556,9 @@ if(weekFinished){
 function cascadeScheduleToWeek(newWeek){
   state.days.forEach(day => {
     (day.esercizi||[]).forEach(ex => {
+      // I Max appartengono allo schema della serie: quando passi alla nuova
+      // settimana ne manteniamo posizione e numero, ma mai kg/rip vecchi.
+      if(typeof carryMaxLayoutForward === 'function') carryMaxLayoutForward(ex,newWeek-1,newWeek);
       if(!ex.schema || ex.schema[newWeek]===undefined) return;
       if(String(ex.schema[newWeek]||'').trim() !== '') return;
       for(let i=newWeek-1; i>=0; i--){

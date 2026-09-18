@@ -624,6 +624,28 @@ function getMaxEntries(ex, w){
 function maxEntriesAfter(ex, w, si){
   return getMaxEntries(ex,w).map((entry,index)=>({entry,index})).filter(item=>item.entry.afterSet===si);
 }
+// I Max sono parte dello schema, non del risultato: la settimana dopo deve
+// ritrovare le stesse caselle nella stessa serie, pronte ma vuote.
+function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
+  if(!ex || fromWeek < 0) return;
+  const template = getMaxEntries(ex,fromWeek);
+  if(!template.length) return;
+  const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+  const lastWeek = onlyWeek===undefined ? nWeeks-1 : onlyWeek;
+  if(!ex.maxShown) ex.maxShown = Array.from({length:nWeeks},()=>false);
+  for(let week=fromWeek+1; week<=lastWeek && week<nWeeks; week++){
+    const target = getMaxEntries(ex,week);
+    const targetCounts = new Map();
+    target.forEach(entry=>targetCounts.set(entry.afterSet,(targetCounts.get(entry.afterSet)||0)+1));
+    const sourceCounts = new Map();
+    template.forEach(entry=>{
+      const seen = sourceCounts.get(entry.afterSet)||0;
+      sourceCounts.set(entry.afterSet,seen+1);
+      if(seen >= (targetCounts.get(entry.afterSet)||0)) target.push({afterSet:entry.afterSet,peso:'',rip:''});
+    });
+    ex.maxShown[week] = true;
+  }
+}
 function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
   const entries = maxEntriesAfter(ex,w,si);
   if(!entries.length) return '';
@@ -1508,10 +1530,12 @@ function requestAddMax(exi, w, partnerExi){
   // un gruppo Max sulla stessa serie, il nuovo tocco aggiunge un solo tentativo.
   const amount = entries.some(entry=>entry.afterSet===afterSet-1) ? 1 : 2;
   for(let i=0;i<amount;i++) entries.push({afterSet:afterSet-1,peso:'',rip:''});
+  carryMaxLayoutForward(ex,w);
   if(typeof partnerExi==='number'){
     const partner = state.days[activeDayIdx].esercizi[partnerExi];
     const partnerEntries = getMaxEntries(partner,w);
     for(let i=0;i<amount;i++) partnerEntries.push({afterSet:afterSet-1,peso:'',rip:''});
+    carryMaxLayoutForward(partner,w);
   }
   pendingWeekVisual = {type:'max',exi,w,si:afterSet-1};
   saveState();
