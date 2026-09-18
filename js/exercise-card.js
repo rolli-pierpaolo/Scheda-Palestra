@@ -79,8 +79,10 @@ function renderDayExerciseStrip(progress, accent, activeExi){
 // sugli elementi ricreati
 function pulseCurrentExerciseChip(){
   if(typeof gsap === "undefined") return;
-  gsap.killTweensOf(".day-ex-chip.current");
-  gsap.to(".day-ex-chip.current", {
+  const chip = document.querySelector(".day-ex-chip.current");
+  if(!chip) return;
+  gsap.killTweensOf(chip);
+  gsap.to(chip, {
     scale: 1.12,
     duration: 1.1,
     repeat: -1,
@@ -281,10 +283,11 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   pulseCurrentExerciseChip();
   updateWorkoutTopbarTitle();
 
-  if(typeof gsap !== "undefined" && activeFirstAnimation){
+  const currentCard = document.querySelector("#viewActive .ex-carousel-slide.current .card");
+  if(typeof gsap !== "undefined" && activeFirstAnimation && currentCard){
   activeFirstAnimation = false;
 
-  gsap.from("#viewActive .ex-carousel-slide.current .card", {
+  gsap.from(currentCard, {
     y:12,
     opacity:0,
     duration:0.32,

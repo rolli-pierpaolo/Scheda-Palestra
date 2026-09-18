@@ -539,7 +539,11 @@ const total = weekly.total;
     ${volumeTrendHtml}
   `;
   if(typeof gsap !== "undefined"){
-  gsap.to("#homeProgressCount", {
+  const progressCount = document.getElementById('homeProgressCount');
+  const progressBar = document.getElementById('homeProgressBar');
+  const activeDayCard = document.querySelector('.home-day-card.active-training');
+  const motivation = document.querySelector('.home-motivation');
+  if(progressCount) gsap.to(progressCount, {
     innerText: done,
     duration: 0.8,
     snap: { innerText: 1 },
@@ -548,7 +552,7 @@ const total = weekly.total;
   // stessa progressione del numero, ma visiva: la barra sotto rende il
   // rapporto fatti su totale leggibile a colpo d'occhio, non serve più
   // calcolarlo a mente
-  gsap.to("#homeProgressBar", {
+  if(progressBar) gsap.to(progressBar, {
     width: total>0 ? (done/total*100)+'%' : '0%',
     duration: 0.8,
     ease: "power2.out"
@@ -560,16 +564,18 @@ const total = weekly.total;
   // in cima. killTweensOf prima di ripartire: renderHome() può girare più
   // volte, ogni volta che si torna alla Home, senza si accumulerebbero
   // animazioni vecchie sugli elementi ricreati ogni volta da zero
-  gsap.killTweensOf(".home-day-card.active-training");
-  gsap.to(".home-day-card.active-training", {
+  if(activeDayCard){
+  gsap.killTweensOf(activeDayCard);
+  gsap.to(activeDayCard, {
     scale: 1.13,
     duration: 1.1,
     repeat: -1,
     yoyo: true,
     ease: "sine.inOut"
   });
+  }
   // entrata della frase motivazionale: comparsa morbida invece che di scatto
-  gsap.from(".home-motivation", {
+  if(motivation) gsap.from(motivation, {
     opacity: 0,
     y: 12,
     scale: .96,
