@@ -171,6 +171,10 @@ let quickKeyboardCloseTimer = null;
 let quickKeyboardRestoreTimer = null;
 let quickKeyboardInteractionUntil = 0;
 let quickKeyboardFinishRequested = false;
+// La tastiera e' un pannello esplicito: una volta aperta non deve dipendere
+// dai capricci del focus mobile (che puo' sparire anche toccando un suo gap).
+// Si sblocca esclusivamente con il pulsante "Fine".
+let quickKeyboardPinnedOpen = false;
 function isQuickNumberTarget(el){ return el && el.matches && el.matches('input.set-input:not(:disabled)'); }
 function positionQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
@@ -225,8 +229,17 @@ function syncQuickNumberBar(){
   if(!bar) return;
   const active = document.activeElement;
   const nextInput = isQuickNumberTarget(active) ? active : null;
+  if(nextInput) quickKeyboardPinnedOpen = true;
   if(!nextInput && Date.now() < quickKeyboardInteractionUntil && !quickKeyboardFinishRequested){
     setTimeout(syncQuickNumberBar,Math.max(20,quickKeyboardInteractionUntil-Date.now()));
+    return;
+  }
+  // Su iOS il focus puo' andare momentaneamente al body anche se l'utente ha
+  // soltanto sfiorato lo spazio fra due tasti. Non interpretarlo mai come una
+  // richiesta di chiusura: la chiusura e' consentita solo da Fine.
+  if(!nextInput && quickKeyboardPinnedOpen && !quickKeyboardFinishRequested){
+    showQuickKeyboardBar(bar);
+    positionQuickNumberBar();
     return;
   }
   if(nextInput && nextInput !== quickNumberInput && quickKeyboardOriginScrollY === null) quickKeyboardOriginScrollY = window.scrollY;
@@ -287,6 +300,7 @@ function finishQuickKeyboardInput(){
   const input = quickNumberInput;
   if(!input) return;
   quickKeyboardFinishRequested = true;
+  quickKeyboardPinnedOpen = false;
   if(input.dataset.quickKeyboardDirty){
     delete input.dataset.quickKeyboardDirty;
     commitQuickNumberInput(input);
@@ -328,6 +342,8 @@ document.addEventListener('focusout', event=>{
     delete input.dataset.quickKeyboardDirty;
     commitQuickNumberInput(input);
   }
+  // Il pannello resta fissato aperto finche' non viene premuto Fine: questo
+  // timeout aggiorna solo l'eventuale cambio di campo, non puo' richiuderlo.
   setTimeout(syncQuickNumberBar,keyboardTapInProgress ? 130 : 0);
 });
 if(window.visualViewport){ window.visualViewport.addEventListener('resize', positionQuickNumberBar); window.visualViewport.addEventListener('scroll', positionQuickNumberBar); }
