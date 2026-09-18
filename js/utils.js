@@ -198,7 +198,7 @@ function restoreQuickKeyboardScroll(delay=0){
   quickKeyboardRestoreTimer = setTimeout(()=>{
     const originalY = quickKeyboardOriginScrollY;
     quickKeyboardOriginScrollY = null;
-    window.scrollTo({top:originalY,behavior:'auto'});
+    window.scrollTo({top:originalY,behavior:'smooth'});
   },delay);
 }
 function showQuickKeyboardBar(bar){
@@ -290,6 +290,7 @@ document.addEventListener('pointerdown', event=>{
   if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches && isQuickNumberTarget(target)) target.inputMode = 'none';
   if(target && target.closest && target.closest('#quickNumberBar button')){
     suppressQuickKeyboardClickUntil = Date.now()+600;
+    vibrate(8);
     event.preventDefault();
   }
 }, true);
