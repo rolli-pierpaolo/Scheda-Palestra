@@ -298,10 +298,11 @@ function finishQuickKeyboardInput(){
 document.addEventListener('pointerdown', event=>{
   const target = event.target;
   if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches && isQuickNumberTarget(target)) target.inputMode = 'none';
-  if(target && target.closest && target.closest('#quickNumberBar button')){
+  const keyboardArea = target && target.closest && target.closest('#quickNumberBar');
+  if(keyboardArea){
     suppressQuickKeyboardClickUntil = Date.now()+600;
     quickKeyboardInteractionUntil = Date.now()+120;
-    vibrate(8);
+    if(target.closest('#quickNumberBar button')) vibrate(8);
     event.preventDefault();
   }
 }, true);

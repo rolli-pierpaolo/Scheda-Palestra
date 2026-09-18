@@ -624,8 +624,8 @@ function getMaxEntries(ex, w){
 function maxEntriesAfter(ex, w, si){
   return getMaxEntries(ex,w).map((entry,index)=>({entry,index})).filter(item=>item.entry.afterSet===si);
 }
-// I Max sono parte dello schema, non del risultato: la settimana dopo deve
-// ritrovare le stesse caselle nella stessa serie, pronte ma vuote.
+// I Max sono parte dello schema: settimana dopo settimana riportano le stesse
+// righe e gli stessi kg/rip, salvo i valori già modificati a mano lì.
 function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
   if(!ex || fromWeek < 0) return;
   const template = getMaxEntries(ex,fromWeek);
@@ -635,13 +635,17 @@ function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
   if(!ex.maxShown) ex.maxShown = Array.from({length:nWeeks},()=>false);
   for(let week=fromWeek+1; week<=lastWeek && week<nWeeks; week++){
     const target = getMaxEntries(ex,week);
-    const targetCounts = new Map();
-    target.forEach(entry=>targetCounts.set(entry.afterSet,(targetCounts.get(entry.afterSet)||0)+1));
     const sourceCounts = new Map();
     template.forEach(entry=>{
       const seen = sourceCounts.get(entry.afterSet)||0;
       sourceCounts.set(entry.afterSet,seen+1);
-      if(seen >= (targetCounts.get(entry.afterSet)||0)) target.push({afterSet:entry.afterSet,peso:'',rip:''});
+      const matching = target.filter(item=>item.afterSet===entry.afterSet)[seen];
+      if(!matching){
+        target.push({afterSet:entry.afterSet,peso:entry.peso??'',rip:entry.rip??''});
+        return;
+      }
+      if(!String(matching.peso??'').trim() && String(entry.peso??'').trim()) matching.peso = entry.peso;
+      if(!String(matching.rip??'').trim() && String(entry.rip??'').trim()) matching.rip = entry.rip;
     });
     ex.maxShown[week] = true;
   }
@@ -1578,6 +1582,9 @@ function updateMaxEntry(exi, w, index, field, val){
   const entry = getMaxEntries(ex,w)[index];
   if(!entry) return;
   entry[field] = val;
+  // Se le righe future erano già state create vuote, riempi anche quelle
+  // senza cancellare eventuali modifiche scritte in autonomia più avanti.
+  carryMaxLayoutForward(ex,w);
   if(field==='peso' && String(val||'').trim()!=='') markWorkoutStartedByWeight();
   saveState();
 }
