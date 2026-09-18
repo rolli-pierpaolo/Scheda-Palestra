@@ -14,7 +14,7 @@
 // Nuova cache per la 1.21: forza l'app installata ad abbandonare gli script
 // che aprivano il tastierino numerico, anche su telefoni che erano rimasti
 // offline o con una vecchia risposta del browser in memoria.
-const CACHE_NAME = 'logbook-cache-v60';
+const CACHE_NAME = 'logbook-cache-v61';
 const CORE_ASSETS = [
   './',
   './index.html',

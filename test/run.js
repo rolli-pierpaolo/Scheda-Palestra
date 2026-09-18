@@ -523,6 +523,15 @@ test('updateThemeColor segue l\'accent del giorno in Allenamento, torna neutro s
   assert.notStrictEqual(meta.getAttribute('content'), '#262626', 'in Allenamento deve seguire l\'accent del giorno, non restare neutro');
 });
 
+test('su iPhone la status bar non usa il velo nero traslucido sopra l\'app', () => {
+  const window = loadApp();
+  const statusBar = window.document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  const viewport = window.document.querySelector('meta[name="viewport"]');
+  assert.ok(statusBar, 'il tag della status bar deve esistere');
+  assert.strictEqual(statusBar.getAttribute('content'), 'default', 'la status bar deve restare normale, non nera traslucida');
+  assert.ok(!viewport.getAttribute('content').includes('viewport-fit=cover'), 'il contenuto non deve finire sotto la barra di stato');
+});
+
 test('computeWeeklyMuscleSetCounts conta le serie con dati dei gruppi con un esercizio COMPLETATO nella settimana corrente', () => {
   const window = loadApp();
   window.__bridge.exerciseGroups = { 'panca piana':'Petto', 'squat':'Quadricipiti', 'rematore':'Schiena', 'corsa':'Cardio' };
