@@ -108,9 +108,9 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numer
     position:sticky;
     top:0;
     z-index:20;
-    /* Fondo pieno: la vecchia sfumatura in alto scuriva la parte superiore
-       del titolo su alcuni display OLED e lo faceva sembrare coperto. */
-    background:#111111;
+    /* Stessa luminosita' dei pannelli dell'app: la barra non deve sembrare
+       una fascia nera sovrapposta al contenuto. */
+    background:var(--panel);
     border-bottom:2px solid var(--green);
     padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;
     text-align:center;
