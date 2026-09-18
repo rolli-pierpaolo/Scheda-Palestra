@@ -582,10 +582,14 @@ saveState();
 // anche il significato, non solo la formattazione
 function suggestNextWeight(ex, w, si){
   if(w===0) return null;
-  if(!(ex.weekDone && ex.weekDone[w-1])) return null;
   const s = ex.sets && ex.sets[w-1] && ex.sets[w-1][si];
   if(!s || s.peso===undefined || s.peso===null) return null;
   const raw = String(s.peso).trim();
+  // Un puro numero non confermato non va proposto per errore; una nota di
+  // peso testuale invece è informazione utile anche prima della spunta.
+  const previousDone = !!(ex.weekDone && ex.weekDone[w-1]);
+  const isPureNumber = /^[+-]?\d+(?:[.,]\d+)?$/.test(raw);
+  if(!previousDone && isPureNumber) return null;
   return raw==='' ? null : raw;
 }
 // stessa idea di suggestNextWeight ma per le righe "Max": se la settimana
@@ -594,10 +598,12 @@ function suggestNextWeight(ex, w, si){
 // si conferma scrivendoci sopra)
 function suggestNextMaxWeight(ex, w, mi){
   if(w===0) return null;
-  if(!(ex.weekDone && ex.weekDone[w-1])) return null;
   const m = ex.maxExtra && ex.maxExtra[w-1] && ex.maxExtra[w-1][mi];
   if(!m || m.peso===undefined || m.peso===null) return null;
   const raw = String(m.peso).trim();
+  const previousDone = !!(ex.weekDone && ex.weekDone[w-1]);
+  const isPureNumber = /^[+-]?\d+(?:[.,]\d+)?$/.test(raw);
+  if(!previousDone && isPureNumber) return null;
   return raw==='' ? null : raw;
 }
 // I Max non sono piu' una sola riga in fondo alla tabella: ogni tentativo

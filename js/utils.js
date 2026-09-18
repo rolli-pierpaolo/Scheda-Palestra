@@ -179,6 +179,10 @@ function positionQuickNumberBar(){
   // spostiamo quindi la barra appena sopra la tastiera, non sotto di essa.
   bar.style.bottom = keyboardInset > 40 ? (keyboardInset + 8) + 'px' : '';
 }
+function updateQuickKeyboardAccent(bar){
+  const day = typeof state !== 'undefined' && state.days && state.days[activeDayIdx];
+  if(day && typeof dayAccent === 'function') bar.style.setProperty('--accent', dayAccent(day,activeDayIdx).c);
+}
 function revealQuickKeyboardInput(){
   const input = quickNumberInput;
   const bar = document.getElementById('quickNumberBar');
@@ -221,7 +225,10 @@ function syncQuickNumberBar(){
   const nextInput = isQuickNumberTarget(active) ? active : null;
   if(nextInput && nextInput !== quickNumberInput && quickKeyboardOriginScrollY === null) quickKeyboardOriginScrollY = window.scrollY;
   quickNumberInput = nextInput;
-  if(quickNumberInput) showQuickKeyboardBar(bar); else hideQuickKeyboardBar(bar);
+  if(quickNumberInput){
+    updateQuickKeyboardAccent(bar);
+    showQuickKeyboardBar(bar);
+  } else hideQuickKeyboardBar(bar);
   if(quickNumberInput && window.matchMedia && window.matchMedia('(pointer:coarse)').matches){
     quickNumberInput.inputMode = 'none';
     requestAnimationFrame(revealQuickKeyboardInput);
@@ -295,6 +302,11 @@ document.addEventListener('click', event=>{
     event.stopImmediatePropagation();
   }
 }, true);
+// Mai cambiare campo automaticamente: Enter conclude l'inserimento corrente,
+// non porta alla casella successiva. Il passaggio resta sempre una scelta.
+document.addEventListener('keydown', event=>{
+  if(event.key === 'Enter' && isQuickNumberTarget(event.target)) event.preventDefault();
+});
 document.addEventListener('focusin', syncQuickNumberBar);
 document.addEventListener('focusout', event=>{
   const input = event.target;

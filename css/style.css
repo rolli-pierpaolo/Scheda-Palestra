@@ -234,7 +234,7 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .quick-number-bar[hidden]{display:none;}
 .quick-number-bar.is-closing{opacity:0;transform:translateY(18px);pointer-events:none;}
 .quick-number-bar [hidden]{display:none!important;}
-.quick-number-bar::before{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(115deg,transparent 5%,color-mix(in srgb,var(--green) 32%,transparent) 35%,color-mix(in srgb,#dff5a7 20%,transparent) 50%,color-mix(in srgb,var(--green) 30%,transparent) 65%,transparent 95%);background-size:240% 100%;background-position:0% 50%;opacity:.78;animation:keyboardAccentFlow 7s ease-in-out infinite;pointer-events:none;}
+.quick-number-bar::before{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(115deg,transparent 5%,color-mix(in srgb,var(--accent,var(--green)) 32%,transparent) 35%,color-mix(in srgb,#fff 20%,transparent) 50%,color-mix(in srgb,var(--accent,var(--green)) 30%,transparent) 65%,transparent 95%);background-size:240% 100%;background-position:0% 50%;opacity:.78;animation:keyboardAccentFlow 7s ease-in-out infinite;pointer-events:none;}
 .quick-number-bar>*{position:relative;z-index:1;}
 @keyframes keyboardAccentFlow{0%,100%{background-position:0% 50%;opacity:.45}50%{background-position:100% 50%;opacity:.9}}
 .quick-keyboard-head{display:flex;align-items:center;gap:5px;margin-bottom:8px;}
@@ -242,10 +242,10 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .quick-keyboard-head button{min-height:32px;padding:0 10px;background:var(--row-dark);border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.4px;}
 .quick-keyboard-head .quick-keyboard-mode.active,.quick-keyboard-head .quick-keyboard-done{background:color-mix(in srgb,var(--accent,var(--green)) 17%,var(--panel));border-color:var(--accent,var(--green));color:var(--accent,var(--green));}
 .quick-keyboard-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;max-width:300px;margin:0 auto;}
-.quick-keyboard-grid button,.quick-keyboard-row button{min-height:46px;padding:0;background:linear-gradient(180deg,var(--panel2),var(--row-dark));border:1px solid var(--line);border-radius:9px;color:var(--text);font-size:22px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);}
+.quick-keyboard-grid button,.quick-keyboard-row button{min-height:40px;padding:0;background:linear-gradient(180deg,var(--panel2),var(--row-dark));border:1px solid var(--line);border-radius:9px;color:var(--text);font-size:22px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);}
 .quick-keyboard-letters{display:flex;flex-direction:column;gap:4px;}
 .quick-keyboard-row{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;}
-.quick-keyboard-row button{min-height:38px;font-size:14px;border-radius:7px;}
+.quick-keyboard-row button{min-height:54px;font-size:14px;border-radius:7px;}
 .quick-keyboard-row.letters-middle{margin:0 4%;grid-template-columns:repeat(9,minmax(0,1fr));}
 .quick-keyboard-row.letters-bottom{margin:0 10%;grid-template-columns:repeat(8,minmax(0,1fr));}
 .quick-number-bar button:active{background:var(--accent,var(--green));color:#0D0D0D;}
