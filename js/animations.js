@@ -1,10 +1,4 @@
 // ---------------- ANIMAZIONI (GSAP) ----------------
-// La testata resta ferma: un'animazione infinita qui consumava frame anche
-// mentre l'utente compilava le serie.
-function initAnimations(){
-}
-
-
 // Fa comparire il bottone del giorno suggerito una sola volta. Il feedback
 // continuo è affidato al tocco, non a un bagliore che resta sempre in moto.
 function animateSuggestedWorkout(){
@@ -31,22 +25,6 @@ function animateSuggestedWorkout(){
       ease:"power3.out"
     }
   );
-
-}
-
-
-// bagliore pulsante extra dietro al bottone del giorno suggerito
-function animateSuggestedGlow(){
-
-  if(typeof gsap === "undefined") return;
-
-  gsap.to(".home-suggested-btn::before", {
-    opacity:0.5,
-    duration:2,
-    repeat:-1,
-    yoyo:true,
-    ease:"sine.inOut"
-  });
 
 }
 

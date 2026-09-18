@@ -1053,6 +1053,19 @@ test('ricerca globale trova esercizi sia nella scheda attiva sia nello storico',
   assert.match(window.document.querySelector('.global-search-result').textContent, /Scheda attiva/);
 });
 
+test('la testata Allenamento ha una classe propria e non conserva il colore del giorno quando si torna fuori', () => {
+  const window = loadApp();
+  const topbar = window.document.querySelector('.topbar');
+  topbar.style.setProperty('--workout-accent', '#7EA83C');
+
+  window.setWorkoutTopbarMode(true);
+  assert.ok(topbar.classList.contains('is-workout-header'), 'il titolo esercizio deve avere uno stato proprio, non dipendere solo dal body');
+
+  window.setWorkoutTopbarMode(false);
+  assert.ok(!topbar.classList.contains('is-workout-header'), 'uscendo da Allenamento deve tornare il componente-logo');
+  assert.strictEqual(topbar.style.getPropertyValue('--workout-accent'), '', 'il colore del giorno non deve contaminare Home o Progressi');
+});
+
 // ---------------- runner ----------------
 // async per poter "await t.fn()": i test sincroni di sempre continuano a
 // funzionare identici (await su un valore non-Promise si risolve subito),

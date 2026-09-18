@@ -163,10 +163,13 @@ function updateWorkoutTopbarTitle(){
   const title = document.getElementById('topbarTitle');
   const editBtn = document.getElementById('workoutTitleEditBtn');
   const activeView = document.getElementById('viewActive');
+  const topbar = document.querySelector('.topbar');
+  // Rende autonomo il componente: se questa funzione viene richiamata mentre
+  // la vista è già visibile, il titolo non può ereditare l'aspetto del logo.
+  if(topbar && activeView && activeView.style.display !== 'none') topbar.classList.add('is-workout-header');
   const day = state.days[activeDayIdx];
   const ex = day && day.esercizi[activeExerciseIdx];
   if(!title || !editBtn || !activeView || activeView.style.display === 'none' || !ex) return;
-  const topbar = document.querySelector('.topbar');
   if(topbar) topbar.style.setProperty('--workout-accent', dayAccent(day,activeDayIdx).c);
   if(editingExerciseIdx === activeExerciseIdx){
     title.innerHTML = `<textarea id="workoutTitleInput" class="workout-title-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${activeExerciseIdx},this.value)">${escapeHtml(ex.nome||'')}</textarea>`;

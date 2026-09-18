@@ -7,6 +7,15 @@ let selectedTrainingOrder = [];
 // esattamente lì
 const ACTIVE_POS_KEY = "scheda_wo18_active_pos_v1";
 let activeExerciseIdx = null;
+// Il titolo dell'esercizio non può dipendere solo dalla classe del body:
+// durante una transizione o il ripristino di una PWA quella classe può arrivare
+// un frame dopo. Questa classe vive sul componente che stiliamo davvero.
+function setWorkoutTopbarMode(isWorkout){
+  const topbar = document.querySelector('.topbar');
+  if(!topbar) return;
+  topbar.classList.toggle('is-workout-header', !!isWorkout);
+  if(!isWorkout) topbar.style.removeProperty('--workout-accent');
+}
 // salva su localStorage il giorno e l'esercizio attivi in questo momento
 function saveActivePos(){
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
@@ -88,6 +97,7 @@ function showView(v){
 
     document.body.classList.toggle('on-home', v==='home');
     document.body.classList.toggle('on-workout', v==='active');
+    setWorkoutTopbarMode(v==='active');
     const topbarTitle = document.getElementById('topbarTitle');
     const workoutEdit = document.getElementById('workoutTitleEditBtn');
     if(v==='active'){

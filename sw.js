@@ -14,7 +14,7 @@
 // Nuova cache per la 1.21: forza l'app installata ad abbandonare gli script
 // che aprivano il tastierino numerico, anche su telefoni che erano rimasti
 // offline o con una vecchia risposta del browser in memoria.
-const CACHE_NAME = 'logbook-cache-v58';
+const CACHE_NAME = 'logbook-cache-v59';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -76,14 +76,23 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  // La cache offline è solo dell'app. In precedenza qualunque GET partito
+  // dalla pagina poteva essere salvato, compresi dati remoti della sync.
+  // Oltre a essere inutile, era più pesante e meno rispettoso della privacy.
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
   event.respondWith(
     fetch(event.request).then((response) => {
-      if (response && response.status === 200) {
+      if (response && response.ok && response.type === 'basic') {
         const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        // Mantiene vivo il worker fino alla scrittura: la cache non resta a
+        // metà se iOS sospende l'app subito dopo aver ricevuto la risposta.
+        event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {}));
       }
       return response;
-    }).catch(() => caches.match(event.request))
+    // Gli asset hanno un ?rev per aggiornarsi. In offline la stessa risorsa
+    // precacheata senza query va bene ed evita duplicati nella cache.
+    }).catch(() => caches.match(event.request, {ignoreSearch:true}))
   );
 });
 

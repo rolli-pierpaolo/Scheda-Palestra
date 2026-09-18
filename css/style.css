@@ -110,11 +110,15 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numer
     z-index:20;
     /* Stessa luminosita' dei pannelli dell'app: la barra non deve sembrare
        una fascia nera sovrapposta al contenuto. */
-    background:var(--panel);
+    background:#262626;
+    background-image:none;
     border-bottom:2px solid var(--green);
     padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;
     text-align:center;
     box-shadow:none;
+    filter:none;
+    opacity:1;
+    isolation:isolate;
     transition:padding .2s ease;
    }
 /* "titolo grande" che si restringe scorrendo (pattern nativo iOS): vedi il
@@ -135,62 +139,35 @@ body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numer
   /* Titolo netto: l'effetto metallico aveva zone scure e su alcuni schermi
      sembrava sfocato. Un colore pieno è molto più leggibile. */
   color:var(--green);
-  text-shadow:0 1px 7px rgba(126,168,60,.32);
+  -webkit-text-fill-color:currentColor;
+  text-shadow:none;
+  filter:none;
+  opacity:1;
 }
-/* In Allenamento la topbar diventa il riferimento costante: nome esercizio
-   al centro, senza l'effetto "titolo che sparisce" del logo dell'app. */
-body.on-workout .topbar{border-bottom-color:var(--workout-accent,var(--green));}
+/* In Allenamento la topbar riceve una sua classe, invece di riutilizzare
+   l'aspetto del logo tramite una classe sul body. Così nome esercizio e logo
+   restano due componenti distinti anche durante cambi vista/riapertura PWA. */
+.topbar.is-workout-header{border-bottom-color:var(--workout-accent,var(--green));}
 /* In allenamento il riferimento deve restare fermo: cambiare altezza mentre
    si scrive o si scorre dava un piccolo scatto, più evidente su telefono. */
-body.on-workout .topbar.topbar-scrolled{padding-top:calc(env(safe-area-inset-top) + 10px);padding-bottom:10px;}
-body.on-workout .topbar h1{font-family:var(--font-body);font-size:15px;line-height:1.2;letter-spacing:.2px;max-width:min(72vw,620px);margin:0 auto;text-transform:uppercase;overflow-wrap:anywhere;color:var(--workout-accent,var(--green));text-shadow:none;filter:none;opacity:1;}
-body.on-workout .topbar.topbar-scrolled h1{font-size:15px;}
+.topbar.is-workout-header.topbar-scrolled{padding-top:calc(env(safe-area-inset-top) + 10px);padding-bottom:10px;}
+.topbar.is-workout-header h1{font-family:var(--font-body);font-size:15px;line-height:1.2;letter-spacing:.2px;max-width:min(72vw,620px);margin:0 auto;text-transform:uppercase;overflow-wrap:anywhere;color:var(--workout-accent,var(--green));-webkit-text-fill-color:currentColor;text-shadow:none;filter:none;opacity:1;}
+.topbar.is-workout-header.topbar-scrolled h1{font-size:15px;}
 .workout-title-edit{display:none;position:absolute;right:10px;top:calc(env(safe-area-inset-top) + 8px);width:30px;height:30px;padding:0;border:1.5px solid var(--workout-accent,var(--green));border-radius:50%;background:transparent;color:var(--workout-accent,var(--green));align-items:center;justify-content:center;}
-body.on-workout .workout-title-edit:not([hidden]){display:flex;}
+.topbar.is-workout-header .workout-title-edit:not([hidden]){display:flex;}
 /* Quando la testata si compatta il pulsante deve restare nel suo riquadro,
    senza scendere sopra al bordo colorato. */
-body.on-workout .topbar.topbar-scrolled .workout-title-edit{top:calc(env(safe-area-inset-top) + 3px);width:24px;height:24px;right:12px;}
-body.on-workout .topbar.topbar-scrolled .workout-title-edit svg{width:13px;height:13px;}
+.topbar.is-workout-header.topbar-scrolled .workout-title-edit{top:calc(env(safe-area-inset-top) + 3px);width:24px;height:24px;right:12px;}
+.topbar.is-workout-header.topbar-scrolled .workout-title-edit svg{width:13px;height:13px;}
 .workout-title-edit.active{background:var(--workout-accent,var(--green));color:#0D0D0D;}
 .workout-title-input{display:block;width:100%;min-height:28px;max-height:72px;resize:none;overflow:auto;background:var(--row-dark);border:1px solid var(--workout-accent,var(--green));border-radius:5px;color:var(--text);font:inherit;font-size:16px;text-align:center;padding:3px 6px;}
 
 
-/*@keyframes titleGlow{
-
-    0%{
-        text-shadow:
-            0 0 8px rgba(154,205,50,.20),
-            0 0 16px rgba(154,205,50,.10);
-    }
-
-    50%{
-        text-shadow:
-            0 0 18px rgba(154,205,50,.85),
-            0 0 36px rgba(154,205,50,.55),
-            0 0 54px rgba(154,205,50,.30);
-    }
-
-    100%{
-        text-shadow:
-            0 0 8px rgba(154,205,50,.20),
-            0 0 16px rgba(154,205,50,.10);
-    }
-
-}
-
-
-
-
-/* in Home il nome dell'app si legge piu' grande (e' la schermata "di casa",
-   deve sembrare proprio quello), nelle altre viste resta piccolo e discreto
-   per lasciare spazio alle tab. Prima c'erano tre regole duplicate qui (stesso
-   selettore ripetuto piu' volte): consolidate in una sola */
+/* In Home il nome dell'app si legge più grande. */
 body.on-home .topbar h1{
     font-size:30px;
     letter-spacing:2.5px;
-    text-shadow:
-        0 0 5px rgba(154,205,50,.3),
-        0 0 10px rgba(154,205,50,.2);
+    text-shadow:none;
 }/* numero di versione, piccolissimo e discreto, in alto a sinistra: si aggiorna
    da solo a ogni commit (vedi .git/hooks/pre-commit), serve solo per accorgersi
    a colpo d'occhio che e' stata fatta una modifica dall'ultima volta */

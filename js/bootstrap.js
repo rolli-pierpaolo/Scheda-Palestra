@@ -26,7 +26,10 @@
       // Ogni pubblicazione cambia questa revisione: su iOS la URL identica
       // poteva restare nella cache HTTP e lasciare attivo un service worker
       // vecchio, quindi CSS e testata non ricevevano mai davvero il fix.
-      navigator.serviceWorker.register('sw.js?rev=20260918a').then(function(registration){
+      // updateViaCache:none fa rileggere sempre lo script del worker dalla
+      // rete: è il meccanismo standard, più affidabile di sperare che la
+      // cache HTTP di iOS rispetti un URL già visto in precedenza.
+      navigator.serviceWorker.register('sw.js?rev=20260918b', {updateViaCache:'none'}).then(function(registration){
         if(registration.waiting) showAppUpdateBanner();
         registration.addEventListener('updatefound', function(){
           var worker = registration.installing;
