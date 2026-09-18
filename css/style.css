@@ -232,13 +232,17 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .bottom-nav-btn.active{color:var(--accent,var(--green));background:color-mix(in srgb,var(--accent,var(--green)) 11%,transparent);}
 .quick-number-bar{position:fixed;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:40;padding:7px;background:linear-gradient(145deg,color-mix(in srgb,var(--panel2) 97%,#000),#101010);border:1px solid color-mix(in srgb,var(--accent,var(--green)) 38%,var(--line));border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.06);}
 .quick-number-bar[hidden]{display:none;}
-.quick-keyboard-head{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.quick-keyboard-head{display:flex;align-items:center;gap:5px;margin-bottom:8px;}
 .quick-keyboard-head span{flex:1;min-width:0;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.55px;text-align:center;}
-.quick-keyboard-head button{min-height:28px;padding:0 9px;background:var(--row-dark);border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:11px;font-weight:900;}
+.quick-keyboard-head button{min-height:32px;padding:0 10px;background:var(--row-dark);border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.4px;}
 .quick-keyboard-head .quick-keyboard-mode.active,.quick-keyboard-head .quick-keyboard-done{background:color-mix(in srgb,var(--accent,var(--green)) 17%,var(--panel));border-color:var(--accent,var(--green));color:var(--accent,var(--green));}
-.quick-keyboard-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;}
-.quick-keyboard-grid button{min-height:42px;padding:0;background:linear-gradient(180deg,var(--panel2),var(--row-dark));border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:20px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);}
-.quick-keyboard-letters button{min-height:34px;font-size:14px;}
+.quick-keyboard-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;max-width:300px;margin:0 auto;}
+.quick-keyboard-grid button,.quick-keyboard-row button{min-height:46px;padding:0;background:linear-gradient(180deg,var(--panel2),var(--row-dark));border:1px solid var(--line);border-radius:9px;color:var(--text);font-size:22px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);}
+.quick-keyboard-letters{display:flex;flex-direction:column;gap:4px;}
+.quick-keyboard-row{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:3px;}
+.quick-keyboard-row button{min-height:38px;font-size:14px;border-radius:7px;}
+.quick-keyboard-row.letters-middle{margin:0 4%;grid-template-columns:repeat(9,minmax(0,1fr));}
+.quick-keyboard-row.letters-bottom{margin:0 10%;grid-template-columns:repeat(8,minmax(0,1fr));}
 .quick-number-bar button:active{background:var(--accent,var(--green));color:#0D0D0D;}
 .quick-number-bar .quick-number-delete{color:var(--amber);}
 @media(min-width:900px) and (pointer:fine){.quick-number-bar{display:none!important;}}
