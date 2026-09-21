@@ -171,6 +171,7 @@ let quickKeyboardCloseTimer = null;
 let quickKeyboardRestoreTimer = null;
 let quickKeyboardInteractionUntil = 0;
 let quickKeyboardFinishRequested = false;
+const quickKeyboardPressTimers = new WeakMap();
 // La tastiera e' un pannello esplicito: una volta aperta non deve dipendere
 // dai capricci del focus mobile (che puo' sparire anche toccando un suo gap).
 // Si sblocca esclusivamente con il pulsante "Fine".
@@ -272,6 +273,16 @@ function setQuickKeyboardMode(mode){
   bar.querySelector('.quick-keyboard-letters').hidden = quickKeyboardMode !== 'letters';
   bar.querySelectorAll('.quick-keyboard-mode').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===quickKeyboardMode));
 }
+// Riscontro immediato e localizzato sul tasto toccato: la classe resta il
+// tempo sufficiente per essere vista anche durante tocchi rapidi con il pollice.
+function flashQuickKeyboardKey(button){
+  if(!button) return;
+  clearTimeout(quickKeyboardPressTimers.get(button));
+  button.classList.remove('is-pressed');
+  void button.offsetWidth;
+  button.classList.add('is-pressed');
+  quickKeyboardPressTimers.set(button,setTimeout(()=>button.classList.remove('is-pressed'),110));
+}
 function insertQuickKey(value){
   const input = quickNumberInput;
   if(!input || input.disabled) return;
@@ -330,7 +341,11 @@ document.addEventListener('pointerdown', event=>{
   if(keyboardArea){
     suppressQuickKeyboardClickUntil = Date.now()+600;
     quickKeyboardInteractionUntil = Date.now()+120;
-    if(target.closest('#quickNumberBar button')) vibrate(8);
+    const key = target.closest('#quickNumberBar button');
+    if(key){
+      flashQuickKeyboardKey(key);
+      vibrate(8);
+    }
     event.preventDefault();
   }
 }, true);

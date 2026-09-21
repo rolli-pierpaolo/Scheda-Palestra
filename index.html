@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Viridis</title>
-<script src="js/bootstrap.js?rev=20260921i"></script>
+<script src="js/bootstrap.js?rev=20260921j"></script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <!-- black-translucent mette un velo nero sfumato sopra l'app: si vede come
      una fascia fissa mentre il contenuto scorre. Con "default" iOS disegna
@@ -16,8 +16,8 @@
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex, nofollow">
 <link rel="apple-touch-icon" href="icon-192.png?rev=20260921b">
-<link rel="manifest" href="manifest.json?rev=20260921i">
-<link rel="stylesheet" href="css/style.css?rev=20260921i">
+<link rel="manifest" href="manifest.json?rev=20260921j">
+<link rel="stylesheet" href="css/style.css?rev=20260921j">
 <!-- Protezione mobile nel documento: se iOS combina per un istante HTML nuovo
      e CSS precedente, la testata rimane comunque opaca e il testo non eredita
      il vecchio glow del logo. Il colore resta quello deciso dallo stile attivo. -->
@@ -42,7 +42,7 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.91</span>
+  <span class="app-version" id="appVersion">v1.92</span>
   <button id="workoutDayPickerBtn" class="workout-day-picker" hidden onclick="toggleWorkoutDayPicker()" title="Cambia giornata" aria-label="Cambia giornata">‹</button>
   <div class="topbar-copy">
     <h1 id="topbarTitle">Viridis</h1>
@@ -296,7 +296,7 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
   </button>
 </nav>
 <div id="quickNumberBar" class="quick-number-bar" hidden aria-label="Tastiera rapida">
-  <div class="quick-keyboard-head"><button type="button" class="quick-keyboard-mode active" data-mode="numbers" onpointerdown="setQuickKeyboardMode('numbers')">123</button><button type="button" class="quick-keyboard-mode" data-mode="letters" onpointerdown="setQuickKeyboardMode('letters')">ABC</button><span>Inserimento rapido</span><button type="button" class="quick-keyboard-done" onpointerdown="finishQuickKeyboardInput()">Fine</button></div>
+  <div class="quick-keyboard-head"><div class="quick-keyboard-mode-switch" aria-label="Modalità tastiera"><button type="button" class="quick-keyboard-mode active" data-mode="numbers" onpointerdown="setQuickKeyboardMode('numbers')">123</button><button type="button" class="quick-keyboard-mode" data-mode="letters" onpointerdown="setQuickKeyboardMode('letters')">ABC</button></div><span>Inserimento rapido</span><button type="button" class="quick-keyboard-done" onpointerdown="finishQuickKeyboardInput()">Fine</button></div>
   <div class="quick-keyboard-grid quick-keyboard-numbers">
     <button type="button" onpointerdown="insertQuickKey('1')">1</button><button type="button" onpointerdown="insertQuickKey('2')">2</button><button type="button" onpointerdown="insertQuickKey('3')">3</button><button type="button" onpointerdown="insertQuickKey('4')">4</button><button type="button" onpointerdown="insertQuickKey('5')">5</button><button type="button" onpointerdown="insertQuickKey('6')">6</button><button type="button" onpointerdown="insertQuickKey('7')">7</button><button type="button" onpointerdown="insertQuickKey('8')">8</button><button type="button" onpointerdown="insertQuickKey('9')">9</button><button type="button" onpointerdown="insertQuickKey(',')">,</button><button type="button" onpointerdown="insertQuickKey('0')">0</button><button type="button" class="quick-number-delete" aria-label="Cancella ultimo carattere" onpointerdown="deleteQuickNumber()">⌫</button>
   </div>
@@ -322,10 +322,10 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/chart.js"></script>         <!-- grafico di progressione -->
 <script src="js/trends.js?rev=20260915b"></script>        <!-- dashboard andamenti su tutta la cronologia -->
 <script src="js/backup.js?rev=20260915a"></script>        <!-- esporta/importa backup, manuale e automatico -->
-<script src="js/utils.js?rev=20260921i"></script>         <!-- escape html, altezza automatica delle textarea -->
-<script src="js/navigation.js?rev=20260921i"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
+<script src="js/utils.js?rev=20260921j"></script>         <!-- escape html, altezza automatica delle textarea -->
+<script src="js/navigation.js?rev=20260921j"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
 <script src="js/days-modal.js?rev=20260915a"></script>    <!-- modifica categorie giorni (nome/colore/aggiungi/elimina) -->
-<script src="js/exercise-card.js?rev=20260921i"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
+<script src="js/exercise-card.js?rev=20260921j"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
 <script src="js/history.js?rev=20260915a"></script>       <!-- tab Storico: elenco ed esercizi dei WO archiviati -->
 <script src="js/search.js?rev=20260915a"></script>        <!-- ricerca in scheda attiva e storico -->
 <script src="js/calendar.js?rev=20260915a"></script>      <!-- calendario mensile dei giorni di allenamento terminati -->

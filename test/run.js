@@ -1098,6 +1098,21 @@ test('Fine chiude sempre la tastiera rapida anche se onchange ridisegna la card'
   assert.strictEqual(keyboard.hidden, true, 'BUG: Fine deve chiudere anche se onchange ha rimosso il campo');
 });
 
+test('tastiera rapida conserva 123/ABC e mostra il feedback sul solo tasto premuto', async () => {
+  const window = loadApp();
+  const keyboard = window.document.getElementById('quickNumberBar');
+  assert.ok(keyboard.querySelector('.quick-keyboard-mode-switch'), '123 e ABC devono vivere in un unico controllo compatto');
+  const one = keyboard.querySelector('.quick-keyboard-numbers button');
+  window.flashQuickKeyboardKey(one);
+  assert.ok(one.classList.contains('is-pressed'), 'il tasto appena toccato deve ricevere un feedback visivo proprio');
+  assert.ok(!keyboard.querySelector('.quick-keyboard-numbers button:nth-child(2)').classList.contains('is-pressed'), 'il feedback non deve coinvolgere i tasti vicini');
+  window.setQuickKeyboardMode('letters');
+  assert.strictEqual(keyboard.querySelector('.quick-keyboard-letters').hidden, false, 'ABC deve rimanere disponibile');
+  assert.strictEqual(keyboard.querySelector('.quick-keyboard-numbers').hidden, true, '123 deve potersi nascondere senza cambiare la logica dei campi');
+  await new Promise(resolve=>setTimeout(resolve,120));
+  assert.ok(!one.classList.contains('is-pressed'), 'il feedback deve essere breve e non lasciare il tasto bloccato verde');
+});
+
 test('Gestisci giornata resta sotto Settimane concluse: i "..." restano per il singolo esercizio', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
