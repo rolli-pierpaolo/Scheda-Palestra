@@ -196,8 +196,21 @@ function revealQuickKeyboardInput(){
   if(!input || !bar || bar.hidden) return;
   const inputBox = input.getBoundingClientRect();
   const barBox = bar.getBoundingClientRect();
-  const overlap = inputBox.bottom - (barBox.top - 14);
-  if(overlap > 0) window.scrollBy({top:overlap,behavior:'smooth'});
+  const keyboardHeight = Math.ceil(barBox.height);
+  if(keyboardHeight){
+    document.body.style.setProperty('--quick-keyboard-space',`${keyboardHeight + 52}px`);
+    document.body.classList.add('quick-keyboard-open');
+  }
+  // Non basta togliere la sovrapposizione: un campo basso deve arrivare ben
+  // sopra la tastiera, dove resta leggibile mentre si digitano più valori.
+  const safeTop = Math.max(112,(window.visualViewport?.offsetTop||0) + 72);
+  const targetTop = Math.max(safeTop,barBox.top - Math.max(inputBox.height,54) - 42);
+  const delta = inputBox.top - targetTop;
+  if(delta > 6) window.scrollBy({top:Math.ceil(delta),behavior:'smooth'});
+}
+function clearQuickKeyboardScrollSpace(){
+  document.body.classList.remove('quick-keyboard-open');
+  document.body.style.removeProperty('--quick-keyboard-space');
 }
 function restoreQuickKeyboardScroll(delay=0){
   clearTimeout(quickKeyboardRestoreTimer);
@@ -223,6 +236,7 @@ function hideQuickKeyboardBar(bar){
       bar.hidden = true;
       bar.classList.remove('is-closing');
       bar.style.bottom = '';
+      clearQuickKeyboardScrollSpace();
     }
   },240);
 }
@@ -291,6 +305,7 @@ function setQuickKeyboardMode(mode){
   bar.querySelector('.quick-keyboard-numbers').hidden = quickKeyboardMode !== 'numbers';
   bar.querySelector('.quick-keyboard-letters').hidden = quickKeyboardMode !== 'letters';
   bar.querySelectorAll('.quick-keyboard-mode').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===quickKeyboardMode));
+  requestAnimationFrame(revealQuickKeyboardInput);
 }
 // Riscontro immediato e localizzato sul tasto toccato: la classe resta il
 // tempo sufficiente per essere vista anche durante tocchi rapidi con il pollice.

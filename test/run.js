@@ -1127,6 +1127,24 @@ test('tastiera rapida aggancia il campo già al tocco, anche prima del focus mob
   assert.strictEqual(input.value, '1', 'BUG: il primo tasto deve scrivere nel campo appena toccato');
 });
 
+test('tastiera rapida crea spazio e porta in alto le serie sotto il quarto blocco', () => {
+  const window = loadApp();
+  const input = window.document.createElement('input');
+  input.type = 'text';
+  input.className = 'set-input';
+  window.document.body.appendChild(input);
+  const keyboard = window.document.getElementById('quickNumberBar');
+  input.getBoundingClientRect = () => ({top:620,bottom:668,height:48});
+  keyboard.getBoundingClientRect = () => ({top:250,bottom:590,height:340});
+  let scroll = null;
+  window.scrollBy = options => { scroll = options; };
+  input.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
+  window.revealQuickKeyboardInput();
+  assert.ok(window.document.body.classList.contains('quick-keyboard-open'), 'deve aggiungere spazio reale sotto l ultima serie');
+  assert.strictEqual(window.document.body.style.getPropertyValue('--quick-keyboard-space'), '392px');
+  assert.ok(scroll && scroll.top > 400, 'la serie bassa deve salire ben sopra la tastiera, non solo di pochi pixel');
+});
+
 test('Gestisci giornata resta sotto Settimane concluse: i "..." restano per il singolo esercizio', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;

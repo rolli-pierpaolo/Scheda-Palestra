@@ -92,6 +92,10 @@ body{padding-bottom:calc(82px + env(safe-area-inset-bottom));font-variant-numeri
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   background-repeat:repeat;
 }
+/* La tastiera rapida è alta: mentre è aperta riserviamo spazio reale sotto al
+   contenuto, così anche l'ultima serie può salire sopra i tasti invece di
+   fermarsi contro il fondo della pagina. */
+body.quick-keyboard-open{padding-bottom:calc(82px + env(safe-area-inset-bottom) + var(--quick-keyboard-space,0px));}
 /* font "da segnaletica" per titoli/etichette/numeri grandi in tutta l'app -
    un solo punto per applicarlo a tutte le classi che se ne giovano, invece
    di ripeterlo dentro ogni singola regola sparsa nel file */
