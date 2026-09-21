@@ -141,7 +141,6 @@ function flushSaveState(){
   if(!saveStatePending) return;
   saveStatePending = false;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  document.getElementById('saveStatus').textContent = "Salvato";
   if(typeof pushToCloud === 'function') pushToCloud();
 }
 // rete di sicurezza in più, non dovrebbe più servire dato che saveState()
@@ -156,4 +155,3 @@ function saveCollapsed(){
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
   localStorage.setItem(COLLAPSE_KEY, JSON.stringify(collapsedMap));
 }
-

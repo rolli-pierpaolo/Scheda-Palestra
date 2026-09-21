@@ -730,34 +730,33 @@ test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio d
     weeksPerBlock: 4, currentWeek: 0,
     days: [{ name:'Push', esercizi: [] }]
   };
-  // saveState() scrive subito, in modo sincrono - la guardia e' la
-  // primissima riga della funzione, quindi se blocca non tocca nemmeno lo
-  // stato "Salvato"
-  const saveStatusEl = window.document.getElementById('saveStatus');
+  // saveState() scrive subito, in modo sincrono: la guardia è la primissima
+  // riga della funzione, quindi in visualizzazione condivisa non deve
+  // toccare nemmeno localStorage.
+  window.localStorage.removeItem('scheda_wo18_state_v1');
   window.localStorage.removeItem('scheda_wo18_active_pos_v1');
   window.localStorage.removeItem('scheda_wo18_collapsed_v1');
 
   // caso normale: senza essere in visualizzazione condivisa, i salvataggi funzionano
   window.__bridge.viewingSharedOwnerId = null;
-  saveStatusEl.textContent = '';
   window.saveState();
   window.__bridge.activeExerciseIdx = 2;
   window.saveActivePos();
   window.__bridge.collapsedMap = {'x': true};
   window.saveCollapsed();
-  assert.strictEqual(saveStatusEl.textContent, 'Salvato', 'in condizioni normali saveState() deve procedere');
+  assert.ok(window.localStorage.getItem('scheda_wo18_state_v1'), 'in condizioni normali saveState() deve procedere');
   assert.ok(window.localStorage.getItem('scheda_wo18_active_pos_v1'), 'in condizioni normali saveActivePos deve scrivere su localStorage');
   assert.ok(window.localStorage.getItem('scheda_wo18_collapsed_v1'), 'in condizioni normali saveCollapsed deve scrivere su localStorage');
 
   // ora si sta guardando l'account di un altro utente: NESSUN salvataggio deve avvenire
+  window.localStorage.removeItem('scheda_wo18_state_v1');
   window.localStorage.removeItem('scheda_wo18_active_pos_v1');
   window.localStorage.removeItem('scheda_wo18_collapsed_v1');
-  saveStatusEl.textContent = '';
   window.__bridge.viewingSharedOwnerId = 'owner-fittizio-123';
   window.saveState();
   window.saveActivePos();
   window.saveCollapsed();
-  assert.strictEqual(saveStatusEl.textContent, '', 'BUG DI SICUREZZA: mentre si vedono dati condivisi saveState() non deve nemmeno iniziare');
+  assert.strictEqual(window.localStorage.getItem('scheda_wo18_state_v1'), null, 'BUG DI SICUREZZA: mentre si vedono dati condivisi saveState() non deve nemmeno iniziare');
   assert.strictEqual(window.localStorage.getItem('scheda_wo18_active_pos_v1'), null, 'BUG DI SICUREZZA: mentre si vedono dati condivisi saveActivePos non deve scrivere su localStorage');
   assert.strictEqual(window.localStorage.getItem('scheda_wo18_collapsed_v1'), null, 'BUG DI SICUREZZA: mentre si vedono dati condivisi saveCollapsed non deve scrivere su localStorage');
 });
@@ -874,15 +873,13 @@ test('loadState() salva di nuovo SOLO se ha davvero corretto/riempito qualcosa, 
     currentWeek: 0, completedTrainingDays: [], completedWeeks: [],
     trainingQueue: [0], currentTrainingDayIdx: 0, weeksPerBlock: 4
   };
-  window.localStorage.setItem('scheda_wo18_state_v1', JSON.stringify(cleanState));
+  const cleanStateJson = JSON.stringify(cleanState);
+  window.localStorage.setItem('scheda_wo18_state_v1', cleanStateJson);
   window.localStorage.removeItem('scheda_wo18_calendar_log_v1');
   window.localStorage.removeItem('scheda_wo18_workout_in_progress_v1');
-  const saveStatusEl = window.document.getElementById('saveStatus');
-  saveStatusEl.textContent = '';
-
   window.loadState();
 
-  assert.strictEqual(saveStatusEl.textContent, '', 'BUG: uno stato gia\' corretto non deve far scattare un salvataggio (e quindi un invio al cloud) a ogni avvio senza un motivo vero - con piu\' dispositivi, questo faceva comparire il banner "dati aggiornati" anche senza nessuna modifica reale, solo perche\' un altro dispositivo era stato aperto nel frattempo');
+  assert.strictEqual(window.localStorage.getItem('scheda_wo18_state_v1'), cleanStateJson, 'BUG: uno stato già corretto non deve essere riscritto a ogni avvio: un invio cloud inutile farebbe comparire un falso aggiornamento su altri dispositivi');
 });
 
 test('loadState() conserva il segnale di sessione: la decisione avviene dopo, con giorno e settimana attivi', () => {

@@ -82,13 +82,13 @@ body.a11y-reduce-motion *,body.a11y-reduce-motion *::before,body.a11y-reduce-mot
 .a11y-setting-row input::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .18s ease;}
 .a11y-setting-row input:checked{background:var(--green);}
 .a11y-setting-row input:checked::after{left:21px;}
-/* spazio per lo stack fisso in fondo: barra di navigazione + savebar, cosi'
-   il contenuto scrollato in fondo alla pagina non ci finisce mai sotto.
+/* Spazio per la sola barra di navigazione fissa in fondo: il contenuto
+   scrollato in fondo non ci finisce mai sotto.
    La texture e' una grana finissima (rumore, ripetuta in un tile minuscolo)
    invece dello sfondo nero piatto di prima - richiama la gomma della sala
    pesi invece di un semplice "dark mode" da dashboard, ma resta cosi'
    discreta da non disturbare mai la lettura */
-body{padding-bottom:calc(100px + env(safe-area-inset-bottom));font-variant-numeric:tabular-nums;
+body{padding-bottom:calc(72px + env(safe-area-inset-bottom));font-variant-numeric:tabular-nums;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   background-repeat:repeat;
 }
@@ -496,6 +496,7 @@ main{padding:12px;}
    quando ci si clicca/tocca sopra, e torna piccola appena si esce dal campo -
    niente piu' spazio occupato in continuazione per una nota magari breve */
 .ex-comment{width:100%;background:var(--row-dark);border:none;color:var(--muted);font-style:italic;font-size:10px;line-height:1.15;padding:3px 7px;margin-top:4px;border-radius:6px;resize:none;height:19px;min-height:19px;overflow:hidden;box-sizing:border-box;transition:height .15s ease;}
+.ex-comment::placeholder{color:var(--muted);font-size:9px;opacity:.42;}
 .ex-comment:focus{height:52px;min-height:52px;overflow:auto;}
 /* nota per singola settimana: molto piu' minimale della nota/tecnica dell'esercizio,
    una riga sola, sfondo trasparente, solo un filo sottile sotto invece di un box vero */
@@ -617,10 +618,9 @@ main{padding:12px;}
 .sets-wrap{width:100%;}
 /* griglia comune a ogni riga serie: numero romano, colonna kg, colonna rip.
    la stessa griglia viene riusata dalla riga "max" per restare allineata */
-/* righe piu' compatte (meno padding verticale sugli input, meno margine tra
-   una riga e l'altra): con 4 settimane * piu' serie erano ingombranti senza
-   un vero motivo, i numeri restano leggibili lo stesso */
-.set-row{display:grid;grid-template-columns:20px minmax(0,1fr) minmax(0,1fr);gap:5px;margin-bottom:3px;align-items:start;width:100%;}
+/* Le righe restano compatte, con qualche pixel d'aria in più tra una serie e
+   l'altra: l'occhio separa meglio i set senza allungare troppo la settimana. */
+.set-row{display:grid;grid-template-columns:20px minmax(0,1fr) minmax(0,1fr);gap:5px;margin-bottom:5px;align-items:start;width:100%;}
 /* colore del giorno invece del grigio muto: lega di piu' i numeri di serie al
    resto della card, ormai colorata per giorno ovunque */
 /* ora e' un bottone (tocca per segnare/togliere dropset, vedi toggleDropset
@@ -854,7 +854,6 @@ body.training-focus .week-block{margin-top:10px;}
 .exlib-row-group{flex:0 0 auto;font-size:10px;color:var(--muted);}
 .exlib-group-select{flex:0 0 auto;background:#000;border:1px solid var(--line);color:var(--text);font-size:11px;border-radius:6px;padding:4px 2px;max-width:110px;}
 .exlib-row-del{flex:0 0 auto;background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:4px 8px;font-size:12px;}
-.savebar{position:fixed;bottom:calc(60px + env(safe-area-inset-bottom));left:0;right:0;background:#000;border-top:1px solid var(--line);padding:6px 14px;font-size:11px;color:var(--muted);text-align:center;z-index:20;}
 /* ---------------- COMBOBOX (autocomplete su nome esercizio/recupero/schema/giorni) ---------------- */
 .combo-wrap{position:relative;flex:1 1 auto;min-width:0;}
 .combo-wrap .meta-input,.combo-wrap .ex-name{width:100%;}
@@ -872,10 +871,9 @@ body.training-focus .week-block{margin-top:10px;}
 .global-search-name{font-size:14px;font-weight:800;}
 .global-search-meta{font-size:11px;color:var(--muted);}
 .backup-auto-status{grid-column:1 / -1;margin:0 0 2px;text-align:left;}
-.savebar b{color:var(--green);}
 /* Aggiornamento PWA senza dover chiudere l'app: appare solo quando il
    service worker ha già scaricato una versione nuova ed è pronta da usare. */
-.app-update-banner{position:fixed;left:12px;right:12px;bottom:calc(106px + env(safe-area-inset-bottom));z-index:80;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel2);border:1.5px solid var(--green);border-radius:10px;padding:10px 12px;color:var(--text);font-size:12px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.45);}
+.app-update-banner{position:fixed;left:12px;right:12px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:80;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel2);border:1.5px solid var(--green);border-radius:10px;padding:10px 12px;color:var(--text);font-size:12px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.45);}
 .app-update-banner[hidden]{display:none;}
 .app-update-banner button{flex:0 0 auto;background:var(--green);border:none;border-radius:7px;padding:7px 10px;color:#0D0D0D;font:inherit;font-weight:900;}
 /* ---------------- RECORD PERSONALI: badge sulla scheda + toast di festeggiamento ---------------- */
@@ -1211,7 +1209,6 @@ body.training-focus .week-block{margin-top:10px;}
   .bottom-nav-btn{flex:0 0 auto;min-height:64px;padding:8px 4px;}
   .bottom-nav-btn:hover{background:var(--panel);color:var(--text);}
   .bottom-nav-btn.active{background:var(--green-dark);color:var(--green);}
-  .savebar{left:80px;bottom:0;}
   .app-update-banner{left:96px;right:auto;bottom:18px;width:auto;}
   .modal-overlay{align-items:center;padding:28px;}
   .modal-box{max-width:720px;max-height:min(82vh,820px);border:1px solid var(--line);border-radius:16px;padding-bottom:0;box-shadow:0 18px 48px rgba(0,0,0,.58);}
