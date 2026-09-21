@@ -186,7 +186,7 @@ function positionQuickNumberBar(){
   bar.style.bottom = keyboardInset > 40 ? (keyboardInset + 8) + 'px' : '';
 }
 function updateQuickKeyboardAccent(bar){
-  const day = typeof state !== 'undefined' && state.days && state.days[activeDayIdx];
+  const day = typeof state !== 'undefined' && state && state.days && state.days[activeDayIdx];
   if(day && typeof dayAccent === 'function') bar.style.setProperty('--accent', dayAccent(day,activeDayIdx).c);
 }
 function revealQuickKeyboardInput(){
@@ -221,6 +221,7 @@ function hideQuickKeyboardBar(bar){
     if(!quickNumberInput){
       bar.hidden = true;
       bar.classList.remove('is-closing');
+      bar.style.bottom = '';
     }
   },240);
 }
@@ -298,14 +299,27 @@ function deleteQuickNumber(){
 }
 function finishQuickKeyboardInput(){
   const input = quickNumberInput;
-  if(!input) return;
+  const bar = document.getElementById('quickNumberBar');
+  if(!input){
+    quickKeyboardPinnedOpen = false;
+    quickKeyboardFinishRequested = true;
+    if(bar) hideQuickKeyboardBar(bar);
+    restoreQuickKeyboardScroll(240);
+    return;
+  }
+  // Una onchange puo' ridisegnare la card e rimuovere l'input dal DOM prima
+  // che blur() venga eseguito. Azzerare prima il riferimento rende Fine
+  // affidabile anche in quel caso, invece di lasciare la tastiera bloccata.
   quickKeyboardFinishRequested = true;
   quickKeyboardPinnedOpen = false;
+  quickNumberInput = null;
   if(input.dataset.quickKeyboardDirty){
     delete input.dataset.quickKeyboardDirty;
     commitQuickNumberInput(input);
   }
   input.blur();
+  if(bar) hideQuickKeyboardBar(bar);
+  restoreQuickKeyboardScroll(240);
 }
 // inputmode va applicato PRIMA del focus: così sui telefoni non compare per
 // un attimo la tastiera di sistema sotto a quella personalizzata.

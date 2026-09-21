@@ -1070,6 +1070,34 @@ test('Workout UI: progresso, card unica, serie leggibili e azione primaria resta
   assert.strictEqual(window.document.getElementById('tabActiveLabel').textContent, 'Allenamento', 'la tab inferiore non deve mostrare il codice interno della scheda');
 });
 
+test('schema 2x8-10 mostra il range su entrambe le serie, non solo sulla prima', () => {
+  const window = loadApp();
+  const first = window.getSetPrescription('2x8-10 1x12-15', 0);
+  const second = window.getSetPrescription('2x8-10 1x12-15', 1);
+  const third = window.getSetPrescription('2x8-10 1x12-15', 2);
+  assert.strictEqual(first.target, '8–10 reps');
+  assert.strictEqual(second.target, '8–10 reps', 'BUG: la seconda delle due serie deve mantenere lo stesso range');
+  assert.strictEqual(third.target, '12–15 reps');
+});
+
+test('Fine chiude sempre la tastiera rapida anche se onchange ridisegna la card', async () => {
+  const window = loadApp();
+  const input = window.document.createElement('input');
+  input.type = 'text';
+  input.className = 'set-input';
+  window.document.body.appendChild(input);
+  input.focus();
+  window.syncQuickNumberBar();
+  const keyboard = window.document.getElementById('quickNumberBar');
+  assert.strictEqual(keyboard.hidden, false, 'la tastiera deve aprirsi sul campo');
+  input.value = '12';
+  input.dataset.quickKeyboardDirty = '1';
+  input.addEventListener('change', ()=>input.remove(), {once:true});
+  window.finishQuickKeyboardInput();
+  await new Promise(resolve=>setTimeout(resolve,270));
+  assert.strictEqual(keyboard.hidden, true, 'BUG: Fine deve chiudere anche se onchange ha rimosso il campo');
+});
+
 test('Gestisci giornata resta sotto Settimane concluse: i "..." restano per il singolo esercizio', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;

@@ -688,15 +688,25 @@ function getSetPrescription(schema, setIndex){
   const raw = String(schema||'').trim();
   if(!raw) return {target:'', extras:''};
   const parts = raw.split(/\s+(?=\d+\s*[x×])/i).filter(Boolean);
-  const rawPart = parts[setIndex];
-  if(!rawPart) return {target:'', extras:''};
-  const prescription = rawPart.replace(/^\s*\d+\s*[x×]\s*/i,'').trim();
-  const bits = prescription.split('+').map(part=>part.trim()).filter(Boolean);
-  const target = (bits.shift()||'').replace(/-/g,'–');
-  return {
-    target: target ? (/\d/.test(target) ? `${target} reps` : target) : '',
-    extras: bits.length ? `+ ${bits.join(' + ')}` : ''
-  };
+  // "2×8–10" non e' una sola serie: la stessa prescrizione va mostrata
+  // accanto a entrambe. Gli extra (MAX, REST...) restano sull'ultima serie
+  // del gruppo, perché arrivano dopo le ripetizioni previste nello schema.
+  const expanded = parts.flatMap(rawPart=>{
+    const match = rawPart.match(/^\s*(\d+)\s*[x×]\s*(.*)$/i);
+    if(!match) return [];
+    const count = Math.max(1,Number.parseInt(match[1],10)||1);
+    const bits = match[2].trim().split('+').map(part=>part.trim()).filter(Boolean);
+    const target = (bits.shift()||'').replace(/-/g,'–');
+    const prescription = {
+      target: target ? (/\d/.test(target) ? `${target} reps` : target) : '',
+      extras: bits.length ? `+ ${bits.join(' + ')}` : ''
+    };
+    return Array.from({length:count},(_,index)=>({
+      target: prescription.target,
+      extras: index===count-1 ? prescription.extras : ''
+    }));
+  });
+  return expanded[setIndex] || {target:'', extras:''};
 }
 function toggleExerciseWeek(exi, w, key){
   const block = document.querySelector(`.week-block[data-exi="${exi}"][data-week="${w}"]`);
