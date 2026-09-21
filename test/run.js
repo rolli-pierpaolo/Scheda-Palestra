@@ -1023,7 +1023,7 @@ test('striscia esercizi del giorno: ordine vero, fatto = colorato/piccolo, corre
   assert.ok(!chips[1].classList.contains('done'), 'quello corrente, non ancora fatto, non deve avere la classe done');
 });
 
-test('bottone "Giorno terminato" attaccato sotto l\'esercizio, non piu\' accanto ai pallini', () => {
+test('Gestisci giornata e unico sotto la striscia: i "..." restano per il singolo esercizio', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
@@ -1034,11 +1034,40 @@ test('bottone "Giorno terminato" attaccato sotto l\'esercizio, non piu\' accanto
   };
   window.renderActive();
   assert.ok(!window.document.getElementById('exDayFinishTab'), 'BUG: non deve piu\' esserci l\'icona accanto ai pallini');
-  const btn = window.document.querySelector('.finish-day-btn');
-  assert.ok(btn, 'il bottone grande deve essere di nuovo attaccato sotto l\'esercizio');
-  assert.strictEqual(btn.getAttribute('onclick'), 'openFinishWorkoutModal(0)');
+  assert.strictEqual(window.document.querySelector('.finish-day-btn'), null, 'non deve restare il vecchio bottone di fine giornata in fondo alla card');
+  const btn = window.document.getElementById('dayManagementBtn');
+  assert.ok(btn, 'deve esserci un unico comando per le azioni della giornata');
   const main = window.document.getElementById('viewActive');
-  assert.strictEqual(main.lastElementChild, btn, 'deve essere l\'ultimo elemento della pagina, subito dopo aggiungi/riordina');
+  assert.ok(main.children[1].classList.contains('day-management-row'), 'Gestisci giornata deve stare subito sotto l\'elenco esercizi, non in fondo alla card');
+  window.openDayManagementMenu();
+  const menu = window.document.getElementById('dayManagementMenu');
+  assert.ok(menu, 'il comando comune deve aprire il suo menu');
+  assert.ok(menu.textContent.includes('Termina giornata'), 'con tutti gli esercizi chiusi deve proporre la chiusura della giornata');
+  window.closeDayManagementMenu();
+});
+
+test('Salta giornata chiude solo gli esercizi rimasti e lascia intatti quelli completati', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [],
+    days: [{ name:'Push', esercizi: [
+      { nome:'Gia completato', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[{peso:'80',rip:'8'}],[],[],[]] },
+      { nome:'Da saltare', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[{peso:'40',rip:'10'}],[],[],[]] }
+    ]}]
+  };
+  let modalOpened = false;
+  window.openFinishWorkoutModal = () => { modalOpened = true; };
+  window.confirm = () => true;
+  window.skipRemainingExercisesForDay();
+  const [completed, skipped] = window.__bridge.state.days[0].esercizi;
+  assert.strictEqual(completed.weekDone[0], true, 'un esercizio gia completato non deve essere toccato');
+  assert.strictEqual(completed.weekSkipped[0], false, 'un esercizio gia completato non deve diventare saltato');
+  assert.strictEqual(completed.sets[0][0].peso, '80', 'i dati gia inseriti devono restare identici');
+  assert.strictEqual(skipped.weekSkipped[0], true, 'solo l esercizio ancora aperto deve diventare saltato');
+  assert.strictEqual(skipped.weekDone[0], false, 'saltare non deve farlo risultare completato');
+  assert.ok(window.allExercisesClosed(window.__bridge.state.days[0]), 'dopo il salto la giornata deve risultare chiusa');
+  assert.ok(modalOpened, 'dopo il salto deve apparire il normale riepilogo di fine giornata');
 });
 
 test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su un giorno vecchio', () => {

@@ -217,10 +217,6 @@ function renderActive(){
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
   const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>` : '';
-  // "Giorno terminato" (questo singolo giorno): di nuovo attaccato subito
-  // sotto l'esercizio corrente, distinto da "Termina blocco" (l'icona nella
-  // riga dei giorni) che invece chiude l'intero mese/blocco
-  const finishBtn = day.esercizi.length>0 ? `<button class="finish-day-btn" style="--accent:${a.c}" onclick="openFinishWorkoutModal(${activeDayIdx})">${ICON_CHECK} <span class="accent-shine">Giorno di allenamento terminato!</span></button>` : '';
   const suggestedIdx = computeSuggestedDayIdx();
 
 // piccolo banner pulsante invece del box grande di prima: deve vedersi
@@ -245,6 +241,14 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   activeExerciseIdx = resolveActiveExerciseIdx(day);
   saveActivePos();
   const dayExStripHtml = renderDayExerciseStrip(progress, a.c, activeExerciseIdx);
+  // Azioni dell'INTERA giornata in un solo posto, separato dai "..." delle
+  // singole card: questi ultimi restano dedicati a serie, Max e opzioni
+  // dell'esercizio; qui vivono Salta e Termina giornata.
+  const dayManagementHtml = day.esercizi.length ? `<div class="day-management-row" style="--accent:${a.c}">
+    <button id="dayManagementBtn" class="day-management-btn" type="button" onclick="openDayManagementMenu()" aria-label="Gestisci giornata ${escapeAttr(day.name||'')}">
+      ${ICON_MORE}<span>Gestisci giornata</span><small>${progress.done}/${progress.total}</small>
+    </button>
+  </div>` : '';
 
   // un esercizio per schermata: le slide restano nel DOM (stesso rendering di
   // ogni card di sempre, exerciseCard/linkedExerciseCard), ma sono impilate
@@ -268,16 +272,14 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
       <div class="ex-carousel-track" id="exCarouselTrack" style="transform:translateX(-${activeSlideIdx*100}%)">${slidesHtml}</div>
     </div>` : '';
 
-  // azioni del giorno (aggiungi/riordina/termina) subito ATTACCATE sotto
-  // l'esercizio corrente (fine del carosello), non separate in fondo pagina
-  // con un grande stacco
+  // Le azioni che modificano la scheda restano in fondo; la chiusura e il
+  // salto della GIORNATA stanno invece nel comando comune sotto la striscia.
   const focusModeBtn = `<button class="training-focus-toggle ${trainingFocusMode?'active':''}" onclick="toggleTrainingFocusMode()" aria-pressed="${trainingFocusMode}">${trainingFocusMode ? '↙ Vista normale' : '⛶ Modalità allenamento grande'}</button>`;
-  main.innerHTML = dayExStripHtml + focusModeBtn + switchTrainingDay + emptyState + carouselHtml +
+  main.innerHTML = dayExStripHtml + dayManagementHtml + focusModeBtn + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
-     </div>
-     ${finishBtn}`;
+     </div>`;
     autoGrowAllExNames();
     autoGrowAllExSchema();
   applyPendingWeekVisual();
@@ -1202,6 +1204,67 @@ function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
 function closeExerciseContextMenu(){
   const el = document.getElementById('exContextMenu');
   if(el) el.remove();
+}
+
+// Azioni che riguardano l'intera giornata, volutamente separate dal menu
+// "..." della card: quel menu resta un posto pulito per Max, serie e opzioni
+// dell'esercizio selezionato. Qui non vengono mai modificati gli esercizi che
+// l'utente ha gia' completato.
+function openDayManagementMenu(){
+  if(typeof isViewingShared === 'function' && isViewingShared()) return;
+  closeDayManagementMenu();
+  const day = state.days[activeDayIdx];
+  if(!day || !day.esercizi || !day.esercizi.length) return;
+  const progress = computeDayProgress(day);
+  const isClosed = allExercisesClosed(day);
+  const el = document.createElement('div');
+  el.id = 'dayManagementMenu';
+  el.className = 'modal-overlay ex-context-overlay day-management-overlay';
+  el.onclick = (e) => { if(e.target===el) closeDayManagementMenu(); };
+  el.innerHTML = `
+    <div class="ex-context-sheet day-management-sheet">
+      <div class="ex-context-title">${escapeHtml(day.name||'Giornata')}</div>
+      <div class="ex-context-group-label">Questa giornata · ${progress.done}/${progress.total} esercizi chiusi</div>
+      ${isClosed
+        ? `<button class="ex-context-action day-finish-action" onclick="closeDayManagementMenu();openFinishWorkoutModal(${activeDayIdx})">${ICON_CHECK} Termina giornata</button>`
+        : `<button class="ex-context-action day-skip-action" onclick="closeDayManagementMenu();skipRemainingExercisesForDay()">${ICON_WARNING} Salta gli esercizi rimanenti</button>`}
+    </div>
+    <button class="ex-context-cancel" onclick="closeDayManagementMenu()">Annulla</button>
+  `;
+  document.body.appendChild(el);
+  vibrate(20);
+}
+function closeDayManagementMenu(){
+  const el = document.getElementById('dayManagementMenu');
+  if(el) el.remove();
+}
+function skipRemainingExercisesForDay(){
+  if(typeof isViewingShared === 'function' && isViewingShared()) return;
+  const day = state.days[activeDayIdx];
+  const w = state.currentWeek || 0;
+  if(!day || !day.esercizi || !day.esercizi.length) return;
+  const remaining = day.esercizi.filter(ex=>{
+    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+    return w < nWeeks && !((ex.weekDone && ex.weekDone[w]) || (ex.weekSkipped && ex.weekSkipped[w]));
+  });
+  if(!remaining.length){
+    openFinishWorkoutModal(activeDayIdx);
+    return;
+  }
+  const plural = remaining.length === 1 ? 'esercizio rimanente' : 'esercizi rimanenti';
+  if(!confirm(`Vuoi saltare ${remaining.length} ${plural} di ${day.name||'questa giornata'}? Gli esercizi gia' completati e tutti i dati inseriti resteranno invariati.`)) return;
+  remaining.forEach(ex=>{
+    const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+    if(!ex.weekDone) ex.weekDone = new Array(nWeeks).fill(false);
+    if(!ex.weekSkipped) ex.weekSkipped = new Array(nWeeks).fill(false);
+    ex.weekDone[w] = false;
+    ex.weekSkipped[w] = true;
+  });
+  saveState();
+  checkAchievements();
+  renderActive();
+  openFinishWorkoutModal(activeDayIdx);
+  vibrate([15,35,15]);
 }
 
 
