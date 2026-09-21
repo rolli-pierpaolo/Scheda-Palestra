@@ -1045,6 +1045,31 @@ test('striscia esercizi del giorno: ordine vero, fatto = colorato/piccolo, corre
   assert.ok(!chips[1].classList.contains('done'), 'quello corrente, non ancora fatto, non deve avere la classe done');
 });
 
+test('Workout UI: progresso, card unica, serie leggibili e azione primaria restano collegati ai dati esistenti', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.activeExerciseIdx = 0;
+  window.__bridge.state = {
+    title:'WO 19', weeksPerBlock:4, currentWeek:1, completedTrainingDays:[], trainingQueue:[0], currentTrainingDayIdx:0,
+    days:[{name:'Push Day', esercizi:[
+      {nome:'Spinte su panca a 45°', recupero:['2\'','2\'','2\'','2\''], schema:['1x6-10 1x10-12+MAX+MAX','1x6-10 1x10-12+MAX+MAX','1x6-10','1x6-10'], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[{peso:'20',rip:'8'},{peso:'15',rip:'10'}],[{peso:'25',rip:'8'},{peso:'15',rip:'10'}],[],[]]},
+      {nome:'Shoulder press', recupero:['2\'','2\'','2\'','2\''], schema:['1x8','1x8','1x8','1x8'], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]]}
+    ]}]
+  };
+  window.document.getElementById('viewActive').style.display = '';
+  window.setWorkoutTopbarMode(true);
+  window.renderActive();
+  window.updateWorkoutTopbarTitle();
+  assert.match(window.document.querySelector('.workout-progress').textContent, /Esercizio\s*1\s*di\s*2/, 'il progresso deve riferirsi alla slide attiva');
+  assert.strictEqual(window.document.querySelector('.workout-progress-track span').style.width, '50%', 'la barra deve usare la posizione dell esercizio corrente');
+  assert.strictEqual(window.document.querySelector('.topbar-subtitle').textContent, 'Workout 19 · Settimana 2', 'la testata deve usare giorno, titolo della scheda e settimana reale');
+  assert.ok(window.document.querySelector('.exercise-card-hero'), 'il nome esercizio deve vivere nella card principale');
+  assert.ok(window.document.querySelector('.set-columns-labels').textContent.includes('PESO (kg)'), 'kg deve essere sempre esplicitato sopra il campo');
+  assert.match(window.document.querySelector('.set-series-heading').textContent, /SERIE 1[\s\S]*6–10 reps/, 'la prescrizione di serie deve restare leggibile accanto al numero');
+  assert.strictEqual(window.document.querySelector('.week-done-btn span').textContent, 'Completa esercizio', 'la conferma deve essere l azione primaria in fondo alla card');
+  assert.strictEqual(window.document.getElementById('tabActiveLabel').textContent, 'Allenamento', 'la tab inferiore non deve mostrare il codice interno della scheda');
+});
+
 test('Gestisci giornata resta sotto Settimane concluse: i "..." restano per il singolo esercizio', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;

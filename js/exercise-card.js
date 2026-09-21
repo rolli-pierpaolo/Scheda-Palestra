@@ -72,6 +72,19 @@ function renderDayExerciseStrip(progress, accent, activeExi){
   }).join('');
   return `<div class="day-ex-strip" id="dayExStrip">${chips}</div>`;
 }
+// Una riga di orientamento prima della lista esercizi: non deriva da un dato
+// parallelo, ma dalla stessa lista di slide che guida il carosello. Quindi
+// resta corretta anche con superset e quando un esercizio viene saltato.
+function renderWorkoutProgress(progress, activeExi, accent){
+  if(!progress.total) return '';
+  const current = progress.items.find(it=>it.exi===activeExi) || progress.items[0];
+  const position = current ? current.pos : 1;
+  const percent = Math.round((position / progress.total) * 100);
+  return `<section class="workout-progress" style="--accent:${accent}" aria-label="Avanzamento allenamento">
+    <div class="workout-progress-copy"><span>Esercizio <b>${position}</b> di ${progress.total}</span><b>${percent}%</b></div>
+    <div class="workout-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="${progress.total}" aria-valuenow="${position}" aria-label="Esercizio ${position} di ${progress.total}"><span style="width:${percent}%"></span></div>
+  </section>`;
+}
 // GSAP che fa "respirare" la chip dell'esercizio corrente nella striscia qui
 // sopra - stesso trattamento delle card giorno in Home. killTweensOf prima di
 // ripartire: sia renderActive() che goToExerciseSlide() ricostruiscono la
@@ -83,8 +96,8 @@ function pulseCurrentExerciseChip(){
   if(!chip) return;
   gsap.killTweensOf(chip);
   gsap.to(chip, {
-    scale: 1.12,
-    duration: 1.1,
+    scale: 1.018,
+    duration: 1.35,
     repeat: -1,
     yoyo: true,
     ease: "sine.inOut"
@@ -157,10 +170,11 @@ function goToExerciseSlide(exi){
   });
   pulseCurrentExerciseChip();
 }
-// In Allenamento il titolo della topbar coincide con l'esercizio corrente:
-// resta nel punto più affidabile dell'app, senza una seconda barra nella pagina.
+// In Allenamento la testata identifica la GIORNATA corrente; il nome
+// dell'esercizio resta nella card, dove non viene tagliato e può crescere.
 function updateWorkoutTopbarTitle(){
   const title = document.getElementById('topbarTitle');
+  const subtitle = document.getElementById('topbarSubtitle');
   const editBtn = document.getElementById('workoutTitleEditBtn');
   const activeView = document.getElementById('viewActive');
   const topbar = document.querySelector('.topbar');
@@ -171,35 +185,31 @@ function updateWorkoutTopbarTitle(){
   const ex = day && day.esercizi[activeExerciseIdx];
   if(!title || !editBtn || !activeView || activeView.style.display === 'none' || !ex) return;
   if(topbar) topbar.style.setProperty('--workout-accent', dayAccent(day,activeDayIdx).c);
-  if(editingExerciseIdx === activeExerciseIdx){
-    title.innerHTML = `<textarea id="workoutTitleInput" class="workout-title-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${activeExerciseIdx},this.value)">${escapeHtml(ex.nome||'')}</textarea>`;
-    editBtn.classList.add('active');
-    editBtn.setAttribute('aria-label','Conferma nome esercizio');
-    editBtn.title = 'Conferma';
-    requestAnimationFrame(()=>{ const input=document.getElementById('workoutTitleInput'); if(input) autoGrowTextarea(input); });
-  } else {
-    const partner = ex.linkGroupId && day.esercizi[activeExerciseIdx+1] && day.esercizi[activeExerciseIdx+1].linkGroupId===ex.linkGroupId ? day.esercizi[activeExerciseIdx+1] : null;
-    title.textContent = partner ? `${ex.nome||'Esercizio'} · ${partner.nome||'Esercizio'}` : (ex.nome||'Esercizio');
-    editBtn.classList.remove('active');
-    editBtn.setAttribute('aria-label','Modifica esercizio');
-    editBtn.title = 'Modifica esercizio';
+  // Il titolo fisso descrive la giornata, non l'esercizio: mentre si scorrono
+  // le serie l'orientamento resta stabile. Il nome dell'esercizio vive nella
+  // card grande, dove ha lo spazio per essere letto e modificato davvero.
+  title.textContent = day.name || 'Allenamento';
+  if(subtitle){
+    const workoutName = String(state.title || 'Allenamento').replace(/^wo\b/i,'Workout');
+    subtitle.textContent = `${workoutName} · Settimana ${(state.currentWeek||0)+1}`;
+    subtitle.hidden = false;
   }
+  editBtn.classList.toggle('active', editingExerciseIdx === activeExerciseIdx);
+  editBtn.setAttribute('aria-label', editingExerciseIdx === activeExerciseIdx ? 'Chiudi modifica esercizio' : 'Modifica esercizio');
+  editBtn.title = editingExerciseIdx === activeExerciseIdx ? 'Chiudi modifica' : 'Modifica esercizio';
   editBtn.hidden = false;
 }
 function toggleWorkoutTopbarEdit(){
   const day = state.days[activeDayIdx];
   const ex = day && day.esercizi[activeExerciseIdx];
   if(!ex) return;
+  // Il click sulla matita può arrivare prima del blur della textarea su alcuni
+  // WebView: salva esplicitamente il nome prima di ricostruire la card.
   if(editingExerciseIdx === activeExerciseIdx){
-    const input = document.getElementById('workoutTitleInput');
+    const input = document.querySelector('.exercise-card-name-input');
     if(input) updateName(activeExerciseIdx,input.value);
-    editingExerciseIdx = null;
-    renderActive();
-    return;
   }
-  editingExerciseIdx = activeExerciseIdx;
-  updateWorkoutTopbarTitle();
-  requestAnimationFrame(()=>{ const input=document.getElementById('workoutTitleInput'); if(input){ input.focus(); input.select(); } });
+  toggleExerciseEditMode(activeExerciseIdx);
 }
 function renderActive(){
   const day = state.days[activeDayIdx];
@@ -240,6 +250,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   // sapere qual e' quello "corrente" per accenderlo
   activeExerciseIdx = resolveActiveExerciseIdx(day);
   saveActivePos();
+  const workoutProgressHtml = renderWorkoutProgress(progress, activeExerciseIdx, a.c);
   const dayExStripHtml = renderDayExerciseStrip(progress, a.c, activeExerciseIdx);
   // Azioni dell'INTERA giornata, separate dai "..." dell'esercizio. Il
   // controllo viene inserito dentro ogni slide (solo quella corrente e'
@@ -275,7 +286,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
       <div class="ex-carousel-track" id="exCarouselTrack" style="transform:translateX(-${activeSlideIdx*100}%)">${slidesHtml}</div>
     </div>` : '';
 
-  main.innerHTML = dayExStripHtml + switchTrainingDay + emptyState + carouselHtml +
+  main.innerHTML = workoutProgressHtml + dayExStripHtml + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -419,7 +430,7 @@ function renderReorderList(day){
 }
 
 function updateTitles(){
-document.getElementById('tabActiveLabel').textContent = state.title || "Allenamento";}
+document.getElementById('tabActiveLabel').textContent = 'Allenamento';}
 
 // suggerisce il prossimo titolo incrementando l'ultimo numero trovato (es. "WO 18" -> "WO 19");
 // se non c'e' nessun numero nel titolo attuale, ripiega su un nome generico
@@ -662,13 +673,65 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
   const entries = maxEntriesAfter(ex,w,si);
   if(!entries.length) return '';
   const kgFields = entries.map(({entry,index},attempt)=>
-    `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="kg ${attempt+1}" value="${escapeAttr(entry.peso??'')}" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)">`).join('');
+    `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Peso Max ${attempt+1}" placeholder="Kg" value="${escapeAttr(entry.peso??'')}" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)">`).join('');
   const ripFields = entries.map(({entry,index},attempt)=>{
     const previous = w>0 ? getMaxEntries(ex,w-1)[index] : null;
     const canCompare = showComparison && String(previous?.rip??'').trim();
-    return `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} placeholder="rip ${attempt+1}" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)">${canCompare ? `<button type="button" class="rep-compare-btn max-compare-btn" aria-label="Confronta ripetizioni Max" title="Confronta con la settimana scorsa" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">↺</button>` : ''}</div>`;
+    return `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Ripetizioni Max ${attempt+1}" placeholder="Rip" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)">${canCompare ? `<button type="button" class="rep-compare-btn max-compare-btn" aria-label="Confronta ripetizioni Max" title="Confronta con la settimana scorsa" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">↺</button>` : ''}</div>`;
   }).join('');
   return `<div class="max-entry-box"><div class="set-row max-entry-row" style="--max-count:${entries.length}"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
+}
+// Trasforma lo schema libero della settimana in una piccola guida leggibile
+// accanto alla serie. Se lo schema non usa il formato "1×6-10", non inventa
+// prescrizioni: conserva semplicemente il testo completo nella card sopra.
+function getSetPrescription(schema, setIndex){
+  const raw = String(schema||'').trim();
+  if(!raw) return {target:'', extras:''};
+  const parts = raw.split(/\s+(?=\d+\s*[x×])/i).filter(Boolean);
+  const rawPart = parts[setIndex];
+  if(!rawPart) return {target:'', extras:''};
+  const prescription = rawPart.replace(/^\s*\d+\s*[x×]\s*/i,'').trim();
+  const bits = prescription.split('+').map(part=>part.trim()).filter(Boolean);
+  const target = (bits.shift()||'').replace(/-/g,'–');
+  return {
+    target: target ? (/\d/.test(target) ? `${target} reps` : target) : '',
+    extras: bits.length ? `+ ${bits.join(' + ')}` : ''
+  };
+}
+function toggleExerciseWeek(exi, w, key){
+  const block = document.querySelector(`.week-block[data-exi="${exi}"][data-week="${w}"]`);
+  const button = block && block.querySelector(':scope > .week-toggle');
+  if(button) toggleWeek(button,key,w);
+}
+function renderExerciseCardHero(ex, exi, accent){
+  const week = state.currentWeek || 0;
+  const key = `${activeDayIdx}_${exi}_${week}`;
+  const editing = editingExerciseIdx === exi;
+  const name = editing
+    ? `<textarea class="exercise-card-name-input" rows="1" aria-label="Nome esercizio" oninput="autoGrowTextarea(this)" onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome||'')}</textarea>`
+    : `<h2>${escapeHtml(ex.nome||'Esercizio')}</h2>`;
+  return `<div class="exercise-card-hero">
+    <div class="exercise-card-title">${name}</div>
+    <button type="button" class="card-week-pill" onclick="toggleExerciseWeek(${exi},${week},'${key}')" aria-label="Apri o chiudi settimana ${week+1}">SETTIMANA ${week+1}<span>▾</span></button>
+  </div>`;
+}
+function renderLinkedExerciseCardHero(exA, exiA, exB, exiB, accent){
+  const week = state.currentWeek || 0;
+  const key = `${activeDayIdx}_${exiA}_${week}`;
+  const editing = editingExerciseIdx === exiA;
+  const names = editing
+    ? `<textarea class="exercise-card-name-input" rows="1" aria-label="Nome primo esercizio" oninput="autoGrowTextarea(this)" onchange="updateName(${exiA},this.value)">${escapeHtml(exA.nome||'')}</textarea><textarea class="exercise-card-name-input linked" rows="1" aria-label="Nome secondo esercizio" oninput="autoGrowTextarea(this)" onchange="updateName(${exiB},this.value)">${escapeHtml(exB.nome||'')}</textarea>`
+    : `<h2>${escapeHtml(exA.nome||'Esercizio')} <small>${exA.linkType === 'jumpset' ? '· Jump set ·' : '· Super set ·'} ${escapeHtml(exB.nome||'Esercizio')}</small></h2>`;
+  return `<div class="exercise-card-hero linked-hero">
+    <div class="exercise-card-title">${names}</div>
+    <button type="button" class="card-week-pill" onclick="toggleExerciseWeek(${exiA},${week},'${key}')" aria-label="Apri o chiudi settimana ${week+1}">SETTIMANA ${week+1}<span>▾</span></button>
+  </div>`;
+}
+function renderExerciseNote(ex, exi){
+  return `<label class="exercise-note-field">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8.5 H16 M8 12 H16 M8 15.5 H13"/></svg>
+    <textarea class="ex-comment" rows="1" aria-label="Nota esercizio" placeholder="Aggiungi una nota (facoltativo)" onchange="updateComment(${exi},this.value)">${escapeHtml(ex.commento || '')}</textarea>
+  </label>`;
 }
 // Le settimane concluse restano modificabili, ma non occupano lo spazio sopra
 // al lavoro in corso: sono raccolte sotto la settimana corrente e chiuse per
@@ -683,11 +746,13 @@ function renderWeekSections(entries, groupKey, dayManagementHtml=''){
   const completedCount = entries.filter(entry=>entry.group==='completed').length;
   const futureCount = entries.filter(entry=>entry.group==='future').length;
   const completedCollapsed = (groupKey in collapsedMap) ? !!collapsedMap[groupKey] : true;
+  const completedTarget = Math.max(1, state.currentWeek || completedCount);
+  const completedPercent = Math.min(100, Math.round((completedCount / completedTarget) * 100));
   return `
     <section class="week-section week-section-current" aria-label="Settimana corrente">${current}</section>
     ${completedCount ? `<section class="week-section week-section-completed" aria-label="Settimane concluse">
       <button type="button" class="week-group-toggle ${completedCollapsed?'collapsed':''}" aria-expanded="${completedCollapsed?'false':'true'}" onclick="toggleCompletedWeeks(this,'${groupKey}')">
-        <span>${ICON_CHECK} SETTIMANE CONCLUSE <b>${completedCount}</b></span><span class="chev">▾</span>
+        <span class="week-group-copy"><span>${ICON_CHECK} Settimane concluse <b>${completedCount}/${completedTarget}</b></span><i><em style="width:${completedPercent}%"></em></i></span><span class="chev">▾</span>
       </button>
       <div class="week-group-content ${completedCollapsed?'collapsed':''}">${completed}</div>
     </section>` : ''}
@@ -740,58 +805,42 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
 
       const setFilled = String(s.peso??'').trim() && String(s.rip??'').trim();
       const maxHtml = renderMaxEntries(ex,exi,w,si,isReadOnlyWeek,isCurrentWeek);
+      const prescription = getSetPrescription(ex.schema && ex.schema[w],si);
       return `
-      <div class="set-series-group${maxHtml?' has-max':''}" data-exi="${exi}" data-week="${w}" data-set="${si}">
+      <div class="set-series-group${maxHtml?' has-max':''}${setFilled?' is-filled':''}" data-exi="${exi}" data-week="${w}" data-set="${si}">
+      <div class="set-series-heading">
+        <button type="button" class="set-label set-series-number${s.dropset?' dropset':''}" ${isReadOnlyWeek?'disabled':''} onclick="toggleDropset(${exi},${w},${si},this)" title="Segna/togli come dropset">SERIE ${si+1}</button>
+        <div class="set-series-prescription">${prescription.target ? `<span>${escapeHtml(prescription.target)}</span>` : ''}${prescription.extras ? `<small>${escapeHtml(prescription.extras)}</small>` : ''}</div>
+      </div>
+      <div class="set-columns-labels"><span>PESO (kg)</span><span>RIPETIZIONI</span></div>
       <div class="set-row${setFilled?' filled':''}">
-
-
-        <button type="button" class="set-label${s.dropset?' dropset':''}" ${isReadOnlyWeek?'disabled':''} onclick="toggleDropset(${exi},${w},${si},this)" title="Segna/togli come dropset">${roman}</button>
-
-
         <div class="kg-cell">
-
         <div class="kg-wrap">
-
-
-          <div class="stepper-pair">
-
             <button class="stepper"
             ${isReadOnlyWeek?'disabled':''}
             onclick="stepSet(${exi},${w},${si},-2.5,this)">
             −
             </button>
-
-
-            <button class="stepper"
-            ${isReadOnlyWeek?'disabled':''}
-            onclick="stepSet(${exi},${w},${si},2.5,this)">
-            +
-            </button>
-
-
-          </div>
-
-
-
           <input type="text" class="set-input"
           ${isReadOnlyWeek?'disabled':''}
-          placeholder="kg"
+          aria-label="Peso serie ${si+1} in chilogrammi"
+          placeholder="0"
           value="${escapeAttr(s.peso ?? '')}"
           onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr});markSetVisualState(this)">
-
+          <button class="stepper"
+          ${isReadOnlyWeek?'disabled':''}
+          onclick="stepSet(${exi},${w},${si},2.5,this)">
+          +
+          </button>
         </div>
-
         ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" ${isReadOnlyWeek?'disabled':''} title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
-
         </div>
-
-
-
         <div class="rip-cell">
         <div class="rip-wrap">
         <input type="text" class="set-input"
         ${isReadOnlyWeek?'disabled':''}
-        placeholder="rip"
+        aria-label="Ripetizioni serie ${si+1}"
+        placeholder="0"
         value="${escapeAttr(s.rip ?? '')}"
         onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this);markSetVisualState(this)">
 
@@ -873,6 +922,7 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
 
       <div class="week-body ${isCollapsed?'collapsed':''}" data-exi="${exi}" data-week="${w}">
       ${renderWeekQuickSummary(exi,w,ex)}
+      ${isCurrentWeek ? renderExerciseNote(ex,exi) : ''}
       <div class="week-note-wrap">
       <input class="week-note"
       ${isReadOnlyWeek?'disabled':''}
@@ -933,24 +983,24 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
         <div class="week-done-wrap">
 
           <div class="week-status-col">
-            <button class="week-done-btn ${weekDone?'checked':''}"
-            data-exi="${exi}" data-w="${w}"
-            aria-pressed="${weekDone?'true':'false'}"
-            ${isReadOnlyWeek?'disabled':''}
-            onclick="toggleWeekDone(${exi},${w})">
-            ${ICON_CHECK}
-            <span>Fatta</span>
-            </button>
-          </div>
-
-          <div class="week-status-col">
             <button class="week-skip-btn ${weekSkipped?'checked':''}"
             data-exi="${exi}" data-w="${w}"
             aria-pressed="${weekSkipped?'true':'false'}"
             ${isReadOnlyWeek?'disabled':''}
             onclick="toggleWeekSkipped(${exi},${w})">
             ⏭
-            <span>Salta</span>
+            <span>Salta esercizio</span>
+            </button>
+          </div>
+
+          <div class="week-status-col">
+            <button class="week-done-btn ${weekDone?'checked':''}"
+            data-exi="${exi}" data-w="${w}"
+            aria-pressed="${weekDone?'true':'false'}"
+            ${isReadOnlyWeek?'disabled':''}
+            onclick="toggleWeekDone(${exi},${w})">
+            ${ICON_CHECK}
+            <span>Completa esercizio</span>
             </button>
           </div>
 
@@ -994,12 +1044,7 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
 
 
 
-<textarea
-class="ex-comment"
-rows="1"
-placeholder="Note / tecnica (facoltativo)"
-onchange="updateComment(${exi},this.value)">${escapeHtml(ex.commento || '')}
-</textarea>
+${renderExerciseCardHero(ex,exi,accent)}
 
 
 
@@ -1077,8 +1122,8 @@ function renderWeekQuickSummary(exi, w, ex, partnerExi){
   const pairUpdate = (field, value) => typeof partnerExi==='number' ? `updateMeta(${exi},'${field}',${w},${value});updateMeta(${partnerExi},'${field}',${w},${value})` : `updateMeta(${exi},'${field}',${w},${value})`;
   const content = editing
     ? `<textarea class="week-inline-meta schema" rows="1" oninput="autoGrowTextarea(this)" onchange="${pairUpdate('schema','this.value')}">${escapeHtml(ex.schema[w]??'')}</textarea><i>·</i><input class="week-inline-meta" value="${escapeAttr(ex.recupero[w]??'')}" onchange="${pairUpdate('recupero','this.value')}">`
-    : `<span><b>Serie</b> ${escapeHtml(ex.schema[w] || 'libere')} <i>·</i> <b>Recupero</b> ${escapeHtml(ex.recupero[w] || 'libero')}</span>`;
-  return `<div class="week-quick-summary ${editing?'editing':''}"><div class="week-summary-metas">${content}</div><button type="button" class="week-note-trigger" onclick="toggleWeekNote(this)">Nota</button></div>`;
+    : `<span class="week-plan-schema">${escapeHtml(ex.schema[w] || 'Serie libere')}</span><span class="week-plan-recovery">Recupero: ${escapeHtml(ex.recupero[w] || 'libero')}</span>`;
+  return `<div class="week-quick-summary ${editing?'editing':''}"><div class="week-summary-metas">${content}</div><button type="button" class="week-note-trigger" onclick="toggleWeekNote(this)" aria-label="Aggiungi nota alla settimana">Nota</button></div>`;
 }
 
 // apri/chiudi un blocco settimana: tocca solo le classi CSS (niente renderActive,
@@ -1442,7 +1487,10 @@ function markSetVisualState(input){
   const row = input.closest('.set-row');
   if(!row) return;
   const values = [...row.querySelectorAll('.set-input:not(.max-input)')].map(el=>String(el.value||'').trim());
-  row.classList.toggle('filled', values.length >= 2 && values.every(Boolean));
+  const filled = values.length >= 2 && values.every(Boolean);
+  row.classList.toggle('filled', filled);
+  const group = row.closest('.set-series-group');
+  if(group) group.classList.toggle('is-filled', filled);
 }
 function showRepComparison(exi, w, si, btn){
   const ex = state.days[activeDayIdx] && state.days[activeDayIdx].esercizi[exi];
@@ -2254,22 +2302,22 @@ const isFutureWeek = w > state.currentWeek;
       <div class="week-done-wrap">
 
         <div class="week-status-col">
-          <button class="week-done-btn ${weekDone?'checked':''}"
-          data-exi="${exiA}" data-w="${w}"
-          aria-pressed="${weekDone?'true':'false'}"
-          onclick="toggleWeekDone(${exiA},${w});toggleWeekDone(${exiB},${w})">
-          ${ICON_CHECK}
-          <span>Fatta</span>
-          </button>
-        </div>
-
-        <div class="week-status-col">
           <button class="week-skip-btn ${weekSkipped?'checked':''}"
           data-exi="${exiA}" data-w="${w}"
           aria-pressed="${weekSkipped?'true':'false'}"
           onclick="toggleWeekSkipped(${exiA},${w});toggleWeekSkipped(${exiB},${w})">
           ⏭
-          <span>Salta</span>
+          <span>Salta esercizio</span>
+          </button>
+        </div>
+
+        <div class="week-status-col">
+          <button class="week-done-btn ${weekDone?'checked':''}"
+          data-exi="${exiA}" data-w="${w}"
+          aria-pressed="${weekDone?'true':'false'}"
+          onclick="toggleWeekDone(${exiA},${w});toggleWeekDone(${exiB},${w})">
+          ${ICON_CHECK}
+          <span>Completa esercizio</span>
           </button>
         </div>
 
@@ -2291,6 +2339,7 @@ const isFutureWeek = w > state.currentWeek;
   const prBadgeB = '';
 
   return `<div class="card linked-group" data-exi="${exiA}" data-exi2="${exiB}" style="--accent:${accent.c}">
+    <div class="card-head">${renderLinkedExerciseCardHero(exA,exiA,exB,exiB,accent)}</div>
     <div class="linked-pair-frame">
       <div class="card-head linked-head compact">
         ${prBadgeA}

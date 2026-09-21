@@ -1213,6 +1213,166 @@ body.training-focus .week-block{margin-top:10px;}
   filter:none;
 }
 
+/* ---------------- WORKOUT · UI 2026 ---------------------------------------
+   La schermata operativa non ha più molte cornici una dentro l'altra: una
+   card principale contiene programma, note, serie e azioni. Il verde indica
+   solo contesto/avanzamento/conferma; i dati restano su grafite leggibile. */
+body.on-workout .topbar{border-bottom:0;}
+body.on-workout .app-version{display:none;}
+.topbar-copy{display:block;}
+.topbar-subtitle{display:none;margin:2px 0 0;color:var(--muted);font-size:11px;font-weight:650;letter-spacing:.15px;line-height:1.2;}
+.topbar.is-workout-header .topbar-subtitle:not([hidden]){display:block;}
+.workout-day-picker{display:none;position:absolute;left:11px;top:calc(env(safe-area-inset-top) + 8px);width:30px;height:30px;padding:0;border:0;background:transparent;color:var(--text);font-size:34px;font-weight:300;line-height:.7;align-items:center;justify-content:center;}
+.topbar.is-workout-header .workout-day-picker:not([hidden]){display:flex;}
+body.on-workout #dayTabsActive{display:none!important;}
+body.on-workout #dayTabsActive.workout-day-tabs-open{display:flex!important;padding:0 12px 8px;position:relative;z-index:19;background:var(--bg-black);border-bottom:1px solid var(--line);}
+
+/* Riga di progresso: l'esercizio attivo viene misurato sulla stessa lista
+   che alimenta il carosello, quindi l'indicazione non può andare fuori fase. */
+.workout-progress{padding:9px 16px 6px;}
+.workout-progress-copy{display:flex;align-items:baseline;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;line-height:1.2;}
+.workout-progress-copy b{color:var(--text);font-weight:750;}
+.workout-progress-copy>b{color:var(--muted);font-size:12px;font-weight:700;}
+.workout-progress-track{height:5px;margin-top:7px;overflow:hidden;border-radius:999px;background:#242624;}
+.workout-progress-track span{display:block;height:100%;border-radius:inherit;background:var(--accent,var(--green));box-shadow:0 0 9px color-mix(in srgb,var(--accent,var(--green)) 34%,transparent);transition:width .32s var(--ease-premium);}
+
+/* Scroller esercizi: piccole card neutre; verde soltanto sull'esercizio
+   selezionato. La zona conserva pan-x per non rubare gesti al carosello. */
+.day-ex-strip{gap:8px;padding:8px 14px 12px;scroll-snap-type:x mandatory;}
+.day-ex-chip{width:94px;min-height:58px;padding:7px 8px;border-radius:13px;border:1px solid transparent;background:#1C1E1D;color:#C4C6C4;box-shadow:inset 0 1px 0 rgba(255,255,255,.035);}
+.day-ex-chip-pos{font-family:var(--font-body);font-size:16px;font-weight:750;color:inherit;}
+.day-ex-chip-name{font-family:var(--font-body);font-size:9px;font-weight:650;letter-spacing:0;text-transform:none;}
+.day-ex-chip.done{background:#181A19;border-color:transparent;color:#727671;transform:none;opacity:.78;}
+.day-ex-chip.current{border-color:var(--accent,var(--green));background:#1A2018;color:var(--accent,var(--green));box-shadow:0 0 11px color-mix(in srgb,var(--accent,var(--green)) 18%,transparent),inset 0 1px 0 rgba(255,255,255,.04);}
+
+/* Una sola card grande: niente banda verde, niente riquadri nidificati. */
+.card{background:#1B1D1C;border:1px solid rgba(255,255,255,.09);border-radius:22px;margin:0 12px 16px;overflow:hidden;box-shadow:0 16px 32px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035);}
+.card::before{display:none;}
+.card-head{padding:17px 16px 0;}
+.exercise-card-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.exercise-card-title{flex:1;min-width:0;}
+.exercise-card-title h2{margin:0;color:var(--text);font-family:var(--font-display);font-size:22px;font-weight:650;letter-spacing:.35px;line-height:1.08;text-transform:uppercase;overflow-wrap:anywhere;}
+.exercise-card-name-input{width:100%;min-height:31px;resize:none;overflow:hidden;background:#111312;border:1px solid var(--accent,var(--green));border-radius:9px;color:var(--text);font:600 17px/1.2 var(--font-body);padding:6px 8px;}
+.exercise-card-name-input.linked{margin-top:5px;}
+.linked-hero .exercise-card-title h2 small{display:block;margin-top:4px;color:#9EA29E;font-family:var(--font-body);font-size:11px;font-weight:650;letter-spacing:0;text-transform:none;line-height:1.25;}
+.card-week-pill{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:0 10px;border:0;border-radius:9px;background:color-mix(in srgb,var(--accent,var(--green)) 15%,#1B1D1C);color:var(--accent,var(--green));font-family:var(--font-body);font-size:10px;font-weight:800;letter-spacing:.5px;white-space:nowrap;}
+.card-week-pill span{font-size:11px;opacity:.8;}
+.weeks{padding:0 16px 16px;}
+.week-block.current-week-block{margin:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;}
+.week-block.current-week-block>.week-toggle{display:none;}
+.week-block.current-week-block .week-body{padding:0;overflow:hidden;}
+.week-block.current-week-block .week-body.collapsed{padding:0;}
+.week-quick-summary{align-items:flex-start;border:0;margin:0;padding:15px 0 10px;color:var(--text);}
+.week-summary-metas{display:flex;flex-direction:column;align-items:flex-start;gap:4px;font-family:var(--font-body);line-height:1.35;}
+.week-plan-schema{font-size:12px;font-weight:700;color:#D6D8D6;overflow-wrap:anywhere;}
+.week-plan-recovery{font-size:12px;font-weight:600;color:var(--muted);}
+.week-note-trigger{align-self:center!important;padding:5px 6px!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:7px!important;color:var(--muted)!important;font-family:var(--font-body);font-size:10px!important;font-weight:700!important;}
+.week-quick-summary.editing{align-items:center;border-bottom:1px solid var(--accent,var(--green));}
+.week-quick-summary.editing .week-summary-metas{display:flex;flex-direction:row;align-items:center;}
+.exercise-note-field{display:flex;align-items:center;gap:8px;width:100%;min-height:38px;margin:0 0 12px;padding:0 10px;border:1px solid rgba(255,255,255,.10);border-radius:10px;background:#151716;color:#737672;}
+.exercise-note-field svg{flex:0 0 auto;}
+.ex-comment{height:36px;min-height:36px;margin:0;padding:7px 0;background:transparent;border:0;border-radius:0;color:#B9BCB9;font-family:var(--font-body);font-size:13px;font-style:normal;line-height:1.25;}
+.ex-comment::placeholder{color:#777B77;font-size:12px;opacity:1;}
+.ex-comment:focus{height:60px;min-height:60px;background:transparent;}
+.week-note-wrap{margin:-2px 0 10px;}
+.week-note{padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.14);font-family:var(--font-body);font-size:12px;font-style:normal;}
+.card.linked-group{border-top:1px solid rgba(255,255,255,.09);border-left:1px solid rgba(255,255,255,.09);}
+.linked-pair-frame{margin:9px 16px 6px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#1B1D1C;}
+.linked-head.compact{padding:7px 10px 4px;}
+.linked-head.compact .ex-comment.compact{height:30px;min-height:30px;padding:6px 0;background:transparent;border:0;border-radius:0;font-family:var(--font-body);font-size:12px;font-style:normal;}
+.link-type-divider{padding:5px 0;}
+.link-type-divider::before{left:10px;right:10px;height:1px;background:rgba(255,255,255,.10);}
+.link-type-pill{background:#2B3027!important;color:var(--accent,var(--green));font-family:var(--font-body);font-size:9px;}
+
+/* Ogni serie è un blocco leggero e autonomo: intestazione e prescrizione
+   sopra, due colonne coerenti sotto. I controlli restano tutti gli stessi. */
+.sets-wrap{display:flex;flex-direction:column;gap:10px;}
+.set-series-group{margin:0;padding:12px;border:1px solid rgba(255,255,255,.075);border-radius:15px;background:#202221;}
+.set-series-group.has-max{margin:0;padding:12px;border:1px solid rgba(255,255,255,.075);border-radius:15px;background:linear-gradient(135deg,#202221,color-mix(in srgb,var(--amber) 3%,#202221));}
+.set-series-group.is-filled{border-color:color-mix(in srgb,var(--accent,var(--green)) 20%,rgba(255,255,255,.08));}
+.set-series-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px;}
+.set-series-number{width:auto;text-align:left;margin:0;color:var(--accent,var(--green));font-family:var(--font-body);font-size:12px;font-weight:800;letter-spacing:.55px;}
+.set-series-number.dropset{color:var(--amber);}
+.set-series-prescription{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-end;gap:1px;text-align:right;font-family:var(--font-body);}
+.set-series-prescription span{color:#C7CAC7;font-size:12px;font-weight:650;line-height:1.2;}
+.set-series-prescription small{color:#9B9F9B;font-size:10px;font-weight:650;line-height:1.25;overflow-wrap:anywhere;}
+.set-columns-labels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:0 0 5px;padding:0 2px;color:#969A96;font-family:var(--font-body);font-size:9px;font-weight:800;letter-spacing:.5px;}
+.set-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:0;}
+.kg-cell,.rip-cell{gap:4px;}
+.kg-wrap,.rip-wrap{gap:0;min-height:48px;border:1px solid #3B3E3B;border-radius:10px;background:#121413;overflow:hidden;}
+.kg-wrap .set-input,.rip-wrap .set-input{height:46px;min-height:46px;border:0!important;border-radius:0;background:transparent!important;box-shadow:none!important;color:var(--text);font-family:var(--font-body);font-size:18px!important;font-weight:750;letter-spacing:0;}
+.kg-wrap .set-input{border-left:1px solid rgba(255,255,255,.075)!important;border-right:1px solid rgba(255,255,255,.075)!important;}
+.set-input::placeholder{color:#777B77;opacity:1;font-weight:600;}
+.stepper{flex:0 0 38px;width:38px;height:46px;border:0;border-radius:0;background:transparent;color:#E8EAE8;font-family:var(--font-body);font-size:21px;font-weight:500;}
+.stepper:active{background:color-mix(in srgb,var(--accent,var(--green)) 20%,#1B1D1C);color:var(--accent,var(--green));}
+.kg-fill-chip{min-height:23px;padding:3px 2px;border:0;border-radius:6px;background:transparent;color:var(--accent,var(--green));font-family:var(--font-body);font-size:10px;font-weight:650;}
+.rip-wrap .set-input{padding-left:10px;text-align:left;}
+.rpe-chip{align-self:center;min-height:28px;margin-right:5px;border-color:transparent;background:#232624;color:#8D918D;font-family:var(--font-body);font-size:9px;}
+.rep-compare-btn{align-self:center;min-height:28px;margin-right:4px;border-left:0;color:var(--accent,var(--green));font-family:var(--font-body);font-size:9px;}
+.rep-comparison{padding:3px 2px 0;font-size:10px;}
+
+/* Max è l'unica informazione ambra: nessun tratteggio né box aggiuntivo. */
+.max-entry-box{margin-top:9px;padding-top:8px;border-top:1px solid color-mix(in srgb,var(--amber) 22%,rgba(255,255,255,.08));}
+.max-entry-row{grid-template-columns:38px minmax(0,1fr) minmax(0,1fr);gap:8px;}
+.max-entry-row .max-label{display:flex;align-items:center;justify-content:flex-start;height:38px;margin:0;color:var(--amber)!important;font-family:var(--font-body);font-size:10px!important;font-weight:800;letter-spacing:.6px;}
+.max-entry-row .max-cell{gap:5px;}
+.max-entry-row>.max-cell>.max-input,.max-rip-compare{flex:1 1 0;min-width:0;}
+.max-entry-row>.max-cell>.max-input,.max-rip-compare .max-input{min-height:38px;height:38px;padding:5px 3px;border:1px solid #363936;border-radius:8px;background:#151716;color:#E3E5E3;font-family:var(--font-body);font-size:14px!important;font-weight:700;opacity:1;}
+.max-rip-compare .max-input{padding-right:18px;}
+.max-compare-btn{color:var(--amber);}
+
+/* Il menu azioni resta immediatamente dopo le serie, ma non richiama più
+   attenzione quanto i valori. I due pulsanti finali chiariscono la priorità. */
+.set-btns-secondary{min-height:34px;margin:10px 0 4px;}
+.week-actions-btn{width:32px;height:32px;border-color:rgba(255,255,255,.18);border-radius:9px;background:#171917;color:#AEB2AE;}
+.week-actions-btn svg{width:15px;height:15px;}
+.set-btns{margin-top:8px;gap:0;}
+.week-done-wrap{gap:10px;}
+.week-done-btn,.week-skip-btn{min-height:52px;border-radius:11px;font-family:var(--font-body);font-size:12px;font-weight:750;}
+.week-skip-btn{border-color:#4A4D4A;background:#191B1A;color:#B5B8B5;}
+.week-done-btn{border-color:var(--accent,var(--green));background:var(--accent,var(--green));color:#10120F;box-shadow:none;}
+.week-done-btn.checked{background:var(--accent,var(--green));border-color:var(--accent,var(--green));color:#10120F;}
+.week-skip-btn.checked{background:#26221C;border-color:var(--amber);color:var(--amber);}
+
+/* Settimane concluse: una riga richiudibile, con indicatore visivo invece di
+   un altro riquadro colorato. */
+.week-section-completed{margin:0 0 12px;}
+.week-group-toggle{min-height:58px;padding:9px 12px;border:1px solid rgba(255,255,255,.10);border-radius:15px;background:#181A19;color:#C7CAC7;font-family:var(--font-body);font-size:11px;font-weight:700;}
+.week-group-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:7px;}
+.week-group-copy>span{display:flex;align-items:center;gap:4px;}
+.week-group-toggle b{color:var(--text);font-size:11px;margin:0;}
+.week-group-copy i{display:block;width:100%;height:4px;overflow:hidden;border-radius:999px;background:#303330;}
+.week-group-copy i em{display:block;height:100%;border-radius:inherit;background:var(--accent,var(--green));}
+.week-group-toggle .chev{color:#A5A9A5;font-size:14px;}
+.week-section-future{margin:0;padding:0;}
+.week-section-label{margin:8px 2px 5px;font-family:var(--font-body);font-size:10px;}
+.week-block.completed-week-block,.week-block.future-week-block{margin-top:5px;border-radius:11px;}
+.week-block.completed-week-block .week-toggle,.week-block.future-week-block .week-toggle{min-height:34px;border-radius:10px;font-family:var(--font-body);}
+.day-management-row{padding:3px 0 10px;}
+
+/* Navigazione: stessa barra flottante, ma lo stato attivo è un velo verde
+   leggero anziché un pillolone nero indipendente dal resto dell'app. */
+.bottom-nav-btn{font-family:var(--font-body);font-size:10px;font-weight:700;}
+.bottom-nav-btn.active{color:var(--accent,var(--green));background:color-mix(in srgb,var(--accent,var(--green)) 12%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--accent,var(--green)) 12%,transparent);}
+
+/* La modalità grande conserva lo stesso linguaggio, aumenta solo le aree di
+   tocco: non deve ripristinare la vecchia griglia a tre colonne. */
+body.training-focus .set-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:0;}
+body.training-focus .set-label{margin:0;}
+body.training-focus .kg-wrap,body.training-focus .rip-wrap{min-height:54px;}
+body.training-focus .kg-wrap .set-input,body.training-focus .rip-wrap .set-input{height:52px;min-height:52px;font-size:20px!important;}
+body.training-focus .stepper{height:52px;flex-basis:42px;width:42px;font-size:23px;}
+body.training-focus .set-series-group{margin:0;}
+
+@media(max-width:899px){
+  .topbar.is-workout-header,.topbar.is-workout-header.topbar-scrolled{min-height:calc(env(safe-area-inset-top) + 66px);padding:calc(env(safe-area-inset-top) + 16px) 50px 10px 48px;}
+  .topbar.is-workout-header h1,.topbar.is-workout-header.topbar-scrolled h1{margin:0;text-align:left;font-family:var(--font-body);font-size:21px;line-height:1.08;font-weight:760;letter-spacing:0;text-transform:none;}
+  .topbar.is-workout-header .workout-title-edit,.topbar.is-workout-header.topbar-scrolled .workout-title-edit{top:calc(env(safe-area-inset-top) + 17px);right:13px;width:31px;height:31px;border-color:color-mix(in srgb,var(--workout-accent,var(--green)) 72%,transparent);}
+  .workout-day-picker{top:calc(env(safe-area-inset-top) + 16px);}
+  .workout-progress{padding-left:16px;padding-right:16px;}
+  .card{margin-left:12px;margin-right:12px;}
+}
+
 /* Desktop: su schermi larghi l'app usa lo spazio orizzontale senza perdere
    l'impianto compatto da telefono. La navigazione diventa una barra laterale,
    mentre contenuto e modali acquistano una larghezza utile per tastiera e mouse. */

@@ -99,13 +99,17 @@ function showView(v){
     document.body.classList.toggle('on-workout', v==='active');
     setWorkoutTopbarMode(v==='active');
     const topbarTitle = document.getElementById('topbarTitle');
+    const topbarSubtitle = document.getElementById('topbarSubtitle');
     const workoutEdit = document.getElementById('workoutTitleEditBtn');
+    const workoutDayPicker = document.getElementById('workoutDayPickerBtn');
     if(v==='active'){
       if(typeof updateWorkoutTopbarTitle==='function') updateWorkoutTopbarTitle();
     } else {
       if(topbarTitle) topbarTitle.textContent = 'Viridis';
+      if(topbarSubtitle) topbarSubtitle.hidden = true;
       if(workoutEdit) workoutEdit.hidden = true;
     }
+    if(workoutDayPicker) workoutDayPicker.hidden = v!=='active';
     if(v === 'home'){
       animateSuggestedWorkout();
     }
@@ -300,9 +304,19 @@ function renderDayTabs(){
   updateBlockFinishTab();
 }
 
+// La scelta del giorno resta disponibile, ma non occupa in permanenza la
+// schermata di allenamento: si apre dal piccolo controllo a sinistra della
+// testata, come una scelta di contesto nelle app mobili moderne.
+function toggleWorkoutDayPicker(){
+  const tabs = document.getElementById('dayTabsActive');
+  if(tabs) tabs.classList.toggle('workout-day-tabs-open');
+}
+
 
 function selectDay(i){
   discardReorderIfPending();
+  const tabs = document.getElementById('dayTabsActive');
+  if(tabs) tabs.classList.remove('workout-day-tabs-open');
   activeDayIdx=i;
   activeExerciseIdx=null;
   saveActivePos();
