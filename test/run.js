@@ -796,16 +796,33 @@ test('una settimana gia\' fatta/saltata parte collassata anche se e\' nominalmen
     ]}]
   };
   window.renderActive();
-  const toggles = [...window.document.querySelectorAll('.week-toggle')];
-  assert.strictEqual(toggles.length, 4, 'devono esserci 4 blocchi settimana');
-  assert.ok(toggles[1].classList.contains('collapsed'), 'BUG: la settimana corrente gia\' fatta deve partire collassata, non spalancata');
-  assert.ok(toggles[0].classList.contains('collapsed'), 'la settimana passata (gia\' non corrente) deve restare collassata come prima');
+  const weekCurrent = window.document.querySelector('.week-block[data-week="1"] .week-toggle');
+  const weekPrevious = window.document.querySelector('.week-block[data-week="0"] .week-toggle');
+  assert.strictEqual(window.document.querySelectorAll('.week-block').length, 4, 'devono esserci 4 blocchi settimana');
+  assert.ok(weekCurrent.classList.contains('collapsed'), 'BUG: la settimana corrente gia\' fatta deve partire collassata, non spalancata');
+  assert.ok(weekPrevious.classList.contains('collapsed'), 'la settimana passata deve restare collassata come prima');
 
   // un collasso scelto ESPLICITAMENTE a mano (collapsedMap) deve comunque vincere su tutto
   window.__bridge.collapsedMap = {'0_0_1': false};
   window.renderActive();
-  const toggles2 = [...window.document.querySelectorAll('.week-toggle')];
-  assert.ok(!toggles2[1].classList.contains('collapsed'), 'una scelta esplicita in collapsedMap deve avere sempre l\'ultima parola');
+  const currentToggleAfterChoice = window.document.querySelector('.week-block[data-week="1"] .week-toggle');
+  assert.ok(!currentToggleAfterChoice.classList.contains('collapsed'), 'una scelta esplicita in collapsedMap deve avere sempre l\'ultima parola');
+});
+
+test('la settimana corrente precede concluse e prossime, che restano in gruppi distinti', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.collapsedMap = {};
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 1, title: 'T',
+    days: [{ name:'Push', esercizi:[{ nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }] }]
+  };
+  window.renderActive();
+  const sections = [...window.document.querySelectorAll('.weeks > .week-section')];
+  assert.deepStrictEqual(sections.map(section=>section.className), ['week-section week-section-current','week-section week-section-completed','week-section week-section-future']);
+  assert.strictEqual(sections[0].querySelector('.week-block').dataset.week, '1', 'la settimana corrente deve essere la prima a schermo');
+  assert.ok(sections[1].querySelector('.week-group-content').classList.contains('collapsed'), 'le concluse devono restare chiuse per default');
+  assert.strictEqual(sections[2].querySelector('.week-block').dataset.week, '2', 'le settimane future devono restare dopo le concluse');
 });
 
 test('l\'icona "Termina blocco" nella riga dei giorni si accende solo a blocco completo (tutte le settimane fatte)', () => {

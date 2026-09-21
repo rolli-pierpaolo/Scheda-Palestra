@@ -530,18 +530,29 @@ main{padding:12px;}
    misurare l'altezza reale in JS, semplice transizione CSS */
 .week-body{padding:8px;width:100%;box-sizing:border-box;max-height:2000px;opacity:1;overflow:hidden;transition:max-height .22s ease, opacity .18s ease, padding .22s ease;}
 .week-body.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;}
-/* Passato e futuro restano disponibili, ma non competono con l'area che si
-   sta compilando adesso. La settimana corrente ha volutamente molto piu'
-   aria: e' la sola zona di lavoro protagonista della schermata. */
-.week-block.completed-week-block{border-color:transparent;border-radius:6px;margin-top:3px;}
-.week-block.completed-week-block .week-toggle{min-height:26px;padding:3px 8px;background:transparent!important;font-size:10px;color:var(--muted);}
+/* Tre zone leggibili: adesso, concluso e prossimo. Le concluse vanno sotto
+   la settimana corrente e sono richiudibili; il blocco futuro ha una tinta
+   grafite distinta, senza confondersi con lo storico. */
+.week-section{width:100%;}
+.week-section-current{margin-bottom:0;}
+.week-section-completed{margin:0 -2px 15px;}
+.week-section-future{margin:0 -2px 2px;padding-top:3px;}
+.week-group-toggle{width:100%;min-height:34px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#1D2226;border:1px solid #3B444B;border-radius:8px;color:#AEB8C0;padding:7px 10px;font-size:10px;font-weight:800;letter-spacing:.5px;text-align:left;}
+.week-group-toggle b,.week-section-label b{font-size:10px;color:#D7E0E6;margin-left:3px;}
+.week-group-toggle .chev{flex:0 0 auto;transition:transform .18s var(--ease-premium);}
+.week-group-toggle.collapsed .chev{transform:rotate(-90deg);}
+.week-group-content{max-height:5000px;opacity:1;overflow:hidden;transition:max-height .26s var(--ease-premium),opacity .18s ease,margin .2s ease;margin-top:5px;}
+.week-group-content.collapsed{max-height:0;opacity:0;margin-top:0;}
+.week-section-label{display:flex;align-items:center;gap:3px;color:#777E84;font-size:10px;font-weight:800;letter-spacing:.5px;margin:3px 2px 5px;}
+.week-block.completed-week-block{border-color:#3B444B;border-radius:7px;margin-top:4px;background:#15191C;}
+.week-block.completed-week-block .week-toggle{min-height:28px;padding:4px 8px;background:#1D2226!important;font-size:10px;color:#AEB8C0;}
 .week-block.completed-week-block .week-toggle-schema{font-size:9px;}
-.week-block.completed-week-block .week-toggle .chev{font-size:10px;opacity:.55;}
-.week-block.completed-week-block .week-toggle.done{color:color-mix(in srgb,var(--muted) 82%,var(--text));filter:none;}
-.week-block.completed-week-block .week-toggle.done::before{content:'✓';font-size:10px;color:var(--muted);margin-right:5px;}
-.week-block.completed-week-block .week-toggle.skipped{color:var(--amber);opacity:.62;filter:none;}
-.week-block.future-week-block{margin-top:6px;border-color:color-mix(in srgb,var(--line) 70%,transparent);}
-.week-block.future-week-block .week-toggle{padding:5px 9px;font-size:11px;}
+.week-block.completed-week-block .week-toggle .chev{font-size:10px;opacity:.65;}
+.week-block.completed-week-block .week-toggle.done{color:#C0CAD1;filter:none;}
+.week-block.completed-week-block .week-toggle.done::before{content:'✓';font-size:10px;color:#91A0AA;margin-right:5px;}
+.week-block.completed-week-block .week-toggle.skipped{color:var(--amber);opacity:.74;filter:none;}
+.week-block.future-week-block{margin-top:6px;border-color:#30363A;background:#121415;}
+.week-block.future-week-block .week-toggle{padding:6px 9px;font-size:11px;background:#171A1C!important;color:#7D858B;}
 .week-block.current-week-block{margin:22px -2px 24px;border-color:var(--accent,var(--green));border-radius:11px;background:color-mix(in srgb,var(--accent,var(--green)) 5%,var(--panel2));box-shadow:0 12px 28px rgba(0,0,0,.25),0 0 18px color-mix(in srgb,var(--accent,var(--green)) 20%,transparent);}
 .week-block.current-week-block .week-toggle{min-height:44px;padding:11px 13px;font-size:14px;}
 .week-block.current-week-block .week-toggle.current-week{border:none!important;box-shadow:none!important;transform:none;}
@@ -1175,15 +1186,15 @@ body.training-focus .week-block{margin-top:10px;}
 
 /* SETTIMANA COMPLETATA */
 .week-toggle.completed-week{
-  opacity:.55;
-  filter:grayscale(.4);
+  opacity:1;
+  filter:none;
 }
 
 
 /* SETTIMANA FUTURA */
 .week-toggle.future-week{
-  opacity:.35;
-  filter:grayscale(.7);
+  opacity:1;
+  filter:none;
 }
 
 /* Desktop: su schermi larghi l'app usa lo spazio orizzontale senza perdere

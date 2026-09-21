@@ -668,6 +668,31 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
   }).join('');
   return `<div class="max-entry-box"><div class="set-row max-entry-row" style="--max-count:${entries.length}"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
 }
+// Le settimane concluse restano modificabili, ma non occupano lo spazio sopra
+// al lavoro in corso: sono raccolte sotto la settimana corrente e chiuse per
+// impostazione iniziale.
+function completedWeeksGroupKey(exi){
+  return `completed-weeks_${activeDayIdx}_${exi}`;
+}
+function renderWeekSections(entries, groupKey){
+  const current = entries.filter(entry=>entry.group==='current').map(entry=>entry.html).join('');
+  const completed = entries.filter(entry=>entry.group==='completed').map(entry=>entry.html).join('');
+  const future = entries.filter(entry=>entry.group==='future').map(entry=>entry.html).join('');
+  const completedCount = entries.filter(entry=>entry.group==='completed').length;
+  const futureCount = entries.filter(entry=>entry.group==='future').length;
+  const completedCollapsed = (groupKey in collapsedMap) ? !!collapsedMap[groupKey] : true;
+  return `
+    <section class="week-section week-section-current" aria-label="Settimana corrente">${current}</section>
+    ${completedCount ? `<section class="week-section week-section-completed" aria-label="Settimane concluse">
+      <button type="button" class="week-group-toggle ${completedCollapsed?'collapsed':''}" aria-expanded="${completedCollapsed?'false':'true'}" onclick="toggleCompletedWeeks(this,'${groupKey}')">
+        <span>${ICON_CHECK} SETTIMANE CONCLUSE <b>${completedCount}</b></span><span class="chev">▾</span>
+      </button>
+      <div class="week-group-content ${completedCollapsed?'collapsed':''}">${completed}</div>
+    </section>` : ''}
+    ${futureCount ? `<section class="week-section week-section-future" aria-label="Prossime settimane">
+      <div class="week-section-label">PROSSIME SETTIMANE <b>${futureCount}</b></div>${future}
+    </section>` : ''}`;
+}
 function exerciseCard(ex, exi, accent){
 
   const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
@@ -677,7 +702,7 @@ function exerciseCard(ex, exi, accent){
   const recordAttr = record ? record.peso : 'null';
 
 
-  const weeksHtml = weeks.map(w=>{
+  const weekEntries = weeks.map(w=>{
 
 
     const currentWeek = state.currentWeek || 0;
@@ -798,12 +823,14 @@ function exerciseCard(ex, exi, accent){
     // parte chiusa, cosi' rivedendo un giorno gia' concluso non lo si
     // ritrova tutto spalancato
     const isCollapsed = (wkey in collapsedMap) ? !!collapsedMap[wkey] : (!isCurrentWeek || weekDone || weekSkipped);
+    const isCompletedGroup = !isCurrentWeek && (isPastWeek || isCompletedWeek || weekDone || weekSkipped);
+    const isFutureGroup = !isCurrentWeek && !isCompletedGroup;
 
 
 
-    return `
+    return {group:isCurrentWeek?'current':isCompletedGroup?'completed':'future', html:`
 
-    <div class="week-block ${isCurrentWeek?'current-week-block':''} ${isCompletedWeek?'completed-week-block':''} ${isFutureWeek?'future-week-block':''}" data-exi="${exi}" data-week="${w}">
+    <div class="week-block ${isCurrentWeek?'current-week-block':''} ${isCompletedGroup?'completed-week-block':''} ${isFutureGroup?'future-week-block':''}" data-exi="${exi}" data-week="${w}">
 
 
       <button class="week-toggle
@@ -811,20 +838,20 @@ function exerciseCard(ex, exi, accent){
       ${weekDone?'done':''}
       ${weekSkipped?'skipped':''}
       ${isCurrentWeek?'current-week':''}
-      ${isCompletedWeek?'completed-week':''}
-      ${isFutureWeek?'future-week':''}"
+      ${isCompletedGroup?'completed-week':''}
+      ${isFutureGroup?'future-week':''}"
       style="background:${accent.d}"
-      ${isFutureWeek ? `ondblclick="toggleWeek(this,'${wkey}',${w})"` : `onclick="toggleWeek(this,'${wkey}',${w})"`}>
+      ${isFutureGroup ? `ondblclick="toggleWeek(this,'${wkey}',${w})"` : `onclick="toggleWeek(this,'${wkey}',${w})"`}>
 
 
         <span>
 
         ${
-  isCompletedWeek
+  isCompletedGroup
   ? ICON_CHECK+' '
   : isCurrentWeek
     ? ICON_FLAME+' '
-    : isFutureWeek
+    : isFutureGroup
       ? ICON_LOCK+' '
       : ''
 }
@@ -934,11 +961,12 @@ function exerciseCard(ex, exi, accent){
 
 
 
-    </div>`;
+    </div>`};
 
 
 
-  }).join('');
+  });
+  const weeksHtml = renderWeekSections(weekEntries, completedWeeksGroupKey(exi));
 
 
 
@@ -1063,6 +1091,16 @@ function toggleWeek(btn, key, weekIdx){
 
   saveCollapsed();
 
+}
+
+function toggleCompletedWeeks(btn, key){
+  const content = btn.nextElementSibling;
+  if(!content) return;
+  const nowCollapsed = btn.classList.toggle('collapsed');
+  content.classList.toggle('collapsed', nowCollapsed);
+  btn.setAttribute('aria-expanded', nowCollapsed ? 'false' : 'true');
+  collapsedMap[key] = nowCollapsed;
+  saveCollapsed();
 }
 
 function toggleWeekConfig(btn){
@@ -2018,7 +2056,7 @@ function linkedExerciseCard(exA, exiA, exB, exiB, accent){
   const typeLabel = exA.linkType === 'jumpset' ? 'Jump set' : 'Super set';
   const nWeeks = (exA.recupero && exA.recupero.length) || state.weeksPerBlock || 4;
   const weeks = Array.from({length:nWeeks}, (_,i)=>i);
-  const weeksHtml = weeks.map(w=>{
+  const weekEntries = weeks.map(w=>{
     const wkey = activeDayIdx+"_"+exiA+"_"+w;
     const isCurrentWeek = w === state.currentWeek;
 
@@ -2036,6 +2074,8 @@ const isFutureWeek = w > state.currentWeek;
       (wkey in collapsedMap)
       ? !!collapsedMap[wkey]
       : (!isCurrentWeek || weekDone || weekSkipped);
+    const isCompletedGroup = !isCurrentWeek && (isPastWeek || weekDone || weekSkipped);
+    const isFutureGroup = !isCurrentWeek && !isCompletedGroup;
     const nRows = Math.max(
       exA.sets && exA.sets[w] ? exA.sets[w].length : 0,
       exB.sets && exB.sets[w] ? exB.sets[w].length : 0,
@@ -2054,24 +2094,24 @@ const isFutureWeek = w > state.currentWeek;
         </div>
       </div>${linkedMaxEntriesHtml(exA,exiA,exB,exiB,w,si)}`;
     }
-    return `
+    return {group:isCurrentWeek?'current':isCompletedGroup?'completed':'future', html:`
 
-<div class="week-block ${isCurrentWeek?'current-week-block':''} ${isPastWeek?'completed-week-block':''} ${isFutureWeek?'future-week-block':''}" data-exi="${exiA}" data-week="${w}">
+<div class="week-block ${isCurrentWeek?'current-week-block':''} ${isCompletedGroup?'completed-week-block':''} ${isFutureGroup?'future-week-block':''}" data-exi="${exiA}" data-week="${w}">
 
   <button class="week-toggle
   ${isCollapsed?'collapsed':''}
   ${weekDone?'done':''}
   ${weekSkipped?'skipped':''}
   ${isCurrentWeek?'current-week':''}
-  ${isPastWeek?'completed-week':''}
-  ${isFutureWeek?'future-week':''}"
+  ${isCompletedGroup?'completed-week':''}
+  ${isFutureGroup?'future-week':''}"
   style="background:${accent.d}"
-  ${isFutureWeek ? `ondblclick="toggleWeek(this,'${wkey}',${w})"` : `onclick="toggleWeek(this,'${wkey}',${w})"`}>
+  ${isFutureGroup ? `ondblclick="toggleWeek(this,'${wkey}',${w})"` : `onclick="toggleWeek(this,'${wkey}',${w})"`}>
 
     <span>
 
     ${
-      isPastWeek
+      isCompletedGroup
       ? ICON_CHECK+' '
       : isCurrentWeek
         ? ICON_FLAME+' '
@@ -2171,8 +2211,9 @@ const isFutureWeek = w > state.currentWeek;
 
 </div>
 
-`;
-  }).join('');
+`};
+  });
+  const weeksHtml = renderWeekSections(weekEntries, completedWeeksGroupKey(exiA));
 
   const recordA = getRecordForExercise(exA.nome);
   const recordB = getRecordForExercise(exB.nome);
