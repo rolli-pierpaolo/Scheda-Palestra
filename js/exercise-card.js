@@ -241,11 +241,12 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   activeExerciseIdx = resolveActiveExerciseIdx(day);
   saveActivePos();
   const dayExStripHtml = renderDayExerciseStrip(progress, a.c, activeExerciseIdx);
-  // Azioni dell'INTERA giornata in un solo posto, separato dai "..." delle
-  // singole card: questi ultimi restano dedicati a serie, Max e opzioni
-  // dell'esercizio; qui vivono Salta e Termina giornata.
+  // Azioni dell'INTERA giornata, separate dai "..." dell'esercizio. Il
+  // controllo viene inserito dentro ogni slide (solo quella corrente e'
+  // visibile) subito dopo "Settimane concluse", cosi' resta nel punto comune
+  // della scheda che l'utente sta guardando.
   const dayManagementHtml = day.esercizi.length ? `<div class="day-management-row" style="--accent:${a.c}">
-    <button id="dayManagementBtn" class="day-management-btn" type="button" onclick="openDayManagementMenu()" aria-label="Gestisci giornata ${escapeAttr(day.name||'')}">
+    <button class="day-management-btn" type="button" onclick="openDayManagementMenu()" aria-label="Gestisci giornata ${escapeAttr(day.name||'')}">
       ${ICON_MORE}<span>Gestisci giornata</span><small>${progress.done}/${progress.total}</small>
     </button>
   </div>` : '';
@@ -264,7 +265,9 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   progress.items.forEach((it, slideIdx) => {
     const ex = day.esercizi[it.exi];
     const partnerExi = (ex.linkGroupId && day.esercizi[it.exi+1] && day.esercizi[it.exi+1].linkGroupId===ex.linkGroupId) ? it.exi+1 : null;
-    const cardHtml = partnerExi!==null ? linkedExerciseCard(ex, it.exi, day.esercizi[partnerExi], partnerExi, a) : exerciseCard(ex, it.exi, a);
+    const cardHtml = partnerExi!==null
+      ? linkedExerciseCard(ex, it.exi, day.esercizi[partnerExi], partnerExi, a, dayManagementHtml)
+      : exerciseCard(ex, it.exi, a, dayManagementHtml);
     slidesHtml += `<div class="ex-carousel-slide${slideIdx===activeSlideIdx?' current':''}">${cardHtml}</div>`;
   });
   const carouselHtml = progress.total>0 ? `
@@ -272,9 +275,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
       <div class="ex-carousel-track" id="exCarouselTrack" style="transform:translateX(-${activeSlideIdx*100}%)">${slidesHtml}</div>
     </div>` : '';
 
-  // Gestisci giornata resta immediatamente dopo la striscia degli esercizi:
-  // e' il primo comando comune, non anticipa mai i riquadri verdi in alto.
-  main.innerHTML = dayExStripHtml + dayManagementHtml + switchTrainingDay + emptyState + carouselHtml +
+  main.innerHTML = dayExStripHtml + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -675,7 +676,7 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
 function completedWeeksGroupKey(exi){
   return `completed-weeks_${activeDayIdx}_${exi}`;
 }
-function renderWeekSections(entries, groupKey){
+function renderWeekSections(entries, groupKey, dayManagementHtml=''){
   const current = entries.filter(entry=>entry.group==='current').map(entry=>entry.html).join('');
   const completed = entries.filter(entry=>entry.group==='completed').map(entry=>entry.html).join('');
   const future = entries.filter(entry=>entry.group==='future').map(entry=>entry.html).join('');
@@ -690,11 +691,12 @@ function renderWeekSections(entries, groupKey){
       </button>
       <div class="week-group-content ${completedCollapsed?'collapsed':''}">${completed}</div>
     </section>` : ''}
+    ${dayManagementHtml}
     ${futureCount ? `<section class="week-section week-section-future" aria-label="Prossime settimane">
       <div class="week-section-label">PROSSIME SETTIMANE <b>${futureCount}</b></div>${future}
     </section>` : ''}`;
 }
-function exerciseCard(ex, exi, accent){
+function exerciseCard(ex, exi, accent, dayManagementHtml=''){
 
   const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
   const weeks = Array.from({length:nWeeks}, (_,i)=>i);
@@ -967,7 +969,7 @@ function exerciseCard(ex, exi, accent){
 
 
   });
-  const weeksHtml = renderWeekSections(weekEntries, completedWeeksGroupKey(exi));
+  const weeksHtml = renderWeekSections(weekEntries, completedWeeksGroupKey(exi), dayManagementHtml);
 
 
 
@@ -2120,7 +2122,7 @@ function linkedMaxEntriesHtml(exA, exiA, exB, exiB, w, si){
 // la card per una coppia collegata: stesso impianto di exerciseCard, ma con due
 // intestazioni (una per esercizio) e un'unica settimana condivisa, dove ogni
 // riga numerata si sdoppia in due sotto-righe (una per esercizio)
-function linkedExerciseCard(exA, exiA, exB, exiB, accent){
+function linkedExerciseCard(exA, exiA, exB, exiB, accent, dayManagementHtml=''){
   const typeLabel = exA.linkType === 'jumpset' ? 'Jump set' : 'Super set';
   const nWeeks = (exA.recupero && exA.recupero.length) || state.weeksPerBlock || 4;
   const weeks = Array.from({length:nWeeks}, (_,i)=>i);
@@ -2281,7 +2283,7 @@ const isFutureWeek = w > state.currentWeek;
 
 `};
   });
-  const weeksHtml = renderWeekSections(weekEntries, completedWeeksGroupKey(exiA));
+  const weeksHtml = renderWeekSections(weekEntries, completedWeeksGroupKey(exiA), dayManagementHtml);
 
   const recordA = getRecordForExercise(exA.nome);
   const recordB = getRecordForExercise(exB.nome);

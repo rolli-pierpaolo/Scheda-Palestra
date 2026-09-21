@@ -1045,22 +1045,23 @@ test('striscia esercizi del giorno: ordine vero, fatto = colorato/piccolo, corre
   assert.ok(!chips[1].classList.contains('done'), 'quello corrente, non ancora fatto, non deve avere la classe done');
 });
 
-test('Gestisci giornata e unico sotto la striscia: i "..." restano per il singolo esercizio', () => {
+test('Gestisci giornata resta sotto Settimane concluse: i "..." restano per il singolo esercizio', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
-    weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [],
+    weeksPerBlock: 4, currentWeek: 1, completedTrainingDays: [],
     days: [{ name:'Push', esercizi: [
-      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,true,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
     ]}]
   };
   window.renderActive();
   assert.ok(!window.document.getElementById('exDayFinishTab'), 'BUG: non deve piu\' esserci l\'icona accanto ai pallini');
   assert.strictEqual(window.document.querySelector('.finish-day-btn'), null, 'non deve restare il vecchio bottone di fine giornata in fondo alla card');
-  const btn = window.document.getElementById('dayManagementBtn');
+  const btn = window.document.querySelector('.day-management-btn');
   assert.ok(btn, 'deve esserci un unico comando per le azioni della giornata');
-  const main = window.document.getElementById('viewActive');
-  assert.ok(main.children[1].classList.contains('day-management-row'), 'Gestisci giornata deve stare subito sotto l\'elenco esercizi, non in fondo alla card');
+  const completedSection = window.document.querySelector('.week-section-completed');
+  assert.ok(completedSection, 'la settimana chiusa deve essere raccolta nella sua sezione');
+  assert.strictEqual(completedSection.nextElementSibling, btn.closest('.day-management-row'), 'Gestisci giornata deve stare subito sotto Settimane concluse, prima delle settimane future');
   window.openDayManagementMenu();
   const menu = window.document.getElementById('dayManagementMenu');
   assert.ok(menu, 'il comando comune deve aprire il suo menu');

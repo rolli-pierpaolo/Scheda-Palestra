@@ -392,7 +392,7 @@ main{padding:12px;}
 .ex-jump-dot{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);font-size:11px;font-weight:800;}
 .ex-jump-dot.done{background:var(--accent,var(--green));border-color:var(--accent,var(--green));color:#0D0D0D;}
 .ex-jump-dot.current{box-shadow:0 0 0 2px var(--accent,var(--green));}
-.day-management-row{display:flex;justify-content:center;padding:0 12px 7px;}
+.day-management-row{display:flex;justify-content:center;padding:7px 0 5px;}
 .day-management-btn{min-height:30px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid color-mix(in srgb,var(--accent,var(--green)) 44%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--panel2) 82%,transparent);color:var(--muted);padding:4px 10px;font-size:10px;font-weight:800;letter-spacing:.25px;}
 .day-management-btn svg{width:14px;height:14px;color:var(--accent,var(--green));}
 .day-management-btn span{color:var(--text);}
@@ -449,7 +449,7 @@ main{padding:12px;}
    un pannello/attrezzo che a una card da app consumer */
 .card{position:relative;background:linear-gradient(145deg,color-mix(in srgb,var(--panel2) 93%,var(--accent,var(--green))),var(--panel2));border-radius:13px;margin-bottom:14px;overflow:hidden;border:1px solid color-mix(in srgb,var(--accent,var(--green)) 58%,var(--line));box-shadow:0 14px 32px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.07);}
 .card::before{content:'';position:absolute;top:0;left:14px;right:14px;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent,var(--green)) 68%,#fff),transparent);opacity:.68;pointer-events:none;}
-.card-head{padding:8px 12px 2px;}
+.card-head{padding:8px 12px 0;}
 /* ---------------- SUPERSET / JUMP SET (esercizi collegati) ---------------- */
 .card.linked-group{border-top:1px solid var(--line);border-left:4px solid var(--accent,var(--green));}
 /* i due esercizi + il tipo di collegamento vivono dentro una sola cornice
@@ -498,7 +498,7 @@ main{padding:12px;}
 /* piccola di default (solo un accenno di riga): si espande per scriverci solo
    quando ci si clicca/tocca sopra, e torna piccola appena si esce dal campo -
    niente piu' spazio occupato in continuazione per una nota magari breve */
-.ex-comment{width:100%;background:var(--row-dark);border:none;color:var(--muted);font-style:italic;font-size:10px;line-height:1.15;padding:3px 7px;margin-top:4px;border-radius:6px;resize:none;height:19px;min-height:19px;overflow:hidden;box-sizing:border-box;transition:height .15s ease;}
+.ex-comment{width:100%;background:var(--row-dark);border:none;color:var(--muted);font-style:italic;font-size:10px;line-height:1.15;padding:3px 7px;margin-top:1px;border-radius:6px;resize:none;height:19px;min-height:19px;overflow:hidden;box-sizing:border-box;transition:height .15s ease;}
 .ex-comment::placeholder{color:var(--muted);font-size:9px;opacity:.42;}
 .ex-comment:focus{height:52px;min-height:52px;overflow:auto;}
 /* nota per singola settimana: molto piu' minimale della nota/tecnica dell'esercizio,
@@ -509,7 +509,7 @@ main{padding:12px;}
 .progression-hint{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--accent,var(--green));background:color-mix(in srgb, var(--accent, var(--green)) 12%, transparent);border-radius:6px;padding:6px 8px;margin-bottom:8px;}
 .progression-hint svg{flex:0 0 auto;width:14px;height:14px;}
 .week-note::placeholder{color:var(--muted);opacity:.6;}
-.weeks{padding:4px 12px 18px;}
+.weeks{padding:0 12px 18px;}
 /* ---------------- BLOCCO SETTIMANA (recupero, schema, righe serie) ---------------- */
 .week-block{border:1px solid var(--line);border-radius:8px;margin-top:10px;overflow:hidden;width:100%;transition:margin .2s ease,border-color .2s ease,box-shadow .2s ease;}
 .week-toggle{width:100%;background:var(--accent-dark,var(--green-dark));color:var(--text);border:none;padding:6px 10px;font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:8px;box-sizing:border-box;}
@@ -559,7 +559,7 @@ main{padding:12px;}
 .week-block.completed-week-block .week-toggle.skipped{color:var(--amber);opacity:.74;filter:none;}
 .week-block.future-week-block{margin-top:6px;border-color:#30363A;background:#121415;}
 .week-block.future-week-block .week-toggle{padding:6px 9px;font-size:11px;background:#171A1C!important;color:#7D858B;}
-.week-block.current-week-block{margin:22px -2px 24px;border-color:var(--accent,var(--green));border-radius:11px;background:color-mix(in srgb,var(--accent,var(--green)) 5%,var(--panel2));box-shadow:0 12px 28px rgba(0,0,0,.25),0 0 18px color-mix(in srgb,var(--accent,var(--green)) 20%,transparent);}
+.week-block.current-week-block{margin:6px -2px 18px;border-color:var(--accent,var(--green));border-radius:11px;background:color-mix(in srgb,var(--accent,var(--green)) 5%,var(--panel2));box-shadow:0 12px 28px rgba(0,0,0,.25),0 0 18px color-mix(in srgb,var(--accent,var(--green)) 20%,transparent);}
 .week-block.current-week-block .week-toggle{min-height:44px;padding:11px 13px;font-size:14px;}
 .week-block.current-week-block .week-toggle.current-week{border:none!important;box-shadow:none!important;transform:none;}
 .week-block.current-week-block .week-body{padding:14px 12px 16px;}
@@ -629,7 +629,7 @@ main{padding:12px;}
 /* ora e' un bottone (tocca per segnare/togliere dropset, vedi toggleDropset
    in js/exercise-card.js): reset dei default da <button> per restare
    identico al testo semplice di prima quando non e' un dropset */
-.set-label{font-size:10px;color:var(--accent,var(--green));font-weight:700;text-align:center;background:none;border:none;padding:0;width:100%;font-family:inherit;margin-top:7px;}
+.set-label{font-size:12px;color:var(--accent,var(--green));font-weight:800;text-align:center;background:none;border:none;padding:0;width:100%;font-family:inherit;margin-top:6px;line-height:1.2;}
 .set-label.dropset{color:var(--amber);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
 .set-input{background:linear-gradient(180deg,color-mix(in srgb,var(--row-dark) 82%,var(--panel2)),var(--row-dark));color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:5px 2px;font-size:13px;font-weight:700;text-align:center;width:100%;min-width:0;box-sizing:border-box;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);transition:border-color .16s ease,background .16s ease,box-shadow .16s ease;}
 .set-input::placeholder{color:var(--muted);font-weight:500;opacity:.72;}
@@ -644,8 +644,8 @@ body.training-focus .day-ex-strip,body.training-focus .ex-carousel-nav{display:n
 body.training-focus .ex-sticky-header{font-size:18px;padding:10px 14px;margin-bottom:8px;}
 body.training-focus .week-toggle{padding:10px 12px;font-size:15px;}
 body.training-focus .set-row{grid-template-columns:26px minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px;}
-body.training-focus .set-label{font-size:13px;margin-top:14px;}
-body.training-focus .set-input{min-height:48px;padding:9px 4px;font-size:21px;border-radius:8px;}
+body.training-focus .set-label{font-size:15px;margin-top:13px;}
+body.training-focus .set-input{min-height:48px;padding:9px 4px;font-size:18px;border-radius:8px;}
 body.training-focus .stepper{flex-basis:30px;width:30px;font-size:19px;border-radius:7px;}
 body.training-focus .rpe-chip{min-width:48px;font-size:12px;border-radius:8px;}
 body.training-focus .kg-fill-chip{min-height:30px;font-size:11px;}
