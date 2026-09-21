@@ -621,9 +621,10 @@ main{padding:12px;}
 .sets-wrap{width:100%;}
 /* griglia comune a ogni riga serie: numero romano, colonna kg, colonna rip.
    la stessa griglia viene riusata dalla riga "max" per restare allineata */
-/* Le righe restano compatte, con qualche pixel d'aria in più tra una serie e
-   l'altra: l'occhio separa meglio i set senza allungare troppo la settimana. */
-.set-row{display:grid;grid-template-columns:20px minmax(0,1fr) minmax(0,1fr);gap:5px;margin-bottom:5px;align-items:start;width:100%;}
+/* Ogni serie e' un piccolo blocco autonomo: il respiro vive TRA i blocchi,
+   non come spazio nero dentro kg/rip. Cosi' l'occhio separa I, II, III senza
+   trasformare le caselle in pulsanti enormi. */
+.set-row{display:grid;grid-template-columns:20px minmax(0,1fr) minmax(0,1fr);gap:5px;margin-bottom:0;align-items:start;width:100%;}
 /* colore del giorno invece del grigio muto: lega di piu' i numeri di serie al
    resto della card, ormai colorata per giorno ovunque */
 /* ora e' un bottone (tocca per segnare/togliere dropset, vedi toggleDropset
@@ -631,7 +632,7 @@ main{padding:12px;}
    identico al testo semplice di prima quando non e' un dropset */
 .set-label{font-size:12px;color:var(--accent,var(--green));font-weight:800;text-align:center;background:none;border:none;padding:0;width:100%;font-family:inherit;margin-top:6px;line-height:1.2;}
 .set-label.dropset{color:var(--amber);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
-.set-input{background:linear-gradient(180deg,color-mix(in srgb,var(--row-dark) 82%,var(--panel2)),var(--row-dark));color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:5px 2px;font-size:13px;font-weight:700;text-align:center;width:100%;min-width:0;box-sizing:border-box;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);transition:border-color .16s ease,background .16s ease,box-shadow .16s ease;}
+.set-input{background:color-mix(in srgb,var(--panel2) 74%,var(--row-dark));color:var(--text);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:5px 2px;font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:.2px;text-align:center;width:100%;min-width:0;box-sizing:border-box;box-shadow:inset 0 1px 0 rgba(255,255,255,.045);transition:border-color .16s ease,background .16s ease,box-shadow .16s ease;}
 .set-input::placeholder{color:var(--muted);font-weight:500;opacity:.72;}
 .set-input:focus{background:color-mix(in srgb,var(--panel2) 82%,var(--accent,var(--green)));border-color:var(--accent,var(--green));box-shadow:0 0 0 2px color-mix(in srgb,var(--accent,var(--green)) 45%,transparent),0 4px 12px rgba(0,0,0,.25);outline:none;}
 .set-row{transition:transform .18s var(--ease-premium);}
@@ -643,7 +644,7 @@ main{padding:12px;}
 body.training-focus .day-ex-strip,body.training-focus .ex-carousel-nav{display:none;}
 body.training-focus .ex-sticky-header{font-size:18px;padding:10px 14px;margin-bottom:8px;}
 body.training-focus .week-toggle{padding:10px 12px;font-size:15px;}
-body.training-focus .set-row{grid-template-columns:26px minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px;}
+body.training-focus .set-row{grid-template-columns:26px minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:0;}
 body.training-focus .set-label{font-size:15px;margin-top:13px;}
 body.training-focus .set-input{min-height:48px;padding:9px 4px;font-size:18px;border-radius:8px;}
 body.training-focus .stepper{flex-basis:30px;width:30px;font-size:19px;border-radius:7px;}
@@ -656,7 +657,7 @@ body.training-focus .week-block{margin-top:10px;}
    28px, quasi impossibile da toccare con precisione e facile da non notare
    proprio - impilati, il chip ha tutta la larghezza della colonna kg */
 .kg-cell{display:flex;flex-direction:column;gap:3px;min-width:0;}
-.kg-wrap{display:flex;align-items:stretch;gap:3px;min-width:0;}
+.kg-wrap{display:flex;align-items:stretch;gap:4px;min-width:0;}
 .kg-wrap .set-input{flex:1;min-width:0;}
 .stepper-pair{display:flex;gap:2px;flex:0 0 auto;}
 /* tocca per riusare l'ultimo peso scritto invece di doverlo riscrivere a
@@ -668,7 +669,7 @@ body.training-focus .week-block{margin-top:10px;}
 /* stesso schema del kg-wrap ma per rip+RPE: il chip resta muto finche' non
    c'e' un RPE registrato, si accende col colore del giorno appena tocchi e
    scrivi un valore (vedi editRpe in js/exercise-card.js) */
-.rip-wrap{display:flex;align-items:stretch;gap:3px;min-width:0;}
+.rip-wrap{display:flex;align-items:stretch;gap:4px;min-width:0;}
 .rip-wrap .set-input{flex:1;min-width:0;}
 .rip-cell{display:flex;flex-direction:column;gap:3px;min-width:0;}
 .rep-compare-btn{flex:0 0 auto;align-self:stretch;background:transparent;border:0;border-left:1px solid var(--line);color:var(--muted);font-size:8px;font-weight:800;padding:0 3px;white-space:nowrap;text-decoration:underline;text-underline-offset:2px;}
@@ -677,7 +678,7 @@ body.training-focus .week-block{margin-top:10px;}
 .rep-comparison{color:var(--muted);font-size:9px;line-height:1.2;padding:1px 2px;}
 .rpe-chip{flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-size:10px;font-weight:800;border-radius:6px;padding:0 5px;white-space:nowrap;}
 .rpe-chip.filled{border-color:var(--accent,var(--green));color:var(--accent,var(--green));}
-.stepper{flex:0 0 20px;width:20px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:5px;font-size:13px;font-weight:800;padding:0;line-height:1;}
+.stepper{flex:0 0 20px;width:20px;background:color-mix(in srgb,var(--panel2) 82%,var(--row-dark));color:var(--text);border:1px solid var(--line);border-radius:5px;font-size:13px;font-weight:800;padding:0;line-height:1;}
 .stepper:active{background:var(--accent,var(--green));color:#0D0D0D;}
 .add-ex{display:block;width:100%;background:var(--panel);border:2px dashed var(--line);color:var(--muted);padding:12px;border-radius:10px;font-size:13px;font-weight:700;margin-top:4px;}
 /* "Archivia mese": vive nelle Impostazioni (vicino al Backup), non piu' nella
@@ -719,9 +720,9 @@ body.training-focus .week-block{margin-top:10px;}
 .set-btns-right .add-ex.small.danger{position:absolute;left:0;}
 .week-actions-btn{width:28px;height:28px;padding:0;background:var(--panel);border:1px solid var(--accent,var(--green));border-radius:7px;color:var(--accent,var(--green));display:inline-flex;align-items:center;justify-content:center;}
 .week-actions-btn svg{width:14px;height:14px;}
-.set-series-group{margin-bottom:3px;}
-.set-series-group.has-max{border:1px dashed color-mix(in srgb,var(--amber) 58%,var(--line));border-radius:6px;padding:3px 5px 4px;background:transparent;}
-.set-series-group.has-max .set-row{margin-bottom:1px;}
+.set-series-group{margin-bottom:10px;}
+.set-series-group.has-max{border:1px dashed color-mix(in srgb,var(--amber) 44%,var(--line));border-radius:7px;padding:5px 6px 6px;margin-bottom:11px;background:color-mix(in srgb,var(--amber) 3%,transparent);}
+.set-series-group.has-max .set-row{margin-bottom:4px;}
 .set-series-group.max-enter{animation:maxExtendIn .36s cubic-bezier(.2,.9,.3,1);transform-origin:top center;}
 @keyframes maxExtendIn{0%{opacity:0;transform:translateY(-5px) scaleY(.72)}100%{opacity:1;transform:translateY(0) scaleY(1)}}
 .max-entry-box{padding:0;background:transparent;}
@@ -739,8 +740,13 @@ body.training-focus .week-block{margin-top:10px;}
 /* iOS ingrandisce la pagina quando un campo sotto i 16px riceve il focus.
    Sul telefono tutti i campi restano quindi a 16px: niente zoom automatico,
    tastiera stabile e valori più leggibili anche nei Max. */
-@media(max-width:899px){input:not([type="checkbox"]):not([type="radio"]),textarea,select{font-size:16px!important;}}
-.max-label{color:var(--amber)!important;font-size:8px!important;letter-spacing:.3px;margin-top:3px;}
+@media(max-width:899px){
+  input:not([type="checkbox"]):not([type="radio"]),textarea,select{font-size:16px!important;}
+  /* Su iPhone il 16px evita lo zoom automatico; qui rendiamo più vicini
+     numero serie e valore, senza sacrificare quella stabilità della tastiera. */
+  .set-label{font-size:14px;margin-top:8px;}
+}
+.max-label{color:var(--amber)!important;font-size:10px!important;letter-spacing:.3px;margin-top:6px;}
 /* scoped a .set-btns cosi' non tocca altri bottoni "add-ex small" nel resto della pagina */
 .set-btns .add-ex.small{flex:none;width:auto;min-height:26px;padding:4px 7px;font-size:9px;margin-top:0;border-width:1px;border-style:solid;}
 .add-ex.danger{color:var(--red);border-color:var(--red);}
