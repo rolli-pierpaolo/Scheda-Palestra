@@ -123,8 +123,8 @@ function removeLibraryExercise(name){
 // calendario può mostrare un pallino colorato per ogni giorno di allenamento
 // fatto, anche più di uno stesso giorno
 let calendarLog = {};
-// true da quando si scrive davvero un peso, non solo aprendo la scheda o
-// guardando gli esercizi, fino a "Giorno terminato": serve a decidere se,
+// true da quando si scrive davvero una ripetizione, non solo aprendo la
+// scheda o ritrovando pesi già predisposti, fino a "Giorno terminato": serve a decidere se,
 // riaprendo l'app da chiusa, si deve tornare dritti dove si era rimasti
 // oppure mostrare la Home, vedi js/app-init.js
 const WORKOUT_IN_PROGRESS_KEY = "scheda_wo18_workout_in_progress_v1";
@@ -144,13 +144,9 @@ function clearWorkoutSession(){
   saveWorkoutInProgress();
   saveWorkoutStartedAt();
 }
-// segna l'allenamento come davvero iniziato: chiamata solo da chi scrive
-// un peso, updateSet, stepSet, updateMax in js/exercise-card.js, mai dalle
-// ripetizioni, nemmeno quelle dei tentativi massimali - toccare "inizia"
-// dalla Home o scorrere gli esercizi senza scrivere nulla non conta più,
-// così chiudendo l'app forzatamente prima di aver scritto un peso vero si
-// torna alla Home, non al giorno di allenamento
-function markWorkoutStartedByWeight(){
+// Un allenamento inizia davvero solo quando si registra una ripetizione: i
+// pesi possono essere riportati automaticamente dalla settimana precedente.
+function markWorkoutStartedByRep(){
   if(!workoutInProgress){
     workoutInProgress = true;
     workoutStartedAt = Date.now();
@@ -158,22 +154,22 @@ function markWorkoutStartedByWeight(){
     saveWorkoutStartedAt();
   }
 }
-// workoutInProgress è unico per tutto il blocco, non per singolo giorno: una
-// volta scritto un peso vero da qualche parte, resta acceso finché quel
-// giorno non viene chiuso con "Giorno terminato", anche settimane dopo,
-// anche per giorni completamente diversi. Bug preso segnalando l'app a un
-// utente vero: alla riapertura dell'app questo faceva tornare dritti al
-// giorno attivo anche quando quel giorno specifico, per la settimana
-// corrente, non aveva ancora una sola cifra scritta - "in corso" era vero
-// per via di settimane passate già concluse altrove nel blocco, non perché
-// ci fosse davvero qualcosa di appeso lì. Questa funzione guarda solo il
-// giorno e la settimana che si aprirebbero per davvero
+// Alias sicuro per vecchie chiamate ancora in cache: un peso da solo non deve
+// più trasformare l'app in una sessione "in corso".
+function markWorkoutStartedByWeight(){}
+// workoutInProgress è un segnale della sessione in corso, non del blocco
+// completo. Alla riapertura conta soltanto il giorno e la settimana correnti:
+// un peso riportato automaticamente o una settimana chiusa in passato non
+// deve far saltare la Home. Una ripetizione scritta, invece, è la prova che
+// l'allenamento è iniziato davvero.
 function dayHasRealProgressThisWeek(day){
   if(!day) return false;
   const w = state.currentWeek || 0;
   return (day.esercizi||[]).some(ex=>{
     const sets = (ex.sets && ex.sets[w]) || [];
-    return sets.some(s => s && String(s.peso||'').trim()!=='');
+    const maxEntries = (ex.maxEntries && ex.maxEntries[w]) || (ex.maxExtra && ex.maxExtra[w]) || [];
+    return sets.some(s => s && String(s.rip||'').trim()!=='') ||
+      maxEntries.some(entry => entry && String(entry.rip||'').trim()!=='');
   });
 }
 // trasforma una data in una chiave "YYYY-MM-DD", oggi se non specificata
@@ -290,23 +286,9 @@ function loadState(){
   try{
     workoutInProgress = localStorage.getItem(WORKOUT_IN_PROGRESS_KEY) === '1';
   }catch(e){ workoutInProgress = false; }
-  // autocorrezione: se il flag è rimasto vero, per esempio salvato da una
-  // versione precedente che lo attivava anche solo toccando un campo, ma
-  // nessuna settimana risulta davvero completata in nessun giorno, non è un
-  // allenamento in corso per davvero - si corregge qui così non serve
-  // aspettare un "Giorno terminato" per tornare a vedere la Home.
-  // Bug risolto qui: controllava solo weekDone, non anche weekSkipped -
-  // toggleWeekSkipped attiva "in corso" esattamente come toggleWeekDone,
-  // saltare una settimana di proposito conta come allenarsi, ma questo
-  // controllo lo ignorava: una sessione fatta solo di esercizi saltati,
-  // nessuno segnato fatto, veniva giudicata "non in corso per davvero" e
-  // azzerata, mandando alla Home invece che dritti al giorno vero, e da lì
-  // un tocco su "Allenamento" faceva ripartire dal primo giorno invece di
-  // quello su cui si era davvero
-  if(workoutInProgress && !state.days.some(d => (d.esercizi||[]).some(ex => (ex.weekDone||[]).some(Boolean) || (ex.weekSkipped||[]).some(Boolean)))){
-    workoutInProgress = false;
-    saveWorkoutInProgress();
-  }
+  // Non correggere qui il flag "in corso": qui non è ancora nota la
+  // posizione salvata dell'utente. js/app-init.js decide dopo aver caricato
+  // activeDayIdx, guardando le ripetizioni del giorno/settimana effettivi.
 
   // salva solo se il caricamento ha davvero corretto o riempito qualcosa:
   // prima si chiamava saveState() incondizionatamente a ogni avvio, anche

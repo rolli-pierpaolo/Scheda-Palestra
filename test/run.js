@@ -250,7 +250,7 @@ test('computeDayProgress conta le coppie collegate come UN solo esercizio e usa 
   assert.strictEqual(progress.items[1].exi, 1, 'la voce della coppia punta al primo dei due indici (exi=1), non al partner');
 });
 
-test('toggleWeekSkipped ha lo stesso "mood" di toggleWeekDone: avvia l\'allenamento, e un mix fatto/saltato chiude comunque esercizio e giorno', () => {
+test('toggleWeekSkipped chiude una settimana senza avviare una sessione, e un mix fatto/saltato chiude comunque esercizio e giorno', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.workoutInProgress = false;
@@ -261,7 +261,7 @@ test('toggleWeekSkipped ha lo stesso "mood" di toggleWeekDone: avvia l\'allename
     ]}]
   };
   window.toggleWeekSkipped(0, 0);
-  assert.strictEqual(window.__bridge.workoutInProgress, true, 'saltare una settimana deve avviare "allenamento in corso", come completarla');
+  assert.strictEqual(window.__bridge.workoutInProgress, false, 'saltare una settimana non deve avviare "allenamento in corso": quello parte solo con una ripetizione');
 
   const ex = window.__bridge.state.days[0].esercizi[0];
   assert.strictEqual(ex.weekSkipped[0], true);
@@ -885,7 +885,7 @@ test('loadState() salva di nuovo SOLO se ha davvero corretto/riempito qualcosa, 
   assert.strictEqual(saveStatusEl.textContent, '', 'BUG: uno stato gia\' corretto non deve far scattare un salvataggio (e quindi un invio al cloud) a ogni avvio senza un motivo vero - con piu\' dispositivi, questo faceva comparire il banner "dati aggiornati" anche senza nessuna modifica reale, solo perche\' un altro dispositivo era stato aperto nel frattempo');
 });
 
-test('loadState() NON deve azzerare "allenamento in corso" se l\'unico progresso e\' fatto di esercizi SALTATI (non "fatti")', () => {
+test('loadState() conserva il segnale di sessione: la decisione avviene dopo, con giorno e settimana attivi', () => {
   const window = loadApp();
   window.localStorage.setItem('scheda_wo18_state_v1', JSON.stringify({
     title: 'WO', currentWeek: 0,
@@ -898,10 +898,10 @@ test('loadState() NON deve azzerare "allenamento in corso" se l\'unico progresso
   }));
   window.localStorage.setItem('scheda_wo18_workout_in_progress_v1', '1');
   window.loadState();
-  assert.strictEqual(window.__bridge.workoutInProgress, true, 'BUG: un allenamento fatto solo di esercizi saltati non deve essere trattato come "non in corso per davvero" - altrimenti riaprendo l\'app si finisce alla Home invece che sul giorno vero, e da li\' un tocco su Allenamento fa ripartire dal primo giorno');
+  assert.strictEqual(window.__bridge.workoutInProgress, true, 'loadState deve leggere il segnale salvato; app-init deciderà poi se è una sessione reale');
 });
 
-test('"in corso" si attiva SOLO scrivendo un peso vero (non aprendo la scheda, non scrivendo ripetizioni)', () => {
+test('"in corso" si attiva SOLO scrivendo una ripetizione vera (non aprendo la scheda né con il solo peso)', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.workoutInProgress = false;
@@ -916,20 +916,22 @@ test('"in corso" si attiva SOLO scrivendo un peso vero (non aprendo la scheda, n
   window.startDayFromHome(0);
   assert.strictEqual(window.__bridge.workoutInProgress, false, 'BUG: aprire il giorno da solo (senza scrivere nulla) non deve attivare "in corso"');
 
-  // scrivere le RIPETIZIONI non deve contare
+  // scrivere una RIPETIZIONE reale avvia l'allenamento
   window.updateSet(0, 0, 0, 'rip', '8');
-  assert.strictEqual(window.__bridge.workoutInProgress, false, 'BUG: scrivere le ripetizioni non deve attivare "in corso" - solo il peso');
+  assert.strictEqual(window.__bridge.workoutInProgress, true, 'scrivere una ripetizione deve attivare "in corso"');
 
-  // scrivere un PESO vero deve attivarlo
+  // un PESO, anche dopo, non è il segnale della sessione
+  window.__bridge.workoutInProgress = false;
   window.updateSet(0, 0, 0, 'peso', '50');
-  assert.strictEqual(window.__bridge.workoutInProgress, true, 'BUG: scrivere un peso vero deve attivare "in corso" - e\' questo il segnale che l\'allenamento e\' iniziato per davvero');
+  assert.strictEqual(window.__bridge.workoutInProgress, false, 'un peso predisposto o corretto non deve attivare "in corso"');
 
-  // il peso di un tentativo massimale deve contare allo stesso modo
+  // anche nei massimali conta la ripetizione, non il peso
   window.__bridge.workoutInProgress = false;
   window.updateMax(0, 0, 0, 'rip', '3');
-  assert.strictEqual(window.__bridge.workoutInProgress, false, 'BUG: le ripetizioni di un tentativo massimale non devono attivare "in corso"');
+  assert.strictEqual(window.__bridge.workoutInProgress, true, 'una ripetizione massimale deve attivare "in corso"');
+  window.__bridge.workoutInProgress = false;
   window.updateMax(0, 0, 0, 'peso', '55');
-  assert.strictEqual(window.__bridge.workoutInProgress, true, 'BUG: il peso di un tentativo massimale deve attivare "in corso" come quello di una serie normale');
+  assert.strictEqual(window.__bridge.workoutInProgress, false, 'il peso di un massimale non deve attivare "in corso"');
 });
 
 test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' ancora a meta\'', () => {
@@ -940,7 +942,7 @@ test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' 
     weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [],
     days: [{ name:'Push', esercizi: [
       // un esercizio fatto, uno no: il giorno NON e' ancora tutto chiuso
-      { nome:'Ex A', recupero:['60s','60s','60s','60s'], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] },
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[{peso:'50',rip:'8'}],[],[],[]] },
       { nome:'Ex B', recupero:['60s','60s','60s','60s'], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
     ]}]
   };
@@ -972,9 +974,14 @@ test('dayHasRealProgressThisWeek: BUG segnalato da un utente vero - "in corso" e
   };
   assert.strictEqual(window.dayHasRealProgressThisWeek(window.__bridge.state.days[1]), false, 'BUG: il giorno 3 e\' vuoto per la settimana corrente, non deve risultare "con progresso" solo perche\' il blocco nel suo insieme e\' andato avanti altrove');
 
-  // ma se sul giorno 3, PER LA SETTIMANA CORRENTE, e' stato scritto un peso vero, allora si'
+  // ma se sul giorno 3, PER LA SETTIMANA CORRENTE, è stata scritta una ripetizione, allora sì
   window.__bridge.state.days[1].esercizi[0].sets[2] = [{peso:'20', rip:''}];
-  assert.strictEqual(window.dayHasRealProgressThisWeek(window.__bridge.state.days[1]), true, 'un peso vero scritto per la settimana corrente sul giorno 3 deve contare come progresso vero');
+  assert.strictEqual(window.dayHasRealProgressThisWeek(window.__bridge.state.days[1]), false, 'un peso da solo non deve contare come allenamento iniziato');
+  window.__bridge.state.days[1].esercizi[0].sets[2][0].rip = '8';
+  assert.strictEqual(window.dayHasRealProgressThisWeek(window.__bridge.state.days[1]), true, 'una ripetizione nella settimana corrente deve contare come progresso vero');
+  window.__bridge.state.days[1].esercizi[0].sets[2][0].rip = '';
+  window.__bridge.state.days[1].esercizi[0].maxEntries = [[],[],[{peso:'25',rip:'3'}],[]];
+  assert.strictEqual(window.dayHasRealProgressThisWeek(window.__bridge.state.days[1]), true, 'anche una ripetizione Max deve conservare una sessione davvero iniziata');
 });
 
 test('Home "I tuoi giorni": l\'ordine resta fisso (quello di state.days), un giorno fatto non finisce in fondo', () => {
@@ -1045,7 +1052,7 @@ test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su u
     weeksPerBlock: 4, currentWeek: 0, currentTrainingDayIdx: 2, trainingQueue: [2,0,1], completedTrainingDays:[],
     days: [
       { name:'A', esercizi: [] },
-      { name:'B', esercizi: [] },
+      { name:'B', esercizi: [{nome:'Ex B', recupero:['60s'], sets:[[{peso:'50',rip:'8'}]]}] },
       { name:'C (oggi tocca a lui)', esercizi: [] }
     ]
   };

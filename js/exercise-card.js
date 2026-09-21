@@ -1307,9 +1307,9 @@ function updateSet(exi, w, si, field, val, recordPeso){
   if(!ex.sets[w]) ex.sets[w]=[];
   while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
   ex.sets[w][si][field]=val;
-  // solo il peso conta come "inizio vero" dell'allenamento, mai le
-  // ripetizioni - vedi markWorkoutStartedByWeight in js/state.js
-  if(field==='peso' && String(val||'').trim()!=='') markWorkoutStartedByWeight();
+  // Una ripetizione scritta è il segnale affidabile: i pesi possono essere
+  // già riportati dalla settimana precedente senza che l'allenamento sia iniziato.
+  if(field==='rip' && String(val||'').trim()!=='') markWorkoutStartedByRep();
   saveState();
   if(field==='peso' && recordPeso!==undefined && recordPeso!==null && !ex.sets[w][si].dropset){
     const p = parseFloat(String(val).replace(',','.'));
@@ -1493,7 +1493,6 @@ function stepSet(exi, w, si, delta, btn){
   let next = Math.max(0, Math.round((cur+delta)*10)/10);
   const record = getRecordForExercise(ex.nome);
   ex.sets[w][si].peso = next;
-  markWorkoutStartedByWeight();
   const input = btn.closest('.kg-wrap').querySelector('.set-input');
   if(input) input.value = next;
   saveState();
@@ -1629,7 +1628,7 @@ function updateMaxEntry(exi, w, index, field, val){
   // Se le righe future erano già state create vuote, riempi anche quelle
   // senza cancellare eventuali modifiche scritte in autonomia più avanti.
   carryMaxLayoutForward(ex,w);
-  if(field==='peso' && String(val||'').trim()!=='') markWorkoutStartedByWeight();
+  if(field==='rip' && String(val||'').trim()!=='') markWorkoutStartedByRep();
   saveState();
 }
 function toggleMax(exi, w){
@@ -1677,12 +1676,8 @@ function toggleWeekDone(exi, w){
   if(nowDone && ex.weekSkipped) ex.weekSkipped[w] = false;
   if(nowDone) pendingWeekVisual = {type:'done',exi,w};
 
-  // l'allenamento si considera "iniziato" solo quando si segna davvero
-  // completata almeno una settimana, non solo toccando/guardando un campo
-  if(nowDone && !workoutInProgress){
-    workoutInProgress = true;
-    saveWorkoutInProgress();
-  }
+  // Segnare fatta una settimana non apre da solo una sessione alla prossima
+  // apertura: quel segnale arriva esclusivamente da una ripetizione inserita.
   saveState();
   renderActive();
   if(nowDone){
@@ -1750,10 +1745,8 @@ function toggleWeekSkipped(exi, w){
   if(nowSkipped && ex.weekDone) ex.weekDone[w] = false;
   if(nowSkipped) pendingWeekVisual = {type:'skipped',exi,w};
 
-  if(nowSkipped && !workoutInProgress){
-    workoutInProgress = true;
-    saveWorkoutInProgress();
-  }
+  // Anche "salta" chiude la settimana, ma non significa che l'utente stia
+  // ancora allenandosi: non deve quindi attivare la ripresa automatica.
   saveState();
   renderActive();
   if(nowSkipped){
@@ -1776,9 +1769,8 @@ function updateMax(exi, w, idx, field, val){
   if(!ex.maxExtra[w]) ex.maxExtra[w]=[];
   if(!ex.maxExtra[w][idx]) ex.maxExtra[w][idx]={};
   ex.maxExtra[w][idx][field]=val;
-  // anche il peso di un tentativo massimale conta come "inizio vero", non
-  // solo quello delle serie normali - le ripetizioni no, ne' qui ne' li'
-  if(field==='peso' && String(val||'').trim()!=='') markWorkoutStartedByWeight();
+  // Anche nei Max il segnale è la ripetizione: il peso può essere predisposto.
+  if(field==='rip' && String(val||'').trim()!=='') markWorkoutStartedByRep();
   saveState();
 }
 function addSet(exi, w){

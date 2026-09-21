@@ -310,16 +310,19 @@ function selectDay(i){
   renderActive();
   updateThemeColor();
 }
-// tocco sul tab "Allenamento" in basso: se non c'e' gia' un allenamento
-// deliberatamente in corso su un giorno preciso (workoutInProgress), apre
-// sempre il giorno che tocca oggi (computeSuggestedDayIdx) invece di
+// tocco sul tab "Allenamento" in basso: se non c'e' già un allenamento
+// iniziato davvero con una ripetizione sul giorno preciso, apre sempre il
+// giorno che tocca oggi (computeSuggestedDayIdx) invece di
 // restare fermo su qualunque giorno fosse rimasto aperto per caso in una
 // sessione precedente. Se invece si e' scelto apposta un giorno diverso da
 // quello previsto (vedi il banner "Previsto: X - tocca per fare Y oggi" in
 // renderActive), quella scelta resta rispettata finche' non si finisce o
 // non si torna alla Home
 function goToActiveTab(){
-  if(!workoutInProgress){
+  const activeDay = state.days[activeDayIdx];
+  const hasRealSession = workoutInProgress && dayHasRealProgressThisWeek(activeDay);
+  if(!hasRealSession){
+    if(workoutInProgress) clearWorkoutSession();
     const suggested = computeSuggestedDayIdx();
     if(state.days[suggested] && suggested !== activeDayIdx){
       selectDay(suggested);

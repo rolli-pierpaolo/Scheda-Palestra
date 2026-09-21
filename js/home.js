@@ -5,28 +5,19 @@
 // che già esiste
 // mostra la Home, sistemando prima lo stato "in corso" se serve
 function showHome(){
-  // azzera "in corso" solo se il giorno attivo risulta già tutto chiuso,
-  // fatto o saltato, ma mai confermato con "Giorno terminato": quello sì che
-  // è un allenamento abbandonato a metà del tutto, che altrimenti
-  // resterebbe "in corso" per sempre. Bug risolto qui: prima si azzerava
-  // sempre al primo tocco sulla Home, anche con l'allenamento vero a metà,
-  // solo alcuni esercizi fatti - bastava dare un'occhiata alla Home per
-  // perdere la sessione, e riaprendo l'app, o tornando su Allenamento, si
-  // veniva rimandati al giorno suggerito invece che a quello dove si era
-  // rimasti davvero
-  if(workoutInProgress){
-    const day = state.days[activeDayIdx];
-    if(day && allExercisesClosed(day)){
-      workoutInProgress = false;
-      saveWorkoutInProgress();
-    }
+  // La Home chiude una sessione rimasta solo come posizione salvata: se non
+  // c'è una ripetizione nella settimana corrente del giorno attivo, l'utente
+  // non ha ancora iniziato davvero e alla riapertura deve restare qui.
+  const activeDay = state.days[activeDayIdx];
+  if(workoutInProgress && (!activeDay || !dayHasRealProgressThisWeek(activeDay) || allExercisesClosed(activeDay))){
+    clearWorkoutSession();
   }
   renderHome();
   showView('home');
 }
 // toccare "inizia" da qui non conta più come allenamento iniziato per
-// davvero, vedi markWorkoutStartedByWeight in js/state.js: solo scrivere
-// un peso lo fa. Guardare gli esercizi, o toccare "inizia" per sbaglio,
+// davvero, vedi markWorkoutStartedByRep in js/state.js: solo scrivere una
+// ripetizione lo fa. Guardare gli esercizi, o toccare "inizia" per sbaglio,
 // senza scrivere nulla, chiudendo l'app forzatamente, deve riportare alla
 // Home la prossima volta, non dritti qui dove ci si era fermati a guardare
 function startDayFromHome(dayIdx){
@@ -518,6 +509,7 @@ const total = weekly.total;
   const volumeTrendHtml = volumeTrend ? `<div class="home-volume-trend">${ICON_CHART} Volume settimana scorsa: <b>${volumeTrend.pct>=0?'+':''}${volumeTrend.pct}%</b> rispetto a quella prima</div>` : '';
   el.innerHTML = `
     <div class="home-hero">
+      <div class="home-brand-mark" aria-hidden="true"><img src="viridis-logo-transparent.png?rev=20260921b" alt="" decoding="async"></div>
       <div class="home-progress-module">
         <div class="home-block-week">SETTIMANA ${blockWeek} DI ${state.weeksPerBlock||4}</div>
         <div class="home-progress-label">GIORNO</div>

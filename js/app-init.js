@@ -56,7 +56,7 @@ try{
   // workoutInProgress da solo però non basta: è un interruttore per tutto
   // il blocco, resta acceso anche settimane dopo per via di giorni già
   // conclusi in passato. Si torna dritti al giorno attivo solo se quel
-  // giorno, per la settimana corrente, ha davvero un peso scritto, altrimenti
+  // giorno, per la settimana corrente, ha davvero una ripetizione scritta, altrimenti
   // è solo la posizione dell'ultima occhiata data, non un allenamento appeso
   // lì, vedi dayHasRealProgressThisWeek in js/state.js
   if(workoutInProgress && dayHasRealProgressThisWeek(state.days[activeDayIdx])){
@@ -66,6 +66,7 @@ try{
     showView('active');
     requestWakeLock(); // si apre già sulla tab Allenamento, quindi il wake lock parte subito
   } else {
+    if(workoutInProgress) clearWorkoutSession();
     showHome();
   }
 

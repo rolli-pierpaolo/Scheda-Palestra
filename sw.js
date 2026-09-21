@@ -14,13 +14,14 @@
 // Nuova cache per la 1.21: forza l'app installata ad abbandonare gli script
 // che aprivano il tastierino numerico, anche su telefoni che erano rimasti
 // offline o con una vecchia risposta del browser in memoria.
-const CACHE_NAME = 'logbook-cache-v64';
+const CACHE_NAME = 'logbook-cache-v65';
 const CORE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
+  './viridis-logo-transparent.png',
   './fonts/oswald.woff2',
   './fonts/ibm-plex-sans.woff2',
   './fonts/orbitron.woff2',
