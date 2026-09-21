@@ -272,10 +272,9 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
       <div class="ex-carousel-track" id="exCarouselTrack" style="transform:translateX(-${activeSlideIdx*100}%)">${slidesHtml}</div>
     </div>` : '';
 
-  // Le azioni che modificano la scheda restano in fondo; la chiusura e il
-  // salto della GIORNATA stanno invece nel comando comune sotto la striscia.
-  const focusModeBtn = `<button class="training-focus-toggle ${trainingFocusMode?'active':''}" onclick="toggleTrainingFocusMode()" aria-pressed="${trainingFocusMode}">${trainingFocusMode ? '↙ Vista normale' : '⛶ Modalità allenamento grande'}</button>`;
-  main.innerHTML = dayExStripHtml + dayManagementHtml + focusModeBtn + switchTrainingDay + emptyState + carouselHtml +
+  // Gestisci giornata resta immediatamente dopo la striscia degli esercizi:
+  // e' il primo comando comune, non anticipa mai i riquadri verdi in alto.
+  main.innerHTML = dayExStripHtml + dayManagementHtml + switchTrainingDay + emptyState + carouselHtml +
     `<div class="add-ex-row">
        <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
        ${reorderBtn}
@@ -1176,6 +1175,18 @@ async function shareExercise(exi){
 }
 function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
   closeExerciseContextMenu();
+  const hasWeekContext = typeof weekIdx === 'number';
+  const exercise = state.days[activeDayIdx] && state.days[activeDayIdx].esercizi[exi];
+  const hasMax = hasWeekContext && exercise && getMaxEntries(exercise,weekIdx).length;
+  const partnerArg = typeof partnerExi === 'number' ? `,${partnerExi}` : '';
+  const maxActions = hasWeekContext ? `<div class="ex-context-action-pair" aria-label="Serie Max">
+      <button class="ex-context-action paired-action" onclick="closeExerciseContextMenu();requestAddMax(${exi},${weekIdx}${partnerArg})">${ICON_PLATE}<span>Aggiungi<br>serie Max</span></button>
+      ${hasMax ? `<button class="ex-context-action paired-action danger" onclick="closeExerciseContextMenu();requestRemoveMax(${exi},${weekIdx}${partnerArg})">${ICON_TRASH}<span>Rimuovi<br>serie Max</span></button>` : ''}
+    </div>` : '';
+  const setActions = hasWeekContext ? `<div class="ex-context-action-pair" aria-label="Serie esercizio">
+      <button class="ex-context-action paired-action" onclick="closeExerciseContextMenu();addSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;addSet(${partnerExi},${weekIdx})`:''}">＋<span>Aggiungi<br>serie</span></button>
+      <button class="ex-context-action paired-action danger" onclick="closeExerciseContextMenu();removeSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;removeSet(${partnerExi},${weekIdx})`:''}">−<span>Rimuovi<br>serie</span></button>
+    </div>` : '';
   const el = document.createElement('div');
   el.id = 'exContextMenu';
   el.className = 'modal-overlay ex-context-overlay';
@@ -1184,12 +1195,12 @@ function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
     <div class="ex-context-sheet">
       <div class="ex-context-title">${escapeHtml(exName||'Esercizio')}</div>
       <div class="ex-context-group-label">Questo esercizio</div>
-      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();requestAddMax(${exi},${weekIdx}${typeof partnerExi==='number'?`,`+partnerExi:''})">${ICON_PLATE} Aggiungi serie Max</button>` : ''}
-      ${typeof weekIdx==='number' && getMaxEntries(state.days[activeDayIdx].esercizi[exi],weekIdx).length ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();requestRemoveMax(${exi},${weekIdx}${typeof partnerExi==='number'?`,`+partnerExi:''})">${ICON_TRASH} Rimuovi serie Max</button>` : ''}
-      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();addSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;addSet(${partnerExi},${weekIdx})`:''}">＋ Aggiungi serie</button>` : ''}
-      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();removeSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;removeSet(${partnerExi},${weekIdx})`:''}">− Rimuovi serie</button>` : ''}
-      ${typeof weekIdx==='number' ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();toggleExerciseEditMode(${exi})">${ICON_GEAR} Modifica esercizio</button>` : ''}
+      ${maxActions}
+      ${setActions}
+      <div class="ex-context-group-label">Strumenti</div>
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openPlateCalc(${exi})">${ICON_PLATE} Calcola dischi bilanciere</button>
+      <div class="ex-context-group-label">Configurazione</div>
+      ${hasWeekContext ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();toggleExerciseEditMode(${exi})">${ICON_GEAR} Modifica esercizio</button>` : ''}
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openLinkPicker(${exi})">${ICON_LINK} Collega esercizio</button>
       <div class="ex-context-group-label">Azioni</div>
       <button class="ex-context-action" onclick="closeExerciseContextMenu();openChart(${exi})">${ICON_CHART} Grafico progressione</button>
@@ -1224,6 +1235,8 @@ function openDayManagementMenu(){
   el.innerHTML = `
     <div class="ex-context-sheet day-management-sheet">
       <div class="ex-context-title">${escapeHtml(day.name||'Giornata')}</div>
+      <div class="ex-context-group-label">Vista</div>
+      <button class="ex-context-action" onclick="closeDayManagementMenu();toggleTrainingFocusMode()">${trainingFocusMode ? '↙' : '⛶'} ${trainingFocusMode ? 'Torna alla vista normale' : 'Modalità allenamento grande'}</button>
       <div class="ex-context-group-label">Questa giornata · ${progress.done}/${progress.total} esercizi chiusi</div>
       ${isClosed
         ? `<button class="ex-context-action day-finish-action" onclick="closeDayManagementMenu();openFinishWorkoutModal(${activeDayIdx})">${ICON_CHECK} Termina giornata</button>`

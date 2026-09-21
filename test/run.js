@@ -432,6 +432,28 @@ test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare 
   assert.strictEqual(window.__bridge.state.days[0].esercizi.length, 1, 'aprire/chiudere il menu non deve toccare i dati');
 });
 
+test('il menu "..." affianca le azioni Max e Serie, lasciando Calcola dischi in una sezione propria', () => {
+  const window = loadApp();
+  window.__bridge.activeDayIdx = 0;
+  window.__bridge.state = {
+    weeksPerBlock: 4, currentWeek: 0,
+    days: [{ name:'Push', esercizi: [
+      { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[{},{}],[],[],[]], maxEntries:[[{afterSet:1,peso:'80',rip:'3'}],[],[],[]] }
+    ]}]
+  };
+  window.openExerciseContextMenu(0, 'Ex A', 0);
+  const menu = window.document.getElementById('exContextMenu');
+  const pairs = menu.querySelectorAll('.ex-context-action-pair');
+  assert.strictEqual(pairs.length, 2, 'Max e Serie devono avere ciascuno la propria coppia orizzontale');
+  assert.strictEqual(pairs[0].querySelectorAll('.paired-action').length, 2, 'con un Max esistente devono apparire Aggiungi e Rimuovi Max');
+  assert.strictEqual(pairs[1].querySelectorAll('.paired-action').length, 2, 'Aggiungi e Rimuovi serie devono stare insieme');
+  assert.ok(pairs[0].textContent.includes('Aggiungi') && pairs[0].textContent.includes('Rimuovi'), 'la prima coppia deve riguardare i Max');
+  assert.ok(pairs[1].textContent.includes('Aggiungi') && pairs[1].textContent.includes('Rimuovi'), 'la seconda coppia deve riguardare le serie');
+  const labels = [...menu.querySelectorAll('.ex-context-group-label')].map(el=>el.textContent.trim());
+  assert.ok(labels.includes('Strumenti'), 'Calcola dischi deve essere separato dalle azioni sulle serie');
+  window.closeExerciseContextMenu();
+});
+
 test('advanceProgramWeek riporta avanti lo schema ("Serie") nella settimana nuova solo se e\' ancora vuota', () => {
   const window = loadApp();
   window.__bridge.state = {
@@ -1042,7 +1064,9 @@ test('Gestisci giornata e unico sotto la striscia: i "..." restano per il singol
   window.openDayManagementMenu();
   const menu = window.document.getElementById('dayManagementMenu');
   assert.ok(menu, 'il comando comune deve aprire il suo menu');
+  assert.ok(menu.textContent.includes('Modalità allenamento grande'), 'la modalità grande deve vivere nel menu comune "..."');
   assert.ok(menu.textContent.includes('Termina giornata'), 'con tutti gli esercizi chiusi deve proporre la chiusura della giornata');
+  assert.strictEqual(window.document.querySelector('.training-focus-toggle'), null, 'non deve restare il vecchio pulsante grande fuori dal menu');
   window.closeDayManagementMenu();
 });
 

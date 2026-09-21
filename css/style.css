@@ -88,7 +88,7 @@ body.a11y-reduce-motion *,body.a11y-reduce-motion *::before,body.a11y-reduce-mot
    invece dello sfondo nero piatto di prima - richiama la gomma della sala
    pesi invece di un semplice "dark mode" da dashboard, ma resta cosi'
    discreta da non disturbare mai la lettura */
-body{padding-bottom:calc(92px + env(safe-area-inset-bottom));font-variant-numeric:tabular-nums;
+body{padding-bottom:calc(82px + env(safe-area-inset-bottom));font-variant-numeric:tabular-nums;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   background-repeat:repeat;
 }
@@ -204,7 +204,7 @@ body.on-home .topbar h1{
 /* avviso "dati aggiornati da un altro dispositivo" (vedi js/sync.js): resta
    nascosto (show la mostra) finche' non arriva davvero un aggiornamento
    remoto, mai una sovrascrittura automatica e silenziosa */
-.sync-update-banner{display:none;position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:60;background:var(--panel2);border:1.5px solid var(--green);border-radius:10px;padding:10px 14px;color:var(--text);font-size:12px;font-weight:700;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.4);}
+.sync-update-banner{display:none;position:fixed;left:12px;right:12px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:60;background:var(--panel2);border:1.5px solid var(--green);border-radius:10px;padding:10px 14px;color:var(--text);font-size:12px;font-weight:700;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.4);}
 .sync-update-banner.show{display:block;}
 .sync-update-actions{display:flex;justify-content:center;gap:8px;margin-top:9px;}
 .sync-update-banner button{border:1px solid var(--green);border-radius:7px;padding:7px 9px;background:transparent;color:var(--green);font:inherit;font-weight:800;}
@@ -226,12 +226,12 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
    linguaggio visivo (pillola traslucida + voce attiva incassata), non icone,
    proporzioni o struttura di un'altra app. L'accento continua a essere quello
    del giorno Viridis, cosi' la barra resta parte dell'allenamento corrente. */
-.bottom-nav{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:25;display:flex;gap:4px;padding:5px;border:1px solid rgba(255,255,255,.15);border-radius:26px;background:rgba(37,37,37,.74);box-shadow:0 12px 28px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.08);-webkit-backdrop-filter:blur(18px) saturate(130%);backdrop-filter:blur(18px) saturate(130%);isolation:isolate;}
+.bottom-nav{position:fixed;left:18px;right:18px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:25;display:flex;gap:4px;padding:4px;border:1px solid rgba(255,255,255,.15);border-radius:23px;background:rgba(37,37,37,.74);box-shadow:0 12px 28px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.08);-webkit-backdrop-filter:blur(18px) saturate(130%);backdrop-filter:blur(18px) saturate(130%);isolation:isolate;}
 .bottom-nav::before{content:'';position:absolute;inset:1px;border-radius:inherit;background:linear-gradient(150deg,rgba(255,255,255,.11),transparent 38%,rgba(0,0,0,.16));pointer-events:none;opacity:.55;}
-.bottom-nav-btn{position:relative;z-index:1;flex:1;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--muted);font-size:10px;font-weight:700;padding:6px 4px;border-radius:20px;}
+.bottom-nav-btn{position:relative;z-index:1;flex:1;min-height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:none;color:var(--muted);font-size:10px;font-weight:700;padding:5px 4px;border-radius:18px;}
 .bottom-nav-btn svg{width:22px;height:22px;}
 .bottom-nav-btn.active{color:var(--accent,var(--green));background:rgba(5,5,5,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 3px 10px rgba(0,0,0,.28);}
-.quick-number-bar{position:fixed;left:8px;right:8px;bottom:calc(86px + env(safe-area-inset-bottom));z-index:40;padding:7px;overflow:hidden;isolation:isolate;background:linear-gradient(145deg,color-mix(in srgb,var(--panel2) 97%,#000),#101010);border:1px solid color-mix(in srgb,var(--accent,var(--green)) 38%,var(--line));border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.06);transition:opacity .2s var(--ease-premium),transform .24s var(--ease-premium);}
+.quick-number-bar{position:fixed;left:8px;right:8px;bottom:calc(78px + env(safe-area-inset-bottom));z-index:40;padding:7px;overflow:hidden;isolation:isolate;background:linear-gradient(145deg,color-mix(in srgb,var(--panel2) 97%,#000),#101010);border:1px solid color-mix(in srgb,var(--accent,var(--green)) 38%,var(--line));border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.06);transition:opacity .2s var(--ease-premium),transform .24s var(--ease-premium);}
 .quick-number-bar[hidden]{display:none;}
 .quick-number-bar.is-closing{opacity:0;transform:translateY(18px);pointer-events:none;}
 .quick-number-bar [hidden]{display:none!important;}
@@ -637,11 +637,10 @@ main{padding:12px;}
 .set-row{transition:transform .18s var(--ease-premium);}
 .set-row.filled .set-label{color:var(--accent,var(--green));}
 .set-row.filled .set-input{border-color:color-mix(in srgb,var(--accent,var(--green)) 52%,rgba(255,255,255,.15));}
-/* Interruttore della prova "Allenamento grande": aumenta le zone toccabili
-   senza cambiare dati o struttura della scheda. */
-.training-focus-toggle{display:block;width:100%;margin:4px 0 8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;color:var(--muted);padding:8px 10px;font-size:11px;font-weight:800;}
-.training-focus-toggle.active{border-color:var(--green);color:var(--green);background:var(--green-dark);}
-body.training-focus .day-ex-strip,body.training-focus .day-management-row,body.training-focus .ex-carousel-nav{display:none;}
+/* "Allenamento grande" e' una preferenza di vista nel menu comune "...":
+   qui restano solo gli effetti della modalita'. Il comando Gestisci giornata
+   non viene nascosto, cosi' si puo' sempre tornare alla vista normale. */
+body.training-focus .day-ex-strip,body.training-focus .ex-carousel-nav{display:none;}
 body.training-focus .ex-sticky-header{font-size:18px;padding:10px 14px;margin-bottom:8px;}
 body.training-focus .week-toggle{padding:10px 12px;font-size:15px;}
 body.training-focus .set-row{grid-template-columns:26px minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:8px;}
@@ -876,7 +875,7 @@ body.training-focus .week-block{margin-top:10px;}
 .backup-auto-status{grid-column:1 / -1;margin:0 0 2px;text-align:left;}
 /* Aggiornamento PWA senza dover chiudere l'app: appare solo quando il
    service worker ha già scaricato una versione nuova ed è pronta da usare. */
-.app-update-banner{position:fixed;left:12px;right:12px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:80;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel2);border:1.5px solid var(--green);border-radius:10px;padding:10px 12px;color:var(--text);font-size:12px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.45);}
+.app-update-banner{position:fixed;left:12px;right:12px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:80;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--panel2);border:1.5px solid var(--green);border-radius:10px;padding:10px 12px;color:var(--text);font-size:12px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.45);}
 .app-update-banner[hidden]{display:none;}
 .app-update-banner button{flex:0 0 auto;background:var(--green);border:none;border-radius:7px;padding:7px 10px;color:#0D0D0D;font:inherit;font-weight:900;}
 /* ---------------- RECORD PERSONALI: badge sulla scheda + toast di festeggiamento ---------------- */
@@ -955,6 +954,14 @@ body.training-focus .week-block{margin-top:10px;}
 .ex-context-action{display:flex;align-items:center;gap:10px;width:100%;padding:14px;background:none;border:none;border-bottom:1px solid var(--line);color:var(--text);font-size:14px;font-weight:700;text-align:left;}
 .ex-context-action:last-child{border-bottom:none;}
 .ex-context-action.danger{color:var(--red);}
+/* Le coppie Max e Serie sono azioni speculari: affiancarle riduce molto la
+   scansione verticale nel foglio, ma ogni pulsante conserva una zona tocco
+   ampia e un'etichetta intera, anche quando la scritta va su due righe. */
+.ex-context-action-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-bottom:1px solid var(--line);background:var(--panel2);}
+.ex-context-action-pair .paired-action{min-width:0;min-height:66px;flex-direction:column;justify-content:center;gap:5px;padding:9px 7px;border-bottom:none;text-align:center;font-size:12px;line-height:1.12;}
+.ex-context-action-pair .paired-action+ .paired-action{border-left:1px solid var(--line);}
+.ex-context-action-pair .paired-action:only-child{grid-column:1 / -1;}
+.ex-context-action-pair .paired-action svg{width:19px;height:19px;}
 .ex-context-cancel{width:100%;max-width:360px;background:var(--panel2);border:none;border-radius:8px;padding:14px;color:var(--accent,var(--green));font-size:14px;font-weight:800;box-shadow:0 12px 40px rgba(0,0,0,.5);}
 .modal-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:800;font-size:14px;color:var(--green);position:sticky;top:0;background:var(--panel2);}
 .modal-head button{background:none;border:none;color:var(--muted);font-size:17px;padding:2px 6px;}
