@@ -1113,6 +1113,20 @@ test('tastiera rapida conserva 123/ABC e mostra il feedback sul solo tasto premu
   assert.ok(!one.classList.contains('is-pressed'), 'il feedback deve essere breve e non lasciare il tasto bloccato verde');
 });
 
+test('tastiera rapida aggancia il campo già al tocco, anche prima del focus mobile', () => {
+  const window = loadApp();
+  const input = window.document.createElement('input');
+  input.type = 'text';
+  input.className = 'set-input';
+  window.document.body.appendChild(input);
+  // In alcuni iPhone il focus arriva dopo il pointerdown: riproduciamo quel
+  // preciso ordine senza chiamare input.focus().
+  input.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
+  const one = window.document.querySelector('.quick-keyboard-numbers button');
+  one.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
+  assert.strictEqual(input.value, '1', 'BUG: il primo tasto deve scrivere nel campo appena toccato');
+});
+
 test('Gestisci giornata resta sotto Settimane concluse: i "..." restano per il singolo esercizio', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Viridis</title>
-<script src="js/bootstrap.js?rev=20260921j"></script>
+<script src="js/bootstrap.js?rev=20260921k"></script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <!-- black-translucent mette un velo nero sfumato sopra l'app: si vede come
      una fascia fissa mentre il contenuto scorre. Con "default" iOS disegna
@@ -16,8 +16,8 @@
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex, nofollow">
 <link rel="apple-touch-icon" href="icon-192.png?rev=20260921b">
-<link rel="manifest" href="manifest.json?rev=20260921j">
-<link rel="stylesheet" href="css/style.css?rev=20260921j">
+<link rel="manifest" href="manifest.json?rev=20260921k">
+<link rel="stylesheet" href="css/style.css?rev=20260921k">
 <!-- Protezione mobile nel documento: se iOS combina per un istante HTML nuovo
      e CSS precedente, la testata rimane comunque opaca e il testo non eredita
      il vecchio glow del logo. Il colore resta quello deciso dallo stile attivo. -->
@@ -42,7 +42,7 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.92</span>
+  <span class="app-version" id="appVersion">v1.93</span>
   <button id="workoutDayPickerBtn" class="workout-day-picker" hidden onclick="toggleWorkoutDayPicker()" title="Cambia giornata" aria-label="Cambia giornata">‹</button>
   <div class="topbar-copy">
     <h1 id="topbarTitle">Viridis</h1>
@@ -296,14 +296,14 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
   </button>
 </nav>
 <div id="quickNumberBar" class="quick-number-bar" hidden aria-label="Tastiera rapida">
-  <div class="quick-keyboard-head"><div class="quick-keyboard-mode-switch" aria-label="Modalità tastiera"><button type="button" class="quick-keyboard-mode active" data-mode="numbers" onpointerdown="setQuickKeyboardMode('numbers')">123</button><button type="button" class="quick-keyboard-mode" data-mode="letters" onpointerdown="setQuickKeyboardMode('letters')">ABC</button></div><span>Inserimento rapido</span><button type="button" class="quick-keyboard-done" onpointerdown="finishQuickKeyboardInput()">Fine</button></div>
+  <div class="quick-keyboard-head"><div class="quick-keyboard-mode-switch" aria-label="Modalità tastiera"><button type="button" class="quick-keyboard-mode active" data-mode="numbers">123</button><button type="button" class="quick-keyboard-mode" data-mode="letters">ABC</button></div><span>Inserimento rapido</span><button type="button" class="quick-keyboard-done" data-quick-action="finish">Fine</button></div>
   <div class="quick-keyboard-grid quick-keyboard-numbers">
-    <button type="button" onpointerdown="insertQuickKey('1')">1</button><button type="button" onpointerdown="insertQuickKey('2')">2</button><button type="button" onpointerdown="insertQuickKey('3')">3</button><button type="button" onpointerdown="insertQuickKey('4')">4</button><button type="button" onpointerdown="insertQuickKey('5')">5</button><button type="button" onpointerdown="insertQuickKey('6')">6</button><button type="button" onpointerdown="insertQuickKey('7')">7</button><button type="button" onpointerdown="insertQuickKey('8')">8</button><button type="button" onpointerdown="insertQuickKey('9')">9</button><button type="button" onpointerdown="insertQuickKey(',')">,</button><button type="button" onpointerdown="insertQuickKey('0')">0</button><button type="button" class="quick-number-delete" aria-label="Cancella ultimo carattere" onpointerdown="deleteQuickNumber()">⌫</button>
+    <button type="button" data-quick-key="1">1</button><button type="button" data-quick-key="2">2</button><button type="button" data-quick-key="3">3</button><button type="button" data-quick-key="4">4</button><button type="button" data-quick-key="5">5</button><button type="button" data-quick-key="6">6</button><button type="button" data-quick-key="7">7</button><button type="button" data-quick-key="8">8</button><button type="button" data-quick-key="9">9</button><button type="button" data-quick-key=",">,</button><button type="button" data-quick-key="0">0</button><button type="button" class="quick-number-delete" aria-label="Cancella ultimo carattere" data-quick-action="delete">⌫</button>
   </div>
   <div class="quick-keyboard-letters" hidden>
-    <div class="quick-keyboard-row"><button type="button" onpointerdown="insertQuickKey('q')">Q</button><button type="button" onpointerdown="insertQuickKey('w')">W</button><button type="button" onpointerdown="insertQuickKey('e')">E</button><button type="button" onpointerdown="insertQuickKey('r')">R</button><button type="button" onpointerdown="insertQuickKey('t')">T</button><button type="button" onpointerdown="insertQuickKey('y')">Y</button><button type="button" onpointerdown="insertQuickKey('u')">U</button><button type="button" onpointerdown="insertQuickKey('i')">I</button><button type="button" onpointerdown="insertQuickKey('o')">O</button><button type="button" onpointerdown="insertQuickKey('p')">P</button></div>
-    <div class="quick-keyboard-row letters-middle"><button type="button" onpointerdown="insertQuickKey('a')">A</button><button type="button" onpointerdown="insertQuickKey('s')">S</button><button type="button" onpointerdown="insertQuickKey('d')">D</button><button type="button" onpointerdown="insertQuickKey('f')">F</button><button type="button" onpointerdown="insertQuickKey('g')">G</button><button type="button" onpointerdown="insertQuickKey('h')">H</button><button type="button" onpointerdown="insertQuickKey('j')">J</button><button type="button" onpointerdown="insertQuickKey('k')">K</button><button type="button" onpointerdown="insertQuickKey('l')">L</button></div>
-    <div class="quick-keyboard-row letters-bottom"><button type="button" onpointerdown="insertQuickKey('z')">Z</button><button type="button" onpointerdown="insertQuickKey('x')">X</button><button type="button" onpointerdown="insertQuickKey('c')">C</button><button type="button" onpointerdown="insertQuickKey('v')">V</button><button type="button" onpointerdown="insertQuickKey('b')">B</button><button type="button" onpointerdown="insertQuickKey('n')">N</button><button type="button" onpointerdown="insertQuickKey('m')">M</button><button type="button" class="quick-number-delete" onpointerdown="deleteQuickNumber()">⌫</button></div>
+    <div class="quick-keyboard-row"><button type="button" data-quick-key="q">Q</button><button type="button" data-quick-key="w">W</button><button type="button" data-quick-key="e">E</button><button type="button" data-quick-key="r">R</button><button type="button" data-quick-key="t">T</button><button type="button" data-quick-key="y">Y</button><button type="button" data-quick-key="u">U</button><button type="button" data-quick-key="i">I</button><button type="button" data-quick-key="o">O</button><button type="button" data-quick-key="p">P</button></div>
+    <div class="quick-keyboard-row letters-middle"><button type="button" data-quick-key="a">A</button><button type="button" data-quick-key="s">S</button><button type="button" data-quick-key="d">D</button><button type="button" data-quick-key="f">F</button><button type="button" data-quick-key="g">G</button><button type="button" data-quick-key="h">H</button><button type="button" data-quick-key="j">J</button><button type="button" data-quick-key="k">K</button><button type="button" data-quick-key="l">L</button></div>
+    <div class="quick-keyboard-row letters-bottom"><button type="button" data-quick-key="z">Z</button><button type="button" data-quick-key="x">X</button><button type="button" data-quick-key="c">C</button><button type="button" data-quick-key="v">V</button><button type="button" data-quick-key="b">B</button><button type="button" data-quick-key="n">N</button><button type="button" data-quick-key="m">M</button><button type="button" class="quick-number-delete" data-quick-action="delete">⌫</button></div>
   </div>
 </div>
 
@@ -322,10 +322,10 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/chart.js"></script>         <!-- grafico di progressione -->
 <script src="js/trends.js?rev=20260915b"></script>        <!-- dashboard andamenti su tutta la cronologia -->
 <script src="js/backup.js?rev=20260915a"></script>        <!-- esporta/importa backup, manuale e automatico -->
-<script src="js/utils.js?rev=20260921j"></script>         <!-- escape html, altezza automatica delle textarea -->
-<script src="js/navigation.js?rev=20260921j"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
+<script src="js/utils.js?rev=20260921k"></script>         <!-- escape html, altezza automatica delle textarea -->
+<script src="js/navigation.js?rev=20260921k"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
 <script src="js/days-modal.js?rev=20260915a"></script>    <!-- modifica categorie giorni (nome/colore/aggiungi/elimina) -->
-<script src="js/exercise-card.js?rev=20260921j"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
+<script src="js/exercise-card.js?rev=20260921k"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
 <script src="js/history.js?rev=20260915a"></script>       <!-- tab Storico: elenco ed esercizi dei WO archiviati -->
 <script src="js/search.js?rev=20260915a"></script>        <!-- ricerca in scheda attiva e storico -->
 <script src="js/calendar.js?rev=20260915a"></script>      <!-- calendario mensile dei giorni di allenamento terminati -->

@@ -226,12 +226,42 @@ function hideQuickKeyboardBar(bar){
     }
   },240);
 }
+// Su alcuni browser mobili il pannello resta già visibile mentre il focus
+// nativo passa per un istante al body. Memorizziamo quindi il campo già al
+// pointerdown, non solo nel focusin: il tasto premuto scrive sempre nella
+// casella che l'utente ha appena scelto.
+function primeQuickKeyboardInput(input){
+  if(!isQuickNumberTarget(input)) return null;
+  if(input !== quickNumberInput && quickKeyboardOriginScrollY === null) quickKeyboardOriginScrollY = window.scrollY;
+  quickNumberInput = input;
+  quickKeyboardPinnedOpen = true;
+  quickKeyboardFinishRequested = false;
+  const bar = document.getElementById('quickNumberBar');
+  if(!bar) return input;
+  updateQuickKeyboardAccent(bar);
+  showQuickKeyboardBar(bar);
+  if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches){
+    input.inputMode = 'none';
+    requestAnimationFrame(revealQuickKeyboardInput);
+  }
+  positionQuickNumberBar();
+  return input;
+}
+function resolveQuickKeyboardInput(){
+  const active = document.activeElement;
+  if(isQuickNumberTarget(active)) return primeQuickKeyboardInput(active);
+  if(isQuickNumberTarget(quickNumberInput) && quickNumberInput.isConnected) return quickNumberInput;
+  return null;
+}
 function syncQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
   if(!bar) return;
   const active = document.activeElement;
   const nextInput = isQuickNumberTarget(active) ? active : null;
-  if(nextInput) quickKeyboardPinnedOpen = true;
+  if(nextInput){
+    primeQuickKeyboardInput(nextInput);
+    return;
+  }
   if(!nextInput && Date.now() < quickKeyboardInteractionUntil && !quickKeyboardFinishRequested){
     setTimeout(syncQuickNumberBar,Math.max(20,quickKeyboardInteractionUntil-Date.now()));
     return;
@@ -244,21 +274,10 @@ function syncQuickNumberBar(){
     positionQuickNumberBar();
     return;
   }
-  if(nextInput && nextInput !== quickNumberInput && quickKeyboardOriginScrollY === null) quickKeyboardOriginScrollY = window.scrollY;
-  quickNumberInput = nextInput;
-  if(quickNumberInput){
-    updateQuickKeyboardAccent(bar);
-    showQuickKeyboardBar(bar);
-  } else {
-    hideQuickKeyboardBar(bar);
-    quickKeyboardFinishRequested = false;
-  }
-  if(quickNumberInput && window.matchMedia && window.matchMedia('(pointer:coarse)').matches){
-    quickNumberInput.inputMode = 'none';
-    requestAnimationFrame(revealQuickKeyboardInput);
-  } else {
-    restoreQuickKeyboardScroll(240);
-  }
+  quickNumberInput = null;
+  hideQuickKeyboardBar(bar);
+  quickKeyboardFinishRequested = false;
+  restoreQuickKeyboardScroll(240);
   positionQuickNumberBar();
 }
 function commitQuickNumberInput(input){
@@ -284,7 +303,7 @@ function flashQuickKeyboardKey(button){
   quickKeyboardPressTimers.set(button,setTimeout(()=>button.classList.remove('is-pressed'),110));
 }
 function insertQuickKey(value){
-  const input = quickNumberInput;
+  const input = resolveQuickKeyboardInput();
   if(!input || input.disabled) return;
   const start = input.selectionStart ?? input.value.length;
   const end = input.selectionEnd ?? start;
@@ -298,7 +317,7 @@ function insertQuickKey(value){
 // Compatibilità con il vecchio nome usato da eventuali cache già aperte.
 function insertQuickNumber(value){ insertQuickKey(value); }
 function deleteQuickNumber(){
-  const input = quickNumberInput;
+  const input = resolveQuickKeyboardInput();
   if(!input || input.disabled) return;
   const start = input.selectionStart ?? input.value.length;
   const end = input.selectionEnd ?? start;
@@ -309,7 +328,7 @@ function deleteQuickNumber(){
   input.focus({preventScroll:true});
 }
 function finishQuickKeyboardInput(){
-  const input = quickNumberInput;
+  const input = resolveQuickKeyboardInput();
   const bar = document.getElementById('quickNumberBar');
   if(!input){
     quickKeyboardPinnedOpen = false;
@@ -336,7 +355,10 @@ function finishQuickKeyboardInput(){
 // un attimo la tastiera di sistema sotto a quella personalizzata.
 document.addEventListener('pointerdown', event=>{
   const target = event.target;
-  if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches && isQuickNumberTarget(target)) target.inputMode = 'none';
+  if(isQuickNumberTarget(target)){
+    if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches) target.inputMode = 'none';
+    primeQuickKeyboardInput(target);
+  }
   const keyboardArea = target && target.closest && target.closest('#quickNumberBar');
   if(keyboardArea){
     suppressQuickKeyboardClickUntil = Date.now()+600;
@@ -345,6 +367,10 @@ document.addEventListener('pointerdown', event=>{
     if(key){
       flashQuickKeyboardKey(key);
       vibrate(8);
+      if(key.classList.contains('quick-keyboard-mode')) setQuickKeyboardMode(key.dataset.mode);
+      else if(key.dataset.quickKey !== undefined) insertQuickKey(key.dataset.quickKey);
+      else if(key.dataset.quickAction === 'delete') deleteQuickNumber();
+      else if(key.dataset.quickAction === 'finish') finishQuickKeyboardInput();
     }
     event.preventDefault();
   }
