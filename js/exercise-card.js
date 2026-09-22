@@ -226,7 +226,7 @@ function renderActive(){
       <div class="empty-day-title">Nessun esercizio ancora</div>
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
-  const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex" onclick="toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>` : '';
+  const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex day-exercise-action" onclick="toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>` : '';
   const suggestedIdx = computeSuggestedDayIdx();
 
 // piccolo banner pulsante invece del box grande di prima: deve vedersi
@@ -252,15 +252,18 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   saveActivePos();
   const workoutProgressHtml = renderWorkoutProgress(progress, activeExerciseIdx, a.c);
   const dayExStripHtml = renderDayExerciseStrip(progress, a.c, activeExerciseIdx);
-  // Azioni dell'INTERA giornata, separate dai "..." dell'esercizio. Il
-  // controllo viene inserito dentro ogni slide (solo quella corrente e'
-  // visibile) subito dopo "Settimane concluse", cosi' resta nel punto comune
-  // della scheda che l'utente sta guardando.
+  // Le azioni della giornata e della lista restano nel flusso della slide
+  // attiva: non sono ancorate al fondo dello schermo, quindi seguono subito
+  // la sezione comune della scheda anche quando un esercizio è corto.
+  const dayActionsHtml = `<div class="day-exercise-actions">
+    <button class="add-ex day-exercise-action" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
+    ${reorderBtn}
+  </div>`;
   const dayManagementHtml = day.esercizi.length ? `<div class="day-management-row" style="--accent:${a.c}">
     <button class="day-management-btn" type="button" onclick="openDayManagementMenu()" aria-label="Gestisci giornata ${escapeAttr(day.name||'')}">
       ${ICON_MORE}<span>Gestisci giornata</span><small>${progress.done}/${progress.total}</small>
     </button>
-  </div>` : '';
+  </div>${dayActionsHtml}` : '';
 
   // un esercizio per schermata: le slide restano nel DOM (stesso rendering di
   // ogni card di sempre, exerciseCard/linkedExerciseCard), ma sono impilate
@@ -287,10 +290,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
     </div>` : '';
 
   main.innerHTML = workoutProgressHtml + dayExStripHtml + switchTrainingDay + emptyState + carouselHtml +
-    `<div class="add-ex-row">
-       <button class="add-ex" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
-       ${reorderBtn}
-     </div>`;
+    (day.esercizi.length ? '' : dayActionsHtml);
     autoGrowAllExNames();
     autoGrowAllExSchema();
   applyPendingWeekVisual();

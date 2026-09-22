@@ -823,10 +823,13 @@ body.training-focus .week-block{margin-top:10px;}
 .empty-day{text-align:center;padding:48px 20px;}
 .empty-day-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;}
 .empty-day-sub{font-size:13px;color:var(--muted);}
-/* riga con "+ Aggiungi esercizio" e "Modifica ordine" affiancati (stesso
-   spirito di .backup-row): sono due azioni di pari peso sulla lista esercizi */
-.add-ex-row{display:flex;gap:8px;}
-.add-ex-row .add-ex{margin-top:0;}
+/* Le azioni sulla lista seguono "Gestisci giornata" nel flusso della card,
+   mai il fondo del viewport. Restano volutamente secondarie e neutrali:
+   dimensioni uguali, bordo continuo e nessun colore del workout. */
+.day-exercise-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:22px 0 calc(24px + env(safe-area-inset-bottom));}
+.day-exercise-actions:has(.day-exercise-action:only-child){grid-template-columns:1fr;}
+.day-exercise-action.add-ex{display:flex;align-items:center;justify-content:center;width:100%;min-height:42px;margin:0;padding:8px 10px;border:1px solid rgba(255,255,255,.18);border-radius:10px;background:#171918;color:#D2D5D2;font-family:var(--font-body);font-size:11px;font-weight:750;line-height:1.2;text-align:center;}
+.day-exercise-action.add-ex:active{background:#252826;border-color:rgba(255,255,255,.3);color:var(--text);}
 /* ---------------- MODALITA' RIORDINO ESERCIZI ---------------- */
 .reorder-banner{text-align:center;color:var(--muted);font-size:12px;padding:10px 14px;}
 .reorder-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 8px;}

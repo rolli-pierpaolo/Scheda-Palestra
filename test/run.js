@@ -1186,6 +1186,10 @@ test('Gestisci giornata resta sotto Settimane concluse: i "..." restano per il s
   const completedSection = window.document.querySelector('.week-section-completed');
   assert.ok(completedSection, 'la settimana chiusa deve essere raccolta nella sua sezione');
   assert.strictEqual(completedSection.nextElementSibling, btn.closest('.day-management-row'), 'Gestisci giornata deve stare subito sotto Settimane concluse, prima delle settimane future');
+  const actions = btn.closest('.day-management-row').nextElementSibling;
+  assert.ok(actions?.classList.contains('day-exercise-actions'), 'Aggiungi esercizio e Modifica ordine devono stare subito sotto Gestisci giornata, non ancorati in fondo allo schermo');
+  assert.strictEqual(window.document.querySelector('#viewActive > .day-exercise-actions'), null, 'le azioni non devono vivere fuori dal carosello, dove una slide più alta creerebbe spazio vuoto');
+  assert.strictEqual(actions.querySelectorAll('.day-exercise-action').length, 1, 'con un solo esercizio resta solo Aggiungi esercizio; Modifica ordine conserva la propria logica esistente');
   window.openDayManagementMenu();
   const menu = window.document.getElementById('dayManagementMenu');
   assert.ok(menu, 'il comando comune deve aprire il suo menu');
