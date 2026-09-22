@@ -29,7 +29,7 @@
       // updateViaCache:none fa rileggere sempre lo script del worker dalla
       // rete: è il meccanismo standard, più affidabile di sperare che la
       // cache HTTP di iOS rispetti un URL già visto in precedenza.
-      navigator.serviceWorker.register('sw.js?rev=20260922c', {updateViaCache:'none'}).then(function(registration){
+      navigator.serviceWorker.register('sw.js?rev=20260922d', {updateViaCache:'none'}).then(function(registration){
         if(registration.waiting) showAppUpdateBanner();
         registration.addEventListener('updatefound', function(){
           var worker = registration.installing;

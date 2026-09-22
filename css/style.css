@@ -985,6 +985,45 @@ body.training-focus .week-block{margin-top:10px;}
 .ex-context-action-pair .paired-action:only-child{grid-column:1 / -1;}
 .ex-context-action-pair .paired-action svg{width:19px;height:19px;}
 .ex-context-cancel{width:100%;max-width:360px;background:var(--panel2);border:none;border-radius:8px;padding:14px;color:var(--accent,var(--green));font-size:14px;font-weight:800;box-shadow:0 12px 40px rgba(0,0,0,.5);}
+
+/* Action sheet del solo menu "..." esercizio. Il menu della giornata riusa
+   le classi base sopra, quindi queste regole restano volutamente vincolate a
+   #exContextMenu: qui cambiano soltanto gerarchia, spazi e feedback visivo,
+   mai le azioni o gli handler dei pulsanti. */
+#exContextMenu.ex-context-overlay{align-items:center;justify-content:center;padding:16px;gap:11px;background:rgba(0,0,0,.64);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);}
+#exContextMenu .ex-context-sheet{width:min(100%,380px);max-height:76vh;max-height:76svh;background:#1A1C1B;border:1px solid rgba(255,255,255,.12);border-radius:22px;overflow-y:auto;box-shadow:0 20px 48px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.045);}
+#exContextMenu .ex-context-title{padding:17px 22px 6px;border:0;color:#F0F2F0;font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:.28px;line-height:1.15;text-align:center;text-transform:uppercase;overflow-wrap:anywhere;}
+#exContextMenu .ex-context-group-label{margin:11px 14px 5px;padding:0;background:none;color:#8E938E;font-family:var(--font-body);font-size:9px;font-weight:800;letter-spacing:1.15px;line-height:1.2;text-transform:uppercase;}
+#exContextMenu .ex-context-title + .ex-context-group-label{margin-top:5px;}
+
+/* Le azioni sulle serie sono l'unico blocco compatto: Max in alto, le due
+   modifiche della serie sotto. Tutti i target restano comodi, senza bottoni
+   grandi o un muro di bordi. */
+#exContextMenu .ex-context-max-actions{display:grid;gap:5px;margin:0 14px 7px;}
+#exContextMenu .ex-context-quick-action{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:44px;padding:7px 10px;border:1px solid rgba(255,255,255,.14);border-radius:11px;background:#151716;color:#E7E9E7;font-family:var(--font-body);font-size:11px;font-weight:760;line-height:1.15;text-align:center;-webkit-tap-highlight-color:transparent;transition:background .12s ease,border-color .12s ease,color .12s ease,transform .12s ease;}
+#exContextMenu .ex-context-quick-action.max-primary{border-color:color-mix(in srgb,var(--accent,var(--green)) 34%,rgba(255,255,255,.14));background:color-mix(in srgb,var(--accent,var(--green)) 10%,#151716);color:#F0F3EE;}
+#exContextMenu .ex-context-max-remove{display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:5px 8px;border:0;border-radius:8px;background:transparent;color:#D48A8A;font-family:var(--font-body);font-size:10px;font-weight:720;-webkit-tap-highlight-color:transparent;transition:background .12s ease,color .12s ease,transform .12s ease;}
+#exContextMenu .ex-context-series-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 14px 8px;padding:0;border:0;background:transparent;}
+#exContextMenu .ex-context-series-actions .paired-action{min-height:44px;flex-direction:row;gap:6px;padding:7px 8px;border:1px solid rgba(255,255,255,.14);border-radius:11px;background:#151716;font-size:10px;line-height:1.12;}
+#exContextMenu .ex-context-series-actions .paired-action + .paired-action{border-left:1px solid rgba(198,86,86,.42);}
+#exContextMenu .ex-context-series-actions .paired-action.danger{border-color:rgba(198,86,86,.38);color:#D99191;}
+#exContextMenu .ex-context-action-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;width:20px;height:20px;}
+#exContextMenu .ex-context-action-icon svg{width:18px;height:18px;}
+#exContextMenu .ex-context-quick-symbol{display:inline-flex;align-items:center;justify-content:center;width:16px;font-size:18px;font-weight:500;line-height:1;color:var(--accent,var(--green));}
+#exContextMenu .ex-context-series-actions .danger .ex-context-quick-symbol{color:#D99191;}
+
+/* Righe piatte e consistenti: l'azione apre il contenuto successivo, non una
+   nuova card. La chevron compare solo dove effettivamente si passa oltre. */
+#exContextMenu .ex-context-row-action{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 16px;border:0;background:transparent;color:#E8EAE8;font-family:var(--font-body);font-size:13px;font-weight:680;line-height:1.2;text-align:left;-webkit-tap-highlight-color:transparent;transition:background .12s ease,color .12s ease,transform .12s ease;}
+#exContextMenu .ex-context-action-copy{min-width:0;flex:1;}
+#exContextMenu .ex-context-action-chevron{margin-left:auto;color:#7E837E;font-size:23px;font-weight:400;line-height:.7;}
+#exContextMenu .ex-context-danger-zone{margin:4px 14px 11px;padding-top:7px;border-top:1px solid rgba(199,91,91,.2);}
+#exContextMenu .ex-context-danger-zone .ex-context-row-action{min-height:45px;padding:7px 2px;color:#D99191;}
+#exContextMenu .ex-context-danger-zone .ex-context-action-icon{color:#D99191;}
+#exContextMenu .ex-context-quick-action:active,#exContextMenu .ex-context-max-remove:active,#exContextMenu .ex-context-row-action:active{background:rgba(255,255,255,.07);transform:scale(.985);}
+#exContextMenu .ex-context-series-actions .paired-action.danger:active,#exContextMenu .ex-context-max-remove:active,#exContextMenu .ex-context-danger-zone .ex-context-row-action:active{background:rgba(193,78,78,.12);}
+#exContextMenu .ex-context-cancel{width:min(100%,380px);min-height:56px;padding:10px 16px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:#1A1C1B;color:var(--accent,var(--green));font-family:var(--font-body);font-size:13px;font-weight:780;box-shadow:0 12px 28px rgba(0,0,0,.34);-webkit-tap-highlight-color:transparent;transition:background .12s ease,transform .12s ease;}
+#exContextMenu .ex-context-cancel:active{background:#252825;transform:scale(.985);}
 .modal-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:800;font-size:14px;color:var(--green);position:sticky;top:0;background:var(--panel2);}
 .modal-head button{background:none;border:none;color:var(--muted);font-size:17px;padding:2px 6px;}
 .modal-body{padding:14px;}

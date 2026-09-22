@@ -1236,13 +1236,13 @@ function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
   const exercise = state.days[activeDayIdx] && state.days[activeDayIdx].esercizi[exi];
   const hasMax = hasWeekContext && exercise && getMaxEntries(exercise,weekIdx).length;
   const partnerArg = typeof partnerExi === 'number' ? `,${partnerExi}` : '';
-  const maxActions = hasWeekContext ? `<div class="ex-context-action-pair" aria-label="Serie Max">
-      <button class="ex-context-action paired-action" onclick="closeExerciseContextMenu();requestAddMax(${exi},${weekIdx}${partnerArg})">${ICON_PLATE}<span>Aggiungi<br>serie Max</span></button>
-      ${hasMax ? `<button class="ex-context-action paired-action danger" onclick="closeExerciseContextMenu();requestRemoveMax(${exi},${weekIdx}${partnerArg})">${ICON_TRASH}<span>Rimuovi<br>serie Max</span></button>` : ''}
+  const maxActions = hasWeekContext ? `<div class="ex-context-max-actions" aria-label="Serie Max">
+      <button class="ex-context-quick-action max-primary" onclick="closeExerciseContextMenu();requestAddMax(${exi},${weekIdx}${partnerArg})"><span class="ex-context-action-icon">${ICON_PLATE}</span><span>Aggiungi serie Max</span></button>
+      ${hasMax ? `<button class="ex-context-max-remove" onclick="closeExerciseContextMenu();requestRemoveMax(${exi},${weekIdx}${partnerArg})"><span class="ex-context-action-icon">${ICON_TRASH}</span><span>Rimuovi serie Max</span></button>` : ''}
     </div>` : '';
-  const setActions = hasWeekContext ? `<div class="ex-context-action-pair" aria-label="Serie esercizio">
-      <button class="ex-context-action paired-action" onclick="closeExerciseContextMenu();addSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;addSet(${partnerExi},${weekIdx})`:''}">＋<span>Aggiungi<br>serie</span></button>
-      <button class="ex-context-action paired-action danger" onclick="closeExerciseContextMenu();removeSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;removeSet(${partnerExi},${weekIdx})`:''}">−<span>Rimuovi<br>serie</span></button>
+  const setActions = hasWeekContext ? `<div class="ex-context-action-pair ex-context-series-actions" aria-label="Serie esercizio">
+      <button class="ex-context-quick-action paired-action" onclick="closeExerciseContextMenu();addSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;addSet(${partnerExi},${weekIdx})`:''}"><span class="ex-context-quick-symbol">＋</span><span>Aggiungi serie</span></button>
+      <button class="ex-context-quick-action paired-action danger" onclick="closeExerciseContextMenu();removeSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;removeSet(${partnerExi},${weekIdx})`:''}"><span class="ex-context-quick-symbol">−</span><span>Rimuovi serie</span></button>
     </div>` : '';
   const el = document.createElement('div');
   el.id = 'exContextMenu';
@@ -1251,18 +1251,18 @@ function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
   el.innerHTML = `
     <div class="ex-context-sheet">
       <div class="ex-context-title">${escapeHtml(exName||'Esercizio')}</div>
-      <div class="ex-context-group-label">Questo esercizio</div>
+      ${hasWeekContext ? `<div class="ex-context-group-label">Questo esercizio</div>` : ''}
       ${maxActions}
       ${setActions}
       <div class="ex-context-group-label">Strumenti</div>
-      <button class="ex-context-action" onclick="closeExerciseContextMenu();openPlateCalc(${exi})">${ICON_PLATE} Calcola dischi bilanciere</button>
+      <button class="ex-context-action ex-context-row-action" onclick="closeExerciseContextMenu();openPlateCalc(${exi})"><span class="ex-context-action-icon">${ICON_PLATE}</span><span class="ex-context-action-copy">Calcola dischi bilanciere</span><span class="ex-context-action-chevron" aria-hidden="true">›</span></button>
       <div class="ex-context-group-label">Configurazione</div>
-      ${hasWeekContext ? `<button class="ex-context-action" onclick="closeExerciseContextMenu();toggleExerciseEditMode(${exi})">${ICON_GEAR} Modifica esercizio</button>` : ''}
-      <button class="ex-context-action" onclick="closeExerciseContextMenu();openLinkPicker(${exi})">${ICON_LINK} Collega esercizio</button>
+      ${hasWeekContext ? `<button class="ex-context-action ex-context-row-action" onclick="closeExerciseContextMenu();toggleExerciseEditMode(${exi})"><span class="ex-context-action-icon">${ICON_GEAR}</span><span class="ex-context-action-copy">Modifica esercizio</span><span class="ex-context-action-chevron" aria-hidden="true">›</span></button>` : ''}
+      <button class="ex-context-action ex-context-row-action" onclick="closeExerciseContextMenu();openLinkPicker(${exi})"><span class="ex-context-action-icon">${ICON_LINK}</span><span class="ex-context-action-copy">Collega esercizio</span><span class="ex-context-action-chevron" aria-hidden="true">›</span></button>
       <div class="ex-context-group-label">Azioni</div>
-      <button class="ex-context-action" onclick="closeExerciseContextMenu();openChart(${exi})">${ICON_CHART} Grafico progressione</button>
-      <button class="ex-context-action" onclick="closeExerciseContextMenu();shareExercise(${exi})">${ICON_SHARE} Condividi</button>
-      <button class="ex-context-action danger" onclick="closeExerciseContextMenu();deleteExercise(${exi})">${ICON_TRASH} Elimina esercizio</button>
+      <button class="ex-context-action ex-context-row-action" onclick="closeExerciseContextMenu();openChart(${exi})"><span class="ex-context-action-icon">${ICON_CHART}</span><span class="ex-context-action-copy">Grafico progressione</span><span class="ex-context-action-chevron" aria-hidden="true">›</span></button>
+      <button class="ex-context-action ex-context-row-action" onclick="closeExerciseContextMenu();shareExercise(${exi})"><span class="ex-context-action-icon">${ICON_SHARE}</span><span class="ex-context-action-copy">Condividi</span></button>
+      <div class="ex-context-danger-zone"><button class="ex-context-action ex-context-row-action danger" onclick="closeExerciseContextMenu();deleteExercise(${exi})"><span class="ex-context-action-icon">${ICON_TRASH}</span><span class="ex-context-action-copy">Elimina esercizio</span></button></div>
     </div>
     <button class="ex-context-cancel" onclick="closeExerciseContextMenu()">Annulla</button>
   `;

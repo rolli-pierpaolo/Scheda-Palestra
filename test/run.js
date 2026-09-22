@@ -432,7 +432,7 @@ test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare 
   assert.strictEqual(window.__bridge.state.days[0].esercizi.length, 1, 'aprire/chiudere il menu non deve toccare i dati');
 });
 
-test('il menu "..." affianca le azioni Max e Serie, lasciando Calcola dischi in una sezione propria', () => {
+test('il menu "..." mantiene le azioni Max e Serie in una action sheet compatta', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
@@ -443,14 +443,19 @@ test('il menu "..." affianca le azioni Max e Serie, lasciando Calcola dischi in 
   };
   window.openExerciseContextMenu(0, 'Ex A', 0);
   const menu = window.document.getElementById('exContextMenu');
-  const pairs = menu.querySelectorAll('.ex-context-action-pair');
-  assert.strictEqual(pairs.length, 2, 'Max e Serie devono avere ciascuno la propria coppia orizzontale');
-  assert.strictEqual(pairs[0].querySelectorAll('.paired-action').length, 2, 'con un Max esistente devono apparire Aggiungi e Rimuovi Max');
-  assert.strictEqual(pairs[1].querySelectorAll('.paired-action').length, 2, 'Aggiungi e Rimuovi serie devono stare insieme');
-  assert.ok(pairs[0].textContent.includes('Aggiungi') && pairs[0].textContent.includes('Rimuovi'), 'la prima coppia deve riguardare i Max');
-  assert.ok(pairs[1].textContent.includes('Aggiungi') && pairs[1].textContent.includes('Rimuovi'), 'la seconda coppia deve riguardare le serie');
+  const maxActions = menu.querySelector('.ex-context-max-actions');
+  const seriesActions = menu.querySelector('.ex-context-series-actions');
+  assert.ok(maxActions, 'Aggiungi/Rimuovi Max devono restare disponibili nella sezione rapida');
+  assert.ok(maxActions.textContent.includes('Aggiungi serie Max') && maxActions.textContent.includes('Rimuovi serie Max'), 'con un Max esistente devono apparire sia Aggiungi sia Rimuovi Max');
+  assert.strictEqual(seriesActions.querySelectorAll('.paired-action').length, 2, 'Aggiungi e Rimuovi serie devono restare affiancati');
+  assert.ok(seriesActions.textContent.includes('Aggiungi serie') && seriesActions.textContent.includes('Rimuovi serie'), 'la coppia rapida deve riguardare le serie');
   const labels = [...menu.querySelectorAll('.ex-context-group-label')].map(el=>el.textContent.trim());
   assert.ok(labels.includes('Strumenti'), 'Calcola dischi deve essere separato dalle azioni sulle serie');
+  assert.ok(menu.querySelector('.ex-context-danger-zone .danger'), 'Elimina esercizio deve restare separato e marcato come distruttivo');
+  const handlers = [...menu.querySelectorAll('button')].map(button=>button.getAttribute('onclick')||'').join(' ');
+  ['requestAddMax','requestRemoveMax','addSet','removeSet','openPlateCalc','toggleExerciseEditMode','openLinkPicker','openChart','shareExercise','deleteExercise'].forEach(action=>{
+    assert.ok(handlers.includes(action), `${action} deve restare collegata al proprio pulsante dopo il restyling`);
+  });
   window.closeExerciseContextMenu();
 });
 
