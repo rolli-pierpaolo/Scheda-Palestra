@@ -691,6 +691,20 @@ test('le preferenze di accessibilità si applicano senza modificare la scheda', 
   assert.strictEqual(JSON.stringify(window.__bridge.state), before, 'le preferenze visive non devono alterare allenamenti o dati');
 });
 
+test('le impostazioni premium conservano tutti i controlli e le azioni esistenti', () => {
+  const window = loadApp();
+  window.renderAccessibilitySettings();
+  const modal = window.document.getElementById('settingsModal');
+
+  assert.ok(modal, 'il foglio Impostazioni deve restare disponibile');
+  assert.strictEqual(modal.querySelector('.settings-account-action')?.getAttribute('onclick'), 'openAuthModal()', 'l’azione account deve continuare ad aprire la sincronizzazione');
+  assert.strictEqual(modal.querySelector('#pushToggleBtn')?.getAttribute('onclick'), 'enablePushNotifications()', 'il promemoria deve mantenere la sua azione');
+  assert.strictEqual(modal.querySelectorAll('.a11y-setting-row').length, 4, 'devono restare disponibili tutte e quattro le preferenze di accessibilità');
+  assert.strictEqual(modal.querySelectorAll('.a11y-setting-row input[type="checkbox"]').length, 4, 'ogni preferenza deve mantenere un controllo touch');
+  assert.strictEqual(modal.querySelector('[onclick="inviteViewer()"]').textContent.trim(), 'Invita', 'l’invito al coach deve rimanere disponibile');
+  assert.strictEqual(modal.querySelector('[onclick="archiveAndReset()"]').textContent.trim(), 'Archivia ed inizia un nuovo mese', 'l’archiviazione del blocco deve restare disponibile');
+});
+
 test('checkRemoteUpdateOnBoot al PRIMISSIMO controllo (mai registrato un invio da qui prima) non deve avvisare, solo registrare il punto di partenza', async () => {
   const window = loadApp();
   window.__bridge.syncSession = { user: { id:'u1', email:'a@b.com' } };
