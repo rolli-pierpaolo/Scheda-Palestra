@@ -1497,3 +1497,168 @@ body.training-focus .set-series-group{margin:0;}
   .finish-modal{max-width:480px;}
   .settings-row{grid-template-columns:repeat(3,minmax(0,1fr));}
 }
+
+/* ---------------- PRODOTTO · HOME, PROGRESSI, GUIDA ----------------------
+   Le funzioni principali esistevano già: qui acquistano una gerarchia unica.
+   Le regole sono intenzionalmente limitate ai componenti interessati, per non
+   alterare il flusso operativo dell'allenamento. */
+#viewHist{padding:0 0 24px;}
+.progress-overview{padding:14px 12px 2px;}
+@keyframes viridis-surface-enter{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:translateY(0);}}
+.progress-hero-card{padding:17px 16px 14px;border:1px solid rgba(255,255,255,.11);border-radius:21px;background:linear-gradient(145deg,#20231F,#161817);box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 14px 30px rgba(0,0,0,.2);animation:viridis-surface-enter .34s var(--ease-premium) both;}
+.progress-hero-topline,.progress-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.progress-hero-topline>span,.progress-section-head>span{color:var(--green);font-family:var(--font-body);font-size:9px;font-weight:850;letter-spacing:1.1px;}
+.progress-hero-topline button{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:rgba(255,255,255,.035);color:var(--green);}
+.progress-hero-topline button svg{width:16px;height:16px;}
+.progress-hero-title{margin:8px 0 14px;color:var(--text);font-family:var(--font-display);font-size:27px;font-weight:620;line-height:1.02;letter-spacing:.15px;text-transform:uppercase;}
+.progress-hero-title em{color:var(--green);font-style:normal;}
+.progress-weekline{display:flex;align-items:baseline;justify-content:space-between;gap:10px;color:#A9AEA8;font-size:11px;font-weight:630;}
+.progress-weekline b{color:var(--text);font-size:12px;font-weight:760;white-space:nowrap;}
+.progress-week-track{height:5px;margin:7px 0 14px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.1);}
+.progress-week-track span{display:block;height:100%;border-radius:inherit;background:var(--green);transition:width .35s var(--ease-premium);}
+.progress-metric-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid rgba(255,255,255,.09);}
+.progress-metric-grid>div{display:flex;flex-direction:column;gap:2px;padding:11px 2px 0;}
+.progress-metric-grid>div+div{padding-left:13px;border-left:1px solid rgba(255,255,255,.09);}
+.progress-metric-grid b{color:var(--text);font-size:20px;font-weight:790;line-height:1;}
+.progress-metric-grid span{color:#969B96;font-size:9px;font-weight:650;line-height:1.2;}
+.progress-quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 12px 16px;animation:viridis-surface-enter .38s .04s var(--ease-premium) both;}
+.progress-quick-actions button{display:flex;min-width:0;min-height:96px;padding:10px;flex-direction:column;align-items:flex-start;justify-content:flex-end;border:1px solid rgba(255,255,255,.1);border-radius:15px;background:#191B1A;color:var(--text);text-align:left;}
+.progress-quick-actions button>span{display:flex;align-items:center;justify-content:center;width:28px;height:28px;margin-bottom:auto;border-radius:9px;background:color-mix(in srgb,var(--green) 13%,transparent);color:var(--green);}
+.progress-quick-actions button>span svg{width:15px;height:15px;}
+.progress-quick-actions b{font-size:11px;font-weight:760;line-height:1.2;}
+.progress-quick-actions small{display:block;margin-top:2px;color:#959A95;font-size:8px;font-weight:600;line-height:1.2;}
+.progress-quick-actions button:active{background:#242724;transform:scale(.975);}
+.progress-timeline-card{margin:0 12px;padding:14px 14px 5px;border:1px solid rgba(255,255,255,.09);border-radius:17px;background:#171918;animation:viridis-surface-enter .4s .08s var(--ease-premium) both;}
+.progress-section-head{padding:0 0 8px;}
+.progress-section-head>span{color:#A8ADA8;}
+.progress-section-head button{padding:3px 0;border:0;background:none;color:var(--green);font-family:var(--font-body);font-size:10px;font-weight:750;}
+.progress-timeline{display:flex;flex-direction:column;}
+.progress-timeline-row{display:flex;align-items:center;gap:10px;width:100%;min-height:47px;padding:7px 0;border:0;border-top:1px solid rgba(255,255,255,.075);background:none;color:var(--text);text-align:left;}
+.progress-timeline-dot{width:8px;height:8px;flex:0 0 auto;border-radius:50%;background:var(--accent,var(--green));box-shadow:0 0 0 4px color-mix(in srgb,var(--accent,var(--green)) 13%,transparent);}
+.progress-timeline-row>span:nth-child(2){display:flex;min-width:0;flex:1;flex-direction:column;gap:2px;}
+.progress-timeline-row b{font-size:11px;font-weight:760;text-transform:capitalize;}
+.progress-timeline-row small{overflow:hidden;color:#949994;font-size:9px;font-weight:600;text-overflow:ellipsis;white-space:nowrap;}
+.progress-timeline-row i{color:#7A807A;font-size:19px;font-style:normal;font-weight:400;}
+.progress-timeline-empty{padding:12px 0 9px;color:#909590;font-size:10px;line-height:1.4;}
+
+/* Progressi e archivio restano consultabili anche quando non esistono ancora
+   blocchi conclusi: uno stato vuoto è un invito, non un muro di testo. */
+.history-empty-list,.history-empty-state{display:flex;align-items:flex-start;gap:10px;padding:14px 4px;color:#9AA09A;}
+.history-empty-list>span,.history-empty-state>span{display:flex;align-items:center;justify-content:center;width:28px;height:28px;flex:0 0 auto;border-radius:9px;background:color-mix(in srgb,var(--green) 12%,transparent);color:var(--green);}
+.history-empty-list>span svg,.history-empty-state>span svg{width:15px;height:15px;}
+.history-empty-list>div{display:flex;flex-direction:column;gap:3px;}
+.history-empty-list b,.history-empty-state b{color:var(--text);font-size:11px;font-weight:760;}
+.history-empty-list small,.history-empty-state small{color:#929792;font-size:10px;font-weight:560;line-height:1.35;}
+.history-empty-state{margin:5px 12px;padding:22px 14px;border:1px solid rgba(255,255,255,.08);border-radius:15px;background:#171918;flex-direction:column;align-items:center;text-align:center;}
+.history-empty-state small{max-width:30ch;}
+#viewHist .hist-subnav{margin:0 12px;padding:13px 0 5px;gap:6px;}
+#viewHist .hist-subnav .day-btn{min-height:37px;border-radius:11px;font-family:var(--font-body);font-size:10px;font-weight:760;}
+#viewHist .hist-subnav .day-btn.active{box-shadow:none;}
+#viewHist .hist-section-label{padding:17px 14px 7px;color:#A7ACA7;font-size:10px;}
+#viewHist .hist-list-row{padding:4px 0 10px;}
+#viewHist .hist-chip{min-height:42px;padding:7px 11px;border-radius:11px;background:#1A1C1B;border-color:rgba(255,255,255,.11);font-family:var(--font-body);font-size:10px;}
+#viewHist .hist-chip.active{background:color-mix(in srgb,var(--amber) 16%,#1A1C1B);border-color:var(--amber);color:#F3E4CE;}
+#viewHist .hist-edit-btn{min-height:42px;border-style:solid;border-width:1px;border-color:rgba(255,255,255,.14);border-radius:11px;background:#1A1C1B;font-family:var(--font-body);font-size:10px;}
+#viewHist .hist-card{margin:0 0 10px;border-radius:16px;background:#1A1C1B;box-shadow:none;}
+
+/* Il grafico ha già i dati giusti: gli diamo una lettura da dashboard senza
+   cambiare le formule che calcolano volume, 1RM o ripetizioni a parità peso. */
+#trendsModal .modal-box{background:#191B1A;border-color:rgba(255,255,255,.11);}
+#trendsModal .modal-head{background:#191B1A;border-color:rgba(255,255,255,.075);}
+#trendsModal .modal-body{padding:14px 16px calc(18px + env(safe-area-inset-bottom));}
+#trendsModal .meta-input{min-height:46px;border-radius:13px;background:#121413;border-color:rgba(255,255,255,.14);font-family:var(--font-body);font-weight:700;}
+#trendsModal .trends-record{min-height:45px;margin:2px 0 14px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--amber) 28%,rgba(255,255,255,.1));border-radius:13px;background:color-mix(in srgb,var(--amber) 7%,#171918);font-family:var(--font-body);font-size:11px;}
+#trendsModal .trends-section-label{margin:16px 0 7px;color:#A7ACA7;font-family:var(--font-body);font-size:9px;font-weight:820;letter-spacing:.8px;}
+#trendsModal .chart-wrap{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:#151716;}
+.trends-empty-state{display:flex;min-height:218px;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:26px;text-align:center;}
+.trends-empty-state>span{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:16px;background:color-mix(in srgb,var(--green) 11%,transparent);color:var(--green);}
+.trends-empty-state>span svg{width:23px;height:23px;}
+.trends-empty-state b{color:var(--text);font-size:13px;font-weight:760;}
+.trends-empty-state small{max-width:29ch;color:#969B96;font-size:11px;font-weight:560;line-height:1.45;}
+.trends-chart-empty{padding:13px 12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#151716;color:#979C97;font-size:10px;font-weight:590;line-height:1.4;}
+
+/* Guida iniziale: i tre passaggi parlano di orientamento, allenamento e
+   lettura dei dati. Il link di setup richiama l'editor reale, non un form
+   alternativo che rischierebbe di desincronizzarsi dalla scheda. */
+#onboardingModal .modal-box{max-width:480px;background:#191B1A;border-color:rgba(255,255,255,.12);}
+#onboardingModal .modal-head{background:#191B1A;border-color:rgba(255,255,255,.075);}
+#onboardingModal .modal-body{padding:16px 18px calc(18px + env(safe-area-inset-bottom));}
+.onb-step-count{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#A3A8A3;font-family:var(--font-body);font-size:9px;font-weight:820;letter-spacing:.85px;}
+.onb-step-count>div{display:flex;gap:4px;}
+.onb-step-count i{width:5px;height:5px;border-radius:99px;background:#4A4F4A;}
+.onb-step-count i.active{width:17px;background:var(--green);}
+.onb-hero-icon{display:flex;align-items:center;justify-content:center;width:54px;height:54px;margin:20px 0 13px;border:1px solid color-mix(in srgb,var(--green) 34%,rgba(255,255,255,.12));border-radius:18px;background:color-mix(in srgb,var(--green) 10%,transparent);color:var(--green);}
+.onb-hero-icon svg{width:27px;height:27px;}
+#onboardingModal .onb-title{margin:0;color:var(--text);font-family:var(--font-display);font-size:28px;font-weight:620;line-height:1.02;text-transform:uppercase;}
+#onboardingModal .onb-intro{max-width:37ch;margin:8px 0 15px;color:#A2A7A2;font-family:var(--font-body);font-size:12px;font-weight:560;line-height:1.5;}
+.onb-plan-preview{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 10px;}
+.onb-plan-preview span{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(255,255,255,.09);border-radius:8px;background:#151716;color:#CFD2CF;font-family:var(--font-body);font-size:10px;font-weight:680;}
+.onb-plan-preview i{width:6px;height:6px;border-radius:50%;background:var(--accent,var(--green));}
+.onb-text-action{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:40px;padding:0;border:0;background:transparent;color:var(--green);font-family:var(--font-body);font-size:11px;font-weight:750;text-align:left;}
+.onb-text-action i,.onb-primary-action i{font-size:18px;font-style:normal;font-weight:400;}
+.onb-primary-action{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:50px;margin-top:10px;padding:0 15px;border:0;border-radius:14px;background:var(--green);color:#10120F;font-family:var(--font-body);font-size:13px;font-weight:820;text-align:left;}
+.onb-primary-action:active{background:color-mix(in srgb,var(--green) 83%,#fff);transform:scale(.985);}
+
+/* Editor scheda e libreria: stessa grammatica della nuova UI. I comandi e
+   gli onchange restano intatti; cambiano solo la scansione e i touch target. */
+#daysModal .modal-box,#libraryModal .modal-box{background:#191B1A;border-color:rgba(255,255,255,.11);}
+#daysModal .modal-head,#libraryModal .modal-head{background:#191B1A;border-color:rgba(255,255,255,.075);}
+#daysModal .modal-body,#libraryModal .modal-body{padding:14px 16px calc(18px + env(safe-area-inset-bottom));}
+#daysModal .days-row{min-height:54px;margin:0;border-bottom:1px solid rgba(255,255,255,.075);padding:7px 0;gap:8px;}
+#daysModal .days-row:last-of-type{border-bottom:0;}
+#daysModal .days-label{flex-basis:70px;color:#A3A8A3;font-family:var(--font-body);font-size:9px;font-weight:820;letter-spacing:.65px;}
+#daysModal .meta-input{min-height:40px;border-color:rgba(255,255,255,.14);border-radius:10px;background:#121413;font-family:var(--font-body);font-size:12px;}
+#daysModal .day-color-input{width:36px;height:36px;border-radius:10px;border-color:rgba(255,255,255,.15);}
+#daysModal .del-day-btn{width:32px;height:32px;padding:0;border:1px solid rgba(178,61,48,.36);border-radius:9px;background:transparent;}
+#daysModal .add-ex.small2{min-height:44px;border-style:solid;border-width:1px;border-color:rgba(255,255,255,.15);border-radius:12px;background:#202321;color:#E1E4E1;font-family:var(--font-body);font-size:11px;}
+#libraryModal .meta-row{margin:0 0 2px;}
+#libraryModal .meta-input,#libraryModal .exlib-group-select{min-height:42px;border-color:rgba(255,255,255,.14);border-radius:11px;background:#121413;font-family:var(--font-body);}
+#libraryModal .exlib-group-filters{padding:10px 0 8px;gap:6px;}
+#libraryModal .exlib-group-chip{min-height:32px;border-radius:9px;border-color:rgba(255,255,255,.12);background:#202321;font-family:var(--font-body);font-size:10px;}
+#libraryModal .exlib-add-form{padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:#171918;}
+#libraryModal .exlib-add-form .add-ex{min-height:41px;border-style:solid;border-width:1px;border-color:rgba(255,255,255,.15);border-radius:10px;background:#202321;font-family:var(--font-body);font-size:11px;}
+#libraryModal .exlib-row{min-height:48px;border-color:rgba(255,255,255,.09);border-radius:12px;background:#1A1C1B;}
+
+/* Tema chiaro progettato per Viridis: i neutri diventano caldo/grigio-verde,
+   il brand resta leggibile e i colori dei giorni non vengono alterati. */
+body.theme-light{--bg-black:#F4F6F1;--panel:#FFFFFF;--panel2:#EEF1EB;--row-dark:#E6EAE3;--line:#CCD3C9;--text:#182018;--muted:#617060;--green:#557F25;--green-dark:#DCEACB;--amber:#A96F28;--amber-dark:#F2E2C8;--red:#AA433A;--red-dark:#F3D8D5;background-color:#F4F6F1;background-image:radial-gradient(circle at 20% 0,rgba(116,155,75,.08),transparent 31%),linear-gradient(180deg,#F8F9F6,#EEF1EC);}
+body.theme-light .topbar{background:#F4F6F1;border-bottom-color:var(--green);}
+body.theme-light .bottom-nav{border-color:rgba(24,32,24,.12);background:rgba(250,252,247,.82);box-shadow:0 12px 28px rgba(34,47,32,.13),inset 0 1px 0 rgba(255,255,255,.8);}
+body.theme-light .bottom-nav::before{background:linear-gradient(150deg,rgba(255,255,255,.7),transparent 42%,rgba(76,96,71,.05));}
+body.theme-light .bottom-nav-btn.active{background:rgba(85,127,37,.11);box-shadow:none;}
+body.theme-light .progress-hero-card{background:linear-gradient(145deg,#FFFFFF,#E9EEE4);border-color:rgba(24,32,24,.1);box-shadow:inset 0 1px 0 #fff,0 12px 28px rgba(36,52,33,.1);}
+body.theme-light .progress-quick-actions button,body.theme-light .progress-timeline-card,body.theme-light #viewHist .hist-chip,body.theme-light #viewHist .hist-edit-btn,body.theme-light #viewHist .hist-card{background:#FFF;border-color:rgba(24,32,24,.1);}
+body.theme-light .progress-timeline-row{border-color:rgba(24,32,24,.08);}
+body.theme-light .progress-timeline-card,body.theme-light .history-empty-state{background:#FFF;border-color:rgba(24,32,24,.1);}
+body.theme-light .card,body.theme-light .set-series-group,body.theme-light .set-series-group.has-max{background:#FFF;border-color:rgba(24,32,24,.1);box-shadow:0 10px 24px rgba(37,52,34,.08);}
+body.theme-light .kg-wrap,body.theme-light .rip-wrap,body.theme-light .max-entry-row>.max-cell>.max-input,body.theme-light .max-rip-compare .max-input{background:#F1F4EF;color:var(--text);border-color:#D3DAD0;}
+body.theme-light .exercise-note-field,body.theme-light .week-group-toggle,body.theme-light .day-ex-chip,body.theme-light .day-ex-chip.done{background:#F0F3EF;color:var(--text);border-color:#D5DCD2;}
+body.theme-light #settingsModal .modal-box,body.theme-light #settingsModal .modal-head,body.theme-light #trendsModal .modal-box,body.theme-light #trendsModal .modal-head,body.theme-light #onboardingModal .modal-box,body.theme-light #onboardingModal .modal-head,body.theme-light #daysModal .modal-box,body.theme-light #daysModal .modal-head,body.theme-light #libraryModal .modal-box,body.theme-light #libraryModal .modal-head{background:#F9FBF7;color:var(--text);border-color:rgba(24,32,24,.12);}
+body.theme-light #settingsModal .hist-panel>.add-ex.small2,body.theme-light #daysModal .add-ex.small2,body.theme-light #libraryModal .exlib-add-form,body.theme-light #libraryModal .exlib-row,body.theme-light #trendsModal .chart-wrap{background:#FFF;color:var(--text);border-color:rgba(24,32,24,.12);}
+body.theme-light #settingsModal .meta-input,body.theme-light #daysModal .meta-input,body.theme-light #libraryModal .meta-input,body.theme-light #libraryModal .exlib-group-select,body.theme-light #trendsModal .meta-input{background:#F0F3EF;color:var(--text);border-color:#D3DAD0;}
+body.theme-light .quick-number-bar{background:linear-gradient(180deg,#F8FAF5,#E8EDE4);border-color:rgba(24,32,24,.14);box-shadow:0 -8px 24px rgba(36,52,33,.12),0 14px 32px rgba(36,52,33,.16);}
+body.theme-light .quick-keyboard-grid button,body.theme-light .quick-keyboard-row button{background:linear-gradient(180deg,#FFF,#E9EEE6);border-color:#D0D8CD;color:var(--text);box-shadow:inset 0 1px 0 #fff,0 2px 4px rgba(36,52,33,.08);}
+body.theme-light .quick-keyboard-mode-switch{background:#E7ECE4;border-color:#D0D8CD;}
+body.theme-light .quick-keyboard-head .quick-keyboard-done{background:rgba(85,127,37,.1);}
+body.theme-light .modal-overlay{background:rgba(26,35,25,.28);}
+@media(max-width:899px){body.theme-light .topbar,body.theme-light .topbar.topbar-scrolled{background:#F4F6F1!important;}}
+
+/* Il selettore del tema condivide le proporzioni native delle preferenze di
+   accessibilità, ma resta una scelta di aspetto separata semanticamente. */
+#settingsModal .theme-setting-row{display:flex;align-items:center;justify-content:space-between;gap:13px;padding:9px 2px;font-family:var(--font-body);cursor:pointer;}
+#settingsModal .theme-setting-row>span{display:flex;min-width:0;flex-direction:column;gap:2px;}
+#settingsModal .theme-setting-row b{color:#E7EAE7;font-size:12px;font-weight:730;line-height:1.25;}
+#settingsModal .theme-setting-row small{color:#929792;font-size:10.5px;font-weight:540;line-height:1.35;}
+#settingsModal .theme-setting-row input{appearance:none;width:46px;height:28px;flex:0 0 auto;border:0;border-radius:20px;background:#4A4E4A;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);position:relative;cursor:pointer;}
+#settingsModal .theme-setting-row input::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#F3F5F3;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .18s ease;}
+#settingsModal .theme-setting-row input:checked{background:var(--green);}
+#settingsModal .theme-setting-row input:checked::after{left:21px;}
+#settingsModal .theme-setting-row input:focus-visible{outline:2px solid var(--green);outline-offset:3px;}
+body.theme-light #settingsModal .theme-setting-row b{color:var(--text);}
+body.theme-light #settingsModal .theme-setting-row small{color:var(--muted);}
+body.theme-light #settingsModal .hist-section-label{color:#5D695A;}
+body.theme-light #settingsModal .footer-note,body.theme-light #settingsModal #settingsAccountStatus{color:#596457;}
+body.theme-light #settingsModal .a11y-setting-row b{color:var(--text);}
+body.theme-light #settingsModal .a11y-setting-row small{color:var(--muted);}
+body.theme-light #settingsModal .hist-panel>.add-ex.small2{background:#FFF;color:var(--text);border-color:#D4DCD1;}
+body.theme-light #settingsModal .a11y-setting-row{border-bottom-color:#D8DED6;}

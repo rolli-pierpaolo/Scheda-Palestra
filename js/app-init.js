@@ -50,7 +50,10 @@ try{
   if('clearAppBadge' in navigator) navigator.clearAppBadge().catch(()=>{});
   if(typeof initSync === 'function') initSync();
 
-  document.getElementById('histBody').innerHTML = '<div class="footer-note">Seleziona un WO storico qui sopra.</div>';
+  // Lo stato vuoto dello Storico è disegnato dalla stessa funzione che usa
+  // quando un utente entra nei Progressi, così non resta la vecchia riga
+  // anonima dopo un avvio a freddo.
+  renderHistBody();
   // niente allenamento in corso, mai iniziato o concluso con "Giorno terminato":
   // si apre sulla Home invece che tornare dritti sulla scheda esercizi.
   // workoutInProgress da solo però non basta: è un interruttore per tutto

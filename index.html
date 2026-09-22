@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Viridis</title>
-<script src="js/bootstrap.js?rev=20260922e"></script>
+<script src="js/bootstrap.js?rev=20260922f"></script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <!-- black-translucent mette un velo nero sfumato sopra l'app: si vede come
      una fascia fissa mentre il contenuto scorre. Con "default" iOS disegna
@@ -17,7 +17,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="apple-touch-icon" href="icon-192.png?rev=20260921b">
 <link rel="manifest" href="manifest.json?rev=20260921l">
-<link rel="stylesheet" href="css/style.css?rev=20260922e">
+<link rel="stylesheet" href="css/style.css?rev=20260922f">
 <!-- Protezione mobile nel documento: se iOS combina per un istante HTML nuovo
      e CSS precedente, la testata rimane comunque opaca e il testo non eredita
      il vecchio glow del logo. Il colore resta quello deciso dallo stile attivo. -->
@@ -37,12 +37,16 @@
     filter:none !important;
     opacity:1 !important;
   }
+  body.theme-light .topbar,
+  body.theme-light .topbar.topbar-scrolled{
+    background:#F4F6F1 !important;
+  }
 }
 </style>
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.99</span>
+  <span class="app-version" id="appVersion">v1.100</span>
   <button id="workoutDayPickerBtn" class="workout-day-picker" hidden onclick="toggleWorkoutDayPicker()" title="Cambia giornata" aria-label="Cambia giornata">‹</button>
   <div class="topbar-copy">
     <h1 id="topbarTitle">Viridis</h1>
@@ -64,6 +68,7 @@
 <main id="viewActive" style="display:none;"></main>
 
 <div id="viewHist" style="display:none;">
+  <div id="progressOverview" class="progress-overview" aria-live="polite"></div>
   <!-- prima Storico, Backup e Impostazioni stavano tutte impilate in un'unica
        pagina lunga (12 bottoni tutti uguali, "Andamenti" sepolto in mezzo alle
        impostazioni senza un nesso logico ovvio). Le Impostazioni vere e proprie
@@ -113,6 +118,8 @@
       <div class="footer-note" id="settingsAccountStatus" style="margin-bottom:8px;">Non sei collegato: i dati restano solo su questo dispositivo.</div>
       <button class="add-ex small2 settings-account-action" onclick="openAuthModal()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="8" r="4"/><path d="M4 20 C4 15.5 7.5 13 12 13 C16.5 13 20 15.5 20 20"/></svg> Gestisci account e sincronizzazione</button>
     </div>
+    <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><path d="M12 4.5 V12 L17.2 15"/></svg> Aspetto</div>
+    <div class="hist-panel" id="appearanceSettings"></div>
     <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="4.8" r="1.8"/><path d="M5 8.7 H19"/><path d="M12 6.8 V20"/><path d="M8.2 20 L12 13.5 L15.8 20"/></svg> Accessibilità</div>
     <div class="hist-panel" id="accessibilitySettings"></div>
     <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18.5 H4 Z"/><path d="M10 20.5 A2 2 0 0 0 14 20.5"/></svg> Promemoria allenamento</div>
@@ -316,24 +323,24 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/error-boundary.js?rev=20260915a"></script> <!-- CARICATO PER PRIMO: intercetta errori anche negli script sotto -->
 <script src="js/data.js"></script>          <!-- esercizi/recuperi/schemi/scheda di base/storico -->
 <script src="js/state.js?rev=20260921b"></script>         <!-- colori dei giorni, chiavi di storage, caricamento stato -->
-<script src="js/preferences.js?rev=20260915d"></script>   <!-- preferenze accessibilità locali -->
+<script src="js/preferences.js?rev=20260922f"></script>   <!-- preferenze accessibilità locali -->
 <script src="js/combobox.js?rev=20260921c"></script>      <!-- autocomplete su nome esercizio/recupero/schema/giorni -->
 <script src="js/records.js"></script>       <!-- record personali (PR) -->
 <script src="js/chart.js"></script>         <!-- grafico di progressione -->
-<script src="js/trends.js?rev=20260915b"></script>        <!-- dashboard andamenti su tutta la cronologia -->
+<script src="js/trends.js?rev=20260922f"></script>        <!-- dashboard andamenti su tutta la cronologia -->
 <script src="js/backup.js?rev=20260915a"></script>        <!-- esporta/importa backup, manuale e automatico -->
 <script src="js/utils.js?rev=20260921l"></script>         <!-- escape html, altezza automatica delle textarea -->
-<script src="js/navigation.js?rev=20260921l"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
+<script src="js/navigation.js?rev=20260922f"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
 <script src="js/days-modal.js?rev=20260915a"></script>    <!-- modifica categorie giorni (nome/colore/aggiungi/elimina) -->
 <script src="js/exercise-card.js?rev=20260922d"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
-<script src="js/history.js?rev=20260915a"></script>       <!-- tab Storico: elenco ed esercizi dei WO archiviati -->
+<script src="js/history.js?rev=20260922f"></script>       <!-- tab Storico: elenco ed esercizi dei WO archiviati -->
 <script src="js/search.js?rev=20260915a"></script>        <!-- ricerca in scheda attiva e storico -->
 <script src="js/calendar.js?rev=20260915a"></script>      <!-- calendario mensile dei giorni di allenamento terminati -->
 <script src="js/plate-calc.js?rev=20260915a"></script>    <!-- calcolatore dischi bilanciere per esercizio -->
 <script src="js/exercise-library.js"></script> <!-- libreria esercizi: ricerca, filtro gruppo muscolare, aggiungi/rimuovi -->
 <script src="js/home.js?rev=20260922a"></script>
 <script src="js/achievements.js"></script>
-<script src="js/onboarding.js"></script> <!-- guida rapida, cumulativa a ogni funzione nuova -->
+<script src="js/onboarding.js?rev=20260922f"></script> <!-- guida rapida, cumulativa a ogni funzione nuova -->
 <script src="js/gsap.min.js"></script>
 <script src="js/animations.js?rev=20260918c"></script>
 <script src="js/accessibility.js?rev=20260915a"></script> <!-- gestione focus nei modali, Esc per chiudere -->
@@ -343,6 +350,6 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/auth.js"></script>          <!-- modale login/registrazione -->
 <script src="js/sharing.js"></script>       <!-- condivisione in sola lettura con un coach -->
 <script src="js/push.js"></script>          <!-- notifiche push (promemoria allenamento) -->
-<script src="js/app-init.js?rev=20260921b"></script>      <!-- avvio vero e proprio dell'app, va per ultimo -->
+<script src="js/app-init.js?rev=20260922f"></script>      <!-- avvio vero e proprio dell'app, va per ultimo -->
 </body>
 </html>

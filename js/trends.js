@@ -244,7 +244,7 @@ function selectTrendsExercise(name){
 function renderTrendsModal(names){
   const body = document.getElementById('trendsBody');
   if(!names.length){
-    body.innerHTML = '<div class="footer-note" style="padding:10px 0;">Non ci sono ancora dati a sufficienza: allena qualche esercizio prima di tornare qui.</div>';
+    body.innerHTML = `<div class="trends-empty-state"><span>${ICON_CHART}</span><b>I primi dati arrivano allenandoti.</b><small>Dopo qualche serie vedrai qui volume, stima 1RM e ripetizioni a parità di peso.</small></div>`;
     return;
   }
   const options = names.map(n => `<option value="${escapeAttr(n)}" ${n===trendsSelectedExercise?'selected':''}>${escapeHtml(n)}</option>`).join('');
@@ -256,13 +256,13 @@ function renderTrendsModal(names){
     : '';
   const volHtml = volumePoints.length >= 2
     ? renderChartSVG(volumePoints)
-    : '<div class="footer-note" style="padding:10px 0;">Non ci sono ancora abbastanza periodi con dati per il volume.</div>';
+    : '<div class="trends-chart-empty">Servono almeno due periodi con dati per mostrare il volume.</div>';
   const rmHtml = oneRMPoints.length >= 2
     ? renderChartSVG(oneRMPoints)
-    : '<div class="footer-note" style="padding:10px 0;">Non ci sono ancora abbastanza periodi con dati per la stima 1RM.</div>';
+    : '<div class="trends-chart-empty">Servono almeno due periodi con dati per stimare l’1RM.</div>';
   const sameWeightHtml = sameWeightPoints.length >= 2
     ? renderChartSVG(sameWeightPoints)
-    : '<div class="footer-note" style="padding:10px 0;">Non ci sono ancora abbastanza periodi con dati a questo peso.</div>';
+    : '<div class="trends-chart-empty">Ripeti lo stesso carico in due periodi per confrontare le ripetizioni.</div>';
   body.innerHTML = `
     <select class="meta-input" style="margin-bottom:12px;" onchange="selectTrendsExercise(this.value)">${options}</select>
     ${recordHtml}

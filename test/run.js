@@ -705,6 +705,52 @@ test('le impostazioni premium conservano tutti i controlli e le azioni esistenti
   assert.strictEqual(modal.querySelector('[onclick="archiveAndReset()"]').textContent.trim(), 'Archivia ed inizia un nuovo mese', 'l’archiviazione del blocco deve restare disponibile');
 });
 
+test('il tema chiaro è una preferenza locale e non modifica i dati della scheda', () => {
+  const window = loadApp();
+  const before = JSON.stringify(window.__bridge.state);
+  window.setThemePreference('light');
+  assert.ok(window.document.body.classList.contains('theme-light'), 'il tema chiaro deve applicare la classe visiva');
+  assert.strictEqual(window.localStorage.getItem('scheda_wo18_theme_v1'), 'light', 'la scelta tema deve restare salvata sul dispositivo');
+  assert.strictEqual(window.document.querySelector('meta[name="color-scheme"]').getAttribute('content'), 'light dark', 'i controlli nativi devono conoscere il tema chiaro');
+  assert.strictEqual(JSON.stringify(window.__bridge.state), before, 'la preferenza tema non deve entrare nei dati di allenamento');
+  window.renderAppearanceSettings();
+  assert.ok(window.document.querySelector('#appearanceSettings input[type="checkbox"]').checked, 'il controllo del tema deve rappresentare lo stato salvato');
+});
+
+test('la dashboard Progressi riusa calendario e strumenti senza creare dati paralleli', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    title:'Allenamento', programStartDate:'2026-09-01', currentWeek:0, weeksPerBlock:4,
+    completedTrainingDays:[], currentTrainingDayIdx:0,
+    days:[{name:'Push Day', esercizi:[]},{name:'Pull Day', esercizi:[]}]
+  };
+  const before = JSON.stringify(window.__bridge.state);
+  window.__bridge.calendarLog = {
+    '2026-09-21': [{name:'Push Day', color:'#7EA83C'}],
+    '2026-09-19': [{name:'Pull Day', color:'#417C8E'}]
+  };
+  window.renderProgressOverview();
+  const overview = window.document.getElementById('progressOverview');
+  assert.ok(overview.textContent.includes('PROGRESSI'), 'la dashboard deve avere un titolo esplicito');
+  assert.ok(overview.textContent.includes('ATTIVITÀ RECENTE'), 'la dashboard deve rendere la timeline recente');
+  assert.strictEqual(overview.querySelectorAll('.progress-quick-actions button').length, 3, 'devono restare raggiungibili andamenti, obiettivi e calendario');
+  assert.strictEqual(JSON.stringify(window.__bridge.state), before, 'la dashboard non deve alterare la scheda');
+});
+
+test('la guida premium conserva un percorso breve in tre passaggi e l’editor reale', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    title:'Allenamento', currentWeek:0, weeksPerBlock:4, completedTrainingDays:[],
+    days:[{name:'Push Day', esercizi:[]},{name:'Pull Day', esercizi:[]}]
+  };
+  window.renderOnboardingModal(0, false);
+  const body = window.document.getElementById('onboardingBody');
+  assert.ok(body.textContent.includes('PASSO 1'), 'la guida deve iniziare dal primo passo');
+  assert.ok(body.querySelector('[onclick="openOnboardingPlanSetup()"]').textContent.includes('Personalizza giorni e colori'), 'la guida deve portare all’editor vero della scheda');
+  window.continueOnboarding();
+  assert.ok(body.textContent.includes('PASSO 2'), 'Continua deve passare al secondo passo della guida');
+});
+
 test('checkRemoteUpdateOnBoot al PRIMISSIMO controllo (mai registrato un invio da qui prima) non deve avvisare, solo registrare il punto di partenza', async () => {
   const window = loadApp();
   window.__bridge.syncSession = { user: { id:'u1', email:'a@b.com' } };

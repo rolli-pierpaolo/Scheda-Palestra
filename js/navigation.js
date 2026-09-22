@@ -113,6 +113,12 @@ function showView(v){
     if(v === 'home'){
       animateSuggestedWorkout();
     }
+    if(v === 'hist' && typeof renderProgressOverview === 'function'){
+      // La dashboard è un riassunto vivo: viene ricalcolata all'ingresso
+      // nei Progressi, così calendario, blocchi archiviati e serie recenti
+      // non mostrano mai dati della visita precedente.
+      renderProgressOverview();
+    }
     updateThemeColor();
     // l'icona account resta solo su Home/Storico: in Allenamento c'e' gia'
     // il pulsante account nella topbar che distrarrebbe/affollerebbe
@@ -205,13 +211,14 @@ function releaseWakeLock(){
 function updateThemeColor(){
   const meta = document.querySelector('meta[name="theme-color"]');
   if(!meta) return;
+  const isLight = document.body.classList.contains('theme-light');
   const onActive = document.getElementById('viewActive').style.display !== 'none';
   if(onActive && state && state.days && state.days[activeDayIdx]){
-    meta.setAttribute('content', dayAccent(state.days[activeDayIdx], activeDayIdx).d);
+    meta.setAttribute('content', isLight ? '#F4F6F1' : dayAccent(state.days[activeDayIdx], activeDayIdx).d);
   } else {
     // Il browser chrome parte dalla stessa testata nera, senza una fascia
     // grigia differente tra l'area di sistema e il contenuto.
-    meta.setAttribute('content', '#0D0D0D');
+    meta.setAttribute('content', isLight ? '#F4F6F1' : '#0D0D0D');
   }
 }
 

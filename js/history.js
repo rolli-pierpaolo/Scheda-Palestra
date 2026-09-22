@@ -19,9 +19,69 @@ function showHistSection(section){
     document.getElementById('histSubTab'+label).classList.toggle('active', s===section);
   });
 }
+
+// Dashboard compatta dei Progressi: usa soltanto dati già presenti
+// (calendario, settimane e storico), quindi non introduce un secondo formato
+// di salvataggio né cambia il modo in cui vengono contati gli allenamenti.
+function progressTimelineEntries(limit=4){
+  return Object.keys(calendarLog || {})
+    .filter(key => Array.isArray(calendarLog[key]) && calendarLog[key].length)
+    .sort((a,b) => b.localeCompare(a))
+    .slice(0, limit)
+    .map(key => ({ key, entries: calendarLog[key] || [] }));
+}
+function progressDateLabel(key){
+  if(typeof formatDateItalian === 'function') return formatDateItalian(key);
+  const parts = String(key || '').split('-').map(Number);
+  return parts.length === 3 ? `${parts[2]}/${String(parts[1]).padStart(2,'0')}` : String(key || '');
+}
+function renderProgressOverview(){
+  const el = document.getElementById('progressOverview');
+  if(!el || typeof state === 'undefined') return;
+  const weekly = typeof computeWeeklyProgress === 'function' ? computeWeeklyProgress() : {done:0,total:0};
+  const completed = Math.min(weekly.done || 0, weekly.total || 0);
+  const total = weekly.total || 0;
+  const weeklyPct = total ? Math.round(completed / total * 100) : 0;
+  const sessions = typeof computeMonthlyWorkoutsCount === 'function' ? computeMonthlyWorkoutsCount() : 0;
+  const archived = Object.keys(getStorico() || {}).length;
+  const blockWeek = typeof computeCurrentBlockWeek === 'function' ? computeCurrentBlockWeek() : ((state.currentWeek || 0) + 1);
+  const timeline = progressTimelineEntries();
+  const timelineHtml = timeline.length ? timeline.map(({key, entries}) => {
+    const names = entries.slice(0,2).map(entry => escapeHtml(entry.name || 'Allenamento')).join(' · ');
+    const extra = entries.length > 2 ? ` +${entries.length - 2}` : '';
+    const accent = entries[0] && entries[0].color ? entries[0].color : 'var(--green)';
+    return `<button class="progress-timeline-row" type="button" onclick="openCalendar()">
+      <span class="progress-timeline-dot" style="--accent:${escapeAttr(accent)}"></span>
+      <span><b>${escapeHtml(progressDateLabel(key))}</b><small>${names}${extra}</small></span>
+      <i>›</i>
+    </button>`;
+  }).join('') : `<div class="progress-timeline-empty">Il tuo primo allenamento apparirà qui.</div>`;
+
+  el.innerHTML = `
+    <section class="progress-hero-card">
+      <div class="progress-hero-topline"><span>PROGRESSI</span><button type="button" onclick="openCalendar()" aria-label="Apri calendario">${ICON_CALENDAR}</button></div>
+      <div class="progress-hero-title">Il tuo ritmo,<br><em>in chiaro.</em></div>
+      <div class="progress-weekline"><span>Settimana ${blockWeek} di ${state.weeksPerBlock || 4}</span><b>${completed}/${total || 0} giorni</b></div>
+      <div class="progress-week-track" aria-label="${weeklyPct}% della settimana completata"><span style="width:${weeklyPct}%"></span></div>
+      <div class="progress-metric-grid">
+        <div><b>${sessions}</b><span>sessioni nel blocco</span></div>
+        <div><b>${archived}</b><span>schede archiviate</span></div>
+      </div>
+    </section>
+    <section class="progress-quick-actions" aria-label="Strumenti progressi">
+      <button type="button" onclick="openTrends()"><span>${ICON_CHART}</span><b>Andamenti</b><small>Forza e volume</small></button>
+      <button type="button" onclick="openAchievements()"><span>${ICON_TARGET}</span><b>Obiettivi</b><small>I tuoi traguardi</small></button>
+      <button type="button" onclick="openCalendar()"><span>${ICON_CALENDAR}</span><b>Calendario</b><small>Sessioni e costanza</small></button>
+    </section>
+    <section class="progress-timeline-card">
+      <div class="progress-section-head"><span>ATTIVITÀ RECENTE</span><button type="button" onclick="openCalendar()">Vedi tutto</button></div>
+      <div class="progress-timeline">${timelineHtml}</div>
+    </section>`;
+}
 // apre il modale Impostazioni, aggiornando prima lo stato di condivisione
 // e notifiche così sono sempre freschi
 function openSettingsModal(){
+  if(typeof renderAppearanceSettings === 'function') renderAppearanceSettings();
   if(typeof renderAccessibilitySettings === 'function') renderAccessibilitySettings();
   if(typeof renderSharingSection === 'function') renderSharingSection();
   if(typeof renderPushStatus === 'function') renderPushStatus();
@@ -43,6 +103,19 @@ function toggleHistEdit(){
 function renderHistList(){
   const el = document.getElementById('histList');
   const titles = Object.keys(getStorico());
+  const editBtn = document.getElementById('histEditBtn');
+  if(!titles.length){
+    el.innerHTML = `<div class="history-empty-list"><span>${ICON_ARCHIVE}</span><div><b>Nessuna scheda archiviata</b><small>Quando chiudi un blocco, potrai rivederlo qui senza perdere lo storico.</small></div></div>`;
+    if(editBtn){
+      editBtn.hidden = true;
+      editBtn.style.setProperty('display', 'none', 'important');
+    }
+    return;
+  }
+  if(editBtn){
+    editBtn.hidden = false;
+    editBtn.style.removeProperty('display');
+  }
   el.innerHTML = titles.map(t=>{
     const safe = String(t).replace(/'/g,"\\'");
     const delBtn = histEditMode ? `<button class="hist-del" onclick="event.stopPropagation();deleteHistEntry('${safe}')" title="Elimina">\u2715</button>` : '';
@@ -78,7 +151,7 @@ function selectHistDay(i){ histDayIdx=i; renderHistDayTabs(); renderHistBody(); 
 // tipo quelle mai arrivate a farle, spariscono invece di mostrarsi vuote
 function renderHistBody(){
   const el = document.getElementById('histBody');
-  if(!histActive){ el.innerHTML = '<div class="footer-note">Seleziona un WO storico qui sopra.</div>'; return; }
+  if(!histActive){ el.innerHTML = `<div class="history-empty-state"><span>${ICON_ARCHIVE}</span><b>Le tue schede archiviate</b><small>Seleziona un blocco per vedere esercizi, serie e settimane registrate.</small></div>`; return; }
   const day = getStorico()[histActive][histDayIdx];
   const a = dayAccent(day, histDayIdx);
   el.innerHTML = day.esercizi.map(ex=>{
