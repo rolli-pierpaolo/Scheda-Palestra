@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>VIRIDIS · Verifica dialoghi</title><link rel="stylesheet" href="../css/style.css"></head>
+<body>
+<main style="padding:32px 20px"><h1>VIRIDIS</h1><p>Anteprima isolata dei componenti. Nessun dato allenamento viene letto o salvato.</p>
+<p><button class="add-ex" onclick="maxPreview(3)">Max · 3 serie</button></p>
+<p><button class="add-ex" onclick="maxPreview(40)">Max · 40 serie</button></p>
+<p><button class="add-ex" onclick="ViridisConfirmDialog('Eliminare questo esercizio?').then(showResult)">Conferma eliminazione</button></p>
+<p><button class="add-ex" onclick="ViridisInputDialog('Peso del bilanciere in kg', '', {title:'Peso bilanciere',inputMode:'decimal',validate:v=>isNaN(parseFloat(v))?'Numero non valido':''}).then(showResult)">Input numerico</button></p>
+<p><label><input type="checkbox" onchange="accessibilityPrefs.largeText=this.checked;applyAccessibilityPrefs()"> Testo più grande</label></p>
+<p><label><input type="checkbox" onchange="accessibilityPrefs.highContrast=this.checked;applyAccessibilityPrefs()"> Contrasto alto</label></p>
+<p><label><input type="checkbox" onchange="accessibilityPrefs.reduceMotion=this.checked;applyAccessibilityPrefs()"> Riduci animazioni</label></p>
+<p><label><input type="checkbox" checked onchange="accessibilityPrefs.vibration=this.checked"> Vibrazione</label></p>
+<p id="result" role="status"></p></main>
+<script src="../js/preferences.js"></script><script src="../js/dialogs.js"></script>
+<script>
+function showResult(value){document.getElementById('result').textContent='Risultato: '+String(value);}
+function vibrate(pattern){if(accessibilityPrefs.vibration && navigator.vibrate) navigator.vibrate(pattern);}
+function maxPreview(count){ViridisOptionPicker({title:'Aggiungi serie Max',message:'Dopo quale serie vuoi inserirla?',hint:'Il Max verrà inserito subito dopo la serie selezionata.',grid:true,choices:Array.from({length:count},(_,i)=>({label:String(i+1),value:i+1}))}).then(value=>{showResult(value);if(value!==null)ViridisToast('Serie Max aggiunta');});}
+</script></body></html>

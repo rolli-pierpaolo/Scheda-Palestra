@@ -400,8 +400,8 @@ function moveExerciseBlock(blockIdx, delta){
   reorderDirty = true;
   renderActive();
 }
-function confirmReorderOrder(){
-  if(!confirm('Confermi il nuovo ordine degli esercizi?')) return;
+async function confirmReorderOrder(){
+  if(!await ViridisConfirmDialog('Confermi il nuovo ordine degli esercizi?')) return;
   reorderMode = false;
   reorderDirty = false;
   reorderBackup = null;
@@ -498,7 +498,7 @@ function confirmAddWeeksAfterBlock(current, available){
   const input = document.getElementById('addWeeksInput');
   let extra = parseInt((input && input.value) || '', 10);
   if(!Number.isInteger(extra) || extra < 1 || extra > available){
-    alert(`Inserisci un numero da 1 a ${available}.`);
+    ViridisFieldError(input, `Inserisci un numero da 1 a ${available}.`);
     return;
   }
   extendWeeksPerBlock(current + extra);
@@ -530,7 +530,7 @@ function maybePromptBlockCompletion(){
 // mancanti, o allenamenti non ancora fatti in quella corrente) avvisa e
 // chiede conferma esplicita - altrimenti un tocco per sbaglio sull'icona
 // "Termina blocco" azzererebbe pesi/ripetizioni senza nessun avviso
-function archiveAndReset(){
+async function archiveAndReset(){
   const weeksPerBlock = state.weeksPerBlock || 4;
   const completedWeeksCount = (state.completedWeeks||[]).length;
   const blockComplete = completedWeeksCount >= weeksPerBlock;
@@ -540,21 +540,21 @@ function archiveAndReset(){
     const parts = [];
     if(trainingsLeftThisWeek>0) parts.push(`${trainingsLeftThisWeek} allenament${trainingsLeftThisWeek===1?'o':'i'} di questa settimana`);
     parts.push(`${missingWeeks} settiman${missingWeeks===1?'a':'e'} del blocco`);
-    if(!confirm(`Attenzione: questo blocco non e' ancora completo - mancano ancora ${parts.join(' e ')}.\n\nSe termini adesso, quello che manca resta non fatto e riparti da zero con un nuovo blocco.\n\nSei sicuro di voler terminare comunque?`)) return;
+    if(!await ViridisConfirmDialog(`Attenzione: questo blocco non e' ancora completo - mancano ancora ${parts.join(' e ')}.\n\nSe termini adesso, quello che manca resta non fatto e riparti da zero con un nuovo blocco.\n\nSei sicuro di voler terminare comunque?`)) return;
   }
-  const archiveName = prompt("Con che nome salvare questo mese nello Storico?", state.title || "WO");
+  const archiveName = await ViridisInputDialog("Con che nome salvare questo mese nello Storico?", state.title || "WO");
   if(archiveName === null || !archiveName.trim()) return;
-  const newTitle = prompt("Nome del nuovo mese che stai per iniziare?", suggestNextTitle(state.title));
+  const newTitle = await ViridisInputDialog("Nome del nuovo mese che stai per iniziare?", suggestNextTitle(state.title));
   if(newTitle === null || !newTitle.trim()) return;
   // richiesto a ogni nuovo blocco (non solo la primissima volta), precompilato
   // con l'ultimo valore usato: cosi' si puo' cambiare durata da un blocco
   // all'altro senza doverla lasciare per forza fissa a quella iniziale
-  let weeksVal = prompt("Quante settimane durerà il nuovo blocco?", String(state.weeksPerBlock||4));
+  let weeksVal = await ViridisWeeksPicker("Quante settimane durerà il nuovo blocco?", state.weeksPerBlock||4);
   if(weeksVal === null) return;
   let weeksN = parseInt(String(weeksVal).replace(',','.'), 10);
   if(isNaN(weeksN) || weeksN<1) weeksN = state.weeksPerBlock||4;
   if(weeksN>12) weeksN = 12;
-  if(!confirm(`Salvo "${archiveName}" nello Storico e azzero pesi/ripetizioni per iniziare "${newTitle}" (${weeksN} settimane). Nome esercizi, recupero e schema restano come base di partenza. Continuare?`)) return;
+  if(!await ViridisConfirmDialog(`Salvo "${archiveName}" nello Storico e azzero pesi/ripetizioni per iniziare "${newTitle}" (${weeksN} settimane). Nome esercizi, recupero e schema restano come base di partenza. Continuare?`)) return;
 
   storicoExtra[archiveName.trim()] = JSON.parse(JSON.stringify(state.days));
   saveStorico();
@@ -588,7 +588,7 @@ saveState();
   renderDayTabs();
   renderActive();
   renderHistList();
-  alert(`Fatto! "${archiveName.trim()}" è ora nello Storico. Hai iniziato "${newTitle.trim()}".`);
+  ViridisToast(`Fatto! "${archiveName.trim()}" è ora nello Storico. Hai iniziato "${newTitle.trim()}".`);
 }
 
 // il suggerimento compare SOLO nella settimana subito dopo una segnata come
@@ -673,11 +673,11 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
   const entries = maxEntriesAfter(ex,w,si);
   if(!entries.length) return '';
   const kgFields = entries.map(({entry,index},attempt)=>
-    `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Peso Max ${attempt+1}" placeholder="Kg" value="${escapeAttr(entry.peso??'')}" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)">`).join('');
+    `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Peso Max ${attempt+1}" placeholder="Kg" value="${escapeAttr(entry.peso??'')}" oninput="updateMaxEntry(${exi},${w},${index},'peso',this.value,true)" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)">`).join('');
   const ripFields = entries.map(({entry,index},attempt)=>{
     const previous = w>0 ? getMaxEntries(ex,w-1)[index] : null;
     const canCompare = showComparison && String(previous?.rip??'').trim();
-    return `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Ripetizioni Max ${attempt+1}" placeholder="Rip" value="${escapeAttr(entry.rip??'')}" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)">${canCompare ? `<button type="button" class="rep-compare-btn max-compare-btn" aria-label="Confronta ripetizioni Max" title="Confronta con la settimana scorsa" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">↺</button>` : ''}</div>`;
+    return `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Ripetizioni Max ${attempt+1}" placeholder="Rip" value="${escapeAttr(entry.rip??'')}" oninput="updateMaxEntry(${exi},${w},${index},'rip',this.value,true)" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)">${canCompare ? `<button type="button" class="rep-compare-btn max-compare-btn" aria-label="Confronta ripetizioni Max" title="Confronta con la settimana scorsa" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">↺</button>` : ''}</div>`;
   }).join('');
   return `<div class="max-entry-box"><div class="set-row max-entry-row" style="--max-count:${entries.length}"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
 }
@@ -685,7 +685,7 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
 // accanto alla serie. Se lo schema non usa il formato "1×6-10", non inventa
 // prescrizioni: conserva semplicemente il testo completo nella card sopra.
 function getSetPrescription(schema, setIndex){
-  const raw = String(schema||'').trim();
+  const raw = String(schema||'').replace(/\s+/g,' ').trim();
   if(!raw) return {target:'', extras:''};
   const parts = raw.split(/\s+(?=\d+\s*[x×])/i).filter(Boolean);
   // "2×8–10" non e' una sola serie: la stessa prescrizione va mostrata
@@ -696,7 +696,7 @@ function getSetPrescription(schema, setIndex){
     if(!match) return [];
     const count = Math.max(1,Number.parseInt(match[1],10)||1);
     const bits = match[2].trim().split('+').map(part=>part.trim()).filter(Boolean);
-    const target = (bits.shift()||'').replace(/-/g,'–');
+    const target = (bits.shift()||'').replace(/\s*[-–]\s*/g,'–');
     const prescription = {
       target: target ? (/\d/.test(target) ? `${target} reps` : target) : '',
       extras: bits.length ? `+ ${bits.join(' + ')}` : ''
@@ -836,7 +836,7 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
           aria-label="Peso serie ${si+1} in chilogrammi"
           placeholder="0"
           value="${escapeAttr(s.peso ?? '')}"
-          onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr});markSetVisualState(this)">
+          oninput="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr},true)" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr});markSetVisualState(this)">
           <button class="stepper"
           ${isReadOnlyWeek?'disabled':''}
           onclick="stepSet(${exi},${w},${si},2.5,this)">
@@ -852,7 +852,7 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
         aria-label="Ripetizioni serie ${si+1}"
         placeholder="0"
         value="${escapeAttr(s.rip ?? '')}"
-        onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this);markSetVisualState(this)">
+        oninput="updateSet(${exi},${w},${si},'rip',this.value,undefined,true)" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this);markSetVisualState(this)">
 
         <button type="button" class="rpe-chip ${s.rpe?'filled':''}" ${isReadOnlyWeek?'disabled':''} onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
         ${isCurrentWeek && getPreviousWeekRep(ex,w,si) ? `<button type="button" class="rep-compare-btn" ${isReadOnlyWeek || !String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
@@ -1242,7 +1242,7 @@ function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
     </div>` : '';
   const setActions = hasWeekContext ? `<div class="ex-context-action-pair ex-context-series-actions" aria-label="Serie esercizio">
       <button class="ex-context-quick-action paired-action" onclick="closeExerciseContextMenu();addSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;addSet(${partnerExi},${weekIdx})`:''}"><span class="ex-context-quick-symbol">＋</span><span>Aggiungi serie</span></button>
-      <button class="ex-context-quick-action paired-action danger" onclick="closeExerciseContextMenu();removeSet(${exi},${weekIdx})${typeof partnerExi==='number'?`;removeSet(${partnerExi},${weekIdx})`:''}"><span class="ex-context-quick-symbol">−</span><span>Rimuovi serie</span></button>
+      <button class="ex-context-quick-action paired-action danger" onclick="closeExerciseContextMenu();removeSet(${exi},${weekIdx})${typeof partnerExi==='number'?`.then(()=>removeSet(${partnerExi},${weekIdx}))`:''}"><span class="ex-context-quick-symbol">−</span><span>Rimuovi serie</span></button>
     </div>` : '';
   const el = document.createElement('div');
   el.id = 'exContextMenu';
@@ -1308,7 +1308,7 @@ function closeDayManagementMenu(){
   const el = document.getElementById('dayManagementMenu');
   if(el) el.remove();
 }
-function skipRemainingExercisesForDay(){
+async function skipRemainingExercisesForDay(){
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
   const day = state.days[activeDayIdx];
   const w = state.currentWeek || 0;
@@ -1322,7 +1322,7 @@ function skipRemainingExercisesForDay(){
     return;
   }
   const plural = remaining.length === 1 ? 'esercizio rimanente' : 'esercizi rimanenti';
-  if(!confirm(`Vuoi saltare ${remaining.length} ${plural} di ${day.name||'questa giornata'}? Gli esercizi gia' completati e tutti i dati inseriti resteranno invariati.`)) return;
+  if(!await ViridisConfirmDialog(`Vuoi saltare ${remaining.length} ${plural} di ${day.name||'questa giornata'}? Gli esercizi gia' completati e tutti i dati inseriti resteranno invariati.`)) return;
   remaining.forEach(ex=>{
     const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
     if(!ex.weekDone) ex.weekDone = new Array(nWeeks).fill(false);
@@ -1434,7 +1434,7 @@ function updateWeekNote(exi, w, val){
   ex.weekNote[w] = val;
   saveState();
 }
-function updateSet(exi, w, si, field, val, recordPeso){
+function updateSet(exi, w, si, field, val, recordPeso, isDraft=false){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
   if(!ex.sets[w]) ex.sets[w]=[];
@@ -1444,6 +1444,9 @@ function updateSet(exi, w, si, field, val, recordPeso){
   // già riportati dalla settimana precedente senza che l'allenamento sia iniziato.
   if(field==='rip' && String(val||'').trim()!=='') markWorkoutStartedByRep();
   saveState();
+  // Ogni tasto è già persistito; PR e conferma fine serie aspettano invece
+  // il valore completo (change/Fine), non la prima cifra di "12".
+  if(isDraft) return;
   if(field==='peso' && recordPeso!==undefined && recordPeso!==null && !ex.sets[w][si].dropset){
     const p = parseFloat(String(val).replace(',','.'));
     if(!isNaN(p) && p>recordPeso){
@@ -1543,7 +1546,8 @@ function isLastSetOfWeekFilled(ex, w){
   const last = sets[sets.length-1];
   return !!(last && String(last.rip||'').trim() !== '');
 }
-// modale dell'app al posto del confirm() nativo del browser: quello di sistema
+// Modale della settimana: chiude prima la tastiera, poi mostra la conferma.
+// Il vecchio dialogo di sistema
 // non segue lo stile dell'app ed e' capitato apparisse ancora con la tastiera
 // aperta sopra, illeggibile - qui si chiude prima la tastiera (blur) e si apre
 // un modale vero, sempre visibile e leggibile
@@ -1652,22 +1656,20 @@ function fillSuggestedWeight(exi, w, si, value, btn, recordPeso){
   updateSet(exi, w, si, 'peso', value, recordPeso);
   btn.remove();
 }
-// RPE (sforzo percepito, 1-10) per la singola serie: un prompt() invece di
-// un'altra tastiera custom da costruire - stessa scelta gia' fatta altrove
-// in questo file per un singolo numero (peso bilanciere, settimane blocco).
+// RPE (sforzo percepito, 1-10): input VIRIDIS con validazione inline.
 // Facoltativo: lasciare vuoto toglie l'RPE gia' segnato
-function editRpe(exi, w, si, btn){
+async function editRpe(exi, w, si, btn){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
   if(!ex.sets[w]) ex.sets[w]=[];
   while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
   const cur = ex.sets[w][si].rpe || '';
-  const raw = prompt('RPE di questa serie (1-10, es. 8 o 8.5). Lascia vuoto per toglierlo:', cur);
+  const raw = await ViridisInputDialog('RPE di questa serie (1-10, es. 8 o 8.5). Lascia vuoto per toglierlo:', cur, {title:'Sforzo percepito · RPE', inputMode:'decimal', validate:value => value.trim() && (isNaN(parseFloat(value.replace(",","."))) || parseFloat(value.replace(",","."))<1 || parseFloat(value.replace(",","."))>10) ? 'RPE deve essere un numero tra 1 e 10.' : ''});
   if(raw === null) return;
   const val = raw.trim();
   if(val !== ''){
     const n = parseFloat(val.replace(',','.'));
-    if(isNaN(n) || n<1 || n>10){ alert('RPE deve essere un numero tra 1 e 10.'); return; }
+    if(isNaN(n) || n<1 || n>10){ ViridisToast('RPE deve essere un numero tra 1 e 10.'); return; }
   }
   ex.sets[w][si].rpe = val;
   saveState();
@@ -1698,14 +1700,18 @@ function maxHasData(ex, w){
   const pair = (ex.maxExtra && ex.maxExtra[w]) || [];
   return pair.some(m=> m && (String(m.peso||'').trim() || String(m.rip||'').trim()));
 }
-function requestAddMax(exi, w, partnerExi){
+async function requestAddMax(exi, w, partnerExi){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  const nSets = Math.max(1, ((ex.sets && ex.sets[w]) || []).length);
-  const raw = prompt(`Dopo quale serie vuoi aggiungere il Max? (1-${nSets})`, String(nSets));
+  // Numero di righe già presentate dalla card, comprese quelle vuote iniziali.
+  // Cambia solo l'elenco delle scelte, senza materializzare serie nei dati.
+  const weekBody = document.querySelector(`.week-body[data-exi="${exi}"][data-week="${w}"]`);
+  const displayedSets = weekBody ? weekBody.querySelectorAll('.set-series-group, .linked-set-group').length : 0;
+  const nSets = displayedSets || Math.max(1, ((ex.sets && ex.sets[w]) || []).length);
+  const raw = await ViridisOptionPicker({title:'Aggiungi serie Max', message:'Dopo quale serie vuoi inserirla?', hint:'Il Max verrà inserito subito dopo la serie selezionata.', grid:true, choices:Array.from({length:nSets}, (_, i) => ({label:String(i+1), value:String(i+1)}))});
   if(raw===null) return;
   const afterSet = Number.parseInt(String(raw).trim(),10);
   if(!Number.isInteger(afterSet) || afterSet<1 || afterSet>nSets){
-    alert(`Inserisci un numero da 1 a ${nSets}.`);
+    ViridisToast(`Inserisci un numero da 1 a ${nSets}.`);
     return;
   }
   const entries = getMaxEntries(ex,w);
@@ -1723,8 +1729,9 @@ function requestAddMax(exi, w, partnerExi){
   pendingWeekVisual = {type:'max',exi,w,si:afterSet-1};
   saveState();
   renderActive();
+  ViridisToast('Serie Max aggiunta');
 }
-function requestRemoveMax(exi, w, partnerExi){
+async function requestRemoveMax(exi, w, partnerExi){
   const ex = state.days[activeDayIdx].esercizi[exi];
   const entries = getMaxEntries(ex,w);
   if(!entries.length) return;
@@ -1732,14 +1739,13 @@ function requestRemoveMax(exi, w, partnerExi){
   let afterSet;
   if(series.length===1){
     afterSet = series[0];
-    if(!confirm(`Vuoi eliminare il Max dopo la serie ${afterSet+1}?`)) return;
+    if(!await ViridisConfirmDialog(`Vuoi eliminare il Max dopo la serie ${afterSet+1}?`)) return;
   } else {
-    const choices = series.map((set,index)=>`${index+1}: Max dopo serie ${set+1}`).join('\n');
-    const raw = prompt(`Quale gruppo Max vuoi rimuovere?\n${choices}`, '1');
+    const raw = await ViridisOptionPicker({title:'Rimuovi serie Max', message:'Quale gruppo Max vuoi rimuovere?', choices:series.map((set,index)=>({label:`Max dopo serie ${set+1}`, value:String(index+1)}))});
     if(raw===null) return;
     const choice = Number.parseInt(String(raw).trim(),10)-1;
     if(!Number.isInteger(choice) || choice<0 || choice>=series.length){
-      alert('Seleziona uno dei Max indicati.');
+      ViridisToast('Seleziona uno dei Max indicati.');
       return;
     }
     afterSet = series[choice];
@@ -1748,7 +1754,7 @@ function requestRemoveMax(exi, w, partnerExi){
   const partnerEntries = typeof partnerExi==='number' ? getMaxEntries(state.days[activeDayIdx].esercizi[partnerExi],w) : [];
   const hasData = [...toRemove, ...partnerEntries.filter(entry=>entry.afterSet===afterSet)]
     .some(entry=>String(entry.peso||'').trim() || String(entry.rip||'').trim());
-  if(hasData && !confirm('Questo Max contiene kg o ripetizioni. Vuoi eliminarlo comunque?')) return;
+  if(hasData && !await ViridisConfirmDialog('Questo Max contiene kg o ripetizioni. Vuoi eliminarlo comunque?')) return;
   ex.maxEntries[w] = entries.filter(entry=>entry.afterSet!==afterSet);
   if(typeof partnerExi==='number'){
     state.days[activeDayIdx].esercizi[partnerExi].maxEntries[w] = partnerEntries.filter(entry=>entry.afterSet!==afterSet);
@@ -1756,14 +1762,14 @@ function requestRemoveMax(exi, w, partnerExi){
   saveState();
   renderActive();
 }
-function updateMaxEntry(exi, w, index, field, val){
+function updateMaxEntry(exi, w, index, field, val, isDraft=false){
   const ex = state.days[activeDayIdx].esercizi[exi];
   const entry = getMaxEntries(ex,w)[index];
   if(!entry) return;
   entry[field] = val;
   // Se le righe future erano già state create vuote, riempi anche quelle
   // senza cancellare eventuali modifiche scritte in autonomia più avanti.
-  carryMaxLayoutForward(ex,w);
+  if(!isDraft) carryMaxLayoutForward(ex,w);
   if(field==='rip' && String(val||'').trim()!=='') markWorkoutStartedByRep();
   saveState();
 }
@@ -1924,7 +1930,7 @@ function addSet(exi, w){
 // quella riga, la cascata la cancellerebbe senza che l'utente se ne accorga:
 // in quel caso si tocca solo la settimana su cui si sta lavorando, lasciando
 // le altre esattamente come stanno
-function removeSet(exi, w){
+async function removeSet(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.sets || !ex.sets[w] || ex.sets[w].length<=1) return; // tieni sempre almeno 1 serie in questa settimana
   const hasRowData = weekSets => {
@@ -1933,7 +1939,7 @@ function removeSet(exi, w){
     return last && (String(last.peso||'').trim() || String(last.rip||'').trim());
   };
   const currentHasData = hasRowData(ex.sets[w]);
-  if(currentHasData && !confirm('L\'ultima serie di questa settimana ha dei dati inseriti (kg/rip). Eliminarla comunque?')) return;
+  if(currentHasData && !await ViridisConfirmDialog('L\'ultima serie di questa settimana ha dei dati inseriti (kg/rip). Eliminarla comunque?')) return;
   const otherWeeksHaveData = ex.sets.some((weekSets,k) => k!==w && hasRowData(weekSets));
   if(otherWeeksHaveData){
     ex.sets[w].pop();
@@ -1945,8 +1951,8 @@ function removeSet(exi, w){
 }
 // aggiunge una scheda esercizio vuota in fondo al giorno; niente qui obbliga a
 // scegliere subito il nome, si compila dopo dal campo con l'autocomplete
-function addExercise(dayIdx){
-  const n = ensureWeeksPerBlock();
+async function addExercise(dayIdx){
+  const n = state.weeksPerBlock || await ensureWeeksPerBlock();
   state.days[dayIdx].esercizi.push({nome:'',commento:'',recupero:emptyStrArr(n),schema:emptyStrArr(n),sets:emptySetsArr(n)});
   renderActive();
   saveState();
@@ -1956,8 +1962,8 @@ function addExercise(dayIdx){
 // esattamente dove stava, in caso di ripensamento o tocco sbagliato
 let lastDeletedExercise = null;
 let undoDeleteTimer = null;
-function deleteExercise(exi){
-  if(!confirm('Eliminare questo esercizio?')) return;
+async function deleteExercise(exi){
+  if(!await ViridisConfirmDialog('Eliminare questo esercizio?')) return;
   const ex = state.days[activeDayIdx].esercizi[exi];
   const dayIdx = activeDayIdx;
   if(ex.linkGroupId){
@@ -2116,7 +2122,7 @@ function onLinkListGroupFilter(group){
 // esercizio gia' presente in questo giorno lo usa come partner, altrimenti ne
 // crea uno nuovo con quel nome (stesso identico esercizio vuoto che crea
 // "+ Aggiungi esercizio", solo col nome gia' compilato) e lo usa come partner
-function onLinkPartnerNameChosen(val){
+async function onLinkPartnerNameChosen(val){
   val = String(val||'').trim();
   if(!val) return;
   const day = state.days[activeDayIdx];
@@ -2124,13 +2130,13 @@ function onLinkPartnerNameChosen(val){
   const matchIdx = day.esercizi.findIndex((e,i)=> i!==linkPickerExi && String(e.nome||'').trim().toLowerCase()===key);
   if(matchIdx !== -1){
     if(day.esercizi[matchIdx].linkGroupId){
-      alert('"'+val+'" è già collegato a un altro esercizio in questo giorno. Slegalo prima di provare a collegarlo di nuovo.');
+      ViridisToast('"'+val+'" è già collegato a un altro esercizio in questo giorno. Slegalo prima di provare a collegarlo di nuovo.');
       return;
     }
     pickLinkPartner(matchIdx);
     return;
   }
-  const n = ensureWeeksPerBlock();
+  const n = state.weeksPerBlock || await ensureWeeksPerBlock();
   day.esercizi.push({nome:val, commento:'', recupero:emptyStrArr(n), schema:emptyStrArr(n), sets:emptySetsArr(n)});
   pickLinkPartner(day.esercizi.length-1);
 }
@@ -2149,13 +2155,13 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
         <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
         <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
       </div>
-      <input type="text" class="set-input" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
+      <input type="text" class="set-input" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" oninput="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr},true)" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
     </div>
     ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
     </div>
     <div class="rip-cell">
     <div class="rip-wrap">
-    <input type="text" class="set-input" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
+    <input type="text" class="set-input" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" oninput="updateSet(${exi},${w},${si},'rip',this.value,undefined,true)" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
     <button type="button" class="rpe-chip ${s.rpe?'filled':''}" onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
     ${w===state.currentWeek && getPreviousWeekRep(ex,w,si) ? `<button type="button" class="rep-compare-btn" ${!String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
     </div>
@@ -2171,8 +2177,8 @@ function linkedMaxEntriesHtml(exA, exiA, exB, exiB, w, si){
     const a = aItems[i], b = bItems[i];
     html += `<div class="linked-set-group max-entry-group"><div class="linked-set-wrap">
       <div class="set-label max-label">MAX</div><div class="linked-sub-rows">
-      <div class="linked-sub-row"><span class="linked-tag">${escapeHtml(exA.nome||'—')}</span><input type="text" class="set-input max-input" placeholder="kg" value="${escapeAttr(a ? a.entry.peso??'' : '')}" ${a?'':'disabled'} onchange="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'peso',this.value)"><input type="text" class="set-input max-input" placeholder="rip" value="${escapeAttr(a ? a.entry.rip??'' : '')}" ${a?'':'disabled'} onchange="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'rip',this.value)"></div>
-      <div class="linked-sub-row"><span class="linked-tag">${escapeHtml(exB.nome||'—')}</span><input type="text" class="set-input max-input" placeholder="kg" value="${escapeAttr(b ? b.entry.peso??'' : '')}" ${b?'':'disabled'} onchange="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'peso',this.value)"><input type="text" class="set-input max-input" placeholder="rip" value="${escapeAttr(b ? b.entry.rip??'' : '')}" ${b?'':'disabled'} onchange="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'rip',this.value)"></div>
+      <div class="linked-sub-row"><span class="linked-tag">${escapeHtml(exA.nome||'—')}</span><input type="text" class="set-input max-input" placeholder="kg" value="${escapeAttr(a ? a.entry.peso??'' : '')}" ${a?'':'disabled'} oninput="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'peso',this.value,true)" onchange="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'peso',this.value)"><input type="text" class="set-input max-input" placeholder="rip" value="${escapeAttr(a ? a.entry.rip??'' : '')}" ${a?'':'disabled'} oninput="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'rip',this.value,true)" onchange="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'rip',this.value)"></div>
+      <div class="linked-sub-row"><span class="linked-tag">${escapeHtml(exB.nome||'—')}</span><input type="text" class="set-input max-input" placeholder="kg" value="${escapeAttr(b ? b.entry.peso??'' : '')}" ${b?'':'disabled'} oninput="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'peso',this.value,true)" onchange="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'peso',this.value)"><input type="text" class="set-input max-input" placeholder="rip" value="${escapeAttr(b ? b.entry.rip??'' : '')}" ${b?'':'disabled'} oninput="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'rip',this.value,true)" onchange="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'rip',this.value)"></div>
       </div></div></div>`;
   }
   return html;

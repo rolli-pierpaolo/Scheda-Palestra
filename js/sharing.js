@@ -55,7 +55,7 @@ async function inviteViewer(){
 // toglie a una persona la possibilità di vedere i tuoi dati, con conferma
 async function revokeViewer(id){
   if(!isSyncEnabled()) return;
-  if(!confirm('Togliere a questa persona la possibilità di vedere i tuoi dati?')) return;
+  if(!await ViridisConfirmDialog('Togliere a questa persona la possibilità di vedere i tuoi dati?')) return;
   await supabaseClient.from('shared_access').delete().eq('id', id);
   renderSharingSection();
 }
@@ -80,13 +80,13 @@ async function viewSharedAccount(ownerUserId){
     .select('payload')
     .eq('user_id', ownerUserId)
     .maybeSingle();
-  if(error || !data || !data.payload){ alert('Non riesco a caricare questi dati al momento.'); return; }
+  if(error || !data || !data.payload){ ViridisToast('Non riesco a caricare questi dati al momento.'); return; }
   let payload = data.payload;
   if(typeof payload === 'string'){
-    try{ payload = JSON.parse(payload); }catch(e){ alert('I dati ricevuti non sono validi.'); return; }
+    try{ payload = JSON.parse(payload); }catch(e){ ViridisToast('I dati ricevuti non sono validi.'); return; }
   }
   const check = validateBackup(payload);
-  if(!check.valid){ alert('I dati ricevuti non sono validi: ' + check.reason); return; }
+  if(!check.valid){ ViridisToast('I dati ricevuti non sono validi: ' + check.reason); return; }
 
   // istantanea di tutto lo stato vero del viewer, per ripristinarlo uscendo
   sharedViewBackup = {

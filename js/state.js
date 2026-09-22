@@ -327,9 +327,9 @@ function resizeArr(arr, n, fill){
 // chiesto la primissima volta che si aggiunge un esercizio a un programma
 // nuovo, weeksPerBlock ancora senza valore - da lì in poi resta quello per
 // tutto il blocco corrente, finché non si archivia e se ne sceglie uno nuovo
-function ensureWeeksPerBlock(){
+async function ensureWeeksPerBlock(){
   if(state.weeksPerBlock) return state.weeksPerBlock;
-  let val = prompt('Quante settimane dura un blocco di allenamento?', '4');
+  let val = await ViridisWeeksPicker('Quante settimane dura un blocco di allenamento?', '4');
   let n = parseInt(String(val||'').replace(',','.'), 10);
   if(isNaN(n) || n<1) n = 4;
   if(n>12) n = 12;

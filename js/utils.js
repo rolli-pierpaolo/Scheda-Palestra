@@ -5,7 +5,7 @@ const FEEDBACK_FORM_URL = "https://forms.gle/sjQnNHYtPJqRnG119";
 // apre in una scheda nuova il modulo per lasciare un feedback
 function openFeedbackForm(){
   if(!FEEDBACK_FORM_URL){
-    alert('Link al modulo feedback non ancora configurato (FEEDBACK_FORM_URL in js/utils.js).');
+    ViridisToast('Link al modulo feedback non ancora configurato (FEEDBACK_FORM_URL in js/utils.js).');
     return;
   }
   window.open(FEEDBACK_FORM_URL, '_blank', 'noopener');
@@ -323,8 +323,8 @@ function insertQuickKey(value){
   const start = input.selectionStart ?? input.value.length;
   const end = input.selectionEnd ?? start;
   input.setRangeText(value,start,end,'end');
-  // Salviamo il valore solo quando l'utente chiude davvero la casella: così
-  // l'ultima ripetizione "12" non viene interpretata come "1" finita.
+  // input salva subito il valore; change/Fine esegue i feedback conclusivi,
+  // così l'ultima ripetizione "12" non viene interpretata come "1" finita.
   input.dispatchEvent(new Event('input',{bubbles:true}));
   input.dataset.quickKeyboardDirty = '1';
   input.focus({preventScroll:true});

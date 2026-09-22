@@ -152,12 +152,12 @@ async function toggleAchievNotifications(){
     return;
   }
   if(typeof Notification==='undefined'){
-    alert('Il tuo browser non supporta le notifiche.');
+    ViridisToast('Il tuo browser non supporta le notifiche.');
     return;
   }
   const perm = await Notification.requestPermission();
   if(perm !== 'granted'){
-    alert('Permesso negato: per attivarle serve consentire le notifiche per questa app dalle impostazioni del browser/telefono.');
+    ViridisToast('Permesso negato: per attivarle serve consentire le notifiche per questa app dalle impostazioni del browser/telefono.');
     return;
   }
   achievNotificationsEnabled = true;

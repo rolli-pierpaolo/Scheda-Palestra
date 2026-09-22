@@ -107,8 +107,8 @@ function setExerciseGroupFromLibrary(name, group){
   renderExerciseLibrary();
 }
 // toglie un esercizio dalla Libreria, con conferma
-function removeExerciseFromLibrary(name){
-  if(!confirm('Togliere "'+name+'" dalla libreria esercizi? Non tocca gli esercizi gia\' inseriti nelle schede, solo i suggerimenti futuri.')) return;
+async function removeExerciseFromLibrary(name){
+  if(!await ViridisConfirmDialog('Togliere "'+name+'" dalla libreria esercizi? Non tocca gli esercizi gia\' inseriti nelle schede, solo i suggerimenti futuri.')) return;
   removeLibraryExercise(name);
   renderExerciseLibrary();
 }

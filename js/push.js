@@ -32,8 +32,8 @@ async function getCurrentPushSubscription(){
 // chiede il permesso per le notifiche, crea l'iscrizione presso il browser
 // e la salva su Supabase così la funzione schedulata sa dove mandarla
 async function enablePushNotifications(){
-  if(!isPushSupported()){ alert('Le notifiche push non sono supportate su questo browser/dispositivo.'); return; }
-  if(!isSyncEnabled()){ alert('Devi prima collegare il tuo account per attivare i promemoria.'); return; }
+  if(!isPushSupported()){ ViridisToast('Le notifiche push non sono supportate su questo browser/dispositivo.'); return; }
+  if(!isSyncEnabled()){ ViridisToast('Devi prima collegare il tuo account per attivare i promemoria.'); return; }
   const permission = await Notification.requestPermission();
   if(permission !== 'granted'){ renderPushStatus(); return; }
   const reg = await navigator.serviceWorker.ready;

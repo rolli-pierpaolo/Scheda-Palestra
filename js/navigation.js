@@ -352,18 +352,13 @@ function goToActiveTab(){
   showView('active');
 }
 
-function askSwitchTrainingDay(newIdx, oldIdx){
+async function askSwitchTrainingDay(newIdx, oldIdx){
 
   const newDay = state.days[newIdx];
   const oldDay = state.days[oldIdx];
 
 
-  if(!confirm(
-`Vuoi fare "${newDay.name}" al posto di "${oldDay.name}"?
-
-OK = sposta ${oldDay.name} dopo ${newDay.name}
-Annulla = fai solo questo allenamento`
-  )){
+  if(!await ViridisOptionPicker({title:"Cambia giornata", message:`Vuoi fare "${newDay.name}" al posto di "${oldDay.name}"?`, cancelLabel:"Solo questo allenamento", cancelValue:false, choices:[{label:`Sposta ${oldDay.name} dopo ${newDay.name}`, value:true}, {label:"Fai solo questo allenamento", value:false}]})){
     
     state.currentTrainingDayIdx = newIdx;
     saveState();
@@ -394,20 +389,13 @@ Annulla = fai solo questo allenamento`
 
 }
 
-function confirmSwitchTrainingDay(newIdx, oldIdx){
+async function confirmSwitchTrainingDay(newIdx, oldIdx){
 
   const newDay = state.days[newIdx];
   const oldDay = state.days[oldIdx];
 
 
-  const choice = confirm(
-`Oggi era previsto "${oldDay.name}".
-
-Vuoi fare "${newDay.name}" oggi?
-
-OK = cambia allenamento di oggi
-Annulla = continua con quello previsto`
-  );
+  const choice = await ViridisOptionPicker({title:"Allenamento di oggi", message:`Oggi era previsto "${oldDay.name}". Vuoi fare "${newDay.name}" oggi?`, cancelLabel:"Continua con quello previsto", cancelValue:false, choices:[{label:`Allenati: ${newDay.name}`, value:true}, {label:`Continua: ${oldDay.name}`, value:false}]});
 
 
   if(!choice){

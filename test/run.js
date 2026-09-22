@@ -118,7 +118,7 @@ test('allExercisesClosed usa la vera settimana del programma (state.currentWeek)
   assert.strictEqual(window.allExercisesClosed(day), true);
 });
 
-test('getStorico unisce DATA.storico e storicoExtra; deleteHistEntry nasconde per sempre anche le voci baked-in', () => {
+test('getStorico unisce DATA.storico e storicoExtra; deleteHistEntry nasconde per sempre anche le voci baked-in', async () => {
   const window = loadApp();
   window.__bridge.DATA.storico = { 'Demo-0': [{ name:'Demo', esercizi:[] }] };
   window.__bridge.storicoExtra = { 'WO 1': [{ name:'Reale', esercizi:[] }] };
@@ -128,7 +128,8 @@ test('getStorico unisce DATA.storico e storicoExtra; deleteHistEntry nasconde pe
   assert.ok(before['Demo-0'], 'deve includere le voci baked-in di DATA.storico');
   assert.ok(before['WO 1'], 'deve includere le voci reali di storicoExtra');
 
-  window.deleteHistEntry('Demo-0'); // confirm() e' stubbato a true nel loader
+  window.ViridisConfirmDialog = async () => true;
+  await window.deleteHistEntry('Demo-0');
 
   const after = window.getStorico();
   assert.ok(!after['Demo-0'], 'una volta eliminata non deve piu\' comparire (DATA.storico non si puo\' modificare davvero, va nascosta)');
@@ -928,17 +929,17 @@ test('l\'icona "Termina blocco" nella riga dei giorni si accende solo a blocco c
   assert.ok(btn.classList.contains('ready'), 'tutte le settimane del blocco completate: deve accendersi');
 });
 
-test('archiveAndReset avvisa e chiede conferma esplicita se il blocco non e\' ancora completo', () => {
+test('archiveAndReset avvisa e chiede conferma esplicita se il blocco non e\' ancora completo', async () => {
   const window = loadApp();
   window.__bridge.state = {
     weeksPerBlock: 4, completedWeeks: [0], completedTrainingDays: [], title: 'WO',
     days: [{ name:'Push', esercizi: [] }, { name:'Pull', esercizi: [] }]
   };
   let confirmCalls = 0, confirmMessage = '', promptCalled = false;
-  window.confirm = (msg) => { confirmCalls++; confirmMessage = msg; return false; };
-  window.prompt = () => { promptCalled = true; return null; };
+  window.ViridisConfirmDialog = (msg) => { confirmCalls++; confirmMessage = msg; return false; };
+  window.ViridisInputDialog = () => { promptCalled = true; return null; };
 
-  window.archiveAndReset();
+  await window.archiveAndReset();
   assert.strictEqual(confirmCalls, 1, 'a blocco incompleto deve mostrare un avviso PRIMA di qualunque prompt');
   assert.ok(/settiman/i.test(confirmMessage), 'l\'avviso deve menzionare le settimane mancanti');
   assert.ok(!promptCalled, 'BUG: se si annulla l\'avviso, non deve comunque chiedere il nome da salvare');
@@ -946,7 +947,7 @@ test('archiveAndReset avvisa e chiede conferma esplicita se il blocco non e\' an
   // a blocco completo l'avviso extra non deve comparire: si passa dritti al prompt del nome
   window.__bridge.state.completedWeeks = [0,1,2,3];
   confirmCalls = 0; promptCalled = false;
-  window.archiveAndReset();
+  await window.archiveAndReset();
   assert.strictEqual(confirmCalls, 0, 'a blocco completo non deve comparire l\'avviso extra');
   assert.ok(promptCalled, 'a blocco completo si passa dritti al prompt del nome da salvare');
 });
@@ -1264,7 +1265,7 @@ test('Gestisci giornata resta sotto Settimane concluse: i "..." restano per il s
   window.closeDayManagementMenu();
 });
 
-test('Salta giornata chiude solo gli esercizi rimasti e lascia intatti quelli completati', () => {
+test('Salta giornata chiude solo gli esercizi rimasti e lascia intatti quelli completati', async () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
@@ -1276,8 +1277,8 @@ test('Salta giornata chiude solo gli esercizi rimasti e lascia intatti quelli co
   };
   let modalOpened = false;
   window.openFinishWorkoutModal = () => { modalOpened = true; };
-  window.confirm = () => true;
-  window.skipRemainingExercisesForDay();
+  window.ViridisConfirmDialog = () => true;
+  await window.skipRemainingExercisesForDay();
   const [completed, skipped] = window.__bridge.state.days[0].esercizi;
   assert.strictEqual(completed.weekDone[0], true, 'un esercizio gia completato non deve essere toccato');
   assert.strictEqual(completed.weekSkipped[0], false, 'un esercizio gia completato non deve diventare saltato');
@@ -1341,6 +1342,76 @@ test('la testata Allenamento ha una classe propria e non conserva il colore del 
   window.setWorkoutTopbarMode(false);
   assert.ok(!topbar.classList.contains('is-workout-header'), 'uscendo da Allenamento deve tornare il componente-logo');
   assert.strictEqual(topbar.style.getPropertyValue('--workout-accent'), '', 'il colore del giorno non deve contaminare Home o Progressi');
+});
+
+function workoutInputFixture(){
+  const window = loadApp();
+  const ex = {nome:'Lat machine',recupero:['90','90'],schema:['3x8','3x8'],sets:Array.from({length:2},()=>Array.from({length:3},()=>({peso:'',rip:''}))),weekDone:[false,false],weekSkipped:[false,false]};
+  window.__bridge.state={title:'Test',weeksPerBlock:2,currentWeek:0,completedWeeks:[],completedTrainingDays:[],days:[{name:'Pull',esercizi:[ex]}]};
+  window.__bridge.activeDayIdx=0;
+  window.renderActive();
+  return {window,ex};
+}
+test('schema della foto: la terza serie mantiene 12–15 reps anche con ritorni a capo',()=>{
+  const window=loadApp();
+  for(const schema of ['1X6-10 1X10-12+MAX+MAX 1X12-\n15+20"REST+MAX+20"REST+MAX','1X6-10\n1X10-12+MAX+MAX\n1X12-15+20"REST+MAX+20"REST+MAX']){
+    const third=window.getSetPrescription(schema,2);
+    assert.strictEqual(third.target,'12–15 reps');
+    assert.strictEqual(third.extras,'+ 20"REST + MAX + 20"REST + MAX');
+    assert.strictEqual(window.getSetPrescription(schema,1).target,'10–12 reps');
+  }
+});
+test('ripetizioni salvate a ogni tasto prima di Fine, senza confermare la prima cifra',()=>{
+  const {window,ex}=workoutInputFixture();
+  let confirmations=0;
+  window.requestWeekDoneConfirm=()=>confirmations++;
+  const input=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 3"]');
+  input.focus();
+  window.insertQuickKey('1');
+  assert.strictEqual(JSON.parse(window.localStorage.getItem('scheda_wo18_state_v1')).days[0].esercizi[0].sets[0][2].rip,'1');
+  assert.strictEqual(confirmations,0);
+  window.insertQuickKey('2');
+  assert.strictEqual(ex.sets[0][2].rip,'12');
+  assert.strictEqual(confirmations,0);
+  window.finishQuickKeyboardInput();
+  assert.strictEqual(confirmations,1);
+});
+test('ridisegnare la card prima di Fine non cancella peso o ripetizioni',()=>{
+  const {window}=workoutInputFixture();
+  const input=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 3"]');
+  input.focus();window.insertQuickKey('8');
+  window.renderActive();
+  assert.strictEqual(window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 3"]').value,'8');
+  const peso=window.document.querySelector('.week-body[data-week="0"] [aria-label="Peso serie 3 in chilogrammi"]');
+  peso.value='45';peso.dispatchEvent(new window.Event('input',{bubbles:true}));
+  window.renderActive();
+  assert.strictEqual(window.document.querySelector('.week-body[data-week="0"] [aria-label="Peso serie 3 in chilogrammi"]').value,'45');
+  const saved=JSON.parse(window.localStorage.getItem('scheda_wo18_state_v1'));
+  assert.strictEqual(saved.days[0].esercizi[0].sets[0][2].rip,'8');
+  assert.strictEqual(saved.days[0].esercizi[0].sets[0][2].peso,'45');
+});
+test('passaggio rapido fra due campi non perde il valore precedente',()=>{
+  const {window,ex}=workoutInputFixture();
+  const first=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 1"]');
+  const second=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 2"]');
+  first.focus();
+  const key=window.document.querySelector('[data-quick-key="8"]');
+  key.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
+  second.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
+  second.focus();window.insertQuickKey('9');
+  assert.strictEqual(ex.sets[0][0].rip,'8');
+  assert.strictEqual(ex.sets[0][1].rip,'9');
+});
+test('Max salva subito il testo ma propaga solo il numero completo alla conferma',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.maxEntries=[[{afterSet:2,peso:'',rip:''}],[]];
+  window.renderActive();
+  const input=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni Max 1"]');
+  input.focus();window.insertQuickKey('1');window.insertQuickKey('2');
+  assert.strictEqual(JSON.parse(window.localStorage.getItem('scheda_wo18_state_v1')).days[0].esercizi[0].maxEntries[0][0].rip,'12');
+  assert.strictEqual(ex.maxEntries[1].length,0);
+  window.finishQuickKeyboardInput();
+  assert.strictEqual(ex.maxEntries[1][0].rip,'12');
 });
 
 // ---------------- runner ----------------

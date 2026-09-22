@@ -97,8 +97,8 @@ function getStorico(){
   return merged;
 }
 // elimina definitivamente un blocco dallo storico, con conferma
-function deleteHistEntry(t){
-  if(!confirm('Eliminare definitivamente "'+t+'" dallo storico? Non potrai piu recuperarlo (a meno di avere un backup).')) return;
+async function deleteHistEntry(t){
+  if(!await ViridisConfirmDialog('Eliminare definitivamente "'+t+'" dallo storico? Non potrai piu recuperarlo (a meno di avere un backup).')) return;
   if(Object.prototype.hasOwnProperty.call(storicoExtra, t)){
     delete storicoExtra[t];
     saveStorico();

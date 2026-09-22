@@ -10,7 +10,7 @@ function openDaysModal(){
     <div class="days-row">
       <span class="days-label">Giorno ${i+1}</span>
       <div class="combo-wrap"><input class="meta-input" value="${escapeAttr(d.name)}" oninput="onComboInput(this,'giorni')" onfocus="onComboFocus(this,'giorni')" onchange="renameDay(${i},this.value)"></div>
-      <input type="color" class="day-color-input" value="${a.c}" title="Colore del giorno" onchange="updateDayColor(${i},this.value)">
+      <button type="button" class="day-color-input" style="background:${a.c};min-width:44px;min-height:44px" aria-label="Colore del giorno ${i+1}" onclick="chooseDayColor(${i})"></button>
       <button class="del-day-btn" onclick="deleteDay(${i})" title="Elimina giorno">${ICON_TRASH}</button>
     </div>`;
  }).join('')
@@ -36,19 +36,30 @@ function openDaysModal(){
 function closeDaysModal(){
   document.getElementById('daysModal').style.display = 'none';
 }
+async function chooseDayColor(i){
+  const colors = [['Verde',accentFor(null,0).c],['Arancione',accentFor(null,1).c],['Rosso',accentFor(null,2).c],['Acciaio',accentFor(null,3).c]];
+  let value = await ViridisOptionPicker({title:'Colore del giorno', message:'Scegli il colore della giornata.', choices:[
+    ...colors.map(([label,color]) => ({label, color, value:color})), {label:'Colore personalizzato', value:'custom'}
+  ]});
+  if(value === 'custom') value = await ViridisInputDialog('Codice colore esadecimale (es. #9BCB45)', dayAccent(state.days[i],i).c,
+    {title:'Colore personalizzato', validate:text => /^#[0-9a-f]{6}$/i.test(text) ? '' : 'Inserisci # seguito da sei cifre esadecimali.'});
+  if(value === null) return;
+  updateDayColor(i, value);
+  openDaysModal();
+}
 // controlla il nuovo numero di settimane scelto e, se è valido e confermato,
 // allunga il blocco attuale
-function handleExtendWeeksInput(el){
+async function handleExtendWeeksInput(el){
   const current = state.weeksPerBlock || 4;
   const newTotal = parseInt(el.value, 10);
   if(isNaN(newTotal) || newTotal <= current){
     if(!isNaN(newTotal) && newTotal < current){
-      alert('Da qui il blocco si può solo allungare, non accorciare (si perderebbero le settimane già scritte). Per accorciarlo, archivia e inizia un nuovo blocco con meno settimane.');
+      ViridisToast('Da qui il blocco si può solo allungare, non accorciare (si perderebbero le settimane già scritte). Per accorciarlo, archivia e inizia un nuovo blocco con meno settimane.');
     }
     el.value = current;
     return;
   }
-  if(!confirm(`Allungare il blocco attuale da ${current} a ${newTotal} settimane? Le settimane nuove partono vuote (schema e recupero copiati dall'ultima settimana, per comodità).`)){
+  if(!await ViridisConfirmDialog(`Allungare il blocco attuale da ${current} a ${newTotal} settimane? Le settimane nuove partono vuote (schema e recupero copiati dall'ultima settimana, per comodità).`)){
     el.value = current;
     return;
   }
@@ -100,9 +111,9 @@ function addDay(){
 // elimina il giorno e tutti i suoi esercizi, con conferma dato che non si
 // torna indietro; tiene sempre almeno un giorno e sposta activeDayIdx se
 // quello eliminato era quello aperto o ne cambiava la posizione
-function deleteDay(i){
-  if(state.days.length<=1){ alert('Deve rimanere almeno un giorno.'); return; }
-  if(!confirm('Eliminare "'+(state.days[i].name||('Giorno '+(i+1)))+'" e tutti i suoi esercizi?')) return;
+async function deleteDay(i){
+  if(state.days.length<=1){ ViridisToast('Deve rimanere almeno un giorno.'); return; }
+  if(!await ViridisConfirmDialog('Eliminare "'+(state.days[i].name||('Giorno '+(i+1)))+'" e tutti i suoi esercizi?')) return;
   state.days.splice(i,1);
   if(activeDayIdx === i){ activeDayIdx = Math.min(i, state.days.length-1); }
   else if(activeDayIdx > i){ activeDayIdx--; }

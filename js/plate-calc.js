@@ -34,11 +34,11 @@ function setExerciseBarKg(kg){
 }
 // chiede un peso di bilanciere personalizzato, per chi non usa uno dei
 // pesi predefiniti
-function promptCustomBarKg(){
-  const val = prompt('Peso del bilanciere in kg (es. 8):');
+async function promptCustomBarKg(){
+  const val = await ViridisInputDialog('Peso del bilanciere in kg (es. 8):', '', {title:'Peso bilanciere', inputMode:'decimal', validate:value => value && (isNaN(parseFloat(value.replace(',', '.'))) || parseFloat(value.replace(',', '.'))<0) ? 'Numero non valido' : ''});
   if(val===null) return;
   const kg = parseFloat(String(val).replace(',','.'));
-  if(isNaN(kg) || kg<0){ alert('Numero non valido'); return; }
+  if(isNaN(kg) || kg<0){ ViridisToast('Numero non valido'); return; }
   setExerciseBarKg(kg);
 }
 // dimentica il bilanciere scelto, così la prossima volta lo richiede

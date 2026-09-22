@@ -1662,3 +1662,43 @@ body.theme-light #settingsModal .a11y-setting-row b{color:var(--text);}
 body.theme-light #settingsModal .a11y-setting-row small{color:var(--muted);}
 body.theme-light #settingsModal .hist-panel>.add-ex.small2{background:#FFF;color:var(--text);border-color:#D4DCD1;}
 body.theme-light #settingsModal .a11y-setting-row{border-bottom-color:#D8DED6;}
+/* Dialoghi VIRIDIS: isolati dalle schermate e dai menu esistenti. */
+.viridis-overlay{position:fixed;inset:0;z-index:11000;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));background:rgba(0,0,0,.56);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:viridis-backdrop-in .18s ease both;overscroll-behavior:contain;}
+.viridis-overlay.is-sheet{align-items:flex-end;padding-bottom:0;}
+.viridis-dialog{box-sizing:border-box;width:100%;max-width:480px;max-height:100%;min-height:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--panel,#171717);color:var(--text,#fff);border:1px solid var(--line,#353535);border-radius:26px;padding:24px;box-shadow:0 20px 70px rgba(0,0,0,.5);font-family:inherit;animation:viridis-dialog-in .18s ease both;overflow-wrap:anywhere;}
+.is-sheet .viridis-dialog{border-bottom:0;border-radius:26px 26px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom));animation-name:viridis-sheet-in;}
+.viridis-dialog h2{font-family:inherit;font-size:1.12em;line-height:1.4;letter-spacing:.06em;text-transform:uppercase;margin:0 0 12px;color:var(--text);}
+.viridis-dialog p{font-size:1em;line-height:1.55;margin:0 0 20px;white-space:pre-wrap;color:var(--muted);}
+.viridis-dialog .viridis-hint{font-size:.9em;margin-top:18px;}
+.viridis-options{display:grid;gap:10px;margin:20px 0;}
+.viridis-options.is-grid{grid-template-columns:repeat(auto-fit,minmax(56px,1fr));}
+.viridis-dialog button{min-height:48px;min-width:0;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;padding:12px 16px;font:inherit;font-weight:700;line-height:1.4;white-space:normal;overflow-wrap:anywhere;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,border-color .12s,transform .12s;}
+.viridis-option{background:var(--panel2);color:var(--text);text-align:left;}
+.is-grid .viridis-option{text-align:center;padding-inline:8px;}
+.viridis-option[aria-current=true]{border-color:var(--green);}
+.viridis-option:active,.viridis-option.is-selected{background:var(--green);border-color:var(--green);color:#101010;transform:scale(.97);}
+.viridis-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;}
+.viridis-actions button{flex:1 1 120px;}
+.viridis-secondary{background:transparent;color:var(--muted);}
+.viridis-dialog .viridis-primary{background:var(--green);border-color:var(--green);color:#101010;}
+.viridis-dialog .viridis-primary.is-danger{background:var(--red);border-color:var(--red);color:#fff;}
+.viridis-input{display:block;box-sizing:border-box;width:100%;max-width:100%;min-height:50px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--text);padding:14px;font:inherit;font-size:max(16px,1em);line-height:1.5;caret-color:var(--green);}
+.viridis-native-select{display:none!important;}
+.viridis-toast.is-error{border-color:var(--red);}
+.viridis-select-button{min-height:44px;text-align:left;white-space:normal;}
+.viridis-swatch{display:inline-block;width:20px;height:20px;border-radius:50%;border:1px solid currentColor;vertical-align:middle;margin-right:12px;}
+textarea.viridis-input{height:180px;resize:vertical;}
+.viridis-dialog .viridis-error,.viridis-field-error{color:var(--text);border-left:3px solid var(--red);padding-left:12px;margin-top:12px;}
+body.theme-light .viridis-dialog .viridis-primary:not(.is-danger){color:#fff;}
+.viridis-dialog :focus-visible{outline:2px solid var(--green);outline-offset:3px;}
+.viridis-dialog:focus{outline:none;}
+.viridis-toast{position:fixed;z-index:11001;top:calc(16px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);box-sizing:border-box;width:max-content;max-width:calc(100% - 32px);padding:14px 18px;border:1px solid var(--green);border-radius:16px;background:var(--panel2);color:var(--text);box-shadow:0 8px 26px rgba(0,0,0,.4);font-size:1em;line-height:1.5;overflow-wrap:anywhere;pointer-events:none;}
+.viridis-overlay.is-closing{animation:viridis-backdrop-out .16s ease both;}
+.viridis-overlay.is-closing .viridis-dialog{animation:viridis-dialog-out .16s ease both;}
+@keyframes viridis-backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes viridis-backdrop-out{to{opacity:0}}
+@keyframes viridis-dialog-in{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:none}}
+@keyframes viridis-sheet-in{from{transform:translateY(40px)}to{transform:none}}
+@keyframes viridis-dialog-out{to{opacity:0;transform:translateY(24px)}}
+@media(max-width:520px){.viridis-overlay.is-sheet{padding-inline:max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right));}.viridis-dialog{padding:22px 18px;}}
+@media(prefers-reduced-motion:reduce){.viridis-overlay,.viridis-dialog,.viridis-dialog button{animation:none!important;transition:none!important;}}

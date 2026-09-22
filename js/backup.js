@@ -5,16 +5,16 @@ function exportBackup(){
   const json = JSON.stringify(buildBackupPayload());
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(json).then(()=>{
-      alert("Backup copiato negli appunti! Incollalo subito in una Nota, Mail o messaggio per conservarlo.");
+      ViridisToast("Backup copiato negli appunti! Incollalo subito in una Nota, Mail o messaggio per conservarlo.");
     }).catch(()=>{ promptFallbackExport(json); });
   } else {
     promptFallbackExport(json);
   }
 }
 // ripiego per quando la copia automatica negli appunti non funziona: mostra
-// il testo in un prompt da copiare a mano
-function promptFallbackExport(json){
-  prompt("Copia tutto questo testo (tocca dentro, seleziona tutto, copia) e conservalo:", json);
+// il testo in un pannello VIRIDIS da copiare a mano
+async function promptFallbackExport(json){
+  await ViridisInputDialog("Copia tutto questo testo (tocca dentro, seleziona tutto, copia) e conservalo:", json, {title:"Copia backup", multiline:true, readOnly:true, acceptLabel:"Fine"});
 }
 // alternativa a "Esporta backup": invece di copiare il testo negli appunti,
 // scarica direttamente un file .json, stessa funzione downloadBackupFile
@@ -119,22 +119,22 @@ function validateBackup(backup){
   return { valid:true };
 }
 // chiede all'utente di incollare un backup testuale e, se valido, lo applica
-function importBackup(){
-  const txt = prompt("Incolla qui il testo del backup che avevi salvato:");
+async function importBackup(){
+  const txt = await ViridisInputDialog("Incolla qui il testo del backup che avevi salvato:", "", {title:"Importa backup", multiline:true, acceptLabel:"Verifica backup"});
   if(!txt || !txt.trim()) return;
   let backup;
   try{
     backup = JSON.parse(txt);
   }catch(e){
-    alert("Testo non valido: assicurati di aver incollato tutto il backup.");
+    ViridisModal("Testo non valido: assicurati di aver incollato tutto il backup.");
     return;
   }
   const check = validateBackup(backup);
   if(!check.valid){
-    alert("Backup non valido: " + check.reason);
+    ViridisModal("Backup non valido: " + check.reason);
     return;
   }
-  if(!confirm("Questo sovrascrivera' l'allenamento attivo, lo storico e lo stato delle settimane con quelli del backup. Continuare?")) return;
+  if(!await ViridisConfirmDialog("Questo sovrascrivera' l'allenamento attivo, lo storico e lo stato delle settimane con quelli del backup. Continuare?")) return;
   applyBackup(backup);
   // applyBackup scrive solo in locale, la usano anche pullFromCloud e la
   // visualizzazione condivisa, dove ripubblicare sul cloud sarebbe sbagliato
@@ -143,7 +143,7 @@ function importBackup(){
   // resta con dati diversi da quelli sincronizzati finché non si tocca
   // qualcos'altro
   if(typeof pushToCloud === 'function') pushToCloud();
-  alert("Backup ripristinato!");
+  ViridisToast("Backup ripristinato!");
 }
 // stesso identico flusso di importBackup, ma leggendo un file scelto dal
 // telefono, per esempio quello scaricato dal backup automatico, invece di
@@ -154,25 +154,25 @@ function importBackupFile(event){
   input.value = ''; // permette di riselezionare lo stesso file una seconda volta
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     let backup;
     try{
       backup = JSON.parse(reader.result);
     }catch(e){
-      alert("File non valido: non sembra un backup JSON.");
+      ViridisModal("File non valido: non sembra un backup JSON.");
       return;
     }
     const check = validateBackup(backup);
     if(!check.valid){
-      alert("File non valido: " + check.reason);
+      ViridisModal("File non valido: " + check.reason);
       return;
     }
-    if(!confirm("Questo sovrascrivera' l'allenamento attivo, lo storico e lo stato delle settimane con quelli del backup. Continuare?")) return;
+    if(!await ViridisConfirmDialog("Questo sovrascrivera' l'allenamento attivo, lo storico e lo stato delle settimane con quelli del backup. Continuare?")) return;
     applyBackup(backup);
     if(typeof pushToCloud === 'function') pushToCloud();
-    alert("Backup ripristinato dal file!");
+    ViridisToast("Backup ripristinato dal file!");
   };
-  reader.onerror = () => alert("Errore durante la lettura del file.");
+  reader.onerror = () => ViridisToast("Errore durante la lettura del file.");
   reader.readAsText(file);
 }
 
@@ -265,7 +265,7 @@ function buildCSVRows(){
 // costruisce e scarica il file csv con tutte le serie registrate
 function exportCSV(){
   const rows = buildCSVRows();
-  if(rows.length<=1){ alert('Non ci sono ancora serie registrate da esportare.'); return; }
+  if(rows.length<=1){ ViridisToast('Non ci sono ancora serie registrate da esportare.'); return; }
   const csv = rows.map(r=>r.map(csvEscapeCell).join(',')).join('\r\n');
   // BOM iniziale: senza, Excel su alcuni sistemi legge gli accenti italiani
   // come caratteri sbagliati
