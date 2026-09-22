@@ -1297,21 +1297,22 @@ body.on-workout #dayTabsActive.workout-day-tabs-open{display:flex!important;padd
 .link-type-divider::before{left:10px;right:10px;height:1px;background:rgba(255,255,255,.10);}
 .link-type-pill{background:#2B3027!important;color:var(--accent,var(--green));font-family:var(--font-body);font-size:9px;}
 
-/* Ogni serie è un blocco leggero e autonomo: intestazione e prescrizione
-   sopra, due colonne coerenti sotto. I controlli restano tutti gli stessi. */
-.sets-wrap{display:flex;flex-direction:column;gap:10px;}
-.set-series-group{margin:0;padding:12px;border:1px solid rgba(255,255,255,.075);border-radius:15px;background:#202221;}
-.set-series-group.has-max{margin:0;padding:12px;border:1px solid rgba(255,255,255,.075);border-radius:15px;background:linear-gradient(135deg,#202221,color-mix(in srgb,var(--amber) 3%,#202221));}
+/* Ogni serie è un blocco leggero e autonomo. Riduciamo solo lo spazio
+   verticale non interattivo: stepper, peso e ripetizioni restano invariati
+   e comodi da toccare anche durante l'allenamento. */
+.sets-wrap{display:flex;flex-direction:column;gap:8px;}
+.set-series-group{margin:0;padding:7px 12px;border:1px solid rgba(255,255,255,.075);border-radius:15px;background:#202221;}
+.set-series-group.has-max{margin:0;padding:7px 12px;border:1px solid rgba(255,255,255,.075);border-radius:15px;background:linear-gradient(135deg,#202221,color-mix(in srgb,var(--amber) 3%,#202221));}
 .set-series-group.is-filled{border-color:color-mix(in srgb,var(--accent,var(--green)) 20%,rgba(255,255,255,.08));}
-.set-series-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px;}
+.set-series-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:5px;}
 .set-series-number{width:auto;text-align:left;margin:0;color:var(--accent,var(--green));font-family:var(--font-body);font-size:12px;font-weight:800;letter-spacing:.55px;}
 .set-series-number.dropset{color:var(--amber);}
 .set-series-prescription{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-end;gap:1px;text-align:right;font-family:var(--font-body);}
 .set-series-prescription span{color:#C7CAC7;font-size:12px;font-weight:650;line-height:1.2;}
 .set-series-prescription small{color:#9B9F9B;font-size:10px;font-weight:650;line-height:1.25;overflow-wrap:anywhere;}
-.set-columns-labels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:0 0 5px;padding:0 2px;color:#969A96;font-family:var(--font-body);font-size:9px;font-weight:800;letter-spacing:.5px;}
+.set-columns-labels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:0 0 3px;padding:0 2px;color:#969A96;font-family:var(--font-body);font-size:9px;font-weight:800;letter-spacing:.5px;}
 .set-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:0;}
-.kg-cell,.rip-cell{gap:4px;}
+.kg-cell,.rip-cell{gap:2px;}
 .kg-wrap,.rip-wrap{gap:0;min-height:48px;border:1px solid #3B3E3B;border-radius:10px;background:#121413;overflow:hidden;}
 .kg-wrap .set-input,.rip-wrap .set-input{height:46px;min-height:46px;border:0!important;border-radius:0;background:transparent!important;box-shadow:none!important;color:var(--text);font-family:var(--font-body);font-size:18px!important;font-weight:750;letter-spacing:0;}
 .kg-wrap .set-input{border-left:1px solid rgba(255,255,255,.075)!important;border-right:1px solid rgba(255,255,255,.075)!important;}
