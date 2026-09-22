@@ -506,16 +506,20 @@ const total = weekly.total;
   // di doverci entrare apposta da Progressi: confronta le ultime due
   // settimane già concluse, vedi computeHomeVolumeTrend in js/trends.js
   const volumeTrend = computeHomeVolumeTrend();
-  const volumeTrendHtml = volumeTrend ? `<div class="home-volume-trend">${ICON_CHART} Volume settimana scorsa: <b>${volumeTrend.pct>=0?'+':''}${volumeTrend.pct}%</b> rispetto a quella prima</div>` : '';
+  // Il volume non è automaticamente "buono" o "cattivo": il valore resta
+  // neutro, così non suggerisce un giudizio che i soli dati non possono dare.
+  const volumeTrendHtml = volumeTrend ? `<div class="home-quick-stat home-volume-trend"><span class="home-stat-icon">${ICON_CHART}</span><span class="home-stat-copy"><b>${volumeTrend.pct>=0?'+':''}${volumeTrend.pct}%</b><span>Volume settimana scorsa<br>rispetto a quella prima</span></span></div>` : '';
   el.innerHTML = `
     <div class="home-hero">
       <div class="home-brand-mark" aria-hidden="true"><img src="viridis-logo-transparent.png?rev=20260921b" alt="" decoding="async"></div>
       <div class="home-progress-module">
         <div class="home-block-week">SETTIMANA ${blockWeek} DI ${state.weeksPerBlock||4}</div>
-        <div class="home-progress-label">GIORNO</div>
-        <div class="home-progress-num" style="--accent:${progressAccent}">
-          <span id="homeProgressCount" class="accent-shine">0</span>
-          <span class="home-progress-of">/${total}</span>
+        <div class="home-progress-day">
+          <div class="home-progress-label">GIORNO</div>
+          <div class="home-progress-num" style="--accent:${progressAccent}">
+            <span id="homeProgressCount">0</span>
+            <span class="home-progress-of">/${total}</span>
+          </div>
         </div>
         <div class="home-progress-bar-wrap" style="--accent:${progressAccent}"><div class="home-progress-bar-fill" id="homeProgressBar" style="width:0%"></div></div>
       </div>
@@ -527,13 +531,14 @@ const total = weekly.total;
       </div>
       <div class="home-muscle-slot">${renderMuscleMap(progressAccent)}</div>
     </div>
-    <div class="home-total-stat">${ICON_FLAME} ${monthlyCount} allenamenti completati questo mese</div>
-    ${volumeTrendHtml}
+    <div class="home-quick-stats${volumeTrend ? '' : ' single'}">
+      <div class="home-quick-stat home-total-stat"><span class="home-stat-icon">${ICON_FLAME}</span><span class="home-stat-copy"><b>${monthlyCount}</b><span>allenamenti completati<br>questo mese</span></span></div>
+      ${volumeTrendHtml}
+    </div>
   `;
   if(typeof gsap !== "undefined"){
   const progressCount = document.getElementById('homeProgressCount');
   const progressBar = document.getElementById('homeProgressBar');
-  const activeDayCard = document.querySelector('.home-day-card.active-training');
   const motivation = document.querySelector('.home-motivation');
   if(progressCount) gsap.to(progressCount, {
     innerText: done,
@@ -549,30 +554,15 @@ const total = weekly.total;
     duration: 0.8,
     ease: "power2.out"
   });
-  // la card del giorno corrente cresce e respira, pulsa, come il bottone
-  // grande cliccabile qui sopra, vedi animateSuggestedWorkout in
-  // js/animations.js, così si nota subito qual è senza doverla cercare
-  // nell'elenco - resta comunque ferma nella sua posizione, non più spostata
-  // in cima. killTweensOf prima di ripartire: renderHome() può girare più
-  // volte, ogni volta che si torna alla Home, senza si accumulerebbero
-  // animazioni vecchie sugli elementi ricreati ogni volta da zero
-  if(activeDayCard){
-  gsap.killTweensOf(activeDayCard);
-  gsap.to(activeDayCard, {
-    scale: 1.13,
-    duration: 1.1,
-    repeat: -1,
-    yoyo: true,
-    ease: "sine.inOut"
-  });
-  }
-  // entrata della frase motivazionale: comparsa morbida invece che di scatto
+  // La giornata corrente è già evidenziata in modo stabile dal CSS: niente
+  // pulsazione continua, che in Home distraeva dalla CTA principale.
+  // Entrata della frase motivazionale: breve e discreta, senza competere con
+  // il pulsante dell'allenamento.
   if(motivation) gsap.from(motivation, {
     opacity: 0,
-    y: 12,
-    scale: .96,
-    duration: .6,
-    ease: "back.out(1.6)"
+    y: 6,
+    duration: .35,
+    ease: "power2.out"
   });
 }
 }

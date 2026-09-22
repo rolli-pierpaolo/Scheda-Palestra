@@ -272,107 +272,114 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .block-finish-btn:active{transform:scale(.94);}
 main{padding:12px;}
 /* ---------------- HOME ---------------- */
-#viewHome{padding:20px 16px 30px;}
-.home-hero{text-align:center;padding:10px 10px 8px;}
-.home-brand-mark{height:48px;display:flex;align-items:center;justify-content:center;margin:-5px auto 5px;pointer-events:none;}
-.home-brand-mark img{display:block;width:64px;height:48px;object-fit:contain;filter:drop-shadow(0 5px 10px rgba(120,224,51,.16));}
+#viewHome{padding:12px 16px 26px;}
+.home-hero{text-align:center;padding:2px 0 8px;max-width:520px;margin:0 auto;}
+.home-brand-mark{height:34px;display:flex;align-items:center;justify-content:center;margin:-3px auto 1px;pointer-events:none;}
+.home-brand-mark img{display:block;width:48px;height:34px;object-fit:contain;filter:drop-shadow(0 3px 7px rgba(120,224,51,.1));}
 /* eyebrow, numero, barra e statistica mensile accorpati in un unico modulo
    compatto invece di 4 blocchi separati con margini propri: stessa
    informazione, meno "muro di testo" impilato */
-.home-progress-module{margin-bottom:2px;}
-.home-block-week{font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--green);margin-bottom:6px;}
-.home-progress-label{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--muted);}
+.home-progress-module{display:grid;grid-template-columns:1fr auto;align-items:end;column-gap:12px;row-gap:5px;max-width:360px;margin:0 auto 12px;text-align:left;}
+.home-block-week{font-size:10px;font-weight:800;letter-spacing:1.35px;color:var(--green);margin:0;}
+.home-progress-day{display:flex;align-items:baseline;gap:6px;}
+.home-progress-label{font-size:9px;font-weight:800;letter-spacing:1.25px;color:var(--muted);}
 .home-progress-num{
-  font-size:46px;
+  font-size:34px;
   font-weight:900;
-  margin-left: 1px;
   color:var(--accent,var(--green));
-  line-height:1;
-  margin-top:2px;
-  text-shadow:0 0 24px rgba(0,0,0,.35);
+  line-height:.9;
+  text-shadow:none;
 }
 
 .home-progress-of{
-  font-size:0.45em;
+  font-size:.5em;
   font-weight:700;
-  color:rgb(255, 255, 255);
-  opacity:.9;
-  margin-left:-13px;
-  letter-spacing:.5px;
+  color:var(--muted);
+  opacity:1;
+  margin-left:2px;
+  letter-spacing:.2px;
   vertical-align:baseline;
 }
 
 
 .home-progress-sub{font-size:13px;font-weight:700;color:var(--text);margin-top:8px;text-transform:uppercase;letter-spacing:.5px;}
-.home-progress-bar-wrap{width:100%;max-width:220px;height:8px;border-radius:10px;background:var(--row-dark);border:1px solid var(--line);margin:6px auto 8px;overflow:hidden;}
-.home-progress-bar-fill{height:100%;border-radius:10px;background:var(--accent,var(--green));box-shadow:0 0 10px 1px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);width:0%;}
+.home-progress-bar-wrap{grid-column:1 / -1;width:100%;max-width:none;height:4px;border-radius:99px;background:#222;border:0;margin:0;overflow:hidden;}
+.home-progress-bar-fill{height:100%;border-radius:inherit;background:var(--accent,var(--green));box-shadow:none;width:0%;}
 /* il bottone "giorno suggerito" e' il vero protagonista della pagina (e'
    l'unica cosa che davvero SERVE toccare per iniziare): piu' spazio intorno
    e testo piu' grande di prima, cosi' l'occhio ci va prima di tutto il
    resto invece di leggere la Home come una fila di riquadri tutti uguali */
-.home-suggested-btn{display:block;width:100%;background:var(--accent,var(--green));border:none;border-radius:10px;padding:26px 16px;margin:10px 0 20px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
-.home-motivation{text-align:center;font-size:19px;font-weight:900;margin:0 8px 30px;line-height:1.3;letter-spacing:.2px;text-transform:uppercase;}
-.home-suggested-label{display:block;font-size:11px;font-weight:800;letter-spacing:1.5px;color:#0D0D0D;opacity:.7;}
-.home-suggested-name{display:block;font-size:28px;font-weight:900;color:#0D0D0D;text-transform:uppercase;margin-top:4px;letter-spacing:.5px;}
-.home-days-label{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
-.home-days-grid{display:flex;flex-direction:column;gap:9px;}
+.home-suggested-btn{display:block;width:100%;background:linear-gradient(135deg,color-mix(in srgb,var(--accent,var(--green)) 88%,#f6f6e8),var(--accent,var(--green)));border:1px solid color-mix(in srgb,var(--accent,var(--green)) 70%,#fff);border-radius:18px;padding:19px 20px;margin:4px 0 12px;box-shadow:0 8px 18px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.35);text-align:left;}
+.home-suggested-btn::before{display:none;}
+.home-motivation{max-width:34ch;text-align:center;font-size:13px;font-weight:700;margin:0 auto 20px;line-height:1.42;letter-spacing:0;text-transform:none;color:var(--muted);}
+.home-motivation .accent-shine{background:none;color:var(--muted);-webkit-text-fill-color:currentColor;}
+.home-suggested-label{display:block;font-size:9px;font-weight:800;letter-spacing:1.25px;color:#0D0D0D;opacity:.62;}
+.home-suggested-name{display:block;font-size:25px;font-weight:900;color:#0D0D0D;text-transform:uppercase;margin-top:3px;letter-spacing:.25px;}
+.home-suggested-name.accent-shine{background:none;-webkit-text-fill-color:currentColor;}
+.home-days-label{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin:2px 0 8px;}
+.home-days-grid{display:flex;flex-direction:column;gap:4px;}
 /* i giorni e la mappa del corpo affiancati, non impilati: cosi' la mappa non
    allunga la pagina, occupa lo spazio orizzontale che c'e' gia' invece di
    aggiungerne altro in verticale - la home deve restare su una sola schermata */
-.home-middle-row{display:flex;align-items:center;gap:18px;margin-bottom:14px;}
-.home-days-col{flex:1;min-width:0;}
+.home-middle-row{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:start;gap:16px;margin:0 0 14px;padding-top:2px;}
+.home-days-col{min-width:0;}
 /* righe di testo, non piu' pillole bordate/riempite: "I tuoi giorni" e' solo
    una lista di stato (non sono cliccabili), non merita lo stesso peso visivo
    delle card vere dell'app - un pallino (pieno=fatto, con glow=oggi,
    contorno=da fare) al posto del bordo pesante di prima */
-.home-day-card{display:flex;align-items:center;gap:9px;font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.4px;color:var(--text);text-transform:uppercase;transition:opacity .25s ease;}
-.home-day-dot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--accent,var(--green));background:transparent;}
+.home-day-card{display:flex;align-items:center;gap:8px;min-height:31px;padding:3px 7px;border-left:2px solid transparent;border-radius:7px;font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:.35px;color:var(--text);text-transform:uppercase;transition:opacity .2s ease,background .2s ease,border-color .2s ease;}
+.home-day-dot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--accent,var(--green));background:transparent;}
 /* completato: pallino pieno, nome nel colore del giorno ma smorzato - resta
    al suo posto nell'elenco (l'ordine e' sempre quello fisso di state.days,
    vedi renderHome in js/home.js), non finisce piu' in fondo: cambia solo
    aspetto, non posizione */
 .home-day-card.completed{color:var(--accent,var(--green));opacity:.6;}
 .home-day-card.completed .home-day-dot{background:var(--accent,var(--green));}
-/* corrente: pallino pieno e con un glow leggero gia' da CSS, l'effetto
-   "respiro" (scala pulsante) lo fa GSAP in home.js appena la card e' in
-   pagina */
-.home-day-card.active-training{color:var(--accent,var(--green));}
-.home-day-card.active-training .home-day-dot{background:var(--accent,var(--green));box-shadow:0 0 8px 2px color-mix(in srgb, var(--accent, var(--green)) 55%, transparent);}
+/* Corrente: una superficie appena colorata e un indicatore pieno bastano a
+   farlo distinguere; niente glow o pulsazioni continue che rubino attenzione
+   alla CTA dell'allenamento. */
+.home-day-card.active-training{color:var(--accent,var(--green));background:color-mix(in srgb,var(--accent,var(--green)) 11%,transparent);border-left-color:var(--accent,var(--green));}
+.home-day-card.active-training .home-day-dot{background:var(--accent,var(--green));box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,var(--green)) 14%,transparent);}
 /* giorno senza esercizi assegnati: solo l'etichetta a dirlo, niente piu'
    bordo tratteggiato dedicato (non c'e' piu' un bordo da tratteggiare) */
 .home-day-card.empty{opacity:.5;}
 .home-day-empty-tag{flex:0 0 auto;font-family:var(--font-body);font-size:9px;font-weight:800;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:5px;padding:1px 5px;letter-spacing:.03em;}
-.home-total-stat{text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:2px;opacity:.85;}
-.home-volume-trend{display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-top:6px;}
-.home-volume-trend b{color:var(--green);}
-.home-volume-trend svg{flex:0 0 auto;width:13px;height:13px;}
+.home-quick-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:2px;border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.07);}
+.home-quick-stats.single{grid-template-columns:1fr;}
+.home-quick-stat{min-width:0;display:flex;align-items:center;gap:8px;padding:11px 5px;color:var(--muted);text-align:left;}
+.home-quick-stat + .home-quick-stat{border-left:1px solid rgba(255,255,255,.1);padding-left:12px;}
+.home-stat-icon{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:17px;height:17px;color:var(--accent,var(--green));}
+.home-stat-icon svg{width:16px;height:16px;}
+.home-stat-copy{display:flex;flex-direction:column;min-width:0;gap:1px;font-size:9px;font-weight:650;line-height:1.28;color:var(--muted);}
+.home-stat-copy b{font-size:21px;font-weight:850;line-height:1;color:var(--text);}
+.home-volume-trend b{color:var(--text);}
 /* mappa del corpo allenato: due sagome (silhouette base "pelle" + regioni
    muscolari sovrapposte che si accendono nell'accent del giorno via classe
    .trained solo su quelle gia' completate questa settimana) - vedi
    renderMuscleMap in js/home.js. Affiancata ai giorni (vedi .home-middle-row
    sopra), senza cornice/sfondo: le sagome colorate parlano gia' da sole,
    una card intorno le avrebbe solo appesantite come l'elenco giorni accanto */
-.home-muscle-slot{flex:1;display:flex;justify-content:center;}
+.home-muscle-slot{min-width:0;display:flex;justify-content:center;}
 .home-muscle-map{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;}
-.home-muscle-map-label{text-align:center;font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
-.home-muscle-figures{display:flex;justify-content:center;align-items:flex-start;gap:8px;}
-.home-muscle-figure-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.body-figure{width:42px;height:auto;display:block;}
+.home-muscle-map-label{text-align:center;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.65px;margin:2px 0 7px;}
+.home-muscle-figures{display:flex;justify-content:center;align-items:flex-start;gap:10px;}
+.home-muscle-figure-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.body-figure{width:47px;height:auto;display:block;}
 .body-base{fill:#3c3f45;}
 .body-region{fill:rgba(255,255,255,.16);transition:fill .4s ease, opacity .4s ease;}
 /* --intensity (0.35-1, vedi computeWeeklyMuscleSetCounts in js/home.js) fa si'
    che un gruppo allenato con tante serie risalti di piu' di uno sfiorato con
    una sola - non e' piu' solo "acceso/spento" */
 .body-region.trained{fill:var(--accent,var(--green));opacity:var(--intensity,1);}
-.home-muscle-counts{display:flex;flex-wrap:wrap;justify-content:center;gap:3px 8px;margin-top:6px;max-width:190px;}
-.home-muscle-count-item{font-size:9px;font-weight:700;color:var(--muted);}
+.home-muscle-counts{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 7px;margin-top:7px;max-width:210px;}
+.home-muscle-count-item{font-size:10px;font-weight:650;color:var(--muted);}
 .home-muscle-count-item b{color:var(--accent,var(--green));font-weight:800;}
 /* venature muscolari fisse (non legate a completato/non completato, solo
    decorazione) sovrapposte sopra le regioni colorate, per dare la stessa
    "trama" del riferimento anatomico invece di forme piatte */
 .body-detail{fill:none;stroke:rgba(255,255,255,.22);stroke-width:.8;stroke-linecap:round;}
-.home-muscle-figure-caption{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.2px;}
-.home-muscle-extras{text-align:center;font-size:9px;font-weight:700;color:var(--muted);margin-top:6px;}
+.home-muscle-figure-caption{font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.35px;}
+.home-muscle-extras{text-align:center;font-size:9px;font-weight:700;color:var(--muted);margin-top:7px;}
 /* striscia degli esercizi di oggi (sostituisce la vecchia barra "X di Y
    esercizi"): la prima cosa che si vede entrando in un giorno, senza dover
    scrollare fino in fondo o aspettare il bottone "Giorno terminato". Stesso

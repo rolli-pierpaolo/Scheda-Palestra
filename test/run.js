@@ -1022,6 +1022,30 @@ test('Home "I tuoi giorni": l\'ordine resta fisso (quello di state.days), un gio
   assert.ok(cards[1].classList.contains('active-training'), 'B (currentTrainingDayIdx) deve risultare quello corrente');
 });
 
+test('Home premium: conserva dati e CTA, ma espone una gerarchia settimanale compatta', () => {
+  const window = loadApp();
+  window.__bridge.state = {
+    title: 'Workout 19', weeksPerBlock: 4, currentWeek: 3,
+    currentTrainingDayIdx: 1, trainingQueue: [1, 2, 3], completedTrainingDays: [0],
+    days: [
+      { name:'Push day', color:'#8bcc37', esercizi:[{ nome:'Panca', recupero:['60s'], sets:[[]] }] },
+      { name:'Pull day', color:'#7ba6ff', esercizi:[{ nome:'Trazioni', recupero:['60s'], sets:[[]] }] },
+      { name:'Legs day', color:'#f0a95a', esercizi:[{ nome:'Squat', recupero:['60s'], sets:[[]] }] },
+      { name:'Upper day', color:'#c58cff', esercizi:[{ nome:'Military', recupero:['60s'], sets:[[]] }] }
+    ]
+  };
+
+  window.showHome();
+
+  const home = window.document.querySelector('#viewHome');
+  assert.ok(home.querySelector('.home-progress-module'), 'la Home deve conservare il blocco progresso');
+  assert.ok(home.querySelector('.home-progress-day .home-progress-label'), 'GIORNO deve restare una label secondaria nel blocco progresso');
+  assert.ok(home.querySelector('.home-suggested-btn'), 'la CTA per iniziare il workout deve restare presente');
+  assert.ok(home.querySelector('.home-quick-stats .home-total-stat'), 'il totale mensile deve restare disponibile nelle statistiche rapide');
+  assert.strictEqual(home.querySelectorAll('.home-day-card').length, 4, 'l\'elenco dei giorni deve mantenere tutti i workout');
+  assert.ok(home.querySelector('.home-muscle-map'), 'la mappa muscolare deve restare disponibile senza cambiare i dati');
+});
+
 test('striscia esercizi del giorno: ordine vero, fatto = colorato/piccolo, corrente = evidenziato', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
