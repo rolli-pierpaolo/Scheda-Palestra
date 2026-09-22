@@ -75,6 +75,7 @@ function showView(v){
   }
 
   const applyViewSwitch = () => {
+    if(v!=='active' && typeof resetQuickKeyboardUI==='function') resetQuickKeyboardUI();
     if(v!=='active'){
       discardReorderIfPending();
     } else if(!reorderMode){

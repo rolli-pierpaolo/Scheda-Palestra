@@ -212,6 +212,7 @@ function toggleWorkoutTopbarEdit(){
   toggleExerciseEditMode(activeExerciseIdx);
 }
 function renderActive(){
+  if(typeof resetQuickKeyboardUI==='function') resetQuickKeyboardUI();
   const day = state.days[activeDayIdx];
   const a = dayAccent(day, activeDayIdx);
   updateThemeColor();

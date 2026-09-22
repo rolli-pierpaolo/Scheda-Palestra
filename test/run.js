@@ -1349,6 +1349,7 @@ function workoutInputFixture(){
   const ex = {nome:'Lat machine',recupero:['90','90'],schema:['3x8','3x8'],sets:Array.from({length:2},()=>Array.from({length:3},()=>({peso:'',rip:''}))),weekDone:[false,false],weekSkipped:[false,false]};
   window.__bridge.state={title:'Test',weeksPerBlock:2,currentWeek:0,completedWeeks:[],completedTrainingDays:[],days:[{name:'Pull',esercizi:[ex]}]};
   window.__bridge.activeDayIdx=0;
+  window.document.getElementById('viewActive').style.display='';
   window.renderActive();
   return {window,ex};
 }
@@ -1412,6 +1413,71 @@ test('Max salva subito il testo ma propaga solo il numero completo alla conferma
   assert.strictEqual(ex.maxEntries[1].length,0);
   window.finishQuickKeyboardInput();
   assert.strictEqual(ex.maxEntries[1][0].rip,'12');
+});
+
+test('tastiera riprende dopo sospensione e rimuove lo spazio vuoto senza perdere dati',()=>{
+  const {window,ex}=workoutInputFixture();
+  const input=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 1"]');
+  input.focus();window.insertQuickKey('8');
+  window.document.body.classList.add('quick-keyboard-open');
+  window.document.body.style.setProperty('--quick-keyboard-space','400px');
+  window.dispatchEvent(new window.Event('pagehide'));
+  assert.ok(window.document.getElementById('quickNumberBar').hidden);
+  assert.ok(!window.document.body.classList.contains('quick-keyboard-open'));
+  window.dispatchEvent(new window.Event('pageshow'));
+  input.dispatchEvent(new window.Event('touchstart',{bubbles:true}));
+  assert.ok(!window.document.getElementById('quickNumberBar').hidden);
+  assert.strictEqual(ex.sets[0][0].rip,'8');
+});
+test('il campo appena toccato prevale sul vecchio focus iOS',()=>{
+  const {window,ex}=workoutInputFixture();
+  const first=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 1"]');
+  const second=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 2"]');
+  first.focus();window.insertQuickKey('7');
+  second.dispatchEvent(new window.Event('pointerdown',{bubbles:true}));
+  assert.strictEqual(window.document.activeElement,first);
+  window.insertQuickKey('9');
+  assert.strictEqual(ex.sets[0][0].rip,'7');
+  assert.strictEqual(ex.sets[0][1].rip,'9');
+});
+test('campo rimosso o nascosto non mantiene la tastiera bloccata',()=>{
+  const {window}=workoutInputFixture();
+  const input=window.document.querySelector('.set-input');input.focus();
+  window.renderActive();window.syncQuickNumberBar();
+  assert.ok(window.document.getElementById('quickNumberBar').hidden);
+  const next=window.document.querySelector('.set-input');next.focus();
+  window.document.getElementById('viewActive').style.display='none';
+  window.syncQuickNumberBar();
+  assert.ok(window.document.getElementById('quickNumberBar').hidden);
+  assert.ok(!window.isQuickNumberTarget(next));
+});
+test('storico esercizio: serie e Max di tutte le schede, senza modificare dati o includere settimane future',async()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.sets[0]=[{peso:'27',rip:'7'},{peso:'27,0',rip:'6'},{peso:'18',rip:''}];
+  ex.sets[1]=[{peso:'99',rip:'99'}];
+  ex.maxEntries=[[{afterSet:1,peso:'18',rip:'12'}],[]];
+  const archived={nome:'LAT MACHINE',sets:[[{peso:'27.0',rip:'5'}]],maxExtra:[[{peso:'18',rip:'10'}]]};
+  window.__bridge.storicoExtra={'WO 1':[{name:'Pull',esercizi:[archived]}]};
+  const before=JSON.stringify([window.__bridge.state,window.__bridge.storicoExtra]);
+  const records=window.collectExerciseHistory('Lat machine');
+  assert.strictEqual(records.length,2);
+  assert.ok(records[0].current);
+  assert.strictEqual(records[0].rows.length,3);
+  assert.strictEqual(records[1].rows[1].rip,'10');
+  assert.strictEqual(window.historyWeightKey('27,0'),window.historyWeightKey('27.0'));
+  window.searchExerciseHistory('lat machine');
+  const choices=[...window.document.querySelectorAll('.exercise-history-choice')];
+  assert.strictEqual(choices.filter(b=>b.textContent.toLowerCase()==='lat machine').length,1);
+  const choice=choices.find(b=>b.textContent.toLowerCase()==='lat machine');
+  choice.click();
+  window.ViridisOptionPicker=async()=> '27';
+  await window.chooseExerciseHistoryWeight();
+  const tables=window.document.querySelectorAll('.exercise-history-session');
+  assert.strictEqual(tables.length,2);
+  assert.strictEqual(tables[0].querySelectorAll('tbody tr').length,2);
+  assert.ok(tables[0].textContent.includes('7'));
+  assert.ok(!tables[0].textContent.includes('Max'));
+  assert.strictEqual(JSON.stringify([window.__bridge.state,window.__bridge.storicoExtra]),before);
 });
 
 // ---------------- runner ----------------

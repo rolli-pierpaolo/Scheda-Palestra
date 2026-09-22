@@ -101,6 +101,7 @@ function toggleHistEdit(){
 }
 // disegna la lista dei blocchi archiviati, come pillole cliccabili
 function renderHistList(){
+  if(typeof renderExerciseHistory==='function') renderExerciseHistory();
   const el = document.getElementById('histList');
   const titles = Object.keys(getStorico());
   const editBtn = document.getElementById('histEditBtn');

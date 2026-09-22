@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Viridis</title>
-<script src="js/bootstrap.js?rev=20260922h"></script>
+<script src="js/bootstrap.js?rev=20260922i"></script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <!-- black-translucent mette un velo nero sfumato sopra l'app: si vede come
      una fascia fissa mentre il contenuto scorre. Con "default" iOS disegna
@@ -17,7 +17,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="apple-touch-icon" href="icon-192.png?rev=20260921b">
 <link rel="manifest" href="manifest.json?rev=20260921l">
-<link rel="stylesheet" href="css/style.css?rev=20260922h">
+<link rel="stylesheet" href="css/style.css?rev=20260922i">
 <!-- Protezione mobile nel documento: se iOS combina per un istante HTML nuovo
      e CSS precedente, la testata rimane comunque opaca e il testo non eredita
      il vecchio glow del logo. Il colore resta quello deciso dallo stile attivo. -->
@@ -46,7 +46,7 @@
 </head>
 <body>
 <div class="topbar">
-  <span class="app-version" id="appVersion">v1.102</span>
+  <span class="app-version" id="appVersion">v1.103</span>
   <button id="workoutDayPickerBtn" class="workout-day-picker" hidden onclick="toggleWorkoutDayPicker()" title="Cambia giornata" aria-label="Cambia giornata">‹</button>
   <div class="topbar-copy">
     <h1 id="topbarTitle">Viridis</h1>
@@ -82,6 +82,14 @@
   </div>
 
   <div id="histSectionCronologia">
+    <section class="hist-panel exercise-history-panel" aria-label="Storico per esercizio">
+      <h2>Il tuo storico, esercizio per esercizio</h2>
+      <p>Cerca un esercizio e scopri quante ripetizioni hai fatto con ogni peso.</p>
+      <label for="exerciseHistorySearch">Cerca esercizio</label>
+      <input id="exerciseHistorySearch" class="meta-input" type="search" placeholder="Es. Lat machine" autocomplete="off" oninput="searchExerciseHistory(this.value)">
+      <div id="exerciseHistorySuggestions" class="exercise-history-suggestions" aria-live="polite"></div>
+      <div id="exerciseHistoryResults"></div>
+    </section>
     <div class="hist-section-label"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/></svg> Storico allenamenti</div>
     <div class="hist-panel hist-panel-browse">
       <div class="hist-list-row">
@@ -330,11 +338,12 @@ onclick="if(event.target===this) closeTrainingOrderModal()">
 <script src="js/chart.js"></script>         <!-- grafico di progressione -->
 <script src="js/trends.js?rev=20260922f"></script>        <!-- dashboard andamenti su tutta la cronologia -->
 <script src="js/backup.js?rev=20260922h"></script>        <!-- esporta/importa backup, manuale e automatico -->
-<script src="js/utils.js?rev=20260922h"></script>         <!-- escape html, altezza automatica delle textarea -->
-<script src="js/navigation.js?rev=20260922h"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
+<script src="js/utils.js?rev=20260922i"></script>         <!-- escape html, altezza automatica delle textarea -->
+<script src="js/navigation.js?rev=20260922i"></script>    <!-- tab Allenamento/Storico, giorno attivo, scroll magnetico, schermo sempre acceso -->
 <script src="js/days-modal.js?rev=20260922h"></script>    <!-- modifica categorie giorni (nome/colore/aggiungi/elimina) -->
-<script src="js/exercise-card.js?rev=20260922h"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
-<script src="js/history.js?rev=20260922f"></script>       <!-- tab Storico: elenco ed esercizi dei WO archiviati -->
+<script src="js/exercise-card.js?rev=20260922i"></script> <!-- la scheda esercizio: settimane, serie, max, segna completata -->
+<script src="js/history.js?rev=20260922i"></script>       <!-- tab Storico: elenco ed esercizi dei WO archiviati -->
+<script src="js/exercise-history.js?rev=20260922i"></script>
 <script src="js/search.js?rev=20260915a"></script>        <!-- ricerca in scheda attiva e storico -->
 <script src="js/calendar.js?rev=20260915a"></script>      <!-- calendario mensile dei giorni di allenamento terminati -->
 <script src="js/plate-calc.js?rev=20260922h"></script>    <!-- calcolatore dischi bilanciere per esercizio -->

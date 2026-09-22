@@ -176,7 +176,13 @@ const quickKeyboardPressTimers = new WeakMap();
 // dai capricci del focus mobile (che puo' sparire anche toccando un suo gap).
 // Si sblocca esclusivamente con il pulsante "Fine".
 let quickKeyboardPinnedOpen = false;
-function isQuickNumberTarget(el){ return el && el.matches && el.matches('input.set-input:not(:disabled)'); }
+function isQuickNumberTarget(el){
+  if(!el || !el.isConnected || !el.matches || !el.matches('input.set-input:not(:disabled)')) return false;
+  for(let node=el;node&&node!==document.body;node=node.parentElement){
+    if(node.hidden || node.inert || node.style.display==='none') return false;
+  }
+  return true;
+}
 function positionQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
   if(!bar || bar.hidden) return;
@@ -216,10 +222,26 @@ function restoreQuickKeyboardScroll(delay=0){
   clearTimeout(quickKeyboardRestoreTimer);
   if(quickKeyboardOriginScrollY === null) return;
   quickKeyboardRestoreTimer = setTimeout(()=>{
+    if(quickNumberInput || quickKeyboardOriginScrollY === null) return;
     const originalY = quickKeyboardOriginScrollY;
     quickKeyboardOriginScrollY = null;
     window.scrollTo({top:originalY,behavior:'smooth'});
   },delay);
+}
+// Lo stato della tastiera non deve sopravvivere a sospensione, navigazione
+// o sostituzione del campo. I valori sono già salvati dagli handler input.
+function resetQuickKeyboardUI(){
+  clearTimeout(quickKeyboardCloseTimer);
+  clearTimeout(quickKeyboardRestoreTimer);
+  quickNumberInput = null;
+  quickKeyboardPinnedOpen = false;
+  quickKeyboardFinishRequested = false;
+  quickKeyboardInteractionUntil = 0;
+  suppressQuickKeyboardClickUntil = 0;
+  quickKeyboardOriginScrollY = null;
+  const bar = document.getElementById('quickNumberBar');
+  if(bar){bar.hidden=true;bar.classList.remove('is-closing');bar.style.bottom='';}
+  clearQuickKeyboardScrollSpace();
 }
 function showQuickKeyboardBar(bar){
   clearTimeout(quickKeyboardCloseTimer);
@@ -262,14 +284,20 @@ function primeQuickKeyboardInput(input){
   return input;
 }
 function resolveQuickKeyboardInput(){
+  // Il campo toccato è più recente del focus: iOS può lasciare il focus sul
+  // campo precedente mentre sta ancora consegnando il nuovo tocco.
+  if(isQuickNumberTarget(quickNumberInput) && quickNumberInput.isConnected) return quickNumberInput;
   const active = document.activeElement;
   if(isQuickNumberTarget(active)) return primeQuickKeyboardInput(active);
-  if(isQuickNumberTarget(quickNumberInput) && quickNumberInput.isConnected) return quickNumberInput;
   return null;
 }
 function syncQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
   if(!bar) return;
+  if(document.visibilityState==='hidden' || (quickNumberInput && !isQuickNumberTarget(quickNumberInput))){
+    resetQuickKeyboardUI();
+    return;
+  }
   const active = document.activeElement;
   const nextInput = isQuickNumberTarget(active) ? active : null;
   if(nextInput){
@@ -405,6 +433,15 @@ document.addEventListener('keydown', event=>{
   if(event.key === 'Enter' && isQuickNumberTarget(event.target)) event.preventDefault();
 });
 document.addEventListener('focusin', syncQuickNumberBar);
+window.addEventListener('pagehide', resetQuickKeyboardUI);
+window.addEventListener('pageshow', resetQuickKeyboardUI);
+document.addEventListener('visibilitychange', ()=>{
+  resetQuickKeyboardUI();
+});
+// Fallback per i tocchi iOS dopo la ripresa di una PWA sospesa.
+document.addEventListener('touchstart', event=>{
+  if(isQuickNumberTarget(event.target)) primeQuickKeyboardInput(event.target);
+}, {capture:true,passive:true});
 document.addEventListener('focusout', event=>{
   const input = event.target;
   const keyboardTapInProgress = Date.now() < quickKeyboardInteractionUntil && !quickKeyboardFinishRequested;
