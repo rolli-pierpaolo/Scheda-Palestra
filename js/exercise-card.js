@@ -227,8 +227,8 @@ function renderActive(){
   // decorativo, senza introdurre una seconda palette o dati nuovi.
   main.style.setProperty('--accent', a.c);
   document.body.style.setProperty('--water-base', darkenColor(a.c,0.10));
-  document.body.style.setProperty('--water-mid', darkenColor(a.c,0.28));
-  document.body.style.setProperty('--water-glow', darkenColor(a.c,0.48));
+  document.body.style.setProperty('--water-mid', darkenColor(a.c,0.55));
+  document.body.style.setProperty('--water-glow', darkenColor(a.c,0.85));
   if(reorderMode){
     main.innerHTML = renderReorderList(day);
     return;

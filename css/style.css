@@ -1322,31 +1322,33 @@ body.training-focus .week-block{margin-top:10px;}
    solo contesto/avanzamento/conferma; i dati restano su grafite leggibile. */
 body.on-workout .topbar{border-bottom:0;}
 body.on-workout .app-version{display:none;}
-/* Colore dipinto direttamente sulle superfici: nessuno pseudo-elemento
-   o livello composito può finire dietro il nero sui browser mobili. */
-body.on-workout:not(.theme-light){
-  background-color:var(--water-base,#100b07);
-  background-image:linear-gradient(115deg,transparent 5%,var(--water-mid,#302010) 35%,rgba(255,255,255,.20) 50%,var(--water-glow,#52371a) 65%,transparent 95%),radial-gradient(ellipse at 15% 25%,var(--water-glow,#52371a) 0%,transparent 62%),radial-gradient(ellipse at 85% 75%,var(--water-mid,#302010) 0%,transparent 65%);
-  background-size:240vw 100vh,150vw 135vh,140vw 150vh;
-  background-repeat:repeat-y;
-  animation:viridis-metal-flow 7s ease-in-out infinite;
+/* Riflessi con bande di luce e ombra, come il metallo della vecchia Home.
+   Sfondo diretto: nessun livello nascosto dietro alle superfici su iPhone. */
+body.on-workout:not(.theme-light),body:not(.theme-light) .quick-number-bar{
+  background-color:#101416;
+  background-image:linear-gradient(115deg,#111618 0%,#30383b 15%,var(--water-mid,#394e27) 27%,#737e82 34%,#333d41 40%,#121719 49%,var(--water-glow,#557c36) 60%,#87918e 66%,#283134 73%,#101416 85%,#111618 100%);
+  background-size:260% 100%;
+  animation:viridis-metal-flow 5s ease-in-out infinite alternate;
 }
-body:not(.theme-light) .quick-number-bar{
-  background-color:var(--water-base,#100b07);
-  background-image:linear-gradient(115deg,transparent 5%,var(--water-mid,#302010) 35%,rgba(255,255,255,.20) 50%,var(--water-glow,#52371a) 65%,transparent 95%),radial-gradient(ellipse at 15% 25%,var(--water-glow,#52371a) 0%,transparent 62%),radial-gradient(ellipse at 85% 75%,var(--water-mid,#302010) 0%,transparent 65%);
-  background-size:240% 100%,170% 180%,160% 190%;
-  animation:viridis-metal-flow 7s ease-in-out infinite;
-}
-/* Riprende il riflesso diagonale e il ciclo della tastiera del 18 settembre,
-   mantenendo lo sfondo diretto che resta visibile su iPhone. */
+body:not(.theme-light) .quick-keyboard-head span{color:#f0f2f2;text-shadow:0 1px 3px #000,0 0 5px #000;}
+body.on-workout:not(.theme-light){background-size:260vw 100vh;background-repeat:repeat-y;}
 @keyframes viridis-metal-flow{
-  0%,100%{background-position:0% 50%,0% 0%,100% 100%;}
-  50%{background-position:100% 50%,60% 30%,40% 65%;}
+  from{background-position:0% 50%;}
+  to{background-position:100% 50%;}
 }
+/* Recupero dei riflessi della Home, senza cambiarne disposizione o card. */
+body.on-home:not(.theme-light) .topbar h1{
+  background:linear-gradient(100deg,var(--green) 0%,#263d05 12%,var(--green) 24%,#eaffb0 36%,#fff 42%,#eaffb0 48%,var(--green) 60%,#263d05 72%,var(--green) 84%,var(--green) 100%);
+  background-size:340% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:viridis-metal-flow 6s ease-in-out infinite alternate;
+}
+body.on-home .accent-shine{animation:viridis-metal-flow 6s ease-in-out infinite alternate;}
 body.a11y-reduce-motion.on-workout,body.a11y-reduce-motion .quick-number-bar,
-body.a11y-high-contrast.on-workout,body.a11y-high-contrast .quick-number-bar{animation:none!important;}
+body.a11y-reduce-motion.on-home .topbar h1,body.a11y-reduce-motion .accent-shine{animation:none!important;background-position:42% 50%;}
+body.a11y-high-contrast.on-home .topbar h1,body.a11y-high-contrast .accent-shine{background:none;-webkit-text-fill-color:currentColor;animation:none!important;}
 @media(prefers-reduced-motion:reduce){
-  body.on-workout,.quick-number-bar{animation:none!important;}
+  body.on-workout,.quick-number-bar,body.on-home .topbar h1,body.on-home .accent-shine{animation:none!important;background-position:42% 50%;}
 }
 .topbar-copy{display:block;}
 .topbar-subtitle{display:none;margin:2px 0 0;color:var(--muted);font-size:11px;font-weight:650;letter-spacing:.15px;line-height:1.2;}
