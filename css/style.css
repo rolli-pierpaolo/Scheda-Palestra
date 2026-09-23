@@ -1325,28 +1325,30 @@ body.on-workout .app-version{display:none;}
 /* Acqua scura: due superfici morbide si muovono dietro alle card nere.
    Solo transform, senza filtri animati né intercettazione dei tocchi. */
 body.on-workout:not(.theme-light){background-color:#000;}
-body.on-workout:not(.theme-light) #viewActive{isolation:isolate;}
+body.on-workout:not(.theme-light) #viewActive{isolation:isolate;position:relative;}
+body.on-workout:not(.theme-light) #viewActive > *{position:relative;z-index:1;}
 body.on-workout:not(.theme-light) #viewActive::before,
 body.on-workout:not(.theme-light) #viewActive::after{
-  content:"";position:fixed;inset:-15%;z-index:-1;pointer-events:none;
-  background:radial-gradient(ellipse at 22% 30%,color-mix(in srgb,var(--accent,var(--green)) 13%,transparent),transparent 62%),radial-gradient(ellipse at 83% 78%,color-mix(in srgb,var(--accent,var(--green)) 9%,transparent),transparent 58%);
+  content:"";position:fixed;inset:-15%;z-index:0;pointer-events:none;opacity:.32;
+  background:radial-gradient(ellipse at 22% 30%,var(--accent,var(--green)),transparent 62%),radial-gradient(ellipse at 83% 78%,var(--accent,var(--green)),transparent 58%);
   animation:viridis-water-drift 19s ease-in-out infinite alternate;
 }
-body.on-workout:not(.theme-light) #viewActive::after{opacity:.65;animation-duration:27s;animation-delay:-11s;animation-direction:alternate-reverse;}
+body.on-workout:not(.theme-light) #viewActive::after{opacity:.18;animation-duration:27s;animation-delay:-11s;animation-direction:alternate-reverse;}
 @keyframes viridis-water-drift{
   0%{transform:translate3d(-3%,-2%,0) scale(1);}
   50%{transform:translate3d(3%,2%,0) scale(1.06,1.02);}
   100%{transform:translate3d(-1%,4%,0) scale(1.02,1.07);}
 }
 .quick-number-bar{isolation:isolate;}
+.quick-number-bar > *{position:relative;z-index:1;}
 body:not(.theme-light) .quick-number-bar{background:#080908;}
 body:not(.theme-light) .quick-number-bar::before,
 body:not(.theme-light) .quick-number-bar::after{
-  content:"";position:absolute;inset:-35%;z-index:-1;pointer-events:none;
-  background:radial-gradient(ellipse at 20% 35%,color-mix(in srgb,var(--accent,var(--green)) 24%,transparent),transparent 56%),radial-gradient(ellipse at 80% 70%,color-mix(in srgb,var(--accent,var(--green)) 16%,transparent),transparent 55%);
+  content:"";position:absolute;inset:-35%;z-index:0;pointer-events:none;opacity:.42;
+  background:radial-gradient(ellipse at 20% 35%,var(--accent,var(--green)),transparent 56%),radial-gradient(ellipse at 80% 70%,var(--accent,var(--green)),transparent 55%);
   animation:viridis-water-drift 12s ease-in-out infinite alternate;
 }
-body:not(.theme-light) .quick-number-bar::after{opacity:.6;animation-duration:17s;animation-delay:-7s;animation-direction:alternate-reverse;}
+body:not(.theme-light) .quick-number-bar::after{opacity:.22;animation-duration:17s;animation-delay:-7s;animation-direction:alternate-reverse;}
 body.a11y-reduce-motion #viewActive::before,body.a11y-reduce-motion #viewActive::after,
 body.a11y-reduce-motion .quick-number-bar::before,body.a11y-reduce-motion .quick-number-bar::after{animation:none!important;}
 body.a11y-high-contrast #viewActive::before,body.a11y-high-contrast #viewActive::after,
