@@ -556,13 +556,13 @@ test('updateThemeColor segue l\'accent del giorno in Allenamento, torna neutro s
   assert.notStrictEqual(meta.getAttribute('content'), '#0D0D0D', 'in Allenamento deve seguire l\'accent del giorno, non restare neutro');
 });
 
-test('su iPhone la status bar non usa il velo nero traslucido sopra l\'app', () => {
+test('su iPhone la superficie si estende dietro la status bar della PWA', () => {
   const window = loadApp();
   const statusBar = window.document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
   const viewport = window.document.querySelector('meta[name="viewport"]');
   assert.ok(statusBar, 'il tag della status bar deve esistere');
-  assert.strictEqual(statusBar.getAttribute('content'), 'default', 'la status bar deve restare normale, non nera traslucida');
-  assert.ok(!viewport.getAttribute('content').includes('viewport-fit=cover'), 'il contenuto non deve finire sotto la barra di stato');
+  assert.strictEqual(statusBar.getAttribute('content'), 'black-translucent', 'la PWA deve estendere il materiale dietro l orologio');
+  assert.ok(viewport.getAttribute('content').includes('viewport-fit=cover'), 'lo sfondo deve coprire anche la safe area');
 });
 
 test('computeWeeklyMuscleSetCounts conta le serie con dati dei gruppi con un esercizio COMPLETATO nella settimana corrente', () => {

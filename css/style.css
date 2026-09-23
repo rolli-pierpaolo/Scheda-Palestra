@@ -1796,3 +1796,27 @@ body.liquid-system>main{position:relative;z-index:1;}
 body.liquid-system .quick-number-bar> :not(.viridis-liquid-canvas){position:relative;z-index:1;}
 body.liquid-page-ready>.viridis-liquid-page,.liquid-keyboard-ready>.viridis-liquid-canvas{opacity:1;}
 body.theme-light>.viridis-liquid-page,body.a11y-high-contrast>.viridis-liquid-page,body.a11y-reduce-motion>.viridis-liquid-page{opacity:0;}
+
+/* Un unico vetro da dietro l'orologio alla testata, che sfuma nel contenuto.
+   La maschera riguarda soltanto il materiale: testo e pulsanti restano netti. */
+body:not(.theme-light) .topbar,body.on-workout:not(.theme-light) .topbar{
+  background:transparent;border:0;box-shadow:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+body:not(.theme-light) .topbar::before{
+  content:"";position:absolute;z-index:0;pointer-events:none;
+  top:0;left:0;right:0;bottom:-30px;
+  background:linear-gradient(180deg,rgba(17,22,25,.66),rgba(20,25,28,.36) 65%,rgba(20,25,28,.14));
+  -webkit-backdrop-filter:blur(22px) saturate(125%);backdrop-filter:blur(22px) saturate(125%);
+  -webkit-mask-image:linear-gradient(#000 0%,#000 calc(100% - 34px),transparent 100%);
+  mask-image:linear-gradient(#000 0%,#000 calc(100% - 34px),transparent 100%);
+}
+.topbar-copy{position:relative;z-index:1;}
+.topbar>button,.topbar>.app-version{z-index:1;}
+body.a11y-high-contrast:not(.theme-light) .topbar{background:#080a0b;}
+body.a11y-high-contrast:not(.theme-light) .topbar::before{display:none;}
+@media(max-width:899px){
+  body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+  .bottom-nav{left:calc(18px + env(safe-area-inset-left));right:calc(18px + env(safe-area-inset-right));}
+  .quick-number-bar{left:calc(8px + env(safe-area-inset-left));right:calc(8px + env(safe-area-inset-right));}
+}
