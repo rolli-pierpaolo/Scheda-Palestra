@@ -1209,15 +1209,14 @@ test('tastiera rapida conserva 123/ABC e mostra il feedback sul solo tasto premu
   assert.ok(!one.classList.contains('is-pressed'), 'il feedback deve essere breve e non lasciare il tasto bloccato verde');
 });
 
-test('tastiera rapida aggancia il campo già al tocco, anche prima del focus mobile', () => {
+test('tastiera rapida aggancia il campo al tap completo, anche senza focus mobile', () => {
   const window = loadApp();
   const input = window.document.createElement('input');
   input.type = 'text';
   input.className = 'set-input';
   window.document.body.appendChild(input);
-  // In alcuni iPhone il focus arriva dopo il pointerdown: riproduciamo quel
-  // preciso ordine senza chiamare input.focus().
-  input.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
+  // Un tap completo deve selezionare il campo anche senza focus nativo.
+  input.dispatchEvent(new window.Event('click',{bubbles:true,cancelable:true}));
   const one = window.document.querySelector('.quick-keyboard-numbers button');
   one.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
   assert.strictEqual(input.value, '1', 'BUG: il primo tasto deve scrivere nel campo appena toccato');
@@ -1234,7 +1233,7 @@ test('tastiera rapida crea spazio e porta in alto le serie sotto il quarto blocc
   keyboard.getBoundingClientRect = () => ({top:250,bottom:590,height:340});
   let scroll = null;
   window.scrollBy = options => { scroll = options; };
-  input.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
+  input.dispatchEvent(new window.Event('click',{bubbles:true,cancelable:true}));
   window.revealQuickKeyboardInput();
   assert.ok(window.document.body.classList.contains('quick-keyboard-open'), 'deve aggiungere spazio reale sotto l ultima serie');
   assert.strictEqual(window.document.body.style.getPropertyValue('--quick-keyboard-space'), '392px');
@@ -1469,16 +1468,38 @@ test('tastiera riprende dopo sospensione e rimuove lo spazio vuoto senza perdere
   assert.ok(window.document.getElementById('quickNumberBar').hidden);
   assert.ok(!window.document.body.classList.contains('quick-keyboard-open'));
   window.dispatchEvent(new window.Event('pageshow'));
-  input.dispatchEvent(new window.Event('touchstart',{bubbles:true}));
+  input.dispatchEvent(new window.Event('click',{bubbles:true}));
   assert.ok(!window.document.getElementById('quickNumberBar').hidden);
   assert.strictEqual(ex.sets[0][0].rip,'8');
 });
+test('scorrere da un campo o ripristinare il focus iOS non apre la tastiera',()=>{
+  const {window,ex}=workoutInputFixture();
+  window.matchMedia=()=>({matches:true});
+  const input=window.document.querySelector('.set-input');
+  const bar=window.document.getElementById('quickNumberBar');
+  const before=JSON.stringify(ex);
+  input.dispatchEvent(new window.Event('touchstart',{bubbles:true}));
+  input.dispatchEvent(new window.Event('pointerdown',{bubbles:true}));
+  input.focus();
+  input.dispatchEvent(new window.Event('pointermove',{bubbles:true}));
+  input.dispatchEvent(new window.Event('pointercancel',{bubbles:true}));
+  window.syncQuickNumberBar();
+  assert.ok(bar.hidden,'uno swipe o il focus residuo non devono aprire il pannello');
+  assert.ok(!window.document.body.classList.contains('quick-keyboard-open'));
+  input.click();
+  assert.ok(!bar.hidden,'il tap completo deve aprirlo anche se il campo ha già focus');
+  window.resetQuickKeyboardUI();
+  window.syncQuickNumberBar();
+  assert.ok(bar.hidden,'il focus residuo dopo un reset non deve riaprire il pannello');
+  assert.strictEqual(JSON.stringify(ex),before);
+});
+
 test('il campo appena toccato prevale sul vecchio focus iOS',()=>{
   const {window,ex}=workoutInputFixture();
   const first=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 1"]');
   const second=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 2"]');
   first.focus();window.insertQuickKey('7');
-  second.dispatchEvent(new window.Event('pointerdown',{bubbles:true}));
+  second.dispatchEvent(new window.Event('click',{bubbles:true}));
   assert.strictEqual(window.document.activeElement,first);
   window.insertQuickKey('9');
   assert.strictEqual(ex.sets[0][0].rip,'7');

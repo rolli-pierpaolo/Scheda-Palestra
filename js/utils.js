@@ -176,6 +176,7 @@ const quickKeyboardPressTimers = new WeakMap();
 // dai capricci del focus mobile (che puo' sparire anche toccando un suo gap).
 // Si sblocca esclusivamente con il pulsante "Fine".
 let quickKeyboardPinnedOpen = false;
+function usesTouchKeyboard(){ return !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches); }
 function isQuickNumberTarget(el){
   if(!el || !el.isConnected || !el.matches || !el.matches('input.set-input:not(:disabled)')) return false;
   for(let node=el;node&&node!==document.body;node=node.parentElement){
@@ -263,8 +264,8 @@ function hideQuickKeyboardBar(bar){
   },240);
 }
 // Su alcuni browser mobili il pannello resta già visibile mentre il focus
-// nativo passa per un istante al body. Memorizziamo quindi il campo già al
-// pointerdown, non solo nel focusin: il tasto premuto scrive sempre nella
+// nativo passa per un istante al body. Memorizziamo il campo al tap completo,
+// non all’inizio dello scorrimento: il tasto premuto scrive sempre nella
 // casella che l'utente ha appena scelto.
 function primeQuickKeyboardInput(input){
   if(!isQuickNumberTarget(input)) return null;
@@ -288,7 +289,7 @@ function resolveQuickKeyboardInput(){
   // campo precedente mentre sta ancora consegnando il nuovo tocco.
   if(isQuickNumberTarget(quickNumberInput) && quickNumberInput.isConnected) return quickNumberInput;
   const active = document.activeElement;
-  if(isQuickNumberTarget(active)) return primeQuickKeyboardInput(active);
+  if(!usesTouchKeyboard() && isQuickNumberTarget(active)) return primeQuickKeyboardInput(active);
   return null;
 }
 function syncQuickNumberBar(){
@@ -300,7 +301,7 @@ function syncQuickNumberBar(){
   }
   const active = document.activeElement;
   const nextInput = isQuickNumberTarget(active) ? active : null;
-  if(nextInput){
+  if(nextInput && !usesTouchKeyboard()){
     primeQuickKeyboardInput(nextInput);
     return;
   }
@@ -311,7 +312,7 @@ function syncQuickNumberBar(){
   // Su iOS il focus puo' andare momentaneamente al body anche se l'utente ha
   // soltanto sfiorato lo spazio fra due tasti. Non interpretarlo mai come una
   // richiesta di chiusura: la chiusura e' consentita solo da Fine.
-  if(!nextInput && quickKeyboardPinnedOpen && !quickKeyboardFinishRequested){
+  if(quickKeyboardPinnedOpen && !quickKeyboardFinishRequested){
     showQuickKeyboardBar(bar);
     positionQuickNumberBar();
     return;
@@ -400,7 +401,6 @@ document.addEventListener('pointerdown', event=>{
   const target = event.target;
   if(isQuickNumberTarget(target)){
     if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches) target.inputMode = 'none';
-    primeQuickKeyboardInput(target);
   }
   const keyboardArea = target && target.closest && target.closest('#quickNumberBar');
   if(keyboardArea){
@@ -425,7 +425,9 @@ document.addEventListener('click', event=>{
   if(Date.now() < suppressQuickKeyboardClickUntil || (event.target && event.target.closest && event.target.closest('#quickNumberBar'))){
     event.preventDefault();
     event.stopImmediatePropagation();
+    return;
   }
+  if(isQuickNumberTarget(event.target)) primeQuickKeyboardInput(event.target);
 }, true);
 // Mai cambiare campo automaticamente: Enter conclude l'inserimento corrente,
 // non porta alla casella successiva. Il passaggio resta sempre una scelta.
@@ -438,9 +440,10 @@ window.addEventListener('pageshow', resetQuickKeyboardUI);
 document.addEventListener('visibilitychange', ()=>{
   resetQuickKeyboardUI();
 });
-// Fallback per i tocchi iOS dopo la ripresa di una PWA sospesa.
+// Prepara il campo senza aprire il pannello: touchstart può iniziare uno scroll.
+// Il click viene emesso dal browser solo al termine di un tap, non di uno swipe.
 document.addEventListener('touchstart', event=>{
-  if(isQuickNumberTarget(event.target)) primeQuickKeyboardInput(event.target);
+  if(isQuickNumberTarget(event.target) && usesTouchKeyboard()) event.target.inputMode='none';
 }, {capture:true,passive:true});
 document.addEventListener('focusout', event=>{
   const input = event.target;
