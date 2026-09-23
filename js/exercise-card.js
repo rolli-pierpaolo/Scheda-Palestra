@@ -222,6 +222,10 @@ function renderActive(){
   const a = dayAccent(day, activeDayIdx);
   updateThemeColor();
   const main = document.getElementById('viewActive');
+  // L'accento e' gia' quello usato da titolo, progressione e selettore del
+  // giorno. Lo esponiamo anche alla superficie della vista per il solo glow
+  // decorativo, senza introdurre una seconda palette o dati nuovi.
+  main.style.setProperty('--accent', a.c);
   if(reorderMode){
     main.innerHTML = renderReorderList(day);
     return;

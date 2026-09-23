@@ -1322,6 +1322,20 @@ body.training-focus .week-block{margin-top:10px;}
    solo contesto/avanzamento/conferma; i dati restano su grafite leggibile. */
 body.on-workout .topbar{border-bottom:0;}
 body.on-workout .app-version{display:none;}
+/* La vista resta nera: l'accento del giorno e' un'aura statica, limitata alla
+   parte alta dell'allenamento. --accent arriva da dayAccent(), lo stesso
+   colore dinamico usato per titolo, progresso e selettore esercizi. */
+body.on-workout:not(.theme-light){background-color:#080908;}
+body.on-workout:not(.theme-light) #viewActive{
+  background-image:radial-gradient(ellipse 92% 500px at 50% 0,
+    color-mix(in srgb,var(--accent,var(--green)) 10%,transparent) 0%,
+    color-mix(in srgb,var(--accent,var(--green)) 3.5%,transparent) 35%,
+    transparent 65%);
+  background-repeat:no-repeat;
+}
+/* In contrasto alto l'aura si spegne: testo e controlli rimangono il punto
+   di contrasto più netto, come richiesto dalla relativa preferenza. */
+body.a11y-high-contrast.on-workout #viewActive{background-image:none;}
 .topbar-copy{display:block;}
 .topbar-subtitle{display:none;margin:2px 0 0;color:var(--muted);font-size:11px;font-weight:650;letter-spacing:.15px;line-height:1.2;}
 .topbar.is-workout-header .topbar-subtitle:not([hidden]){display:block;}
@@ -1348,8 +1362,9 @@ body.on-workout #dayTabsActive.workout-day-tabs-open{display:flex!important;padd
 .day-ex-chip.done{background:#181A19;border-color:transparent;color:#727671;transform:none;opacity:.78;}
 .day-ex-chip.current{border-color:var(--accent,var(--green));background:#1A2018;color:var(--accent,var(--green));box-shadow:0 0 11px color-mix(in srgb,var(--accent,var(--green)) 18%,transparent),inset 0 1px 0 rgba(255,255,255,.04);}
 
-/* Una sola card grande: niente banda verde, niente riquadri nidificati. */
-.card{background:#1B1D1C;border:1px solid rgba(255,255,255,.09);border-radius:22px;margin:0 12px 16px;overflow:hidden;box-shadow:0 16px 32px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035);}
+/* Una sola card grande, volutamente quasi nera: le serie emergono come
+   superfici antracite appoggiate all'interno, senza cambiare spazi o layout. */
+.card{background:#111312;border:1px solid rgba(255,255,255,.08);border-radius:22px;margin:0 12px 16px;overflow:hidden;box-shadow:0 16px 32px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035);}
 .card::before{display:none;}
 .card-head{padding:17px 16px 0;}
 .exercise-card-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
@@ -1391,8 +1406,8 @@ body.on-workout #dayTabsActive.workout-day-tabs-open{display:flex!important;padd
    verticale non interattivo: stepper, peso e ripetizioni restano invariati
    e comodi da toccare anche durante l'allenamento. */
 .sets-wrap{display:flex;flex-direction:column;gap:8px;}
-.set-series-group{margin:0;padding:7px 12px;border:1px solid rgba(255,255,255,.075);border-radius:15px;background:#202221;}
-.set-series-group.has-max{margin:0;padding:7px 12px;border:1px solid rgba(255,255,255,.075);border-radius:15px;background:linear-gradient(135deg,#202221,color-mix(in srgb,var(--amber) 3%,#202221));}
+.set-series-group{margin:0;padding:7px 12px;border:1px solid rgba(255,255,255,.075);border-radius:15px;background:#1C1E1D;}
+.set-series-group.has-max{margin:0;padding:7px 12px;border:1px solid rgba(255,255,255,.075);border-radius:15px;background:linear-gradient(135deg,#1C1E1D,color-mix(in srgb,var(--amber) 3%,#1C1E1D));}
 .set-series-group.is-filled{border-color:color-mix(in srgb,var(--accent,var(--green)) 20%,rgba(255,255,255,.08));}
 .set-series-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:5px;}
 .set-series-number{width:auto;text-align:left;margin:0;color:var(--accent,var(--green));font-family:var(--font-body);font-size:12px;font-weight:800;letter-spacing:.55px;}
