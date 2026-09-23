@@ -97,6 +97,7 @@ function showView(v){
     document.getElementById('tabHomeBtn').setAttribute('aria-current', v==='home' ? 'page' : 'false');
 
     document.body.classList.toggle('on-home', v==='home');
+    document.body.classList.toggle('on-progress', v==='hist');
     document.body.classList.toggle('on-workout', v==='active');
     setWorkoutTopbarMode(v==='active');
     const topbarTitle = document.getElementById('topbarTitle');

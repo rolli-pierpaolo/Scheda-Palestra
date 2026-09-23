@@ -1344,7 +1344,7 @@ body.a11y-high-contrast.on-workout:not(.theme-light) .topbar{background:#080a0b;
 }
 /* Recupero dei riflessi della Home, senza cambiarne disposizione o card. */
 body.on-home:not(.theme-light) .topbar h1{
-  background:linear-gradient(100deg,var(--green) 0%,#263d05 12%,var(--green) 24%,#eaffb0 36%,#fff 42%,#eaffb0 48%,var(--green) 60%,#263d05 72%,var(--green) 84%,var(--green) 100%);
+  background:linear-gradient(100deg,var(--green) 0%,#6b9635 12%,var(--green) 24%,#eaffb0 36%,#fff 42%,#eaffb0 48%,var(--green) 60%,#6b9635 72%,var(--green) 84%,var(--green) 100%);
   background-size:340% 100%;
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   animation:viridis-metal-flow 6s ease-in-out infinite alternate;
@@ -1759,3 +1759,31 @@ body.theme-light .viridis-dialog .viridis-primary:not(.is-danger){color:#fff;}
 .exercise-history-session th{font-size:.8em;color:var(--muted);}
 .exercise-history-session small{display:block;color:var(--muted);font-size:.8em;}
 .exercise-history-session tr:last-child td{border-bottom:0;}
+
+/* Superfici condivise: Home e Progressi sono più quiete dell'allenamento. */
+body.on-home{--surface-mid:var(--home-water-mid,#2c3b15);--surface-glow:var(--home-water-glow,#455c21);--surface-light:#424b4e;--surface-shade:#20282b;}
+body.on-progress{--surface-mid:#263816;--surface-glow:#426029;--surface-light:#424b4e;--surface-shade:#20282b;}
+body:not(.theme-light){
+  --metal-background:linear-gradient(115deg,#111618 0%,#30383b 15%,var(--surface-mid,var(--water-mid,#394e27)) 27%,var(--surface-light,#737e82) 34%,var(--surface-shade,#333d41) 40%,#121719 49%,var(--surface-glow,var(--water-glow,#557c36)) 60%,var(--surface-light,#87918e) 66%,#283134 73%,#101416 85%,#111618 100%);
+  background-color:#101416;background-image:var(--metal-background);background-size:260% 100%;background-repeat:no-repeat;
+  min-height:100vh;min-height:100dvh;box-sizing:border-box;animation:viridis-metal-flow 5s ease-in-out infinite alternate;
+}
+body.on-home:not(.theme-light),body.on-progress:not(.theme-light){animation-duration:10s;}
+body:not(.theme-light) .topbar,body.on-workout:not(.theme-light) .topbar{
+  background:rgba(9,12,13,.45);border-bottom:0;
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+}
+body:not(.theme-light) .home-suggested-btn{position:relative;background:#000;border:1px solid color-mix(in srgb,var(--accent,var(--green)) 55%,#252525);border-radius:22px;box-shadow:0 12px 28px rgba(0,0,0,.25);padding-right:58px;}
+body:not(.theme-light) .home-suggested-label{color:#b9bfba;opacity:1;}
+body:not(.theme-light) .home-suggested-name{color:var(--accent,var(--green));}
+body:not(.theme-light) .home-suggested-btn::after{content:'↗';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:26px;color:var(--accent,var(--green));}
+body:not(.theme-light) .progress-hero-card,body:not(.theme-light) .progress-quick-actions button,body:not(.theme-light) .progress-timeline-card,body:not(.theme-light) #viewHist .hist-card,body:not(.theme-light) .exercise-history-panel{
+  background:#000;border:1px solid rgba(255,255,255,.12);border-radius:22px;box-shadow:0 12px 28px rgba(0,0,0,.22);
+}
+body:not(.theme-light) .exercise-history-panel{margin:12px;padding:16px;}
+body:not(.theme-light) #viewHist .hist-subnav .day-btn{background:#090b09;color:#b8beb8;border:1px solid #353b35;}
+body:not(.theme-light) #viewHist .hist-subnav .day-btn.active{background:#172010;color:var(--green);border-color:var(--green);}
+body.a11y-high-contrast:not(.theme-light) .topbar{background:#080a0b;-webkit-backdrop-filter:none;backdrop-filter:none;}
+body.a11y-high-contrast:not(.theme-light) .progress-hero-card,body.a11y-high-contrast:not(.theme-light) .progress-quick-actions button,body.a11y-high-contrast:not(.theme-light) .progress-timeline-card{border-color:var(--line);}
+body.a11y-reduce-motion{animation:none!important;background-position:42% 50%;}
+@media(prefers-reduced-motion:reduce){body{animation:none!important;background-position:42% 50%;}}

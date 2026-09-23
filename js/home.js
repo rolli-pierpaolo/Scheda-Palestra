@@ -464,6 +464,9 @@ function renderHome(){
 const total = weekly.total;
 
   const suggestedDay = state.days[suggestedIdx];
+  const homeSurfaceAccent = suggestedDay ? dayAccent(suggestedDay,suggestedIdx).c : '#7EA83C';
+  document.body.style.setProperty('--home-water-mid',darkenColor(homeSurfaceAccent,0.35));
+  document.body.style.setProperty('--home-water-glow',darkenColor(homeSurfaceAccent,0.55));
 
   const progressAccent = suggestedDay 
     ? dayAccent(suggestedDay, suggestedIdx).c 
