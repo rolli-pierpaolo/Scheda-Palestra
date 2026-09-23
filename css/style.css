@@ -1787,3 +1787,12 @@ body.a11y-high-contrast:not(.theme-light) .topbar{background:#080a0b;-webkit-bac
 body.a11y-high-contrast:not(.theme-light) .progress-hero-card,body.a11y-high-contrast:not(.theme-light) .progress-quick-actions button,body.a11y-high-contrast:not(.theme-light) .progress-timeline-card{border-color:var(--line);}
 body.a11y-reduce-motion{animation:none!important;background-position:42% 50%;}
 @media(prefers-reduced-motion:reduce){body{animation:none!important;background-position:42% 50%;}}
+
+/* GPU layer is decorative and cannot take focus or intercept a tap. */
+body.liquid-system,body.liquid-system .quick-number-bar{animation:none!important;}
+.viridis-liquid-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0;}
+.viridis-liquid-page{position:fixed;height:100vh;height:100dvh;}
+body.liquid-system>main{position:relative;z-index:1;}
+body.liquid-system .quick-number-bar> :not(.viridis-liquid-canvas){position:relative;z-index:1;}
+body.liquid-page-ready>.viridis-liquid-page,.liquid-keyboard-ready>.viridis-liquid-canvas{opacity:1;}
+body.theme-light>.viridis-liquid-page,body.a11y-high-contrast>.viridis-liquid-page,body.a11y-reduce-motion>.viridis-liquid-page{opacity:0;}

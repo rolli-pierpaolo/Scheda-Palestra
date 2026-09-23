@@ -28,6 +28,11 @@ function loadApp(){
   // ma partiamo comunque puliti a ogni loadApp() cosi' un test non lascia
   // tracce per il successivo
   window.localStorage.clear();
+  // WebGL is exercised separately; jsdom has no GPU.
+  const originalContext = window.HTMLCanvasElement.prototype.getContext;
+  window.HTMLCanvasElement.prototype.getContext = function(kind, ...args){
+    return kind === 'webgl' ? null : originalContext.call(this,kind,...args);
+  };
 
   // GSAP e le API browser che jsdom non implementa (o che qui non servono
   // davvero, essendo animazioni/notifiche/vibrazione): stub minimi cosi' i

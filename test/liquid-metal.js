@@ -1,0 +1,43 @@
+const assert=require('assert');
+const fs=require('fs');
+const {JSDOM}=require('jsdom');
+const source=fs.readFileSync(require('path').join(__dirname,'../js/liquid-metal.js'),'utf8');
+function fixture({reduced=false,gpu=true}={}){
+  const dom=new JSDOM('<body class="on-workout"><main id="viewActive" style="--accent:#B23D30"></main><div id="quickNumberBar" hidden></div></body>',{runScripts:'outside-only',pretendToBeVisual:true});
+  const w=dom.window,listeners=new Set();let draws=0,contexts=0,hidden=false;
+  const motion={matches:reduced,addEventListener(){}};
+  w.matchMedia=()=>motion;
+  Object.defineProperty(w.document,'hidden',{get:()=>hidden});
+  const gl=new Proxy({LINK_STATUS:1,getProgramParameter:()=>true},{get(target,key){return key in target?target[key]:(...args)=>{if(key==='drawArrays')draws++;return {};};}});
+  w.HTMLCanvasElement.prototype.getContext=function(){contexts++;return gpu?gl:null;};
+  w.HTMLCanvasElement.prototype.getBoundingClientRect=()=>({width:390,height:844});
+  w.gsap={ticker:{time:0,add:fn=>listeners.add(fn),remove:fn=>listeners.delete(fn)},to:(target,vars)=>{for(const k of ['r','g','b'])target[k]=vars[k];return{kill(){}};}};
+  w.eval(source);w.dispatchEvent(new w.Event('load'));
+  return {w,listeners,motion,get contexts(){return contexts;},get draws(){return draws;},hide(value){hidden=value;w.document.dispatchEvent(new w.Event('visibilitychange'));},tick(){w.gsap.ticker.time+=.04;listeners.forEach(fn=>fn(w.gsap.ticker.time));},close:()=>dom.window.close()};
+}
+const flush=()=>new Promise(resolve=>setImmediate(resolve));
+(async()=>{
+  let count=0;
+  let f=fixture();await flush();
+  assert.equal(f.contexts,1,'la tastiera nascosta non deve allocare la GPU');
+  assert.equal(f.listeners.size,1);assert(f.w.document.body.classList.contains('liquid-page-ready'));
+  f.tick();assert(f.draws>0);count++;
+  const bar=f.w.document.getElementById('quickNumberBar');bar.hidden=false;await flush();
+  assert.equal(f.contexts,2);assert(bar.classList.contains('liquid-keyboard-ready'));count++;
+  f.hide(true);const stopped=f.draws;f.tick();assert.equal(f.draws,stopped);assert.equal(f.listeners.size,0);
+  f.hide(false);assert.equal(f.listeners.size,1);count++;
+  f.w.dispatchEvent(new f.w.Event('pagehide'));assert.equal(f.listeners.size,0);
+  f.w.dispatchEvent(new f.w.Event('pageshow'));assert.equal(f.listeners.size,1);count++;
+  f.w.document.body.classList.add('a11y-reduce-motion');await flush();
+  assert.equal(f.listeners.size,0);assert(!bar.classList.contains('liquid-keyboard-ready'));
+  f.w.document.body.classList.remove('a11y-reduce-motion');await flush();assert.equal(f.listeners.size,1);count++;
+  f.w.document.body.classList.add('theme-light');await flush();assert.equal(f.listeners.size,0);
+  f.w.document.body.classList.remove('theme-light');await flush();assert.equal(f.listeners.size,1);count++;
+  const canvas=f.w.document.querySelector('canvas');canvas.dispatchEvent(new f.w.Event('webglcontextlost',{cancelable:true}));
+  assert(!f.w.document.body.classList.contains('liquid-page-ready'));
+  canvas.dispatchEvent(new f.w.Event('webglcontextrestored'));assert(f.w.document.body.classList.contains('liquid-page-ready'));count++;
+  f.w.document.body.classList.add('a11y-high-contrast');await flush();assert.equal(f.listeners.size,0);count++;
+  f.close();f=fixture({reduced:true});await flush();assert.equal(f.contexts,0);assert.equal(f.listeners.size,0);f.close();count++;
+  f=fixture({gpu:false});await flush();assert.equal(f.listeners.size,0);assert(!f.w.document.body.classList.contains('liquid-page-ready'));assert(f.w.document.body.classList.contains('liquid-system'));f.close();count++;
+  console.log(`${count} test metallo liquido passati`);
+})().catch(error=>{console.error(error);process.exitCode=1;});
