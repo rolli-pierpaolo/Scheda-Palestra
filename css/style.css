@@ -1326,21 +1326,22 @@ body.on-workout .app-version{display:none;}
    o livello composito può finire dietro il nero sui browser mobili. */
 body.on-workout:not(.theme-light){
   background-color:var(--water-base,#100b07);
-  background-image:radial-gradient(ellipse at 15% 25%,var(--water-glow,#52371a) 0%,transparent 62%),radial-gradient(ellipse at 85% 75%,var(--water-mid,#302010) 0%,transparent 65%);
-  background-size:150vw 135vh,140vw 150vh;
+  background-image:linear-gradient(115deg,transparent 5%,var(--water-mid,#302010) 35%,rgba(255,255,255,.20) 50%,var(--water-glow,#52371a) 65%,transparent 95%),radial-gradient(ellipse at 15% 25%,var(--water-glow,#52371a) 0%,transparent 62%),radial-gradient(ellipse at 85% 75%,var(--water-mid,#302010) 0%,transparent 65%);
+  background-size:240vw 100vh,150vw 135vh,140vw 150vh;
   background-repeat:repeat-y;
-  animation:viridis-water-surface 16s ease-in-out infinite alternate;
+  animation:viridis-metal-flow 7s ease-in-out infinite;
 }
 body:not(.theme-light) .quick-number-bar{
   background-color:var(--water-base,#100b07);
-  background-image:radial-gradient(ellipse at 15% 25%,var(--water-glow,#52371a) 0%,transparent 62%),radial-gradient(ellipse at 85% 75%,var(--water-mid,#302010) 0%,transparent 65%);
-  background-size:170% 180%,160% 190%;
-  animation:viridis-water-surface 11s ease-in-out infinite alternate;
+  background-image:linear-gradient(115deg,transparent 5%,var(--water-mid,#302010) 35%,rgba(255,255,255,.20) 50%,var(--water-glow,#52371a) 65%,transparent 95%),radial-gradient(ellipse at 15% 25%,var(--water-glow,#52371a) 0%,transparent 62%),radial-gradient(ellipse at 85% 75%,var(--water-mid,#302010) 0%,transparent 65%);
+  background-size:240% 100%,170% 180%,160% 190%;
+  animation:viridis-metal-flow 7s ease-in-out infinite;
 }
-@keyframes viridis-water-surface{
-  from{background-position:0% 0%,100% 100%;}
-  50%{background-position:60% 30%,40% 65%;}
-  to{background-position:100% 70%,0% 20%;}
+/* Riprende il riflesso diagonale e il ciclo della tastiera del 18 settembre,
+   mantenendo lo sfondo diretto che resta visibile su iPhone. */
+@keyframes viridis-metal-flow{
+  0%,100%{background-position:0% 50%,0% 0%,100% 100%;}
+  50%{background-position:100% 50%,60% 30%,40% 65%;}
 }
 body.a11y-reduce-motion.on-workout,body.a11y-reduce-motion .quick-number-bar,
 body.a11y-high-contrast.on-workout,body.a11y-high-contrast .quick-number-bar{animation:none!important;}
