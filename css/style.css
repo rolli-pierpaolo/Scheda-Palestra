@@ -1331,7 +1331,13 @@ body.on-workout:not(.theme-light),body:not(.theme-light) .quick-number-bar{
   animation:viridis-metal-flow 5s ease-in-out infinite alternate;
 }
 body:not(.theme-light) .quick-keyboard-head span{color:#f0f2f2;text-shadow:0 1px 3px #000,0 0 5px #000;}
-body.on-workout:not(.theme-light){background-size:260vw 100vh;background-repeat:repeat-y;}
+/* Una sola superficie estesa alla pagina, senza giunzioni ogni viewport. */
+body.on-workout:not(.theme-light){background-size:260% 100%;background-repeat:no-repeat;min-height:100vh;}
+body.on-workout:not(.theme-light) .topbar{
+  background:rgba(10,13,14,.82);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+}
+body.a11y-high-contrast.on-workout:not(.theme-light) .topbar{background:#080a0b;-webkit-backdrop-filter:none;backdrop-filter:none;}
 @keyframes viridis-metal-flow{
   from{background-position:0% 50%;}
   to{background-position:100% 50%;}
