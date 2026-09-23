@@ -311,7 +311,7 @@ test('extendWeeksPerBlock allunga (mai riduce) le settimane del blocco in corso,
     weeksPerBlock: 2, currentWeek: 0,
     days: [{ name:'Push', esercizi: [
       { nome:'Ex A', schema:['3x8','4x6'], recupero:['60s','90s'], weekNote:['',''], weekDone:[true,false], weekSkipped:[false,false], maxShown:[false,false],
-        sets:[[{peso:50,rip:8}],[]], maxExtra:[[],[]] }
+        sets:[[{peso:50,rip:8}],[]], maxExtra:[[],[]], maxEntries:[[{afterSet:0,peso:'50',rip:'8'}],[]] }
     ]}]
   };
   const ok = window.extendWeeksPerBlock(4);
@@ -326,12 +326,17 @@ test('extendWeeksPerBlock allunga (mai riduce) le settimane del blocco in corso,
   // niente deepStrictEqual: gli array vengono creati dentro il "realm" della
   // finestra jsdom, con un Array.prototype diverso da quello nativo di Node
   assert.strictEqual(ex.sets[2].length, 0, 'le settimane nuove partono con le serie vuote');
+  assert.strictEqual(ex.maxEntries[2].length, 1, 'le settimane nuove mantengono anche il layout Max');
+  assert.strictEqual(ex.maxEntries[2][0].peso, '50');
+  assert.strictEqual(ex.maxEntries[2][0].rip, '8');
 
   // due settimane nuove diverse non devono condividere lo stesso array (bug
   // gia' visto altrove in questo codice quando si riempie con un valore
   // condiviso invece che uno fresco per indice)
   ex.sets[2].push({peso:99, rip:1});
   assert.strictEqual(ex.sets[3].length, 0, 'BUG: le settimane nuove non devono condividere lo stesso array di serie');
+  ex.maxEntries[2][0].peso = '55';
+  assert.strictEqual(ex.maxEntries[3][0].peso, '50', 'i Max delle nuove settimane non devono condividere lo stesso oggetto');
 
   const notOk = window.extendWeeksPerBlock(3); // <= attuale (4), non deve ridurre
   assert.strictEqual(notOk, false);
@@ -1403,16 +1408,54 @@ test('passaggio rapido fra due campi non perde il valore precedente',()=>{
   assert.strictEqual(ex.sets[0][0].rip,'8');
   assert.strictEqual(ex.sets[0][1].rip,'9');
 });
-test('Max salva subito il testo ma propaga solo il numero completo alla conferma',()=>{
+test('Max conserva il layout e propaga il valore completo solo alla conferma',()=>{
   const {window,ex}=workoutInputFixture();
   ex.maxEntries=[[{afterSet:2,peso:'',rip:''}],[]];
   window.renderActive();
   const input=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni Max 1"]');
   input.focus();window.insertQuickKey('1');window.insertQuickKey('2');
   assert.strictEqual(JSON.parse(window.localStorage.getItem('scheda_wo18_state_v1')).days[0].esercizi[0].maxEntries[0][0].rip,'12');
-  assert.strictEqual(ex.maxEntries[1].length,0);
+  assert.strictEqual(ex.maxEntries[1].length,1, 'la riga Max esiste subito anche nella settimana successiva');
+  assert.strictEqual(ex.maxEntries[1][0].rip,'');
   window.finishQuickKeyboardInput();
   assert.strictEqual(ex.maxEntries[1][0].rip,'12');
+});
+test('un gruppo Max mantiene struttura e valori in tutte le settimane successive',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.recupero=['90','90','90'];
+  ex.sets.push(Array.from({length:3},()=>({peso:'',rip:''})));
+  ex.maxEntries=[[{afterSet:1,peso:'80',rip:'9'},{afterSet:1,peso:'80',rip:'8'}],[],[]];
+  window.carryMaxLayoutForward(ex,0);
+  for(const week of [1,2]){
+    assert.strictEqual(ex.maxEntries[week].length,2);
+    assert.deepStrictEqual(ex.maxEntries[week].map(entry=>entry.afterSet),[1,1]);
+    assert.deepStrictEqual(ex.maxEntries[week].map(entry=>[entry.peso,entry.rip]),[['80','9'],['80','8']]);
+  }
+});
+test('aggiungere una serie aggiorna solo settimana corrente e successive',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.recupero=['90','90','90'];
+  ex.sets.push(Array.from({length:3},()=>({peso:'',rip:''})));
+  window.addSet(0,1);
+  assert.strictEqual(ex.sets[0].length,3, 'le settimane passate non cambiano');
+  assert.strictEqual(ex.sets[1].length,4);
+  assert.strictEqual(ex.sets[2].length,4);
+});
+test('rimuovere una serie mantiene le settimane future che hanno dati',async()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.recupero=['90','90','90','90'];
+  ex.sets.push(
+    Array.from({length:3},()=>({peso:'',rip:''})),
+    Array.from({length:3},()=>({peso:'',rip:''}))
+  );
+  ex.sets[1][0].rip='8';
+  ex.sets[3][2].peso='40';
+  ex.maxEntries=[[],[],[{afterSet:2,peso:'',rip:''}],[]];
+  await window.removeSet(0,0);
+  assert.deepStrictEqual(ex.sets.map(sets=>sets.length),[2,3,2,3]);
+  assert.strictEqual(ex.maxEntries[2].length,0, 'i Max vuoti della serie eliminata non restano orfani');
+  assert.strictEqual(ex.sets[1][0].rip,'8');
+  assert.strictEqual(ex.sets[3][2].peso,'40');
 });
 
 test('tastiera riprende dopo sospensione e rimuove lo spazio vuoto senza perdere dati',()=>{

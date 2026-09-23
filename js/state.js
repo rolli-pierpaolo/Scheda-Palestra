@@ -367,6 +367,22 @@ function extendWeeksPerBlock(newTotal){
       const newMaxExtra = [];
       for(let i=0;i<newTotal;i++) newMaxExtra.push((ex.maxExtra && ex.maxExtra[i]) || []);
       ex.maxExtra = newMaxExtra;
+      // Il formato attuale dei Max ricorda anche dopo quale serie appaiono.
+      // Se si allunga una scheda, le settimane nuove ricevono l'ultimo layout
+      // disponibile senza condividere riferimenti tra settimane diverse.
+      if(ex.maxEntries){
+        const lastEntries = [...ex.maxEntries].reverse().find(entries => entries && entries.length) || [];
+        const newMaxEntries = [];
+        for(let i=0;i<newTotal;i++){
+          const source = ex.maxEntries[i] || lastEntries;
+          newMaxEntries.push(source.map(entry=>({
+            afterSet:entry.afterSet,
+            peso:entry.peso || '',
+            rip:entry.rip || ''
+          })));
+        }
+        ex.maxEntries = newMaxEntries;
+      }
     });
   });
   state.weeksPerBlock = newTotal;

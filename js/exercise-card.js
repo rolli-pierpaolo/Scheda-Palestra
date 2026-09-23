@@ -214,6 +214,11 @@ function toggleWorkoutTopbarEdit(){
 function renderActive(){
   if(typeof resetQuickKeyboardUI==='function') resetQuickKeyboardUI();
   const day = state.days[activeDayIdx];
+  let maxLayoutWasRepaired = false;
+  day.esercizi.forEach(ex=>{
+    if(syncMaxLayoutsForward(ex)) maxLayoutWasRepaired = true;
+  });
+  if(maxLayoutWasRepaired) saveState();
   const a = dayAccent(day, activeDayIdx);
   updateThemeColor();
   const main = document.getElementById('viewActive');
@@ -634,7 +639,10 @@ function getMaxEntries(ex, w){
   if(!ex.maxEntries) ex.maxEntries = Array.from({length:nWeeks}, (_, week)=>{
     const legacy = (ex.maxExtra && ex.maxExtra[week]) || [];
     const lastSet = Math.max(0, ((ex.sets && ex.sets[week]) || []).length - 1);
-    return legacy.filter(m => m && (String(m.peso||'').trim() || String(m.rip||'').trim()))
+    // Le vecchie versioni registravano Max vuoti in maxExtra. Se il riquadro
+    // era stato aperto, sono comunque parte dello schema e non vanno persi.
+    const wasShown = !!(ex.maxShown && ex.maxShown[week]);
+    return legacy.filter(m => m && (wasShown || String(m.peso||'').trim() || String(m.rip||'').trim()))
       .map(m => ({afterSet:lastSet, peso:m.peso||'', rip:m.rip||''}));
   });
   while(ex.maxEntries.length < nWeeks) ex.maxEntries.push([]);
@@ -644,15 +652,44 @@ function getMaxEntries(ex, w){
 function maxEntriesAfter(ex, w, si){
   return getMaxEntries(ex,w).map((entry,index)=>({entry,index})).filter(item=>item.entry.afterSet===si);
 }
+function exerciseWeekCount(ex){
+  return Math.max(
+    state.weeksPerBlock || 4,
+    (ex.recupero && ex.recupero.length) || 0,
+    (ex.sets && ex.sets.length) || 0,
+    (ex.maxEntries && ex.maxEntries.length) || 0
+  );
+}
+function setHasRecordedData(set){
+  return !!(set && (String(set.peso || '').trim() || String(set.rip || '').trim()));
+}
+// Una settimana in cui e' gia' stato scritto qualcosa non e' piu' una semplice
+// copia dello schema: durante una rimozione va lasciata intatta, anche se la
+// riga che si vorrebbe togliere e' ancora vuota.
+function weekHasRecordedExerciseData(ex, w){
+  const sets = (ex.sets && ex.sets[w]) || [];
+  return sets.some(setHasRecordedData) || getMaxEntries(ex,w).some(entry =>
+    entry && (String(entry.peso || '').trim() || String(entry.rip || '').trim())
+  );
+}
+function removeMaxAttachedToSet(ex, w, setIndex){
+  const entries = getMaxEntries(ex,w);
+  const kept = entries.filter(entry => entry && entry.afterSet < setIndex);
+  if(kept.length !== entries.length) ex.maxEntries[w] = kept;
+}
 // I Max sono parte dello schema: settimana dopo settimana riportano le stesse
 // righe e gli stessi kg/rip, salvo i valori già modificati a mano lì.
 function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
-  if(!ex || fromWeek < 0) return;
+  if(!ex || fromWeek < 0) return false;
   const template = getMaxEntries(ex,fromWeek);
-  if(!template.length) return;
-  const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
+  if(!template.length) return false;
+  const nWeeks = exerciseWeekCount(ex);
   const lastWeek = onlyWeek===undefined ? nWeeks-1 : onlyWeek;
-  if(!ex.maxShown) ex.maxShown = Array.from({length:nWeeks},()=>false);
+  let changed = false;
+  if(!ex.maxShown){
+    ex.maxShown = Array.from({length:nWeeks},()=>false);
+    changed = true;
+  }
   for(let week=fromWeek+1; week<=lastWeek && week<nWeeks; week++){
     const target = getMaxEntries(ex,week);
     const sourceCounts = new Map();
@@ -662,13 +699,34 @@ function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
       const matching = target.filter(item=>item.afterSet===entry.afterSet)[seen];
       if(!matching){
         target.push({afterSet:entry.afterSet,peso:entry.peso??'',rip:entry.rip??''});
+        changed = true;
         return;
       }
-      if(!String(matching.peso??'').trim() && String(entry.peso??'').trim()) matching.peso = entry.peso;
-      if(!String(matching.rip??'').trim() && String(entry.rip??'').trim()) matching.rip = entry.rip;
+      if(!String(matching.peso??'').trim() && String(entry.peso??'').trim()){
+        matching.peso = entry.peso;
+        changed = true;
+      }
+      if(!String(matching.rip??'').trim() && String(entry.rip??'').trim()){
+        matching.rip = entry.rip;
+        changed = true;
+      }
     });
-    ex.maxShown[week] = true;
+    if(!ex.maxShown[week]){
+      ex.maxShown[week] = true;
+      changed = true;
+    }
   }
+  return changed;
+}
+// Ripara anche le schede salvate con una versione precedente, in cui il Max
+// poteva esistere nella settimana d'origine ma non nelle settimane dopo.
+function syncMaxLayoutsForward(ex){
+  let changed = false;
+  const nWeeks = exerciseWeekCount(ex);
+  for(let week=0; week<nWeeks-1; week++){
+    if(getMaxEntries(ex,week).length && carryMaxLayoutForward(ex,week)) changed = true;
+  }
+  return changed;
 }
 function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
   const entries = maxEntriesAfter(ex,w,si);
@@ -1918,37 +1976,47 @@ function updateMax(exi, w, idx, field, val){
 }
 function addSet(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
-  for(let k=0;k<ex.sets.length;k++){ if(!ex.sets[k]) ex.sets[k]=[]; ex.sets[k].push({peso:'',rip:''}); }
-  renderActive();
-  saveState();
-}
-// tocca SOLO la settimana su cui si sta agendo: ne' il controllo "ha dati?" ne'
-// l'eliminazione vera e propria guardano le altre 3 settimane, che restano
-// come stanno anche se hanno la stessa riga piena
-// per default elimina l'ultima riga in TUTTE le settimane insieme (comodo,
-// tiene le settimane allineate). Ma se un'ALTRA settimana ha gia' dei dati in
-// quella riga, la cascata la cancellerebbe senza che l'utente se ne accorga:
-// in quel caso si tocca solo la settimana su cui si sta lavorando, lasciando
-// le altre esattamente come stanno
-async function removeSet(exi, w){
-  const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.sets || !ex.sets[w] || ex.sets[w].length<=1) return; // tieni sempre almeno 1 serie in questa settimana
-  const hasRowData = weekSets => {
-    if(!weekSets || !weekSets.length) return false;
-    const last = weekSets[weekSets.length-1];
-    return last && (String(last.peso||'').trim() || String(last.rip||'').trim());
-  };
-  const currentHasData = hasRowData(ex.sets[w]);
-  if(currentHasData && !await ViridisConfirmDialog('L\'ultima serie di questa settimana ha dei dati inseriti (kg/rip). Eliminarla comunque?')) return;
-  const otherWeeksHaveData = ex.sets.some((weekSets,k) => k!==w && hasRowData(weekSets));
-  if(otherWeeksHaveData){
-    ex.sets[w].pop();
-  } else {
-    for(let k=0;k<ex.sets.length;k++){ if(ex.sets[k] && ex.sets[k].length>0) ex.sets[k].pop(); }
+  const nWeeks = exerciseWeekCount(ex);
+  if(!ex.sets) ex.sets=emptySetsArr(nWeeks);
+  while(ex.sets.length<nWeeks) ex.sets.push([]);
+  // Lo schema si propaga solo dalla settimana su cui si lavora in poi: il
+  // passato resta una fotografia fedele di cio' che e' stato gia' svolto.
+  for(let k=w;k<nWeeks;k++){
+    if(!ex.sets[k]) ex.sets[k]=[];
+    ex.sets[k].push({peso:'',rip:''});
   }
   renderActive();
   saveState();
+}
+async function removeSet(exi, w){
+  const ex = state.days[activeDayIdx].esercizi[exi];
+  if(!ex.sets || !ex.sets[w] || ex.sets[w].length<=1) return; // tieni sempre almeno 1 serie in questa settimana
+  const currentHasData = weekHasRecordedExerciseData(ex,w);
+  if(currentHasData && !await ViridisConfirmDialog('Questa settimana contiene gia dati inseriti. Vuoi eliminare comunque l\'ultima serie?')) return;
+  const nWeeks = exerciseWeekCount(ex);
+  let preservedWeeks = 0;
+  for(let k=w;k<nWeeks;k++){
+    const weekSets = ex.sets[k] || [];
+    if(weekSets.length<=1) continue;
+    // La settimana corrente e' una scelta esplicita. Per quelle successive,
+    // invece, non si tocca mai una settimana che contiene gia' dati: cosi' una
+    // correzione fatta alla settimana 1 non cancella lo storico della 2.
+    if(k!==w && weekHasRecordedExerciseData(ex,k)){
+      preservedWeeks++;
+      continue;
+    }
+    const removedSetIndex = weekSets.length-1;
+    weekSets.pop();
+    removeMaxAttachedToSet(ex,k,removedSetIndex);
+  }
+  renderActive();
+  saveState();
+  if(preservedWeeks){
+    const message = preservedWeeks===1
+      ? 'Serie rimossa: 1 settimana gia compilata e stata mantenuta.'
+      : `Serie rimossa: ${preservedWeeks} settimane gia compilate sono state mantenute.`;
+    ViridisToast(message);
+  }
 }
 // aggiunge una scheda esercizio vuota in fondo al giorno; niente qui obbliga a
 // scegliere subito il nome, si compila dopo dal campo con l'autocomplete
