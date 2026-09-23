@@ -1322,20 +1322,38 @@ body.training-focus .week-block{margin-top:10px;}
    solo contesto/avanzamento/conferma; i dati restano su grafite leggibile. */
 body.on-workout .topbar{border-bottom:0;}
 body.on-workout .app-version{display:none;}
-/* La vista resta nera: l'accento del giorno e' un'aura statica, limitata alla
-   parte alta dell'allenamento. --accent arriva da dayAccent(), lo stesso
-   colore dinamico usato per titolo, progresso e selettore esercizi. */
-body.on-workout:not(.theme-light){background-color:#080908;}
-body.on-workout:not(.theme-light) #viewActive{
-  background-image:radial-gradient(ellipse 92% 500px at 50% 0,
-    color-mix(in srgb,var(--accent,var(--green)) 10%,transparent) 0%,
-    color-mix(in srgb,var(--accent,var(--green)) 3.5%,transparent) 35%,
-    transparent 65%);
-  background-repeat:no-repeat;
+/* Acqua scura: due superfici morbide si muovono dietro alle card nere.
+   Solo transform, senza filtri animati né intercettazione dei tocchi. */
+body.on-workout:not(.theme-light){background-color:#000;}
+body.on-workout:not(.theme-light) #viewActive{isolation:isolate;}
+body.on-workout:not(.theme-light) #viewActive::before,
+body.on-workout:not(.theme-light) #viewActive::after{
+  content:"";position:fixed;inset:-15%;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse at 22% 30%,color-mix(in srgb,var(--accent,var(--green)) 13%,transparent),transparent 62%),radial-gradient(ellipse at 83% 78%,color-mix(in srgb,var(--accent,var(--green)) 9%,transparent),transparent 58%);
+  animation:viridis-water-drift 19s ease-in-out infinite alternate;
 }
-/* In contrasto alto l'aura si spegne: testo e controlli rimangono il punto
-   di contrasto più netto, come richiesto dalla relativa preferenza. */
-body.a11y-high-contrast.on-workout #viewActive{background-image:none;}
+body.on-workout:not(.theme-light) #viewActive::after{opacity:.65;animation-duration:27s;animation-delay:-11s;animation-direction:alternate-reverse;}
+@keyframes viridis-water-drift{
+  0%{transform:translate3d(-3%,-2%,0) scale(1);}
+  50%{transform:translate3d(3%,2%,0) scale(1.06,1.02);}
+  100%{transform:translate3d(-1%,4%,0) scale(1.02,1.07);}
+}
+.quick-number-bar{isolation:isolate;}
+body:not(.theme-light) .quick-number-bar{background:#080908;}
+body:not(.theme-light) .quick-number-bar::before,
+body:not(.theme-light) .quick-number-bar::after{
+  content:"";position:absolute;inset:-35%;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse at 20% 35%,color-mix(in srgb,var(--accent,var(--green)) 24%,transparent),transparent 56%),radial-gradient(ellipse at 80% 70%,color-mix(in srgb,var(--accent,var(--green)) 16%,transparent),transparent 55%);
+  animation:viridis-water-drift 12s ease-in-out infinite alternate;
+}
+body:not(.theme-light) .quick-number-bar::after{opacity:.6;animation-duration:17s;animation-delay:-7s;animation-direction:alternate-reverse;}
+body.a11y-reduce-motion #viewActive::before,body.a11y-reduce-motion #viewActive::after,
+body.a11y-reduce-motion .quick-number-bar::before,body.a11y-reduce-motion .quick-number-bar::after{animation:none!important;}
+body.a11y-high-contrast #viewActive::before,body.a11y-high-contrast #viewActive::after,
+body.a11y-high-contrast .quick-number-bar::before,body.a11y-high-contrast .quick-number-bar::after{display:none;}
+@media(prefers-reduced-motion:reduce){
+  #viewActive::before,#viewActive::after,.quick-number-bar::before,.quick-number-bar::after{animation:none!important;}
+}
 .topbar-copy{display:block;}
 .topbar-subtitle{display:none;margin:2px 0 0;color:var(--muted);font-size:11px;font-weight:650;letter-spacing:.15px;line-height:1.2;}
 .topbar.is-workout-header .topbar-subtitle:not([hidden]){display:block;}
@@ -1364,7 +1382,7 @@ body.on-workout #dayTabsActive.workout-day-tabs-open{display:flex!important;padd
 
 /* Una sola card grande, volutamente quasi nera: le serie emergono come
    superfici antracite appoggiate all'interno, senza cambiare spazi o layout. */
-.card{background:#111312;border:1px solid rgba(255,255,255,.08);border-radius:22px;margin:0 12px 16px;overflow:hidden;box-shadow:0 16px 32px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035);}
+.card{background:#000;border:1px solid rgba(255,255,255,.08);border-radius:22px;margin:0 12px 16px;overflow:hidden;box-shadow:0 16px 32px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035);}
 .card::before{display:none;}
 .card-head{padding:17px 16px 0;}
 .exercise-card-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
