@@ -440,12 +440,14 @@ function renderMuscleMap(accent){
     .join('');
   return `<div class="home-muscle-map" style="--accent:${accent}">
     <div class="home-muscle-map-label">Muscoli</div>
+    <div class="home-section-note">Serie registrate · settimana ${(state.currentWeek||0)+1}</div>
     <div class="home-muscle-figures">
       <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_FRONT, counts, maxCount, BODY_DETAIL_FRONT)}<span class="home-muscle-figure-caption">Davanti</span></div>
       <div class="home-muscle-figure-wrap">${renderBodyFigure(MUSCLE_MAP_REGIONS_BACK, counts, maxCount, BODY_DETAIL_BACK)}<span class="home-muscle-figure-caption">Dietro</span></div>
     </div>
     ${breakdown ? `<div class="home-muscle-counts">${breakdown}</div>` : ''}
     ${extras.length ? `<div class="home-muscle-extras">+ ${extras.map(g=>g+' '+counts[g]).join(', ')}</div>` : ''}
+    <div class="home-muscle-note">${maxCount ? 'Negli esercizi completati' : 'Completa un esercizio per vedere le serie'}</div>
   </div>`;
 }
 // disegna tutta la Home: il progresso della settimana, il giorno
@@ -489,9 +491,11 @@ const total = weekly.total;
     const isCurrent = !isCompleted && state.currentTrainingDayIdx === i;
     const isEmpty = (d.esercizi||[]).length === 0;
     const cls = ['home-day-card', isCompleted?'completed':'', isCurrent?'active-training':'', isEmpty?'empty':''].filter(Boolean).join(' ');
-    return `<div class="${cls}" style="--accent:${a.c}"><span class="home-day-dot"></span>${escapeHtml(d.name)}${isEmpty?'<span class="home-day-empty-tag">vuoto</span>':''}</div>`;
+    return `<div class="${cls}" style="--accent:${a.c}" aria-label="${escapeHtml(d.name)}${isCompleted?', completato':isCurrent?', giornata corrente':''}"><span class="home-day-dot" aria-hidden="true"></span><span class="home-day-name">${escapeHtml(d.name)}</span>${isCompleted?'<svg class="home-day-check" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>':''}${isEmpty?'<span class="home-day-empty-tag">vuoto</span>':''}</div>`;
   }).join('');
   const motivationSplit = suggestedDay ? splitMotivation(pickMotivationalPhrase(suggestedIdx)) : null;
+  const resumeSuggested = suggestedDay && !(state.completedTrainingDays||[]).includes(suggestedIdx) &&
+    typeof dayHasRealProgressThisWeek === 'function' && dayHasRealProgressThisWeek(suggestedDay);
   const suggestedHtml = suggestedDay ? `
  <button 
   class="home-suggested-btn"
@@ -502,8 +506,8 @@ const total = weekly.total;
   ontouchstart="this.classList.add('pressed')"
   ontouchend="this.classList.remove('pressed')"
   onclick="startDayFromHome(${suggestedIdx})">
-<span class="home-suggested-label">INIZIA ALLENAMENTO</span>
-<span class="home-suggested-name accent-shine">${escapeHtml(suggestedDay.name)}</span></button>
+<span class="home-suggested-label">${resumeSuggested?'ALLENAMENTO IN CORSO':'IL TUO ALLENAMENTO'}</span>
+<span class="home-suggested-name accent-shine">${escapeHtml(suggestedDay.name)}</span><span class="home-suggested-action">${resumeSuggested?'Riprendi':'Inizia'} <span aria-hidden="true">→</span></span></button>
     ${motivationSplit ? `<div class="home-motivation" style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}"><span class="accent-shine">${escapeHtml(motivationSplit.text)}</span> ${motivationSplit.icon}</div>` : ''}` : '';
   // piccolo assaggio della dashboard Andamenti direttamente in Home, invece
   // di doverci entrare apposta da Progressi: confronta le ultime due
@@ -511,7 +515,7 @@ const total = weekly.total;
   const volumeTrend = computeHomeVolumeTrend();
   // Il volume non è automaticamente "buono" o "cattivo": il valore resta
   // neutro, così non suggerisce un giudizio che i soli dati non possono dare.
-  const volumeTrendHtml = volumeTrend ? `<div class="home-quick-stat home-volume-trend"><span class="home-stat-icon">${ICON_CHART}</span><span class="home-stat-copy"><b>${volumeTrend.pct>=0?'+':''}${volumeTrend.pct}%</b><span>Volume settimana scorsa<br>rispetto a quella prima</span></span></div>` : '';
+  const volumeTrendHtml = volumeTrend ? `<div class="home-quick-stat home-volume-trend"><span class="home-stat-icon">${ICON_CHART}</span><span class="home-stat-copy"><b>${volumeTrend.pct>=0?'+':''}${volumeTrend.pct}%</b><span>Volume · kg × ripetizioni</span><small>Settimana ${state.currentWeek} rispetto alla ${state.currentWeek-1}</small></span></div>` : '';
   el.innerHTML = `
     <div class="home-hero">
       <div class="home-progress-module">

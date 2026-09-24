@@ -1593,6 +1593,21 @@ test('tap mobile: focus senza scroll nativo e una sola misura per frame', () => 
   assert.strictEqual(JSON.stringify(ex),before);
 });
 
+test('Home: etichette Inizia/Riprendi e contesto muscoli senza modificare i dati', () => {
+  const window=loadApp();
+  const state={title:'Scheda',weeksPerBlock:4,currentWeek:0,currentTrainingDayIdx:0,trainingQueue:[0],completedTrainingDays:[],days:[{name:'Legs day',esercizi:[{nome:'Squat',sets:[[{peso:'40',rip:''}]],weekDone:[false]}]}]};
+  window.__bridge.state=state;
+  window.renderHome();
+  assert.ok(window.document.querySelector('.home-suggested-action').textContent.includes('Inizia'));
+  state.days[0].esercizi[0].sets[0][0].rip='8';
+  const before=JSON.stringify(state);
+  window.renderHome();
+  assert.ok(window.document.querySelector('.home-suggested-action').textContent.includes('Riprendi'));
+  assert.ok(window.document.querySelector('.home-section-note').textContent.includes('settimana 1'));
+  assert.strictEqual(JSON.stringify(state),before);
+  assert.ok(window.document.querySelector('#settingsModal #appVersion'));
+});
+
 // ---------------- runner ----------------
 // async per poter "await t.fn()": i test sincroni di sempre continuano a
 // funzionare identici (await su un valore non-Promise si risolve subito),
