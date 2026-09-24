@@ -107,7 +107,7 @@ function showView(v){
     if(v==='active'){
       if(typeof updateWorkoutTopbarTitle==='function') updateWorkoutTopbarTitle();
     } else {
-      if(topbarTitle) topbarTitle.textContent = 'Viridis';
+      if(topbarTitle) topbarTitle.innerHTML = '<span class="brand-letter-v">V</span>iridis';
       if(topbarSubtitle) topbarSubtitle.hidden = true;
       if(workoutEdit) workoutEdit.hidden = true;
     }

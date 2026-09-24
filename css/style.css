@@ -1841,3 +1841,32 @@ body .quick-number-bar:not([hidden]):not(.is-closing){animation:viridis-keyboard
 body.a11y-reduce-motion .quick-number-bar{animation:none!important;transition:none!important;}
 body.a11y-high-contrast .quick-number-bar{background:#080808;-webkit-backdrop-filter:none;backdrop-filter:none;}
 @media(prefers-reduced-motion:reduce){body .quick-number-bar{animation:none!important;transition:none!important;}}
+
+/* Firma VIRIDIS integrata nel titolo, senza un secondo logo nella Home. */
+.brand-letter-v{
+  display:inline-block;width:1.04em;margin-right:.02em;line-height:1;
+  color:transparent;-webkit-text-fill-color:transparent;
+  background:url('../viridis-logo-transparent.png?rev=20260921b') center/140% auto no-repeat;
+}
+.topbar.is-workout-header .topbar-subtitle::before{
+  content:'';display:inline-block;width:20px;height:20px;margin-right:5px;vertical-align:middle;
+  background:url('../viridis-logo-transparent.png?rev=20260921b') center/140% auto no-repeat;
+}
+.topbar.is-workout-header .workout-day-picker{
+  width:44px;height:44px;top:calc(env(safe-area-inset-top) + 8px);left:10px;
+  flex-direction:column;gap:2px;font-size:9px;font-weight:700;line-height:1.1;
+  color:var(--workout-accent,var(--green));border-radius:12px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+}
+@media(max-width:899px){
+  .topbar.is-workout-header,.topbar.is-workout-header.topbar-scrolled{padding-left:66px;}
+  .bottom-nav{
+    left:calc(28px + env(safe-area-inset-left));right:calc(28px + env(safe-area-inset-right));
+    bottom:calc(6px + env(safe-area-inset-bottom));padding:3px;border-radius:21px;
+    background:rgba(31,34,35,.58);
+  }
+  .bottom-nav-btn{min-height:46px;padding:4px 3px;border-radius:17px;}
+  .bottom-nav-btn svg{width:20px;height:20px;}
+  body.a11y-high-contrast .bottom-nav{background:#080808;border-color:var(--line);}
+  body.theme-light .bottom-nav{background:rgba(250,252,247,.72);}
+}

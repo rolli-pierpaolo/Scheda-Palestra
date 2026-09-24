@@ -514,7 +514,6 @@ const total = weekly.total;
   const volumeTrendHtml = volumeTrend ? `<div class="home-quick-stat home-volume-trend"><span class="home-stat-icon">${ICON_CHART}</span><span class="home-stat-copy"><b>${volumeTrend.pct>=0?'+':''}${volumeTrend.pct}%</b><span>Volume settimana scorsa<br>rispetto a quella prima</span></span></div>` : '';
   el.innerHTML = `
     <div class="home-hero">
-      <div class="home-brand-mark" aria-hidden="true"><img src="viridis-logo-transparent.png?rev=20260921b" alt="" decoding="async"></div>
       <div class="home-progress-module">
         <div class="home-block-week">SETTIMANA ${blockWeek} DI ${state.weeksPerBlock||4}</div>
         <div class="home-progress-day">
