@@ -172,6 +172,14 @@ let quickKeyboardRestoreTimer = null;
 let quickKeyboardInteractionUntil = 0;
 let quickKeyboardFinishRequested = false;
 let quickKeyboardScrollTween = null;
+let quickKeyboardRevealFrame = null;
+function scheduleQuickKeyboardReveal(){
+  if(quickKeyboardRevealFrame !== null) cancelAnimationFrame(quickKeyboardRevealFrame);
+  quickKeyboardRevealFrame = requestAnimationFrame(()=>{
+    quickKeyboardRevealFrame = null;
+    revealQuickKeyboardInput();
+  });
+}
 function quickKeyboardReducedMotion(){
   return document.body.classList.contains('a11y-reduce-motion') ||
     !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -179,6 +187,8 @@ function quickKeyboardReducedMotion(){
 function stopQuickKeyboardScroll(){
   if(quickKeyboardScrollTween) quickKeyboardScrollTween.kill();
   quickKeyboardScrollTween = null;
+  const bar = document.getElementById('quickNumberBar');
+  if(bar && bar.hidden) clearQuickKeyboardScrollSpace();
 }
 function moveQuickKeyboardScroll(top){
   stopQuickKeyboardScroll();
@@ -186,10 +196,17 @@ function moveQuickKeyboardScroll(top){
     window.scrollTo({top,behavior:'instant'});
   }else if(window.gsap && window.gsap.ticker){
     const position = {y:window.scrollY};
+    // Le serie basse richiedono più strada: evitare un balzo di centinaia
+    // di pixel nello stesso tempo usato per un piccolo aggiustamento.
+    const duration = Math.min(.52,.24 + Math.abs(top-position.y)/2400);
     quickKeyboardScrollTween = window.gsap.to(position,{
-      y:top,duration:.24,ease:'power2.out',
+      y:top,duration,ease:'power2.inOut',
       onUpdate:()=>window.scrollTo({top:position.y,behavior:'instant'}),
-      onComplete:()=>{quickKeyboardScrollTween=null;}
+      onComplete:()=>{
+        quickKeyboardScrollTween=null;
+        const bar = document.getElementById('quickNumberBar');
+        if(bar && bar.hidden) clearQuickKeyboardScrollSpace();
+      }
     });
   }else{
     window.scrollBy({top:top-window.scrollY,behavior:'smooth'});
@@ -228,13 +245,15 @@ function revealQuickKeyboardInput(){
   const input = quickNumberInput;
   const bar = document.getElementById('quickNumberBar');
   if(!input || !bar || bar.hidden) return;
-  const inputBox = input.getBoundingClientRect();
   const barBox = bar.getBoundingClientRect();
   const keyboardHeight = Math.ceil(barBox.height);
   if(keyboardHeight){
     document.body.style.setProperty('--quick-keyboard-space',`${keyboardHeight + 52}px`);
     document.body.classList.add('quick-keyboard-open');
   }
+  // Misura dopo aver riservato lo spazio: l'ancoraggio del browser non deve
+  // invalidare la destinazione dello scroll nel frame successivo.
+  const inputBox = input.getBoundingClientRect();
   // Non basta togliere la sovrapposizione: un campo basso deve arrivare ben
   // sopra la tastiera, dove resta leggibile mentre si digitano più valori.
   const safeTop = Math.max(112,(window.visualViewport?.offsetTop||0) + 72);
@@ -261,6 +280,8 @@ function restoreQuickKeyboardScroll(delay=0){
 // Lo stato della tastiera non deve sopravvivere a sospensione, navigazione
 // o sostituzione del campo. I valori sono già salvati dagli handler input.
 function resetQuickKeyboardUI(){
+  if(quickKeyboardRevealFrame !== null) cancelAnimationFrame(quickKeyboardRevealFrame);
+  quickKeyboardRevealFrame = null;
   stopQuickKeyboardScroll();
   clearTimeout(quickKeyboardCloseTimer);
   clearTimeout(quickKeyboardRestoreTimer);
@@ -289,7 +310,9 @@ function hideQuickKeyboardBar(bar){
       bar.hidden = true;
       bar.classList.remove('is-closing');
       bar.style.bottom = '';
-      clearQuickKeyboardScrollSpace();
+      // Conserva lo spazio finché termina il ritorno della pagina: toglierlo
+      // prima troncherebbe lo scroll quando si parte dalle ultime serie.
+      if(!quickKeyboardScrollTween) clearQuickKeyboardScrollSpace();
     }
   },240);
 }
@@ -309,7 +332,7 @@ function primeQuickKeyboardInput(input){
   showQuickKeyboardBar(bar);
   if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches){
     input.inputMode = 'none';
-    requestAnimationFrame(revealQuickKeyboardInput);
+    scheduleQuickKeyboardReveal();
   }
   positionQuickNumberBar();
   return input;
@@ -364,7 +387,7 @@ function setQuickKeyboardMode(mode){
   bar.querySelector('.quick-keyboard-numbers').hidden = quickKeyboardMode !== 'numbers';
   bar.querySelector('.quick-keyboard-letters').hidden = quickKeyboardMode !== 'letters';
   bar.querySelectorAll('.quick-keyboard-mode').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===quickKeyboardMode));
-  requestAnimationFrame(revealQuickKeyboardInput);
+  scheduleQuickKeyboardReveal();
 }
 // Riscontro immediato e localizzato sul tasto toccato: la classe resta il
 // tempo sufficiente per essere vista anche durante tocchi rapidi con il pollice.
@@ -451,13 +474,24 @@ document.addEventListener('pointerdown', event=>{
 // I tasti della tastiera lavorano già su pointerdown. Se "Fine" la nasconde
 // prima del click sintetico del browser, quel click non deve mai arrivare al
 // bottone dell'app che si trova dietro al pannello (ghost tap).
+// Il mousedown sintetico di un tap non deve avviare anche lo scroll nativo
+// al focus. Non intercettiamo touchstart/pointerdown: lo swipe resta libero.
+document.addEventListener('mousedown', event=>{
+  if(usesTouchKeyboard() && isQuickNumberTarget(event.target)) event.preventDefault();
+}, true);
 document.addEventListener('click', event=>{
   if(Date.now() < suppressQuickKeyboardClickUntil || (event.target && event.target.closest && event.target.closest('#quickNumberBar'))){
     event.preventDefault();
     event.stopImmediatePropagation();
     return;
   }
-  if(isQuickNumberTarget(event.target)) primeQuickKeyboardInput(event.target);
+  if(isQuickNumberTarget(event.target)){
+    if(usesTouchKeyboard()){
+      event.preventDefault();
+      event.target.focus({preventScroll:true});
+    }
+    primeQuickKeyboardInput(event.target);
+  }
 }, true);
 // Mai cambiare campo automaticamente: Enter conclude l'inserimento corrente,
 // non porta alla casella successiva. Il passaggio resta sempre una scelta.

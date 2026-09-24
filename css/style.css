@@ -95,7 +95,7 @@ body{padding-bottom:calc(82px + env(safe-area-inset-bottom));font-variant-numeri
 /* La tastiera rapida è alta: mentre è aperta riserviamo spazio reale sotto al
    contenuto, così anche l'ultima serie può salire sopra i tasti invece di
    fermarsi contro il fondo della pagina. */
-body.quick-keyboard-open{padding-bottom:calc(82px + env(safe-area-inset-bottom) + var(--quick-keyboard-space,0px));}
+body.quick-keyboard-open{padding-bottom:calc(82px + env(safe-area-inset-bottom) + var(--quick-keyboard-space,0px));overflow-anchor:none;}
 /* font "da segnaletica" per titoli/etichette/numeri grandi in tutta l'app -
    un solo punto per applicarlo a tutte le classi che se ne giovano, invece
    di ripeterlo dentro ogni singola regola sparsa nel file */

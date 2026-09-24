@@ -1557,6 +1557,8 @@ test('scroll tastiera: un nuovo campo sostituisce il movimento e il gesto manual
   window.moveQuickKeyboardScroll(200);
   window.moveQuickKeyboardScroll(300);
   assert.strictEqual(tweens[0].killed,true);
+  assert.ok(tweens[1].options.duration > tweens[0].options.duration,'più distanza deve avere più tempo');
+  assert.ok(tweens[1].options.duration <= .52);
   window.dispatchEvent(new window.Event('touchstart'));
   assert.strictEqual(tweens[1].killed,true);
   let scroll;
@@ -1566,6 +1568,29 @@ test('scroll tastiera: un nuovo campo sostituisce il movimento e il gesto manual
   assert.strictEqual(tweens.length,2);
   assert.strictEqual(scroll.top,100);
   assert.strictEqual(scroll.behavior,'instant');
+});
+
+test('tap mobile: focus senza scroll nativo e una sola misura per frame', () => {
+  const {window,ex}=workoutInputFixture();
+  window.matchMedia=query=>({matches:query==='(pointer:coarse)'});
+  const input=window.document.querySelector('.set-input');
+  const before=JSON.stringify(ex);
+  const frames=new Map();let nextId=0;
+  window.requestAnimationFrame=callback=>{frames.set(++nextId,callback);return nextId;};
+  window.cancelAnimationFrame=id=>frames.delete(id);
+  let focusOptions;
+  input.focus=options=>{focusOptions=options;};
+  const down=new window.MouseEvent('mousedown',{bubbles:true,cancelable:true});
+  input.dispatchEvent(down);
+  assert.ok(down.defaultPrevented);
+  assert.ok(window.document.getElementById('quickNumberBar').hidden);
+  input.click();
+  window.scheduleQuickKeyboardReveal();
+  assert.strictEqual(focusOptions.preventScroll,true);
+  assert.strictEqual(frames.size,1);
+  window.resetQuickKeyboardUI();
+  assert.strictEqual(frames.size,0);
+  assert.strictEqual(JSON.stringify(ex),before);
 });
 
 // ---------------- runner ----------------
