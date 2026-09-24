@@ -237,6 +237,7 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .bottom-nav-btn.active{color:var(--accent,var(--green));background:rgba(5,5,5,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 3px 10px rgba(0,0,0,.28);}
 .quick-number-bar{position:fixed;left:8px;right:8px;bottom:calc(78px + env(safe-area-inset-bottom));z-index:40;padding:10px 12px 12px;overflow:hidden;background:linear-gradient(180deg,#191919,#101010);border:0;border-top:1px solid rgba(255,255,255,.15);border-radius:18px 18px 14px 14px;box-shadow:0 -8px 24px rgba(0,0,0,.25),0 14px 32px rgba(0,0,0,.52);transition:opacity .2s var(--ease-premium),transform .24s var(--ease-premium);}
 .quick-number-bar[hidden]{display:none;}
+@keyframes viridis-keyboard-enter{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
 .quick-number-bar.is-closing{opacity:0;transform:translateY(18px);pointer-events:none;}
 .quick-number-bar [hidden]{display:none!important;}
 .quick-keyboard-head{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
@@ -1829,3 +1830,14 @@ body.a11y-high-contrast:not(.theme-light) .topbar::before{display:none;}
   .bottom-nav{left:calc(18px + env(safe-area-inset-left));right:calc(18px + env(safe-area-inset-right));}
   .quick-number-bar{left:calc(8px + env(safe-area-inset-left));right:calc(8px + env(safe-area-inset-right));}
 }
+
+/* Tastiera: vetro quieto e ingresso coordinato al riposizionamento del campo. */
+body:not(.theme-light) .quick-number-bar{
+  background:rgba(22,25,27,.9);
+  -webkit-backdrop-filter:blur(20px) saturate(115%);backdrop-filter:blur(20px) saturate(115%);
+}
+body .quick-number-bar.liquid-keyboard-ready>.viridis-liquid-canvas{opacity:.18;}
+body .quick-number-bar:not([hidden]):not(.is-closing){animation:viridis-keyboard-enter .24s cubic-bezier(.215,.61,.355,1) both!important;}
+body.a11y-reduce-motion .quick-number-bar{animation:none!important;transition:none!important;}
+body.a11y-high-contrast .quick-number-bar{background:#080808;-webkit-backdrop-filter:none;backdrop-filter:none;}
+@media(prefers-reduced-motion:reduce){body .quick-number-bar{animation:none!important;transition:none!important;}}

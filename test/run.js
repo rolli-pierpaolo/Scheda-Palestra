@@ -1545,6 +1545,29 @@ test('storico esercizio: serie e Max di tutte le schede, senza modificare dati o
   assert.strictEqual(JSON.stringify([window.__bridge.state,window.__bridge.storicoExtra]),before);
 });
 
+test('scroll tastiera: un nuovo campo sostituisce il movimento e il gesto manuale lo interrompe', () => {
+  const window = loadApp();
+  const tweens = [];
+  window.gsap.ticker = {};
+  window.gsap.to = (position, options) => {
+    const tween = {position, options, killed:false, kill(){this.killed=true;}};
+    tweens.push(tween);
+    return tween;
+  };
+  window.moveQuickKeyboardScroll(200);
+  window.moveQuickKeyboardScroll(300);
+  assert.strictEqual(tweens[0].killed,true);
+  window.dispatchEvent(new window.Event('touchstart'));
+  assert.strictEqual(tweens[1].killed,true);
+  let scroll;
+  window.scrollTo = options => {scroll=options;};
+  window.document.body.classList.add('a11y-reduce-motion');
+  window.moveQuickKeyboardScroll(100);
+  assert.strictEqual(tweens.length,2);
+  assert.strictEqual(scroll.top,100);
+  assert.strictEqual(scroll.behavior,'instant');
+});
+
 // ---------------- runner ----------------
 // async per poter "await t.fn()": i test sincroni di sempre continuano a
 // funzionare identici (await su un valore non-Promise si risolve subito),

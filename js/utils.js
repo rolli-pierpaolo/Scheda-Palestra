@@ -171,6 +171,33 @@ let quickKeyboardCloseTimer = null;
 let quickKeyboardRestoreTimer = null;
 let quickKeyboardInteractionUntil = 0;
 let quickKeyboardFinishRequested = false;
+let quickKeyboardScrollTween = null;
+function quickKeyboardReducedMotion(){
+  return document.body.classList.contains('a11y-reduce-motion') ||
+    !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+function stopQuickKeyboardScroll(){
+  if(quickKeyboardScrollTween) quickKeyboardScrollTween.kill();
+  quickKeyboardScrollTween = null;
+}
+function moveQuickKeyboardScroll(top){
+  stopQuickKeyboardScroll();
+  if(quickKeyboardReducedMotion()){
+    window.scrollTo({top,behavior:'instant'});
+  }else if(window.gsap && window.gsap.ticker){
+    const position = {y:window.scrollY};
+    quickKeyboardScrollTween = window.gsap.to(position,{
+      y:top,duration:.24,ease:'power2.out',
+      onUpdate:()=>window.scrollTo({top:position.y,behavior:'instant'}),
+      onComplete:()=>{quickKeyboardScrollTween=null;}
+    });
+  }else{
+    window.scrollBy({top:top-window.scrollY,behavior:'smooth'});
+  }
+}
+// Un gesto manuale prevale sempre sul riposizionamento automatico.
+window.addEventListener('touchstart',stopQuickKeyboardScroll,{passive:true});
+window.addEventListener('wheel',stopQuickKeyboardScroll,{passive:true});
 const quickKeyboardPressTimers = new WeakMap();
 // La tastiera e' un pannello esplicito: una volta aperta non deve dipendere
 // dai capricci del focus mobile (che puo' sparire anche toccando un suo gap).
@@ -211,9 +238,11 @@ function revealQuickKeyboardInput(){
   // Non basta togliere la sovrapposizione: un campo basso deve arrivare ben
   // sopra la tastiera, dove resta leggibile mentre si digitano più valori.
   const safeTop = Math.max(112,(window.visualViewport?.offsetTop||0) + 72);
-  const targetTop = Math.max(safeTop,barBox.top - Math.max(inputBox.height,54) - 42);
+  // offsetTop non include la trasformazione dell'animazione d'ingresso.
+  const keyboardTop = bar.offsetHeight ? bar.offsetTop : barBox.top;
+  const targetTop = Math.max(safeTop,keyboardTop - Math.max(inputBox.height,54) - 42);
   const delta = inputBox.top - targetTop;
-  if(delta > 6) window.scrollBy({top:Math.ceil(delta),behavior:'smooth'});
+  if(delta > 6) moveQuickKeyboardScroll(window.scrollY + Math.ceil(delta));
 }
 function clearQuickKeyboardScrollSpace(){
   document.body.classList.remove('quick-keyboard-open');
@@ -226,12 +255,13 @@ function restoreQuickKeyboardScroll(delay=0){
     if(quickNumberInput || quickKeyboardOriginScrollY === null) return;
     const originalY = quickKeyboardOriginScrollY;
     quickKeyboardOriginScrollY = null;
-    window.scrollTo({top:originalY,behavior:'smooth'});
+    moveQuickKeyboardScroll(originalY);
   },delay);
 }
 // Lo stato della tastiera non deve sopravvivere a sospensione, navigazione
 // o sostituzione del campo. I valori sono già salvati dagli handler input.
 function resetQuickKeyboardUI(){
+  stopQuickKeyboardScroll();
   clearTimeout(quickKeyboardCloseTimer);
   clearTimeout(quickKeyboardRestoreTimer);
   quickNumberInput = null;
@@ -320,7 +350,7 @@ function syncQuickNumberBar(){
   quickNumberInput = null;
   hideQuickKeyboardBar(bar);
   quickKeyboardFinishRequested = false;
-  restoreQuickKeyboardScroll(240);
+  restoreQuickKeyboardScroll();
   positionQuickNumberBar();
 }
 function commitQuickNumberInput(input){
@@ -378,7 +408,7 @@ function finishQuickKeyboardInput(){
     quickKeyboardPinnedOpen = false;
     quickKeyboardFinishRequested = true;
     if(bar) hideQuickKeyboardBar(bar);
-    restoreQuickKeyboardScroll(240);
+    restoreQuickKeyboardScroll();
     return;
   }
   // Una onchange puo' ridisegnare la card e rimuovere l'input dal DOM prima
@@ -393,7 +423,7 @@ function finishQuickKeyboardInput(){
   }
   input.blur();
   if(bar) hideQuickKeyboardBar(bar);
-  restoreQuickKeyboardScroll(240);
+  restoreQuickKeyboardScroll();
 }
 // inputmode va applicato PRIMA del focus: così sui telefoni non compare per
 // un attimo la tastiera di sistema sotto a quella personalizzata.
