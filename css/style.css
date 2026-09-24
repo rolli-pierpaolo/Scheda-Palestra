@@ -1848,10 +1848,6 @@ body.a11y-high-contrast .quick-number-bar{background:#080808;-webkit-backdrop-fi
   color:transparent;-webkit-text-fill-color:transparent;
   background:url('../viridis-logo-transparent.png?rev=20260921b') center/140% auto no-repeat;
 }
-.topbar.is-workout-header h1::after{
-  content:'';display:inline-block;width:22px;height:22px;margin-left:10px;vertical-align:middle;
-  background:url('../viridis-logo-transparent.png?rev=20260921b') center/140% auto no-repeat;
-}
 .topbar.is-workout-header .workout-day-picker{
   width:44px;height:44px;top:calc(env(safe-area-inset-top) + 8px);left:10px;
   flex-direction:column;gap:2px;font-size:9px;font-weight:700;line-height:1.1;
