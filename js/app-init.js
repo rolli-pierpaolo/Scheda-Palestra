@@ -19,6 +19,12 @@ function updateTopbarHeightVar(){
 }
 updateTopbarHeightVar();
 window.addEventListener('resize', updateTopbarHeightVar);
+// Il pannello fisso mobile riserva la propria altezza anche dopo cambio vista,
+// caricamento font o testo ingrandito, senza valori rigidi per modello iPhone.
+if(typeof ResizeObserver !== 'undefined'){
+  const topbarElement = document.querySelector('.topbar');
+  if(topbarElement) new ResizeObserver(updateTopbarHeightVar).observe(topbarElement);
+}
 
 // tutta l'inizializzazione vera e propria è avvolta in un try/catch: se
 // qualcosa qui dentro va storto, il sospetto principale essendo html e js
