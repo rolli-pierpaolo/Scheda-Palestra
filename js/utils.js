@@ -348,7 +348,8 @@ function resolveQuickKeyboardInput(){
 function syncQuickNumberBar(){
   const bar = document.getElementById('quickNumberBar');
   if(!bar) return;
-  if(document.visibilityState==='hidden' || (quickNumberInput && !isQuickNumberTarget(quickNumberInput))){
+  if(document.visibilityState==='hidden') return;
+  if(quickNumberInput && !isQuickNumberTarget(quickNumberInput)){
     resetQuickKeyboardUI();
     return;
   }
@@ -499,10 +500,28 @@ document.addEventListener('keydown', event=>{
   if(event.key === 'Enter' && isQuickNumberTarget(event.target)) event.preventDefault();
 });
 document.addEventListener('focusin', syncQuickNumberBar);
-window.addEventListener('pagehide', resetQuickKeyboardUI);
-window.addEventListener('pageshow', resetQuickKeyboardUI);
+// Memoria solo della pagina viva: nessun ripristino dopo un avvio a freddo.
+let suspendedWorkoutScroll = null;
+function suspendWorkoutViewport(){
+  if(suspendedWorkoutScroll !== null) return;
+  suspendedWorkoutScroll = window.scrollY;
+  if(quickKeyboardRevealFrame !== null) cancelAnimationFrame(quickKeyboardRevealFrame);
+  quickKeyboardRevealFrame = null;
+  stopQuickKeyboardScroll();
+  clearTimeout(quickKeyboardRestoreTimer);
+  // Mantiene pannello e spazio: rimuoverli qui troncherebbe lo scroll.
+}
+function resumeWorkoutViewport(){
+  if(suspendedWorkoutScroll === null) return;
+  const top = suspendedWorkoutScroll;
+  suspendedWorkoutScroll = null;
+  window.scrollTo({top,behavior:'instant'});
+}
+window.addEventListener('pagehide', suspendWorkoutViewport);
+window.addEventListener('pageshow', resumeWorkoutViewport);
 document.addEventListener('visibilitychange', ()=>{
-  resetQuickKeyboardUI();
+  if(document.visibilityState === 'hidden') suspendWorkoutViewport();
+  else resumeWorkoutViewport();
 });
 // Prepara il campo senza aprire il pannello: touchstart può iniziare uno scroll.
 // Il click viene emesso dal browser solo al termine di un tap, non di uno swipe.

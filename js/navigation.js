@@ -281,8 +281,8 @@ function onExerciseSwipeEnd(e){
     goToExerciseSlide(progress.items[activePos-2].exi); // swipe a destra = indietro
   }
 }
-document.addEventListener('touchstart', onExerciseSwipeStart, {passive:true});
-document.addEventListener('touchend', onExerciseSwipeEnd, {passive:true});
+// Il cambio esercizio avviene soltanto dai controlli espliciti: uno scroll
+// diagonale sulla scheda non deve cambiare l'esercizio durante l'allenamento.
 
 function renderDayTabs(){
 

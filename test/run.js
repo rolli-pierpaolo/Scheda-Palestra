@@ -1458,15 +1458,15 @@ test('rimuovere una serie mantiene le settimane future che hanno dati',async()=>
   assert.strictEqual(ex.sets[3][2].peso,'40');
 });
 
-test('tastiera riprende dopo sospensione e rimuove lo spazio vuoto senza perdere dati',()=>{
+test('tastiera riprende dopo sospensione mantenendo spazio e dati',()=>{
   const {window,ex}=workoutInputFixture();
   const input=window.document.querySelector('.week-body[data-week="0"] [aria-label="Ripetizioni serie 1"]');
   input.focus();window.insertQuickKey('8');
   window.document.body.classList.add('quick-keyboard-open');
   window.document.body.style.setProperty('--quick-keyboard-space','400px');
   window.dispatchEvent(new window.Event('pagehide'));
-  assert.ok(window.document.getElementById('quickNumberBar').hidden);
-  assert.ok(!window.document.body.classList.contains('quick-keyboard-open'));
+  assert.ok(!window.document.getElementById('quickNumberBar').hidden);
+  assert.ok(window.document.body.classList.contains('quick-keyboard-open'));
   window.dispatchEvent(new window.Event('pageshow'));
   input.dispatchEvent(new window.Event('click',{bubbles:true}));
   assert.ok(!window.document.getElementById('quickNumberBar').hidden);
@@ -1674,6 +1674,72 @@ test('nuovo blocco conserva i promemoria ma richiede riassociazione esplicita', 
   assert.ok(window.loadReminderMatches(reminder,next));
   assert.ok(!window.loadReminderBound(reminder,next,0));
   assert.ok(next.sets.flat().every(s=>s.peso===''&&s.rip===''));
+});
+
+test('confronto mostra peso e ripetizioni precedenti senza modificare i dati',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.sets[0][0]={peso:'37,5',rip:'8'};
+  ex.sets[1][0]={peso:'40',rip:'9'};
+  const before=JSON.stringify(ex);
+  const cell=window.document.createElement('div');
+  cell.className='rip-cell';
+  cell.innerHTML='<button></button><span class="rep-comparison" hidden></span>';
+  window.showRepComparison(0,1,0,cell.querySelector('button'));
+  assert.ok(cell.textContent.includes('37,5 kg × 8 rip'));
+  assert.strictEqual(JSON.stringify(ex),before);
+  ex.maxEntries=[[{afterSet:0,peso:'30',rip:'6'}],[{afterSet:0,peso:'32',rip:'7'}]];
+  let message='';
+  window.showQuickToast=text=>{message=text;};
+  window.showMaxRepComparison(0,1,0);
+  assert.ok(message.includes('30 kg × 6 rip'));
+});
+
+test('sospensione conserva posizione e pannello senza riaprire una tastiera chiusa',()=>{
+  const {window}=workoutInputFixture();
+  const positions=[];
+  window.scrollTo=options=>positions.push(options.top);
+  Object.defineProperty(window,'scrollY',{configurable:true,value:640});
+  window.suspendWorkoutViewport();
+  Object.defineProperty(window,'scrollY',{configurable:true,value:0});
+  window.resumeWorkoutViewport();
+  assert.deepStrictEqual(positions,[640]);
+  const bar=window.document.getElementById('quickNumberBar');
+  assert.ok(bar.hidden);
+  bar.hidden=false;
+  window.document.body.classList.add('quick-keyboard-open');
+  window.suspendWorkoutViewport();
+  window.resumeWorkoutViewport();
+  assert.ok(!bar.hidden);
+  assert.ok(window.document.body.classList.contains('quick-keyboard-open'));
+  window.resumeWorkoutViewport();
+  assert.strictEqual(positions.length,2);
+});
+
+test('uno swipe sulla scheda non cambia esercizio',()=>{
+  const {window,ex}=workoutInputFixture();
+  window.__bridge.state.days[0].esercizi.push(JSON.parse(JSON.stringify(ex)));
+  window.matchMedia=()=>({matches:true});
+  let changes=0;
+  window.goToExerciseSlide=()=>changes++;
+  const card=window.document.querySelector('.set-row');
+  for(const [type,x] of [['touchstart',300],['touchend',40]]){
+    const event=new window.Event(type,{bubbles:true});
+    Object.defineProperty(event,type==='touchstart'?'touches':'changedTouches',{value:[{clientX:x,clientY:200}]});
+    card.dispatchEvent(event);
+  }
+  assert.strictEqual(changes,0);
+});
+
+test('superset e dropset mostrano le prescrizioni senza riempire le ripetizioni registrate',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.schema[0]='SUPER SET 2x8-10 1x12-15+MAX+MAX';
+  ex.sets[0][2].dropset=true;
+  const before=JSON.stringify(ex);
+  const html=window.linkedSubRowInputsHtml(ex,0,0,2);
+  assert.ok(html.includes('12–15 reps'));
+  assert.ok(html.includes('+ MAX + MAX'));
+  assert.ok(window.linkedSubRowInputsHtml(ex,0,0,1).includes('8–10 reps'));
+  assert.strictEqual(JSON.stringify(ex),before);
 });
 
 // ---------------- runner ----------------

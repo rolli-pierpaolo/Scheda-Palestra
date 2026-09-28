@@ -499,6 +499,10 @@ main{padding:12px;}
 .linked-sub-row .kg-wrap{flex:1;min-width:0;}
 .linked-sub-row>input.set-input{flex:1;min-width:0;}
 .linked-tag{width:46px;flex:0 0 46px;font-size:9px;color:var(--accent,var(--green));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.linked-sub-row:has(.linked-prescription){flex-wrap:wrap;}
+.linked-sub-row .linked-tag:has(.linked-prescription){width:100%;flex-basis:100%;white-space:normal;font-size:12px;line-height:1.4;overflow-wrap:anywhere;}
+.linked-prescription{display:block;color:var(--text);font-size:inherit;}
+.linked-prescription small,small.linked-prescription{color:var(--muted);}
 /* textarea invece di input: un input non puo' andare a capo su piu' righe,
    una textarea si', e con autoGrowTextarea() la sua altezza si adatta da sola
    al numero di righe che servono, senza rimpicciolire il font */

@@ -755,7 +755,7 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
 function getSetPrescription(schema, setIndex){
   const raw = String(schema||'').replace(/\s+/g,' ').trim();
   if(!raw) return {target:'', extras:''};
-  const parts = raw.split(/\s+(?=\d+\s*[x×])/i).filter(Boolean);
+  const parts = raw.match(/\d+\s*[x×][\s\S]*?(?=\s*\d+\s*[x×]|$)/gi) || [];
   // "2×8–10" non e' una sola serie: la stessa prescrizione va mostrata
   // accanto a entrambe. Gli extra (MAX, REST...) restano sull'ultima serie
   // del gruppo, perché arrivano dopo le ripetizioni previste nello schema.
@@ -1590,7 +1590,8 @@ function showRepComparison(exi, w, si, btn){
     const prevNum = Number(String(previous).replace(',','.'));
     const delta = Number.isFinite(nowNum) && Number.isFinite(prevNum) ? nowNum - prevNum : null;
     const deltaText = delta === null || delta === 0 ? '' : ` · ${delta>0?'+':''}${String(delta).replace('.',',')}`;
-    output.textContent = `Settimana scorsa: ${previous} rip${deltaText}`;
+    const weight = String(ex.sets[w-1][si].peso ?? '').trim();
+    output.textContent = `Settimana scorsa: ${weight ? `${weight} kg × ` : ''}${previous} rip${deltaText}`;
   }
   output.hidden = false;
 }
@@ -1608,7 +1609,8 @@ function showMaxRepComparison(exi, w, index){
   const prevNum = Number(String(previous.rip).replace(',','.'));
   const delta = Number.isFinite(nowNum) && Number.isFinite(prevNum) ? nowNum-prevNum : null;
   const deltaText = delta===null || delta===0 ? '' : ` · ${delta>0?'+':''}${String(delta).replace('.',',')}`;
-  showQuickToast(`Max settimana scorsa: ${previous.rip} rip${deltaText}`);
+  const weight = String(previous.peso ?? '').trim();
+  showQuickToast(`Max settimana scorsa: ${weight ? `${weight} kg × ` : ''}${previous.rip} rip${deltaText}`);
 }
 function isLastSetOfWeekFilled(ex, w){
   const sets = ex.sets && ex.sets[w];
@@ -2228,7 +2230,8 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
   const record = getRecordForExercise(ex.nome);
   const recordAttr = record ? record.peso : 'null';
   const suggestedKg = (!s.peso && s.peso!==0) ? suggestNextWeight(ex, w, si) : null;
-  return `<span class="linked-tag" title="${escapeAttr(ex.nome||'')}">${escapeHtml(ex.nome||'—')}</span>
+  const prescription = getSetPrescription(ex.schema && ex.schema[w],si);
+  return `<span class="linked-tag" title="${escapeAttr(ex.nome||'')}">${escapeHtml(ex.nome||'—')}${prescription.target ? `<strong class="linked-prescription">${escapeHtml(prescription.target)}</strong>` : ''}${prescription.extras ? `<small class="linked-prescription">${escapeHtml(prescription.extras)}</small>` : ''}</span>
     <div class="kg-cell">
     <div class="kg-wrap">
       <div class="stepper-pair">
