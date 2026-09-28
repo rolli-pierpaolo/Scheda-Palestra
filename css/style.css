@@ -1913,3 +1913,11 @@ body.a11y-high-contrast .home-hero::before{background:#000;}
 body.theme-light .home-suggested-action{color:#15200c;}
 @media(max-width:360px){.home-middle-row{gap:12px;}.home-suggested-action{right:14px;font-size:12px;}body:not(.theme-light) .home-suggested-btn{padding-right:96px;}}
 @media(max-width:520px){body.a11y-large-text .home-middle-row{grid-template-columns:1fr;}body.a11y-large-text .home-muscle-counts{grid-template-columns:repeat(2,minmax(0,1fr));}}
+
+/* Un promemoria per il singolo carico, mai un valore applicato in automatico. */
+.load-reminder-chip{display:block;width:100%;min-height:44px;margin-top:5px;padding:5px 3px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:11px;font-weight:600;text-align:left;white-space:normal;overflow-wrap:anywhere;}
+.load-reminder-chip.has-reminder{padding:7px 9px;background:rgba(126,168,60,.12);color:var(--green);border:1px solid rgba(126,168,60,.3);}
+.load-reminder-review{display:block;width:100%;padding:12px;margin:0 0 12px;background:var(--panel2);color:var(--green);border:1px solid var(--green);border-radius:12px;text-align:left;line-height:1.5;}
+.load-reminder-review small{display:block;color:var(--muted);font-size:.85em;}
+body.a11y-large-text .load-reminder-chip{font-size:14px;}
+body.a11y-high-contrast .load-reminder-chip.has-reminder{background:#000;border-color:var(--green);}

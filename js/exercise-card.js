@@ -579,11 +579,13 @@ async function archiveAndReset(){
     name: d.name,
     esercizi: d.esercizi.map(ex => ({
       nome: ex.nome, commento: ex.commento,
+      ...(ex.loadReminderId ? {loadReminderId:ex.loadReminderId} : {}),
       recupero: resizeArr(ex.recupero, weeksN, ''), schema: resizeArr(ex.schema, weeksN, ''),
       sets: Array.from({length:weeksN}, (_,i) => (ex.sets && ex.sets[i] ? ex.sets[i].map(()=>({peso:'',rip:''})) : []))
     }))
   }));
 state = { 
+  ...(Array.isArray(state.loadReminders) ? {loadReminders:state.loadReminders.map(r=>({...r,review:true}))} : {}),
   title: newTitle.trim(), 
   days: newDays, 
   programStartDate: todayKey(), 
@@ -910,6 +912,7 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
           </button>
         </div>
         ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" ${isReadOnlyWeek?'disabled':''} title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
+        ${renderLoadReminder(ex,exi,w,si)}
         </div>
         <div class="rip-cell">
         <div class="rip-wrap">
@@ -1040,6 +1043,7 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
 
       </div>
       <div class="sets-wrap">
+        ${renderUnassignedLoadReminders(ex,exi,w)}
 
         ${setRows}
 

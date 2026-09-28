@@ -14,7 +14,7 @@
 // Nuova cache per la 1.21: forza l'app installata ad abbandonare gli script
 // che aprivano il tastierino numerico, anche su telefoni che erano rimasti
 // offline o con una vecchia risposta del browser in memoria.
-const CACHE_NAME = 'logbook-cache-v104';
+const CACHE_NAME = 'logbook-cache-v105';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -40,6 +40,7 @@ const CORE_ASSETS = [
   './js/navigation.js',
   './js/days-modal.js',
   './js/exercise-card.js',
+  './js/load-reminders.js',
   './js/history.js',
   './js/exercise-history.js',
   './js/search.js',

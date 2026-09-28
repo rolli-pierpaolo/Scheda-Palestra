@@ -1608,6 +1608,74 @@ test('Home: etichette Inizia/Riprendi e contesto muscoli senza modificare i dati
   assert.ok(window.document.querySelector('#settingsModal #appVersion'));
 });
 
+test('promemoria carico: singola serie, persistenza backup, nessuna modifica ai carichi', async () => {
+  const {window,ex}=workoutInputFixture();
+  const before=JSON.stringify(ex.sets);
+  window.ViridisToast=()=>{};
+  window.ViridisInputDialog=async (message,value,options)=>{
+    assert.ok(options.validate('-5'));
+    assert.strictEqual(options.validate('42,5'),'');
+    assert.strictEqual(options.validate(''),'');
+    return '42,5';
+  };
+  await window.editLoadReminder(0,0,1);
+  assert.strictEqual(window.loadReminderList().length,1);
+  assert.ok(window.renderLoadReminder(ex,0,0,1).includes('42,5'));
+  assert.ok(!window.renderLoadReminder(ex,0,0,0).includes('42,5'));
+  assert.strictEqual(JSON.stringify(ex.sets),before);
+  const backup=JSON.parse(JSON.stringify(window.buildBackupPayload()));
+  assert.ok(window.validateBackup(backup).valid);
+  assert.strictEqual(backup.state.loadReminders[0].target,'42,5');
+  assert.ok(Object.keys(window.localStorage).some(key=>window.localStorage.getItem(key).includes('"target":"42,5"')));
+  window.__bridge.state.currentWeek=1;
+  assert.ok(window.renderLoadReminder(ex,0,1,1).includes('Obiettivo: 42,5'));
+  window.ViridisOptionPicker=async()=> 'done';
+  await window.editLoadReminder(0,1,1);
+  assert.strictEqual(window.loadReminderList().length,0);
+  assert.strictEqual(JSON.stringify(ex.sets),before);
+});
+
+test('promemoria: annullamento, sola lettura e cambio struttura non assegnano alla serie sbagliata', async () => {
+  const {window,ex}=workoutInputFixture();window.ViridisToast=()=>{};
+  window.ViridisInputDialog=async()=>null;
+  await window.editLoadReminder(0,0,0);
+  assert.strictEqual(window.loadReminderList().length,0);
+  window.ViridisInputDialog=async()=>'';
+  await window.editLoadReminder(0,0,0);
+  const reminder=window.loadReminderList()[0];
+  window.__bridge.state.currentWeek=1;
+  ex.sets[1].pop();
+  assert.ok(!window.loadReminderBound(reminder,ex,1));
+  assert.ok(window.renderUnassignedLoadReminders(ex,0,1).includes('scegli la serie'));
+  window.ViridisOptionPicker=async()=> '1';
+  await window.reassignLoadReminder(0,1,0);
+  assert.ok(window.loadReminderBound(reminder,ex,1));
+  assert.strictEqual(reminder.setIndex,1);
+  const before=JSON.stringify(window.__bridge.state);
+  window.isViewingShared=()=>true;
+  await window.editLoadReminder(0,1,1);
+  assert.strictEqual(window.renderLoadReminder(ex,0,1,1),'');
+  assert.strictEqual(JSON.stringify(window.__bridge.state),before);
+});
+
+test('nuovo blocco conserva i promemoria ma richiede riassociazione esplicita', async () => {
+  const {window,ex}=workoutInputFixture();window.ViridisToast=()=>{};
+  window.ViridisInputDialog=async()=> '45';
+  await window.editLoadReminder(0,0,2);
+  const texts=['Archivio promemoria','Nuovo blocco'];
+  window.ViridisInputDialog=async()=>texts.shift();
+  window.ViridisConfirmDialog=async()=>true;
+  window.ViridisWeeksPicker=async()=> '2';
+  await window.archiveAndReset();
+  const next=window.__bridge.state.days[0].esercizi[0];
+  const reminder=window.loadReminderList()[0];
+  assert.strictEqual(reminder.target,'45');
+  assert.ok(reminder.review);
+  assert.ok(window.loadReminderMatches(reminder,next));
+  assert.ok(!window.loadReminderBound(reminder,next,0));
+  assert.ok(next.sets.flat().every(s=>s.peso===''&&s.rip===''));
+});
+
 // ---------------- runner ----------------
 // async per poter "await t.fn()": i test sincroni di sempre continuano a
 // funzionare identici (await su un valore non-Promise si risolve subito),
