@@ -896,29 +896,28 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
       <div class="set-series-heading">
         <button type="button" class="set-label set-series-number${s.dropset?' dropset':''}" ${isReadOnlyWeek?'disabled':''} onclick="toggleDropset(${exi},${w},${si},this)" title="Segna/togli come dropset">SERIE ${si+1}</button>
         <div class="set-series-prescription">${prescription.target ? `<span>${escapeHtml(prescription.target)}</span>` : ''}${prescription.extras ? `<small>${escapeHtml(prescription.extras)}</small>` : ''}</div>
-        ${renderLoadReminder(ex,exi,w,si,true)}
         ${compactFinish&&!isReadOnlyWeek?renderSeriesFinish(exi,w,si):''}
       </div>
       <div class="set-columns-labels"><span>PESO (kg)</span><span>RIPETIZIONI</span></div>
       <div class="set-row${setFilled?' filled':''}">
         <div class="kg-cell">
-        <div class="kg-wrap">
+        <div class="kg-wrap kg-with-reminder">
+          <div class="weight-step-controls">
+            <button type="button" class="stepper" aria-label="Aumenta peso serie ${si+1}" ${isReadOnlyWeek?'disabled':''} onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
             <button class="stepper"
+            aria-label="Riduci peso serie ${si+1}"
             ${isReadOnlyWeek?'disabled':''}
             onclick="stepSet(${exi},${w},${si},-2.5,this)">
             −
             </button>
+          </div>
           <input type="text" class="set-input"
           ${isReadOnlyWeek?'disabled':''}
           aria-label="Peso serie ${si+1} in chilogrammi"
           placeholder="0"
           value="${escapeAttr(s.peso ?? '')}"
           oninput="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr},true)" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr});markSetVisualState(this)">
-          <button class="stepper"
-          ${isReadOnlyWeek?'disabled':''}
-          onclick="stepSet(${exi},${w},${si},2.5,this)">
-          +
-          </button>
+          ${renderLoadReminder(ex,exi,w,si,true)}
         </div>
         ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" ${isReadOnlyWeek?'disabled':''} title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
         </div>

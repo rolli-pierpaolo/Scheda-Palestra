@@ -1840,7 +1840,9 @@ test('ramping non assegna il back-off alla prima serie e la nota vuota resta ric
   assert.ok(note&&!note.open);
   const group=window.document.querySelector('.set-series-group');
   assert.ok(group.querySelector('.set-series-heading .series-finish.compact'));
-  assert.ok(group.querySelector('.load-reminder-add'));
+  assert.ok(group.querySelector('.kg-wrap .load-reminder-inline'));
+  assert.strictEqual(group.querySelectorAll('.weight-step-controls .stepper').length,2);
+  assert.ok(!group.querySelector('.set-series-heading .load-reminder-inline'));
   assert.ok(!group.querySelector('.load-reminder-chip'));
   ex.commento='Pausa in basso';window.renderActive();
   assert.ok(window.document.querySelector('.exercise-note-disclosure').open);

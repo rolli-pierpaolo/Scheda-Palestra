@@ -1980,4 +1980,10 @@ body.a11y-high-contrast .load-reminder-chip.has-reminder{background:#000;border-
 .exercise-note-disclosure .exercise-note-field{margin:0 0 8px;}
 body.a11y-large-text .exercise-note-disclosure{font-size:16px;}
 body.a11y-high-contrast .load-reminder-add{color:var(--text);border:1px solid var(--line);}
+.kg-with-reminder .weight-step-controls{display:flex;flex-direction:column;flex:0 0 38px;align-self:stretch;}
+.kg-with-reminder .weight-step-controls .stepper{flex:1 1 0;width:100%;height:23px;min-height:23px;padding:0;font-size:18px;line-height:1;}
+.kg-with-reminder .weight-step-controls .stepper+ .stepper{border-top:1px solid var(--line);}
+.kg-with-reminder .load-reminder-inline{flex:0 0 48px;width:48px;min-height:46px;padding:2px;border:0;border-radius:0;background:transparent;color:var(--muted);font:600 9px/1.2 var(--font-body);text-align:center;}
+.kg-with-reminder .load-reminder-inline.has-reminder{color:var(--green);background:color-mix(in srgb,var(--green) 10%,transparent);}
+body.a11y-large-text .kg-with-reminder .load-reminder-inline{font-size:11px;flex-basis:58px;width:58px;}
 @media(max-width:360px){.set-series-heading{flex-wrap:wrap;}.set-series-prescription{flex-basis:45%;}.set-series-heading .set-series-number{font-size:11px;}}
