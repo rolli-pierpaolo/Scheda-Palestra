@@ -1816,6 +1816,20 @@ test('rimandare un promemoria conserva obiettivo e riferimento della serie',asyn
   assert.strictEqual(JSON.stringify(window.__bridge.state),before);
 });
 
+test('ULTIMA STRIPPING appare soltanto alla fine del gruppo di serie',()=>{
+  const window=loadApp();
+  for(const schema of ['3X8-10   ULTIMA STRIPPING','3x8-10 (ultima stripping)','3×8–10\nULTIMA STRIPPING']){
+    for(let i=0;i<3;i++){
+      const p=window.getSetPrescription(schema,i);
+      assert.strictEqual(p.target,'8–10 reps');
+      assert.strictEqual(p.extras.toUpperCase(),i===2?'STRIPPING':'');
+    }
+  }
+  assert.strictEqual(window.getSetPrescription('2X6-8 3X8-10 ULTIMA STRIPPING',3).extras,'');
+  assert.strictEqual(window.getSetPrescription('2X6-8 3X8-10 ULTIMA STRIPPING',4).extras,'STRIPPING');
+  assert.strictEqual(window.getSetPrescription('3X8-10+MAX ULTIMA STRIPPING',2).extras,'+ MAX · STRIPPING');
+});
+
 // ---------------- runner ----------------
 // async per poter "await t.fn()": i test sincroni di sempre continuano a
 // funzionare identici (await su un valore non-Promise si risolve subito),

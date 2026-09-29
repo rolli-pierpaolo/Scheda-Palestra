@@ -1536,6 +1536,11 @@ body.training-focus .set-series-group{margin:0;}
   .modal-box::before{display:none;}
   .finish-modal{max-width:480px;}
   .settings-row{grid-template-columns:repeat(3,minmax(0,1fr));}
+  /* Su PC il selettore in alto a sinistra era coperto dalla barra laterale.
+     I giorni rimangono visibili e vanno a capo senza scorrimento nascosto. */
+  body.on-workout #dayTabsActive,body.on-workout #dayTabsActive.workout-day-tabs-open{display:flex!important;flex-wrap:wrap;gap:8px;padding:12px 0;overflow:visible;position:relative;z-index:2;background:transparent;border:0;}
+  body.on-workout #dayTabsActive .day-btn{min-height:44px;white-space:normal;overflow-wrap:anywhere;}
+  .topbar.is-workout-header .workout-day-picker:not([hidden]){display:none;}
 }
 
 /* ---------------- PRODOTTO · HOME, PROGRESSI, GUIDA ----------------------

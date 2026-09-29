@@ -763,11 +763,14 @@ function getSetPrescription(schema, setIndex){
     const match = rawPart.match(/^\s*(\d+)\s*[x×]\s*(.*)$/i);
     if(!match) return [];
     const count = Math.max(1,Number.parseInt(match[1],10)||1);
-    const bits = match[2].trim().split('+').map(part=>part.trim()).filter(Boolean);
+    const detail=match[2].trim();
+    const lastOnly=detail.match(/\s*\(?\bULTIMA\b\s+(.+?)\)?\s*$/i);
+    const base=lastOnly?detail.slice(0,lastOnly.index).trim():detail;
+    const bits = base.split('+').map(part=>part.trim()).filter(Boolean);
     const target = (bits.shift()||'').replace(/\s*[-–]\s*/g,'–');
     const prescription = {
       target: target ? (/\d/.test(target) ? `${target} reps` : target) : '',
-      extras: bits.length ? `+ ${bits.join(' + ')}` : ''
+      extras: [bits.length ? `+ ${bits.join(' + ')}` : '',lastOnly?lastOnly[1].trim():''].filter(Boolean).join(' · ')
     };
     return Array.from({length:count},(_,index)=>({
       target: prescription.target,
