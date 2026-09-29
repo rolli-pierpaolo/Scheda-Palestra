@@ -2,6 +2,20 @@
 let exerciseHistoryName = '';
 let exerciseHistoryWeight = '';
 let exerciseHistoryBlock = '';
+function openExerciseHistory(exi){
+  const ex=state.days[activeDayIdx]?.esercizi[exi];
+  if(!ex)return;
+  if(typeof resetQuickKeyboardUI==='function')resetQuickKeyboardUI();
+  exerciseHistoryName=ex.nome;exerciseHistoryWeight='';exerciseHistoryBlock='';
+  document.getElementById('exerciseHistorySearch').value=ex.nome;
+  document.getElementById('exerciseHistorySuggestions').replaceChildren();
+  showView('hist');renderExerciseHistory();
+  const name=ex.nome;
+  setTimeout(()=>{
+    if(document.getElementById('viewHist').style.display!=='none'&&exerciseHistoryName===name)
+      document.getElementById('exerciseHistoryResults')?.scrollIntoView({block:'start',behavior:'auto'});
+  },400);
+}
 function historyWeightKey(value){
   const raw=String(value??'').trim().toLocaleLowerCase('it');
   return /^[+-]?\d+(?:[.,]\d+)?$/.test(raw) ? String(Number(raw.replace(',','.'))) : raw;
@@ -76,8 +90,12 @@ function renderExerciseHistory(){
   if(!target||!exerciseHistoryName)return;
   const all=collectExerciseHistory(exerciseHistoryName);
   const records=all.filter(r=>!exerciseHistoryBlock||r.blockKey===exerciseHistoryBlock).map(r=>({...r,rows:r.rows.filter(s=>!exerciseHistoryWeight||historyWeightKey(s.peso)===exerciseHistoryWeight)})).filter(r=>r.rows.length);
+  const numericRows=records.flatMap(r=>r.rows).filter(s=>/^\d+(?:[.,]\d+)?$/.test(s.rip.trim()));
+  const best=exerciseHistoryWeight&&numericRows.length?numericRows.reduce((a,b)=>Number(a.rip.replace(',','.'))>=Number(b.rip.replace(',','.'))?a:b):null;
+  const latest=records[0];
   target.innerHTML=`<h3>${escapeHtml(exerciseHistoryName)}</h3>
     <div class="exercise-history-filters"><button type="button" onclick="chooseExerciseHistoryWeight()">Peso: ${escapeHtml(exerciseHistoryWeight?exerciseHistoryWeight+' kg':'tutti')} ▾</button><button type="button" onclick="chooseExerciseHistoryBlock()">${escapeHtml(exerciseHistoryBlock?(all.find(r=>r.blockKey===exerciseHistoryBlock)?.block||'Scheda'):'Tutte le schede')} ▾</button></div>
+    ${latest?`<div class="exercise-history-overview"><div><small>Ultima registrazione</small><b>${escapeHtml(latest.rows.map(s=>`${s.peso||'—'} kg × ${s.rip}`).join(' · '))}</b><small>${escapeHtml(latest.block)} · Settimana ${latest.week+1}</small></div>${best?`<div><small>Migliore serie a ${escapeHtml(exerciseHistoryWeight)} kg</small><b>${escapeHtml(best.rip)} rip</b></div>`:''}</div>`:''}
     <p class="exercise-history-note">${records.length} registrazioni · dalla scheda più recente. Le date delle singole sessioni non sono disponibili.</p>
     ${records.length?records.map((record,i)=>`<details class="exercise-history-session" ${i===0?'open':''}>
       <summary>${i===0?'<span class="exercise-history-latest">ULTIMA REGISTRAZIONE DISPONIBILE</span>':''}<b>${escapeHtml(record.block)} · Settimana ${record.week+1}</b><small>${escapeHtml(record.day)} · ${record.rows.length} serie</small></summary>

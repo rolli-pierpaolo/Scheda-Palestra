@@ -530,6 +530,7 @@ const total = weekly.total;
         <div class="home-progress-bar-wrap" style="--accent:${progressAccent}"><div class="home-progress-bar-fill" id="homeProgressBar" style="width:0%"></div></div>
       </div>
     ${suggestedHtml}
+    ${renderHomeLoadReminders()}
     <div class="home-middle-row">
       <div class="home-days-col">
         <div class="home-days-label">I tuoi giorni</div>
@@ -541,6 +542,7 @@ const total = weekly.total;
       <div class="home-quick-stat home-total-stat"><span class="home-stat-icon">${ICON_FLAME}</span><span class="home-stat-copy"><b>${monthlyCount}</b><span>allenamenti completati<br>questo mese</span></span></div>
       ${volumeTrendHtml}
     </div>
+    ${renderWorkoutSaveStatus()}
   `;
   if(typeof gsap !== "undefined"){
   const progressCount = document.getElementById('homeProgressCount');

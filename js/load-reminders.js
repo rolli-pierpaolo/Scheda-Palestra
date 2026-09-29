@@ -35,6 +35,16 @@ function renderUnassignedLoadReminders(ex,exi,w){
   }).join('');
 }
 function saveLoadReminderUI(){ saveState();renderActive(); }
+function renderHomeLoadReminders(){
+  const rows=[];
+  state.days.forEach((day,di)=>(day.esercizi||[]).forEach((ex,ei)=>{
+    loadReminderList().filter(r=>loadReminderMatches(r,ex)).forEach(r=>rows.push(`<button type="button" class="home-reminder-item" onclick="openLoadReminderFromHome(${di},${ei})"><b>${escapeHtml(ex.nome)} · Serie ${r.setIndex+1}</b><span>${r.target?`↑ Obiettivo ${escapeHtml(r.target)} kg`:'↑ Da aumentare'}${r.review?' · Da riassociare':''}</span></button>`));
+  }));
+  return rows.length?`<section class="home-reminders"><h3>Da ricordare</h3>${rows.slice(0,3).join('')}${rows.length>3?`<small>Altri ${rows.length-3} promemoria nelle schede esercizio</small>`:''}</section>`:'';
+}
+function openLoadReminderFromHome(dayIdx,exi){
+  startDayFromHome(dayIdx);goToExerciseSlide(exi);
+}
 async function editLoadReminder(exi,w,si){
   const snapshot=state, ex=state.days[activeDayIdx]?.esercizi[exi];
   const set=ex?.sets?.[w]?.[si];
@@ -43,9 +53,10 @@ async function editLoadReminder(exi,w,si){
   const reminder=loadReminderList().find(r=>loadReminderMatches(r,ex)&&loadReminderBound(r,ex,w)&&r.setIndex===si);
   if(reminder){
     const action=await ViridisOptionPicker({title:`Aumento · serie ${si+1}`,
-      message:reminder.target?`Obiettivo: ${reminder.target} kg. Il peso della serie resta invariato.`:'Ricordati di aumentare il carico quando rifai questa serie.',
-      choices:[{label:'Fatto · togli promemoria',value:'done'},{label:'Modifica obiettivo',value:'edit'},{label:'Rimuovi promemoria',value:'remove'}]});
+      message:`${reminder.sourceWeight?`Quando l’hai segnato: ${reminder.sourceWeight} kg${reminder.sourceReps?` × ${reminder.sourceReps} rip`:''}. `:''}${reminder.target?`Obiettivo: ${reminder.target} kg.`:'Ricordati di aumentare il carico.'}`,
+      choices:[{label:'Fatto · togli promemoria',value:'done'},{label:'Rimanda · mantieni promemoria',value:'defer'},{label:'Modifica obiettivo',value:'edit'},{label:'Rimuovi promemoria',value:'remove'}]});
     if(state!==snapshot||!loadReminderWritable(ex,w)||!loadReminderList().includes(reminder)||!action) return;
+    if(action==='defer'){ViridisToast('Promemoria mantenuto per la prossima volta');return;}
     if(action!=='edit'){
       state.loadReminders=loadReminderList().filter(r=>r!==reminder);saveLoadReminderUI();
       ViridisToast(action==='done'?'Aumento segnato come fatto':'Promemoria rimosso');return;
@@ -60,7 +71,7 @@ async function editLoadReminder(exi,w,si){
   if(reminder&&!loadReminderList().includes(reminder)) return;
   if(!ex.loadReminderId) ex.loadReminderId=crypto.randomUUID();
   const record={exerciseId:ex.loadReminderId,exerciseName:ex.nome,setIndex:si,
-    signature:loadReminderSignature(ex,w),sourceWeek:w,sourceWeight:String(set.peso??''),target:target.trim(),review:false};
+    signature:loadReminderSignature(ex,w),sourceWeek:w,sourceWeight:reminder?.sourceWeight??String(set.peso??''),sourceReps:reminder?.sourceReps??String(set.rip??''),target:target.trim(),review:false};
   if(reminder) Object.assign(reminder,record);
   else state.loadReminders=[...loadReminderList(),record];
   saveLoadReminderUI();ViridisToast('Promemoria salvato per la prossima volta');

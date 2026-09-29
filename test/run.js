@@ -1542,6 +1542,7 @@ test('storico esercizio: serie e Max di tutte le schede, senza modificare dati o
   assert.strictEqual(tables[0].querySelectorAll('tbody tr').length,2);
   assert.ok(tables[0].textContent.includes('7'));
   assert.ok(!tables[0].textContent.includes('Max'));
+  assert.ok(window.document.querySelector('.exercise-history-overview').textContent.includes('Migliore serie a 27 kg'));
   assert.strictEqual(JSON.stringify([window.__bridge.state,window.__bridge.storicoExtra]),before);
 });
 
@@ -1740,6 +1741,79 @@ test('superset e dropset mostrano le prescrizioni senza riempire le ripetizioni 
   assert.ok(html.includes('+ MAX + MAX'));
   assert.ok(window.linkedSubRowInputsHtml(ex,0,0,1).includes('8–10 reps'));
   assert.strictEqual(JSON.stringify(ex),before);
+});
+
+test('completa superset richiede entrambe le serie e non cambia dati o avanzamento',()=>{
+  const {window,ex}=workoutInputFixture();
+  const partner=JSON.parse(JSON.stringify(ex));
+  ex.linkGroupId=partner.linkGroupId='pair';ex.linkType=partner.linkType='superset';
+  window.__bridge.state.days[0].esercizi.push(partner);
+  ex.sets[0][0]={peso:'40',rip:'10'};
+  const before=JSON.stringify(window.__bridge.state);
+  window.completeSeriesUI(0,0,0,1);
+  assert.ok(!window.seriesUIFinished(window.seriesUIEntries(0,0,0,1)));
+  assert.strictEqual(JSON.stringify(window.__bridge.state),before);
+  partner.sets[0][0]={peso:'20',rip:'12'};
+  const filled=JSON.stringify(window.__bridge.state);
+  window.completeSeriesUI(0,0,0,1);
+  assert.ok(window.seriesUIFinished(window.seriesUIEntries(0,0,0,1)));
+  assert.ok(window.renderSeriesFinish(0,0,0,1).includes('superset completata'));
+  assert.strictEqual(JSON.stringify(window.__bridge.state),filled);
+  assert.ok(!window.document.getElementById('workoutRestPanel'),'timer facoltativo disattivato inizialmente');
+  partner.sets[0][0].rip='13';
+  assert.ok(!window.seriesUIFinished(window.seriesUIEntries(0,0,0,1)));
+});
+test('dropset comprende tutti i Max e conserva il menu esercizio',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.sets[0][0]={peso:'40',rip:'10',dropset:true};
+  ex.maxEntries=[[{afterSet:0,peso:'30',rip:''}],[]];
+  window.completeSeriesUI(0,0,0,null);
+  assert.ok(!window.seriesUIFinished(window.seriesUIEntries(0,0,0,null)));
+  ex.maxEntries[0][0].rip='8';
+  window.completeSeriesUI(0,0,0,null);
+  assert.ok(window.renderSeriesFinish(0,0,0,null).includes('dropset completata'));
+  window.renderActive();
+  assert.ok(window.document.querySelector('[aria-label="Azioni esercizio"]'));
+});
+test('recupero usa un termine assoluto e annuncia la fine una sola volta',async()=>{
+  const {window,ex}=workoutInputFixture();
+  assert.strictEqual(window.restSecondsFromText("2-3'"),null);
+  assert.strictEqual(window.restSecondsFromText("2'"),120);
+  assert.strictEqual(window.restSecondsFromText('SUPER SET 90"'),90);
+  assert.strictEqual(window.restSecondsFromText('libero'),null);
+  let now=100000,signals=0;
+  window.Date.now=()=>now;window.playRestSignal=()=>{signals++;};
+  ex.recupero[0]='90"';
+  await window.startWorkoutRest(0,0);
+  assert.strictEqual(window.document.querySelector('.rest-time').textContent,'1:30');
+  now+=100000;window.tickWorkoutRest();window.tickWorkoutRest();
+  assert.strictEqual(signals,1);
+  assert.ok(window.document.querySelector('.rest-status').textContent.includes('terminato'));
+  window.adjustWorkoutRest(15);
+  assert.strictEqual(window.document.querySelector('.rest-time').textContent,'0:15');
+  window.stopWorkoutRest();assert.ok(!window.document.getElementById('workoutRestPanel'));
+});
+test('errore cloud non appare come sincronizzato e conserva revisione in attesa',async()=>{
+  const {window}=workoutInputFixture();
+  window.__bridge.syncSession={user:{id:'test'}};
+  window.__bridge.supabaseClient={from:()=>({upsert:async()=>({error:{message:'offline'}})})};
+  window.saveState();await window.flushCloudPush();
+  assert.ok(window.__bridge.syncLocalRevision>window.__bridge.syncConfirmedRevision);
+  assert.ok(window.workoutSaveStatus().includes('in attesa'));
+  window.__bridge.supabaseClient={from:()=>({upsert:async()=>({error:null})})};
+  window.saveState();await window.flushCloudPush();
+  assert.ok(window.workoutSaveStatus().includes('· sincronizzato'));
+});
+test('rimandare un promemoria conserva obiettivo e riferimento della serie',async()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.sets[0][0]={peso:'40',rip:'12'};
+  window.ViridisInputDialog=async()=> '42,5';
+  await window.editLoadReminder(0,0,0);
+  assert.strictEqual(window.loadReminderList()[0].sourceReps,'12');
+  const before=JSON.stringify(window.__bridge.state);
+  window.ViridisOptionPicker=async()=> 'defer';
+  await window.editLoadReminder(0,0,0);
+  assert.strictEqual(JSON.stringify(window.__bridge.state),before);
 });
 
 // ---------------- runner ----------------

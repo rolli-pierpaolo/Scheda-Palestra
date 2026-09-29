@@ -165,19 +165,21 @@ async function flushCloudPush(){
   const payload = buildBackupPayload();
   const revisionBeingSent = syncLocalRevision;
   try{
-    await supabaseClient.from('user_data').upsert({
+    const result = await supabaseClient.from('user_data').upsert({
       user_id: syncSession.user.id,
       payload,
       client_id: syncClientId,
       updated_at: new Date().toISOString()
     });
+    if(result?.error)throw result.error;
     // usato da checkRemoteUpdateOnBoot per sapere se, al prossimo avvio, il
     // cloud contiene qualcosa di più recente di quello che si è mandato
     // da qui - salvato solo se l'invio è andato davvero a buon fine
-    syncConfirmedRevision = revisionBeingSent;
+    syncConfirmedRevision = Math.max(syncConfirmedRevision,revisionBeingSent);
     writeSyncRevision(SYNC_CONFIRMED_REVISION_KEY, syncConfirmedRevision);
     try{ localStorage.setItem(LAST_CLOUD_PUSH_KEY, String(Date.now())); }catch(e){}
   }catch(e){} // offline o rete assente: l'app continua a funzionare in locale, riproverà al prossimo salvataggio
+  if(typeof updateWorkoutSaveStatus==='function')updateWorkoutSaveStatus();
 }
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'hidden') flushCloudPush();

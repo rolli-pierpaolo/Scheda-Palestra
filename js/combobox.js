@@ -142,6 +142,7 @@ function flushSaveState(){
   saveStatePending = false;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   if(typeof pushToCloud === 'function') pushToCloud();
+  if(typeof updateWorkoutSaveStatus==='function')updateWorkoutSaveStatus();
 }
 // rete di sicurezza in più, non dovrebbe più servire dato che saveState()
 // scrive già subito: se mai restasse qualcosa in sospeso, lo scrive

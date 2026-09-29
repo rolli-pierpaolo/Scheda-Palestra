@@ -930,7 +930,7 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
         </div>
 
 
-      </div>${maxHtml}</div>`;
+      </div>${maxHtml}${!isReadOnlyWeek?renderSeriesFinish(exi,w,si):''}</div>`;
     }).join('');
 
 
@@ -1203,7 +1203,7 @@ function renderWeekQuickSummary(exi, w, ex, partnerExi){
   const content = editing
     ? `<textarea class="week-inline-meta schema" rows="1" oninput="autoGrowTextarea(this)" onchange="${pairUpdate('schema','this.value')}">${escapeHtml(ex.schema[w]??'')}</textarea><i>·</i><input class="week-inline-meta" value="${escapeAttr(ex.recupero[w]??'')}" onchange="${pairUpdate('recupero','this.value')}">`
     : `<span class="week-plan-schema">${escapeHtml(ex.schema[w] || 'Serie libere')}</span><span class="week-plan-recovery">Recupero: ${escapeHtml(ex.recupero[w] || 'libero')}</span>`;
-  return `<div class="week-quick-summary ${editing?'editing':''}"><div class="week-summary-metas">${content}</div><button type="button" class="week-note-trigger" onclick="toggleWeekNote(this)" aria-label="Aggiungi nota alla settimana">Nota</button></div>`;
+  return `<div class="week-quick-summary ${editing?'editing':''}"><div class="week-summary-metas">${content}${!editing&&w===state.currentWeek?`<div class="workout-quick-tools"><button type="button" class="rest-settings-trigger" onclick="configureWorkoutRest()">Timer e avvisi</button><button type="button" class="rest-settings-trigger" onclick="openExerciseHistory(${exi})">Storico esercizio</button></div>`:''}</div><button type="button" class="week-note-trigger" onclick="toggleWeekNote(this)" aria-label="Aggiungi nota alla settimana">Nota</button></div>`;
 }
 
 // apri/chiudi un blocco settimana: tocca solo le classi CSS (niente renderActive,
@@ -1510,6 +1510,9 @@ function updateSet(exi, w, si, field, val, recordPeso, isDraft=false){
   if(!ex.sets[w]) ex.sets[w]=[];
   while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
   ex.sets[w][si][field]=val;
+  refreshSeriesFinishUI(exi,w);
+  const finishPartner=findLinkedPartner(exi);
+  if(finishPartner)refreshSeriesFinishUI(finishPartner.exi,w);
   // Una ripetizione scritta è il segnale affidabile: i pesi possono essere
   // già riportati dalla settimana precedente senza che l'allenamento sia iniziato.
   if(field==='rip' && String(val||'').trim()!=='') markWorkoutStartedByRep();
@@ -1839,6 +1842,9 @@ function updateMaxEntry(exi, w, index, field, val, isDraft=false){
   const entry = getMaxEntries(ex,w)[index];
   if(!entry) return;
   entry[field] = val;
+  refreshSeriesFinishUI(exi,w);
+  const finishPartner=findLinkedPartner(exi);
+  if(finishPartner)refreshSeriesFinishUI(finishPartner.exi,w);
   // Se le righe future erano già state create vuote, riempi anche quelle
   // senza cancellare eventuali modifiche scritte in autonomia più avanti.
   if(!isDraft) carryMaxLayoutForward(ex,w);
@@ -2233,18 +2239,18 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
   const prescription = getSetPrescription(ex.schema && ex.schema[w],si);
   return `<span class="linked-tag" title="${escapeAttr(ex.nome||'')}">${escapeHtml(ex.nome||'—')}${prescription.target ? `<strong class="linked-prescription">${escapeHtml(prescription.target)}</strong>` : ''}${prescription.extras ? `<small class="linked-prescription">${escapeHtml(prescription.extras)}</small>` : ''}</span>
     <div class="kg-cell">
+    <span class="linked-field-label">PESO (kg)</span>
     <div class="kg-wrap">
-      <div class="stepper-pair">
         <button class="stepper" onclick="stepSet(${exi},${w},${si},-2.5,this)">−</button>
+      <input type="text" class="set-input" aria-label="Peso ${escapeAttr(ex.nome)} serie ${si+1}" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" oninput="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr},true)" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
         <button class="stepper" onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
-      </div>
-      <input type="text" class="set-input" placeholder="kg" value="${escapeAttr(s.peso ?? '')}" oninput="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr},true)" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr})">
     </div>
     ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
     </div>
     <div class="rip-cell">
+    <span class="linked-field-label">RIPETIZIONI</span>
     <div class="rip-wrap">
-    <input type="text" class="set-input" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" oninput="updateSet(${exi},${w},${si},'rip',this.value,undefined,true)" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
+    <input type="text" class="set-input" aria-label="Ripetizioni ${escapeAttr(ex.nome)} serie ${si+1}" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" oninput="updateSet(${exi},${w},${si},'rip',this.value,undefined,true)" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
     <button type="button" class="rpe-chip ${s.rpe?'filled':''}" onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
     ${w===state.currentWeek && getPreviousWeekRep(ex,w,si) ? `<button type="button" class="rep-compare-btn" ${!String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
     </div>
@@ -2296,8 +2302,8 @@ const isFutureWeek = w > state.currentWeek;
     const nRows = Math.max(
       exA.sets && exA.sets[w] ? exA.sets[w].length : 0,
       exB.sets && exB.sets[w] ? exB.sets[w].length : 0,
-      4
-    );
+      0
+    ) || 4;
     let setsHtml = '';
     for(let si=0; si<nRows; si++){
       const roman = ["I","II","III","IV","V","VI","VII","VIII"][si] || (si+1);
@@ -2309,7 +2315,7 @@ const isFutureWeek = w > state.currentWeek;
             <div class="linked-sub-row">${linkedSubRowInputsHtml(exB, exiB, w, si)}</div>
           </div>
         </div>
-      </div>${linkedMaxEntriesHtml(exA,exiA,exB,exiB,w,si)}`;
+      ${linkedMaxEntriesHtml(exA,exiA,exB,exiB,w,si)}${renderSeriesFinish(exiA,w,si,exiB)}</div>`;
     }
     return {group:isCurrentWeek?'current':isCompletedGroup?'completed':'future', html:`
 

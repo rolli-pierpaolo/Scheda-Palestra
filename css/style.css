@@ -1921,6 +1921,40 @@ body.theme-light .home-suggested-action{color:#15200c;}
 /* Un promemoria per il singolo carico, mai un valore applicato in automatico. */
 .load-reminder-chip{display:block;width:100%;min-height:44px;margin-top:5px;padding:5px 3px;border:0;border-radius:8px;background:transparent;color:var(--muted);font-size:11px;font-weight:600;text-align:left;white-space:normal;overflow-wrap:anywhere;}
 .load-reminder-chip.has-reminder{padding:7px 9px;background:rgba(126,168,60,.12);color:var(--green);border:1px solid rgba(126,168,60,.3);}
+/* Gerarchia premium: dati solidi, vetro solo sulla navigazione già esistente. */
+body.on-workout.liquid-page-ready>.viridis-liquid-page{opacity:.65;}
+body.on-progress.liquid-page-ready>.viridis-liquid-page{opacity:.38;}
+.series-finish{display:block;width:100%;min-height:44px;padding:9px 12px;margin:9px 0 2px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);font:inherit;font-size:12px;white-space:normal;}
+.series-finish.is-finished{color:var(--green);border-color:color-mix(in srgb,var(--green) 45%,var(--line));background:color-mix(in srgb,var(--green) 10%,var(--panel2));}
+.rest-settings-trigger{padding:7px 10px;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--muted);font:inherit;font-size:12px;white-space:normal;}
+.workout-quick-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.linked-set-group{border-radius:18px;background:var(--panel2);padding:12px;margin-bottom:12px;}
+.linked-sub-rows{gap:14px;}.linked-sub-row{min-width:0;}.linked-sub-row .kg-cell,.linked-sub-row .rip-cell{min-width:0;flex:1;}
+.linked-sub-row .linked-tag{width:100%;flex-basis:100%;white-space:normal;font-size:12px;line-height:1.4;}
+.linked-sub-row{flex-wrap:wrap;}
+.linked-sub-row .linked-prescription{font-weight:500;color:var(--muted);}
+.linked-field-label{display:block;font-size:10px;color:var(--muted);letter-spacing:.4px;margin-bottom:4px;}
+.linked-sub-row .kg-wrap>.stepper{flex:0 0 32px;width:32px;min-height:44px;}
+@media(max-width:360px){.linked-sub-row .kg-cell,.linked-sub-row .rip-cell{flex-basis:100%;}.linked-sub-row .kg-wrap>.stepper{flex-basis:44px;width:44px;}}
+.max-entry-group{margin-top:10px;border-left:2px solid var(--amber);}
+.home-reminders{text-align:left;padding:16px;border:1px solid var(--line);border-radius:22px;background:var(--panel);margin:18px 0;}
+.home-reminders h3{font-size:14px;margin:0 0 8px;}
+.home-reminder-item{display:block;width:100%;text-align:left;background:transparent;color:var(--text);border:0;border-bottom:1px solid var(--line);padding:12px 0;min-height:44px;white-space:normal;}
+.home-reminder-item span{display:block;color:var(--green);margin-top:4px;}
+.home-reminder-item b{font-size:13px;}.home-reminders small{display:block;margin-top:8px;color:var(--muted);}
+.workout-save-status{color:var(--muted);font-size:12px;text-align:center;padding:12px 4px;}
+.exercise-history-overview{display:grid;gap:12px;padding:16px;background:var(--panel2);border:1px solid var(--line);border-radius:18px;margin:14px 0;}
+.exercise-history-overview small,.exercise-history-overview b{display:block;overflow-wrap:anywhere;}
+.exercise-history-overview small{color:var(--muted);font-size:12px;}.exercise-history-overview b{margin:5px 0;font-size:15px;}
+.workout-rest-panel{position:fixed;z-index:45;bottom:calc(82px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));max-width:400px;margin:0 auto;padding:12px 16px;border-radius:22px;background:var(--panel);border:1px solid var(--line);box-shadow:0 12px 38px #0005;color:var(--text);}
+.rest-heading,.rest-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.rest-context{font-size:12px;color:var(--muted);overflow-wrap:anywhere;}.workout-rest-panel button{min-width:44px;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);font:inherit;}
+.rest-time{font-size:28px;font-variant-numeric:tabular-nums;}.rest-status{margin:6px 0 0;font-size:12px;color:var(--muted);}
+.workout-rest-panel.finished{border-color:var(--green);}.workout-rest-panel.finished .rest-status{color:var(--green);}
+body.quick-keyboard-open .workout-rest-panel{top:calc(var(--topbar-h,110px) + 8px);bottom:auto;}
+body.a11y-large-text .series-finish,body.a11y-large-text .rest-settings-trigger,body.a11y-large-text .rest-status,body.a11y-large-text .home-reminder-item,body.a11y-large-text .workout-save-status{font-size:16px;}
+body.a11y-high-contrast .series-finish,body.a11y-high-contrast .workout-rest-panel,body.a11y-high-contrast .home-reminders{border-color:var(--text);}
+body.a11y-high-contrast>.viridis-liquid-page,body.a11y-reduce-motion>.viridis-liquid-page,body.theme-light>.viridis-liquid-page{opacity:0!important;}
 .load-reminder-review{display:block;width:100%;padding:12px;margin:0 0 12px;background:var(--panel2);color:var(--green);border:1px solid var(--green);border-radius:12px;text-align:left;line-height:1.5;}
 .load-reminder-review small{display:block;color:var(--muted);font-size:.85em;}
 body.a11y-large-text .load-reminder-chip{font-size:14px;}

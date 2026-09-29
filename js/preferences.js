@@ -45,7 +45,7 @@ function renderAccessibilitySettings(){
     <label class="a11y-setting-row">
       <span><b>${title}</b><small>${detail}</small></span>
       <input type="checkbox" ${accessibilityPrefs[key] ? 'checked' : ''} onchange="setAccessibilityPref('${key}', this.checked)" aria-label="${title}">
-    </label>`).join('');
+    </label>`).join('')+'<button type="button" class="rest-settings-trigger" onclick="configureWorkoutRest()">Recupero · timer, suono e prova avviso</button>';
 }
 
 function loadThemePreference(){
