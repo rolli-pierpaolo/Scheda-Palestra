@@ -21,9 +21,11 @@ function loadReminderWritable(ex,w){
   return w===(state.currentWeek||0) && state.days.some(d=>(d.esercizi||[]).includes(ex)) &&
     !(typeof isViewingShared==='function' && isViewingShared());
 }
-function renderLoadReminder(ex,exi,w,si){
+function renderLoadReminder(ex,exi,w,si,compact=false){
   if(!loadReminderWritable(ex,w)) return '';
   const reminder=loadReminderList().find(r=>loadReminderMatches(r,ex)&&loadReminderBound(r,ex,w)&&r.setIndex===si);
+  if(compact)return reminder?'':`<button type="button" class="load-reminder-add" onclick="editLoadReminder(${exi},${w},${si})" aria-label="Promemoria aumento carico · serie ${si+1}" title="Prossima volta: aumenta carico">↑</button>`;
+  if(!reminder)return '';
   const label=reminder ? (reminder.target ? `↑ ${reminder.sourceWeek===w?'Prossima':'Obiettivo'}: ${reminder.target} kg` : '↑ Da aumentare') : '↑ Prossima volta';
   return `<button type="button" class="load-reminder-chip${reminder?' has-reminder':''}" onclick="editLoadReminder(${exi},${w},${si})" aria-label="${escapeAttr(label)} · serie ${si+1}">${escapeHtml(label)}</button>`;
 }

@@ -1830,6 +1830,23 @@ test('ULTIMA STRIPPING appare soltanto alla fine del gruppo di serie',()=>{
   assert.strictEqual(window.getSetPrescription('3X8-10+MAX ULTIMA STRIPPING',2).extras,'+ MAX · STRIPPING');
 });
 
+test('ramping non assegna il back-off alla prima serie e la nota vuota resta richiusa',()=>{
+  const {window,ex}=workoutInputFixture();
+  const schema='RAMPING TO 6 FAI TOP SET + 1XMAX BACK OFF 20%';
+  for(let i=0;i<4;i++)assert.strictEqual(window.getSetPrescription(schema,i).target,'');
+  ex.schema[0]=schema;
+  window.renderActive();
+  const note=window.document.querySelector('.exercise-note-disclosure');
+  assert.ok(note&&!note.open);
+  const group=window.document.querySelector('.set-series-group');
+  assert.ok(group.querySelector('.set-series-heading .series-finish.compact'));
+  assert.ok(group.querySelector('.load-reminder-add'));
+  assert.ok(!group.querySelector('.load-reminder-chip'));
+  ex.commento='Pausa in basso';window.renderActive();
+  assert.ok(window.document.querySelector('.exercise-note-disclosure').open);
+  assert.ok(window.document.querySelector('.week-plan-schema').textContent.includes(schema));
+});
+
 // ---------------- runner ----------------
 // async per poter "await t.fn()": i test sincroni di sempre continuano a
 // funzionare identici (await su un valore non-Promise si risolve subito),

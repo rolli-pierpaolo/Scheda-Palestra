@@ -755,6 +755,9 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
 function getSetPrescription(schema, setIndex){
   const raw = String(schema||'').replace(/\s+/g,' ').trim();
   if(!raw) return {target:'', extras:''};
+  // Il numero delle serie di avvicinamento non è espresso: non attribuire
+  // il successivo back-off alla prima riga del ramping.
+  if(/\bramping\b/i.test(raw))return {target:'',extras:''};
   const parts = raw.match(/\d+\s*[x×][\s\S]*?(?=\s*\d+\s*[x×]|$)/gi) || [];
   // "2×8–10" non e' una sola serie: la stessa prescrizione va mostrata
   // accanto a entrambe. Gli extra (MAX, REST...) restano sull'ultima serie
@@ -809,10 +812,10 @@ function renderLinkedExerciseCardHero(exA, exiA, exB, exiB, accent){
   </div>`;
 }
 function renderExerciseNote(ex, exi){
-  return `<label class="exercise-note-field">
+  return `<details class="exercise-note-disclosure" ${String(ex.commento||'').trim()?'open':''}><summary>${String(ex.commento||'').trim()?'Nota esercizio':'Aggiungi nota'}</summary><label class="exercise-note-field">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8.5 H16 M8 12 H16 M8 15.5 H13"/></svg>
     <textarea class="ex-comment" rows="1" aria-label="Nota esercizio" placeholder="Aggiungi una nota (facoltativo)" onchange="updateComment(${exi},this.value)">${escapeHtml(ex.commento || '')}</textarea>
-  </label>`;
+  </label></details>`;
 }
 // Le settimane concluse restano modificabili, ma non occupano lo spazio sopra
 // al lavoro in corso: sono raccolte sotto la settimana corrente e chiuse per
@@ -887,11 +890,14 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
       const setFilled = String(s.peso??'').trim() && String(s.rip??'').trim();
       const maxHtml = renderMaxEntries(ex,exi,w,si,isReadOnlyWeek,isCurrentWeek);
       const prescription = getSetPrescription(ex.schema && ex.schema[w],si);
+      const compactFinish=!s.dropset&&!maxHtml;
       return `
       <div class="set-series-group${maxHtml?' has-max':''}${setFilled?' is-filled':''}" data-exi="${exi}" data-week="${w}" data-set="${si}">
       <div class="set-series-heading">
         <button type="button" class="set-label set-series-number${s.dropset?' dropset':''}" ${isReadOnlyWeek?'disabled':''} onclick="toggleDropset(${exi},${w},${si},this)" title="Segna/togli come dropset">SERIE ${si+1}</button>
         <div class="set-series-prescription">${prescription.target ? `<span>${escapeHtml(prescription.target)}</span>` : ''}${prescription.extras ? `<small>${escapeHtml(prescription.extras)}</small>` : ''}</div>
+        ${renderLoadReminder(ex,exi,w,si,true)}
+        ${compactFinish&&!isReadOnlyWeek?renderSeriesFinish(exi,w,si):''}
       </div>
       <div class="set-columns-labels"><span>PESO (kg)</span><span>RIPETIZIONI</span></div>
       <div class="set-row${setFilled?' filled':''}">
@@ -915,7 +921,6 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
           </button>
         </div>
         ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" ${isReadOnlyWeek?'disabled':''} title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
-        ${renderLoadReminder(ex,exi,w,si)}
         </div>
         <div class="rip-cell">
         <div class="rip-wrap">
@@ -933,7 +938,7 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
         </div>
 
 
-      </div>${maxHtml}${!isReadOnlyWeek?renderSeriesFinish(exi,w,si):''}</div>`;
+      </div>${renderLoadReminder(ex,exi,w,si)}${maxHtml}${!compactFinish&&!isReadOnlyWeek?renderSeriesFinish(exi,w,si):''}</div>`;
     }).join('');
 
 

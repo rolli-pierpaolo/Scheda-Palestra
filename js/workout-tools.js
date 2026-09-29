@@ -110,7 +110,9 @@ function renderSeriesFinish(exi,w,si,partnerExi){
   const ex=state.days[activeDayIdx]?.esercizi[exi];
   const type=Number.isInteger(partnerExi)?(ex.linkType==='jumpset'?' jump set':' superset'):(ex.sets?.[w]?.[si]?.dropset?' dropset':'');
   const done=seriesUIFinished(seriesUIEntries(exi,w,si,partnerExi));
-  return `<button type="button" class="series-finish${done?' is-finished':''}" aria-pressed="${done}" data-finish-ex="${exi}" data-finish-week="${w}" data-finish-set="${si}" onclick="completeSeriesUI(${exi},${w},${si},${Number.isInteger(partnerExi)?partnerExi:'null'},this)">${done?'✓ Serie'+type+' completata':'Completa serie'+type}</button>`;
+  const compact=!type&&!maxEntriesAfter(ex,w,si).length;
+  const label=done?'Serie'+type+' completata':'Completa serie'+type;
+  return `<button type="button" class="series-finish${compact?' compact':''}${done?' is-finished':''}" aria-label="${label} ${si+1}" title="${label}" aria-pressed="${done}" data-finish-ex="${exi}" data-finish-week="${w}" data-finish-set="${si}" onclick="completeSeriesUI(${exi},${w},${si},${Number.isInteger(partnerExi)?partnerExi:'null'},this)">${compact?'✓':(done?'✓ ':'')+label}</button>`;
 }
 function completeSeriesUI(exi,w,si,partnerExi,button){
   const ex=state.days[activeDayIdx]?.esercizi[exi];

@@ -1964,3 +1964,20 @@ body.a11y-high-contrast>.viridis-liquid-page,body.a11y-reduce-motion>.viridis-li
 .load-reminder-review small{display:block;color:var(--muted);font-size:.85em;}
 body.a11y-large-text .load-reminder-chip{font-size:14px;}
 body.a11y-high-contrast .load-reminder-chip.has-reminder{background:#000;border-color:var(--green);}
+/* Serie compatte: azioni secondarie nella testata, campi invariati. */
+.set-series-heading{align-items:center;gap:6px;margin-bottom:3px;}
+.series-finish.compact{flex:0 0 44px;width:44px;min-height:44px;margin:0;padding:0;border-radius:12px;font-size:20px;}
+.load-reminder-add{flex:0 0 44px;width:44px;min-height:44px;margin:0;padding:0;border:0;border-radius:12px;background:transparent;color:var(--muted);font-size:20px;}
+.load-reminder-add:active{background:var(--panel2);color:var(--green);}
+.set-series-group>.load-reminder-chip.has-reminder{width:auto;margin:7px 0 0;min-height:44px;}
+.set-series-group,.set-series-group.has-max{padding:5px 10px 9px;border-radius:15px;}
+.day-ex-chip{min-height:48px;padding:5px 8px;}
+.day-ex-chip-pos{font-size:14px;}.day-ex-chip-name{font-size:9px;}
+.week-block.current-week-block .week-quick-summary{padding:10px 0 0;margin-bottom:0;}
+.workout-quick-tools{margin-top:0;gap:12px;}
+.exercise-note-disclosure{margin:0 0 6px;color:var(--muted);font-size:12px;}
+.exercise-note-disclosure>summary{width:max-content;max-width:100%;min-height:44px;display:list-item;align-content:center;padding:10px 0;cursor:pointer;}
+.exercise-note-disclosure .exercise-note-field{margin:0 0 8px;}
+body.a11y-large-text .exercise-note-disclosure{font-size:16px;}
+body.a11y-high-contrast .load-reminder-add{color:var(--text);border:1px solid var(--line);}
+@media(max-width:360px){.set-series-heading{flex-wrap:wrap;}.set-series-prescription{flex-basis:45%;}.set-series-heading .set-series-number{font-size:11px;}}
