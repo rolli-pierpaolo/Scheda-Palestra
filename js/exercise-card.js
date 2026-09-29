@@ -2017,8 +2017,10 @@ function addSet(exi, w){
 async function removeSet(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.sets || !ex.sets[w] || ex.sets[w].length<=1) return; // tieni sempre almeno 1 serie in questa settimana
-  const currentHasData = weekHasRecordedExerciseData(ex,w);
-  if(currentHasData && !await ViridisConfirmDialog('Questa settimana contiene gia dati inseriti. Vuoi eliminare comunque l\'ultima serie?')) return;
+  const lastIndex=ex.sets[w].length-1;
+  const currentHasData = setHasRecordedData(ex.sets[w][lastIndex]) ||
+    getMaxEntries(ex,w).some(entry=>entry.afterSet>=lastIndex&&setHasRecordedData(entry));
+  if(currentHasData && !await ViridisConfirmDialog('L’ultima serie o i suoi Max contengono peso o ripetizioni. Vuoi eliminarli comunque?')) return;
   const nWeeks = exerciseWeekCount(ex);
   let preservedWeeks = 0;
   for(let k=w;k<nWeeks;k++){

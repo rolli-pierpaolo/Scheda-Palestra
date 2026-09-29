@@ -60,21 +60,23 @@ function isDesktopDevice(){
 }
 // cambia la vista visibile, Home, Allenamento o Progressi, con una
 // dissolvenza incrociata tra la vecchia e la nuova
+const viewScrollPositions={home:0,active:0,hist:0};
+let viewSwitchSequence=0;
 function showView(v){
-  // Se sono già in Allenamento e premo di nuovo il pulsante,
-  // torno in cima alla pagina.
-  if(
-    v === 'active' &&
-    document.getElementById('viewActive').style.display !== 'none'
-  ){
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+  if(!(v in viewScrollPositions))return;
+  const sequence=++viewSwitchSequence;
+  const viewIds={active:'viewActive',hist:'viewHist',home:'viewHome'};
+  const outgoing=Object.keys(viewIds).find(key=>document.getElementById(viewIds[key]).style.display!=='none');
+  if(outgoing===v){
+    const visible=document.getElementById(viewIds[v]);
+    if(typeof gsap!=='undefined')gsap.killTweensOf(visible);
+    visible.style.opacity='';
     return;
   }
+  if(outgoing)viewScrollPositions[outgoing]=outgoing==='active'&&typeof quickKeyboardOriginScrollY!=='undefined'&&quickKeyboardOriginScrollY!==null?quickKeyboardOriginScrollY:window.scrollY;
 
   const applyViewSwitch = () => {
+    if(sequence!==viewSwitchSequence)return;
     if(v!=='active' && typeof resetQuickKeyboardUI==='function') resetQuickKeyboardUI();
     if(v!=='active'){
       discardReorderIfPending();
@@ -158,6 +160,9 @@ function showView(v){
     } else {
       releaseWakeLock();
     }
+    // Ripristina dopo layout e rendering, senza ereditare lo scroll della
+    // schermata appena nascosta. Ogni vista parte dall'alto alla prima visita.
+    window.scrollTo({top:viewScrollPositions[v],behavior:'instant'});
   };
 
   // dissolvenza incrociata: se una vista e' gia' visibile la sfumo via PRIMA

@@ -1849,6 +1849,37 @@ test('ramping non assegna il back-off alla prima serie e la nota vuota resta ric
   assert.ok(window.document.querySelector('.week-plan-schema').textContent.includes(schema));
 });
 
+test('riga vuota si elimina senza avviso per dati in altre serie, Max compilati restano protetti',async()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.sets[0][0]={peso:'40',rip:'10'};
+  let confirmations=0;
+  window.ViridisConfirmDialog=async()=>{confirmations++;return false;};
+  await window.removeSet(0,0);
+  assert.strictEqual(confirmations,0);
+  assert.strictEqual(ex.sets[0].length,2);
+  assert.strictEqual(ex.sets[0][0].rip,'10');
+  ex.maxEntries=[[{afterSet:1,peso:'30',rip:'8'}],[]];
+  await window.removeSet(0,0);
+  assert.strictEqual(confirmations,1);
+  assert.strictEqual(ex.sets[0].length,2);
+  assert.strictEqual(ex.maxEntries[0][0].rip,'8');
+});
+test('Home Allenamento e Progressi conservano posizioni indipendenti',()=>{
+  const {window}=workoutInputFixture();
+  window.gsap=undefined;
+  window.document.getElementById('viewHome').style.display='none';
+  window.document.getElementById('viewHist').style.display='none';
+  let y=650;
+  Object.defineProperty(window,'scrollY',{get:()=>y});
+  window.scrollTo=options=>{y=options.top;};
+  window.showView('home');assert.strictEqual(y,0);
+  y=150;window.showView('hist');assert.strictEqual(y,0);
+  y=320;window.showView('active');assert.strictEqual(y,650);
+  window.showView('active');assert.strictEqual(y,650);
+  window.showView('home');assert.strictEqual(y,150);
+  window.showView('hist');assert.strictEqual(y,320);
+});
+
 // ---------------- runner ----------------
 // async per poter "await t.fn()": i test sincroni di sempre continuano a
 // funzionare identici (await su un valore non-Promise si risolve subito),
