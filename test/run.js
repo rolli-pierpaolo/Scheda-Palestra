@@ -1,18 +1,3 @@
-// Rete di test minima (node test/run.js, oppure "npm test") per la logica
-// che si e' gia' rotta in silenzio in passato e che abbiamo trovato solo
-// testando a mano dal vivo sul telefono/browser - ogni test qui sotto
-// riproduce ESATTAMENTE uno di quegli scenari, cosi' se un cambiamento futuro
-// reintroduce lo stesso bug il test fallisce subito invece di scoprirlo su
-// un allenamento vero. Nessun framework: solo assert nativo di Node + un
-// runner fatto in casa di poche righe.
-//
-// Le variabili globali dell'app (state, collapsedMap...) si leggono/scrivono
-// SEMPRE tramite window.__bridge (vedi app-loader.js), mai con "window.state
-// = ..." diretto: essendo dichiarate con let/const nell'app non diventano
-// proprieta' di window, quindi assegnarle direttamente non avrebbe alcun
-// effetto sul binding vero che le funzioni leggono davvero. Le FUNZIONI
-// invece si chiamano dirette su window (window.forceNextWeekForDay(...)):
-// quelle, dichiarate con "function", sono gia' proprieta' di window di suo.
 const assert = require('assert');
 const { loadApp } = require('./app-loader');
 
@@ -23,14 +8,11 @@ test('forceNextWeekForDay collassa la vera settimana corrente, non quella indovi
   const window = loadApp();
   window.__bridge.state = {
     weeksPerBlock: 4,
-    currentWeek: 1, // settimana 2 (indice 1) - quella vera del programma
+    currentWeek: 1,
     days: [{
       name: 'Giorno A',
       esercizi: [{
         nome: 'Ex A', recupero: ['60s','60s','60s','60s'],
-        // weekDone[0]=true ma NON weekDone[1]: una scansione ingenua
-        // dell'array (il vecchio comportamento) troverebbe "0" come "ultima
-        // segnata fatta" e chiuderebbe quella invece della vera settimana 1
         weekDone: [true, false, false, false], weekSkipped: [false,false,false,false]
       }]
     }]
@@ -72,7 +54,6 @@ test('closeWeekDoneConfirm spunta anche il partner di un esercizio collegato (su
       ]
     }]
   };
-  // come farebbe askWeekDoneConfirm quando si scrive nel primo dei due
   window.__bridge.weekDoneConfirmTarget = { exi: 0, w: 0 };
   window.closeWeekDoneConfirm(true);
   const days = window.__bridge.state.days;
@@ -110,9 +91,6 @@ test('allExercisesClosed usa la vera settimana del programma (state.currentWeek)
     ]}]
   };
   const day = window.__bridge.state.days[0];
-  // l'esercizio ha finito la settimana 1 (indice 0), ma la settimana VERA del
-  // programma e' la 2 (indice 1, non ancora toccata): il giorno non deve
-  // risultare chiuso solo perche' un indice precedente e' spuntato
   assert.strictEqual(window.allExercisesClosed(day), false);
   day.esercizi[0].weekDone[1] = true;
   assert.strictEqual(window.allExercisesClosed(day), true);
@@ -166,8 +144,6 @@ test('computeProgressionHint pesca dal pool motivazionale del GRUPPO MUSCOLARE d
   assert.ok(hintPeso, 'con tante ripetizioni la scorsa settimana deve suggerire qualcosa');
   assert.ok(hintPeso.icon, 'deve avere un\'icona colorata, come le frasi motivazionali di Home');
   assert.ok(!/\d/.test(hintPeso.text), 'BUG: il testo non deve contenere numeri (rivelerebbe indirettamente la performance precedente)');
-  // la base della frase deve venire dal pool "Petto" (l'esercizio e' stato
-  // assegnato a quel gruppo sopra), non da un pool generico qualsiasi
   const poolPettoTexts = window.__bridge.MUSCLE_MOTIVATION['Petto'].map(p => window.splitMotivation(p).text);
   assert.ok(poolPettoTexts.some(t => hintPeso.text.startsWith(t)), 'la frase deve iniziare con una base presa dal pool "Petto", non generica');
   assert.ok(window.__bridge.PROGRESSION_SUFFIX_PESO.some(s => hintPeso.text.endsWith(s)), 'con reps alte il suffisso deve venire dal pool "piu\' peso", non una frase fissa sempre uguale');
@@ -177,11 +153,6 @@ test('computeProgressionHint pesca dal pool motivazionale del GRUPPO MUSCOLARE d
   const poolDefaultTexts = window.__bridge.DEFAULT_MOTIVATION.map(p => window.splitMotivation(p).text);
   assert.ok(poolDefaultTexts.some(t => hintGenerico.text.startsWith(t)), 'senza un gruppo assegnato deve ripiegare sul pool generico, non rompersi');
 
-  // la frase motivazionale c'e' SEMPRE nella settimana corrente, a prescindere
-  // dai dati delle settimane vecchie - anche alla primissima settimana in
-  // assoluto (nessuna settimana precedente) o quando quella precedente non ha
-  // dati validi, deve comunque comparire una frase (solo senza il suggerimento
-  // extra di direzione, che li' non avrebbe nulla su cui basarsi)
   const hintPrimaSettimana = window.computeProgressionHint({nome:'Esercizio nuovo', sets:[[]]}, 0);
   assert.ok(hintPrimaSettimana, 'BUG: alla primissima settimana deve comunque esserci una frase motivazionale');
   const baseNuovoTexts = window.__bridge.DEFAULT_MOTIVATION.map(p => window.splitMotivation(p).text);
@@ -267,7 +238,6 @@ test('toggleWeekSkipped chiude una settimana senza avviare una sessione, e un mi
   const ex = window.__bridge.state.days[0].esercizi[0];
   assert.strictEqual(ex.weekSkipped[0], true);
 
-  // chiude le altre settimane mescolando fatto/saltato
   ex.weekDone[1] = true; ex.weekSkipped[2] = true; ex.weekDone[3] = true;
   assert.strictEqual(window.exerciseFullyClosed(ex), true, 'fatta+saltata su tutte le settimane deve contare come esercizio chiuso, non solo tutto fatto');
 
@@ -287,18 +257,12 @@ test('updateSet non chiede "settimana completata?" su un esercizio collegato fin
   };
   window.__bridge.weekDoneConfirmTarget = null;
 
-  // compila l'ultima (unica, qui) serie del PRIMO esercizio - il partner
-  // (Ex B) non ha ancora scritto nulla
   window.updateSet(0, 0, 0, 'peso', '50');
   window.updateSet(0, 0, 0, 'rip', '8');
   assert.strictEqual(window.__bridge.weekDoneConfirmTarget, null, 'BUG: non deve chiedere conferma finche\' il partner (Ex B) non ha finito anche lui');
 
-  // ora compila anche il partner: SOLO ora deve scattare la conferma
   window.updateSet(1, 0, 0, 'peso', '50');
   window.updateSet(1, 0, 0, 'rip', '8');
-  // niente deepStrictEqual: l'oggetto viene creato dentro il "realm" della
-  // finestra jsdom, con un Object.prototype diverso da quello nativo di Node
-  // - stessa forma ma "strict" li considererebbe comunque diversi
   const target = window.__bridge.weekDoneConfirmTarget;
   assert.ok(target, 'con entrambi compilati deve finalmente chiedere conferma');
   assert.strictEqual(target.exi, 1);
@@ -323,22 +287,17 @@ test('extendWeeksPerBlock allunga (mai riduce) le settimane del blocco in corso,
   assert.strictEqual(ex.recupero[3], '90s', 'stesso principio per il recupero');
   assert.strictEqual(ex.weekDone[2], false);
   assert.strictEqual(ex.sets[0][0].peso, 50, 'le settimane gia\' scritte non devono essere toccate');
-  // niente deepStrictEqual: gli array vengono creati dentro il "realm" della
-  // finestra jsdom, con un Array.prototype diverso da quello nativo di Node
   assert.strictEqual(ex.sets[2].length, 0, 'le settimane nuove partono con le serie vuote');
   assert.strictEqual(ex.maxEntries[2].length, 1, 'le settimane nuove mantengono anche il layout Max');
   assert.strictEqual(ex.maxEntries[2][0].peso, '50');
   assert.strictEqual(ex.maxEntries[2][0].rip, '8');
 
-  // due settimane nuove diverse non devono condividere lo stesso array (bug
-  // gia' visto altrove in questo codice quando si riempie con un valore
-  // condiviso invece che uno fresco per indice)
   ex.sets[2].push({peso:99, rip:1});
   assert.strictEqual(ex.sets[3].length, 0, 'BUG: le settimane nuove non devono condividere lo stesso array di serie');
   ex.maxEntries[2][0].peso = '55';
   assert.strictEqual(ex.maxEntries[3][0].peso, '50', 'i Max delle nuove settimane non devono condividere lo stesso oggetto');
 
-  const notOk = window.extendWeeksPerBlock(3); // <= attuale (4), non deve ridurre
+  const notOk = window.extendWeeksPerBlock(3);
   assert.strictEqual(notOk, false);
   assert.strictEqual(window.__bridge.state.weeksPerBlock, 4, 'non deve mai ridurre le settimane da qui');
 });
@@ -386,29 +345,20 @@ test('il carosello Allenamento mostra un esercizio a schermo e naviga con goToEx
   };
   window.renderActive();
 
-  // di default (nessuna posizione salvata) la slide attiva e' il primo
-  // esercizio non ancora fatto (computeCurrentDoingExerciseIdx)
   assert.strictEqual(window.__bridge.activeExerciseIdx, 0, 'senza posizione salvata deve partire dal primo non ancora fatto');
   let track = window.document.getElementById('exCarouselTrack');
   assert.ok(track, 'il carosello deve essere in pagina');
   assert.strictEqual(track.style.transform, 'translateX(-0%)', 'la prima slide deve partire in posizione 0');
   assert.strictEqual(window.document.getElementById('exStickyHeaderOuter'), null, 'il vecchio tab del titolo non deve più essere nella pagina');
-  // La navigazione avviene dai riquadri esercizio in alto: niente doppio
-  // indice a pallini/frecce, che era ridondante e rubava spazio.
   assert.strictEqual(window.document.querySelector('.ex-carousel-nav'), null, 'non deve restare il vecchio indice a pallini');
   assert.strictEqual(window.document.querySelectorAll('.day-ex-chip').length, 3, 'i riquadri in alto sono l\'unico indice degli esercizi');
 
-  // saltare direttamente all'ultimo esercizio (come un tap su un pallino, una
-  // freccia, o uno swipe) sposta il carosello senza un renderActive completo
   window.goToExerciseSlide(2);
   assert.strictEqual(window.__bridge.activeExerciseIdx, 2);
   track = window.document.getElementById('exCarouselTrack');
   assert.strictEqual(track.style.transform, 'translateX(-200%)', 'la terza slide deve essere alla posizione 2');
   assert.strictEqual(window.document.querySelector('.ex-carousel-nav'), null, 'anche dopo il cambio slide non devono tornare pallini o frecce');
 
-  // completare la settimana corrente sul primo esercizio non fa scattare
-  // subito il salto al prossimo (e' rimandato di 250ms, vedi toggleWeekDone):
-  // subito dopo la slide attiva deve essere ancora quella appena completata
   window.goToExerciseSlide(0);
   window.toggleWeekDone(0, 0);
   assert.strictEqual(window.__bridge.state.days[0].esercizi[0].weekDone[0], true);
@@ -483,8 +433,6 @@ test('advanceProgramWeek riporta avanti lo schema ("Serie") nella settimana nuov
   assert.strictEqual(window.__bridge.state.currentWeek, 1, 'deve essere avanzata alla settimana 2');
   assert.strictEqual(ex.schema[1], '4x8 RM8', 'la settimana 2, vuota, deve riprendere lo schema della settimana 1');
 
-  // avanzo ancora: la settimana 3 aveva GIA' un suo schema scritto a mano,
-  // non deve essere sovrascritto dalla cascata
   window.__bridge.state.completedTrainingDays = [0];
   window.__bridge.state.days[0].esercizi[0].weekDone[1] = true;
   window.advanceProgramWeek();
@@ -503,9 +451,7 @@ test('suggestNextWeight/suggestNextMaxWeight ripropongono il testo esatto della 
   assert.strictEqual(window.suggestNextWeight(ex, 1, 0), '4,5p', 'BUG: la lettera "p" (peso a corpo libero/annotazione personale) non deve sparire dal suggerimento');
   assert.strictEqual(window.suggestNextMaxWeight(ex, 1, 0), '22,5kg fallimento', 'anche il suggerimento del Max deve riportare il testo cosi\' com\'e\' stato scritto');
 
-  // settimana 0: non c'e' una settimana prima, nessun suggerimento
   assert.strictEqual(window.suggestNextWeight(ex, 0, 0), null);
-  // settimana precedente non ancora segnata fatta: nessun suggerimento
   const ex2 = { weekDone: [false], sets: [[{peso:'10', rip:'8'}]] };
   assert.strictEqual(window.suggestNextWeight(ex2, 1, 0), null, 'se la settimana prima non e\' stata completata, non deve suggerire un peso non confermato');
 });
@@ -521,15 +467,11 @@ test('shareExercise costruisce il testo dal record (se c\'e\') e lo passa a navi
   };
   let shared = null;
   window.navigator.share = (data) => { shared = data; return Promise.resolve(); };
-  // shareExercise e' async, ma la chiamata a navigator.share() avviene nella
-  // parte sincrona del corpo (prima del primo await), quindi e' gia' visibile
-  // subito dopo la chiamata, senza dover attendere la promise restituita
   window.shareExercise(0);
   assert.ok(shared, 'deve chiamare navigator.share');
   assert.ok(shared.text.includes('82.5kg'), 'deve includere il peso del record: ' + shared.text);
   assert.ok(shared.text.includes('Panca piana'), 'deve includere il nome dell\'esercizio');
 
-  // senza Web Share API (tipico da desktop), ripiega sul copiare negli appunti
   window.navigator.share = undefined;
   let copied = null;
   window.navigator.clipboard = { writeText: (t) => { copied = t; return Promise.resolve(); } };
@@ -572,12 +514,12 @@ test('computeWeeklyMuscleSetCounts conta le serie con dati dei gruppi con un ese
     weeksPerBlock: 4, currentWeek: 1,
     days: [
       { name:'A', esercizi: [
-        { nome:'Panca piana', weekDone:[true,true,false,false], sets:[[],[{peso:'50',rip:'8'},{peso:'50',rip:'8'},{peso:'50',rip:'6'}],[],[]] },  // completata in settimana 1 (indice 1): 3 serie contano
-        { nome:'Squat', weekDone:[true,false,false,false], sets:[[{peso:'80',rip:'5'}],[{peso:'80',rip:'5'}],[],[]] },        // completata solo in settimana 0: NON conta per la settimana 1
-        { nome:'Corsa', weekDone:[false,true,false,false], sets:[[],[{peso:'',rip:'20'}],[],[]] }         // completata in settimana 1, 1 serie con dati: conta (extra, non sul corpo)
+        { nome:'Panca piana', weekDone:[true,true,false,false], sets:[[],[{peso:'50',rip:'8'},{peso:'50',rip:'8'},{peso:'50',rip:'6'}],[],[]] },
+        { nome:'Squat', weekDone:[true,false,false,false], sets:[[{peso:'80',rip:'5'}],[{peso:'80',rip:'5'}],[],[]] },
+        { nome:'Corsa', weekDone:[false,true,false,false], sets:[[],[{peso:'',rip:'20'}],[],[]] }
       ]},
       { name:'B', esercizi: [
-        { nome:'Rematore', weekSkipped:[false,true,false,false], sets:[[],[{peso:'40',rip:'10'}],[],[]] }   // SALTATA, non completata: non deve contare
+        { nome:'Rematore', weekSkipped:[false,true,false,false], sets:[[],[{peso:'40',rip:'10'}],[],[]] }
       ]}
     ]
   };
@@ -604,21 +546,16 @@ test('la sync cloud riusa buildBackupPayload/validateBackup/applyBackup e non la
   window.__bridge.calendarLog = {};
   window.__bridge.deletedStorico = [];
 
-  // la stessa identica busta che pushToCloud manderebbe a Supabase
   const payload = window.buildBackupPayload();
   const check = window.validateBackup(payload);
   assert.strictEqual(check.valid, true, 'la busta costruita da buildBackupPayload deve essere sempre un backup valido per validateBackup');
   assert.strictEqual(payload.state.title, 'Dispositivo A');
 
-  // simula un payload arrivato da un ALTRO dispositivo (titolo diverso, e un
-  // collasso settimane diverso da quello impostato QUI)
   const remotePayload = JSON.parse(JSON.stringify(payload));
   remotePayload.state.title = 'Dispositivo B';
   remotePayload.collapsedMap = {'9_9_9': true};
-  window.__bridge.collapsedMap = {'0_0_0': true}; // il collasso di QUESTO dispositivo, da preservare
+  window.__bridge.collapsedMap = {'0_0_0': true};
 
-  // esattamente la sequenza di pullFromCloud in js/sync.js: salva il
-  // collasso locale, applica il backup remoto, ripristina il collasso locale
   const localCollapsed = window.__bridge.collapsedMap;
   window.applyBackup(remotePayload);
   assert.strictEqual(window.__bridge.state.title, 'Dispositivo B', 'i dati veri (allenamento) devono venire dal payload remoto');
@@ -635,9 +572,6 @@ test('initSync NON deve sovrascrivere lo stato locale solo perche\' trova una se
   };
   const stateBefore = JSON.stringify(window.__bridge.state);
 
-  // simula una sessione GIA' salvata dal browser (non un login appena
-  // fatto): initSync() la trova ad ogni avvio dell'app, anche quando e'
-  // solo iOS che ha ricaricato la pagina dopo un po' in background
   window.__bridge.supabaseClient = {
     auth: {
       getSession(){ return Promise.resolve({ data: { session: { user: { id:'u1', email:'a@b.com' } } } }); },
@@ -649,7 +583,7 @@ test('initSync NON deve sovrascrivere lo stato locale solo perche\' trova una se
     }
   };
   window.initSync();
-  await new Promise(r => setTimeout(r, 20)); // lascia risolvere getSession()
+  await new Promise(r => setTimeout(r, 20));
 
   assert.strictEqual(JSON.stringify(window.__bridge.state), stateBefore, 'BUG: trovare una sessione gia\' esistente al boot non deve MAI toccare lo stato locale - solo un login VERO (evento SIGNED_IN) puo\' farlo');
 });
@@ -662,13 +596,11 @@ test('checkRemoteUpdateOnBoot avvisa (mai in automatico) solo se il cloud ha qua
   }
   const bannerShown = () => { const el = window.document.getElementById('syncUpdateBanner'); return !!el && el.classList.contains('show'); };
 
-  // questo dispositivo ha appena inviato: il cloud ha la stessa scrittura, nessun avviso
   window.localStorage.setItem('scheda_wo18_last_cloud_push_v1', String(Date.now()));
   window.__bridge.supabaseClient = mockClient(new Date().toISOString());
   await window.checkRemoteUpdateOnBoot();
   assert.strictEqual(bannerShown(), false, 'BUG: non deve avvisare se il cloud non ha nulla di piu\' recente di quanto inviato da qui');
 
-  // un altro dispositivo ha scritto DOPO l'ultimo invio di questo: deve avvisare (mai sovrascrivere da solo)
   window.__bridge.supabaseClient = mockClient(new Date(Date.now()+60000).toISOString());
   await window.checkRemoteUpdateOnBoot();
   assert.strictEqual(bannerShown(), true, 'BUG: deve avvisare se il cloud ha una scrittura piu\' recente arrivata da un altro dispositivo');
@@ -765,11 +697,6 @@ test('checkRemoteUpdateOnBoot al PRIMISSIMO controllo (mai registrato un invio d
   }
   const bannerShown = () => { const el = window.document.getElementById('syncUpdateBanner'); return !!el && el.classList.contains('show'); };
 
-  // BUG: chi aveva gia' sincronizzato da PRIMA di questo fix non ha ancora
-  // scheda_wo18_last_cloud_push_v1 salvato in locale - qualunque data vera
-  // sul cloud (qui: di un'ora fa, niente di "nuovo" per davvero) sembrava
-  // "piu' recente" di un lastPush mai registrato (0), facendo comparire il
-  // banner anche senza NESSUNA modifica fatta da nessuna parte
   window.localStorage.removeItem('scheda_wo18_last_cloud_push_v1');
   window.__bridge.supabaseClient = mockClient(new Date(Date.now()-3600000).toISOString());
   await window.checkRemoteUpdateOnBoot();
@@ -780,7 +707,7 @@ test('checkRemoteUpdateOnBoot al PRIMISSIMO controllo (mai registrato un invio d
 test('pullFromCloud NON deve azzerare la posizione (giorno/esercizio su cui si e\') se il giorno resta valido nei dati nuovi', async () => {
   const window = loadApp();
   window.__bridge.syncSession = { user: { id:'u1', email:'a@b.com' } };
-  window.__bridge.activeDayIdx = 2; // giorno C
+  window.__bridge.activeDayIdx = 2;
   window.__bridge.activeExerciseIdx = 1;
   window.__bridge.collapsedMap = {};
   const dayCEsercizi = [
@@ -823,14 +750,10 @@ test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio d
     weeksPerBlock: 4, currentWeek: 0,
     days: [{ name:'Push', esercizi: [] }]
   };
-  // saveState() scrive subito, in modo sincrono: la guardia è la primissima
-  // riga della funzione, quindi in visualizzazione condivisa non deve
-  // toccare nemmeno localStorage.
   window.localStorage.removeItem('scheda_wo18_state_v1');
   window.localStorage.removeItem('scheda_wo18_active_pos_v1');
   window.localStorage.removeItem('scheda_wo18_collapsed_v1');
 
-  // caso normale: senza essere in visualizzazione condivisa, i salvataggi funzionano
   window.__bridge.viewingSharedOwnerId = null;
   window.saveState();
   window.__bridge.activeExerciseIdx = 2;
@@ -841,7 +764,6 @@ test('mentre si guardano dati condivisi da un altro utente, nessun salvataggio d
   assert.ok(window.localStorage.getItem('scheda_wo18_active_pos_v1'), 'in condizioni normali saveActivePos deve scrivere su localStorage');
   assert.ok(window.localStorage.getItem('scheda_wo18_collapsed_v1'), 'in condizioni normali saveCollapsed deve scrivere su localStorage');
 
-  // ora si sta guardando l'account di un altro utente: NESSUN salvataggio deve avvenire
   window.localStorage.removeItem('scheda_wo18_state_v1');
   window.localStorage.removeItem('scheda_wo18_active_pos_v1');
   window.localStorage.removeItem('scheda_wo18_collapsed_v1');
@@ -867,9 +789,6 @@ test('saveState() scrive SUBITO su localStorage, in modo sincrono, senza nessun 
   assert.ok(saved, 'BUG: saveState() deve scrivere SUBITO, in modo sincrono - ogni ritardo e\' una finestra in cui una modifica esiste solo in memoria e si perde se l\'app va in background prima che scatta il salvataggio');
   assert.strictEqual(JSON.parse(saved).days[0].name, 'Push', 'deve scrivere lo stato vero, non un placeholder');
 
-  // il listener su visibilitychange/pagehide chiama flushSaveState() come
-  // rete di sicurezza in piu': senza nulla in sospeso (saveState() ha gia'
-  // scritto tutto sopra) non deve ricreare un altro giro ne' rompere nulla
   window.localStorage.removeItem('scheda_wo18_state_v1');
   window.flushSaveState();
   assert.strictEqual(window.localStorage.getItem('scheda_wo18_state_v1'), null, 'senza un saveState() in sospeso, una flush in piu\' non deve riscrivere nulla');
@@ -882,8 +801,6 @@ test('una settimana gia\' fatta/saltata parte collassata anche se e\' nominalmen
   window.__bridge.state = {
     weeksPerBlock: 4, currentWeek: 1, title: 'T',
     days: [{ name:'Push', esercizi: [
-      // settimana 1 (indice 1, "corrente") gia' segnata fatta: prima di
-      // questo fix restava SEMPRE aperta solo perche' era quella corrente
       { nome:'Ex A', recupero:['60s','60s','60s','60s'], schema:['','','',''], weekDone:[true,true,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
     ]}]
   };
@@ -894,7 +811,6 @@ test('una settimana gia\' fatta/saltata parte collassata anche se e\' nominalmen
   assert.ok(weekCurrent.classList.contains('collapsed'), 'BUG: la settimana corrente gia\' fatta deve partire collassata, non spalancata');
   assert.ok(weekPrevious.classList.contains('collapsed'), 'la settimana passata deve restare collassata come prima');
 
-  // un collasso scelto ESPLICITAMENTE a mano (collapsedMap) deve comunque vincere su tutto
   window.__bridge.collapsedMap = {'0_0_1': false};
   window.renderActive();
   const currentToggleAfterChoice = window.document.querySelector('.week-block[data-week="1"] .week-toggle');
@@ -949,7 +865,6 @@ test('archiveAndReset avvisa e chiede conferma esplicita se il blocco non e\' an
   assert.ok(/settiman/i.test(confirmMessage), 'l\'avviso deve menzionare le settimane mancanti');
   assert.ok(!promptCalled, 'BUG: se si annulla l\'avviso, non deve comunque chiedere il nome da salvare');
 
-  // a blocco completo l'avviso extra non deve comparire: si passa dritti al prompt del nome
   window.__bridge.state.completedWeeks = [0,1,2,3];
   confirmCalls = 0; promptCalled = false;
   await window.archiveAndReset();
@@ -959,8 +874,6 @@ test('archiveAndReset avvisa e chiede conferma esplicita se il blocco non e\' an
 
 test('loadState() salva di nuovo SOLO se ha davvero corretto/riempito qualcosa, non a ogni avvio senza motivo', () => {
   const window = loadApp();
-  // uno stato gia' "pulito": tutti i campi che loadState() normalmente
-  // ripara/riempie sono gia' presenti e coerenti, non c'e' nulla da correggere
   const cleanState = {
     title: 'WO', days: [{ name:'Push', esercizi: [] }],
     currentWeek: 0, completedTrainingDays: [], completedWeeks: [],
@@ -980,9 +893,6 @@ test('loadState() conserva il segnale di sessione: la decisione avviene dopo, co
   window.localStorage.setItem('scheda_wo18_state_v1', JSON.stringify({
     title: 'WO', currentWeek: 0,
     days: [{ name:'Push', esercizi: [
-      // nessun weekDone=true da nessuna parte, ma un weekSkipped=true si':
-      // saltare una settimana di proposito conta come allenarsi (vedi
-      // toggleWeekSkipped), l'autocorrezione doveva controllare anche questo
       { nome:'Ex A', weekDone:[false,false,false,false], weekSkipped:[true,false,false,false] }
     ]}]
   }));
@@ -1002,20 +912,16 @@ test('"in corso" si attiva SOLO scrivendo una ripetizione vera (non aprendo la s
     ]}]
   };
 
-  // toccare "inizia" dalla Home NON deve piu' contare da solo
   window.startDayFromHome(0);
   assert.strictEqual(window.__bridge.workoutInProgress, false, 'BUG: aprire il giorno da solo (senza scrivere nulla) non deve attivare "in corso"');
 
-  // scrivere una RIPETIZIONE reale avvia l'allenamento
   window.updateSet(0, 0, 0, 'rip', '8');
   assert.strictEqual(window.__bridge.workoutInProgress, true, 'scrivere una ripetizione deve attivare "in corso"');
 
-  // un PESO, anche dopo, non è il segnale della sessione
   window.__bridge.workoutInProgress = false;
   window.updateSet(0, 0, 0, 'peso', '50');
   assert.strictEqual(window.__bridge.workoutInProgress, false, 'un peso predisposto o corretto non deve attivare "in corso"');
 
-  // anche nei massimali conta la ripetizione, non il peso
   window.__bridge.workoutInProgress = false;
   window.updateMax(0, 0, 0, 'rip', '3');
   assert.strictEqual(window.__bridge.workoutInProgress, true, 'una ripetizione massimale deve attivare "in corso"');
@@ -1031,7 +937,6 @@ test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' 
   window.__bridge.state = {
     weeksPerBlock: 4, currentWeek: 0, completedTrainingDays: [],
     days: [{ name:'Push', esercizi: [
-      // un esercizio fatto, uno no: il giorno NON e' ancora tutto chiuso
       { nome:'Ex A', recupero:['60s','60s','60s','60s'], weekDone:[true,false,false,false], weekSkipped:[false,false,false,false], sets:[[{peso:'50',rip:'8'}],[],[],[]] },
       { nome:'Ex B', recupero:['60s','60s','60s','60s'], weekDone:[false,false,false,false], weekSkipped:[false,false,false,false], sets:[[],[],[],[]] }
     ]}]
@@ -1039,9 +944,6 @@ test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' 
   window.showHome();
   assert.strictEqual(window.__bridge.workoutInProgress, true, 'BUG: dare solo un\'occhiata alla Home a meta\' allenamento non deve far perdere "in corso" - altrimenti riaprendo l\'app si viene rimandati al giorno suggerito invece che a quello vero');
 
-  // ma se il giorno attivo risulta TUTTO chiuso (fatto/saltato) e mai
-  // confermato con "Giorno terminato", quello resta un allenamento
-  // abbandonato per davvero: la Home deve comunque poterlo azzerare
   window.__bridge.state.days[0].esercizi[1].weekDone = [true,false,false,false];
   window.showHome();
   assert.strictEqual(window.__bridge.workoutInProgress, false, 'con il giorno tutto chiuso ma mai confermato, la Home deve ancora azzerare "in corso" come prima');
@@ -1050,13 +952,11 @@ test('showHome NON deve azzerare "allenamento in corso" se il giorno attivo e\' 
 test('dayHasRealProgressThisWeek: BUG segnalato da un utente vero - "in corso" e\' del blocco intero, ma alla riapertura conta solo il giorno/settimana attivi', () => {
   const window = loadApp();
   window.__bridge.state = {
-    weeksPerBlock: 4, currentWeek: 2, // settimana 3 (indice 2): settimane 1-2 gia' concluse altrove
+    weeksPerBlock: 4, currentWeek: 2,
     days: [
-      // giorno 1: settimane passate gia' fatte, ma NIENTE scritto per la settimana corrente
       { name:'A', esercizi: [
         { nome:'Ex A', weekDone:[true,true,false,false], sets:[[{peso:'50',rip:'5'}],[{peso:'52',rip:'5'}],[],[]] }
       ]},
-      // giorno 3: quello che si vuole aprire, per davvero vuoto per la settimana corrente
       { name:'C', esercizi: [
         { nome:'Ex C', weekDone:[false,false,false,false], sets:[[],[],[],[]] }
       ]}
@@ -1064,7 +964,6 @@ test('dayHasRealProgressThisWeek: BUG segnalato da un utente vero - "in corso" e
   };
   assert.strictEqual(window.dayHasRealProgressThisWeek(window.__bridge.state.days[1]), false, 'BUG: il giorno 3 e\' vuoto per la settimana corrente, non deve risultare "con progresso" solo perche\' il blocco nel suo insieme e\' andato avanti altrove');
 
-  // ma se sul giorno 3, PER LA SETTIMANA CORRENTE, è stata scritta una ripetizione, allora sì
   window.__bridge.state.days[1].esercizi[0].sets[2] = [{peso:'20', rip:''}];
   assert.strictEqual(window.dayHasRealProgressThisWeek(window.__bridge.state.days[1]), false, 'un peso da solo non deve contare come allenamento iniziato');
   window.__bridge.state.days[1].esercizi[0].sets[2][0].rip = '8';
@@ -1215,7 +1114,6 @@ test('tastiera rapida aggancia il campo al tap completo, anche senza focus mobil
   input.type = 'text';
   input.className = 'set-input';
   window.document.body.appendChild(input);
-  // Un tap completo deve selezionare il campo anche senza focus nativo.
   input.dispatchEvent(new window.Event('click',{bubbles:true,cancelable:true}));
   const one = window.document.querySelector('.quick-keyboard-numbers button');
   one.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
@@ -1309,8 +1207,6 @@ test('il tab Allenamento in basso apre il giorno suggerito, non resta fermo su u
   window.goToActiveTab();
   assert.strictEqual(window.__bridge.activeDayIdx, 2, 'BUG: deve aprire il giorno suggerito (quello che tocca oggi), non restare sul giorno 0');
 
-  // se invece un allenamento e' gia' deliberatamente in corso su un giorno
-  // preciso, il tab non deve strappare via l'utente da li'
   window.__bridge.workoutInProgress = true;
   window.__bridge.activeDayIdx = 1;
   window.goToActiveTab();
@@ -1880,11 +1776,6 @@ test('Home Allenamento e Progressi conservano posizioni indipendenti',()=>{
   window.showView('hist');assert.strictEqual(y,320);
 });
 
-// ---------------- runner ----------------
-// async per poter "await t.fn()": i test sincroni di sempre continuano a
-// funzionare identici (await su un valore non-Promise si risolve subito),
-// serve solo ai test nuovi che aspettano davvero una Promise (es. una
-// chiamata Supabase mockata)
 (async () => {
   let passed = 0, failed = 0;
   for(const t of tests){

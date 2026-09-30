@@ -1,9 +1,3 @@
-// ---------------- GRAFICO PROGRESSIONE ----------------
-// prepara i punti del grafico per un esercizio: un punto per ogni settimana
-// (1-4) del mese attivo corrente, con il peso massimo fatto in quella
-// settimana. Niente confronto con i mesi archiviati nello storico: lo
-// schema serie/rip può cambiare da un mese all'altro, quindi confrontare i
-// pesi tra mesi diversi non avrebbe senso
 function computeExerciseWeekProgress(ex){
   const points = [];
   const nWeeks = (ex.sets && ex.sets.length) || (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
@@ -18,9 +12,6 @@ function computeExerciseWeekProgress(ex){
   }
   return points;
 }
-// disegna a mano un piccolo grafico a linee in SVG (niente librerie esterne):
-// scala i punti dentro l'area utile W/H meno i padding, poi costruisce il
-// path della linea, i pallini e le etichette (saltandone alcune se sono troppe)
 function renderChartSVG(points){
   const W = 320, H = 190, padL = 30, padR = 14, padT = 20, padB = 30;
   const vals = points.map(p=>p.value);
@@ -44,8 +35,6 @@ function renderChartSVG(points){
     ${dots}${labels}${valLabels}
   </svg>`;
 }
-// apre il modale con il grafico di un esercizio, oppure un messaggio se
-// non ci sono ancora abbastanza dati per disegnarlo
 function openChart(exi){
   const ex = state.days[activeDayIdx].esercizi[exi];
   const points = computeExerciseWeekProgress(ex);
@@ -58,19 +47,11 @@ function openChart(exi){
   }
   document.getElementById('chartModal').style.display = 'flex';
 }
-// chiude il modale del grafico
 function closeChart(){
   document.getElementById('chartModal').style.display = 'none';
 }
 
-// stesso oggetto usato sia dal backup manuale, esporta backup, sia da quello
-// automatico giornaliero, così restano sempre nello stesso formato importabile.
-// schemaVersion non è ancora usato per migrazioni, non serve finché il
-// formato non cambia davvero, ma c'è già pronto: se in futuro cambiasse la
-// forma di uno di questi campi, validateBackup in js/backup.js può leggerlo
-// per capire come interpretare un backup vecchio invece di rifiutarlo e basta
 const BACKUP_SCHEMA_VERSION = 1;
-// raccoglie tutto quello che serve per un backup completo in un unico oggetto
 function buildBackupPayload(){
   return { schemaVersion: BACKUP_SCHEMA_VERSION, state, storicoExtra, collapsedMap, deletedStorico, calendarLog, extraLists, exerciseGroups, deletedEsercizi, exportedAt: new Date().toISOString() };
 }

@@ -1,17 +1,7 @@
-// ---------------- STORICO ----------------
-// stessa idea di activeDayIdx/activeExerciseIdx ma per la tab Storico: histActive
-// è il titolo del WO archiviato scelto, per esempio "WO 12", histDayIdx il
-// giorno dentro quel WO. È tutto di sola lettura, qui non si modifica nulla
-// dei dati storici
 let histActive = null;
 let histDayIdx = 0;
 let histEditMode = false;
 
-// le due sotto-sezioni del tab Progressi, Cronologia e Strumenti, vedi
-// index.html: una alla volta, si riparte sempre da Cronologia ogni volta che
-// si entra nel tab, è quella che si vuole vedere più spesso. Le vere
-// Impostazioni, account, backup, notifiche, non vivono più qui: sono nel
-// modale aperto dall'icona a ingranaggio in alto, vedi sotto
 function showHistSection(section){
   ['cronologia','strumenti'].forEach(s=>{
     const label = s.charAt(0).toUpperCase()+s.slice(1);
@@ -20,9 +10,6 @@ function showHistSection(section){
   });
 }
 
-// Dashboard compatta dei Progressi: usa soltanto dati già presenti
-// (calendario, settimane e storico), quindi non introduce un secondo formato
-// di salvataggio né cambia il modo in cui vengono contati gli allenamenti.
 function progressTimelineEntries(limit=4){
   return Object.keys(calendarLog || {})
     .filter(key => Array.isArray(calendarLog[key]) && calendarLog[key].length)
@@ -78,8 +65,6 @@ function renderProgressOverview(){
       <div class="progress-timeline">${timelineHtml}</div>
     </section>`;
 }
-// apre il modale Impostazioni, aggiornando prima lo stato di condivisione
-// e notifiche così sono sempre freschi
 function openSettingsModal(){
   if(typeof renderAppearanceSettings === 'function') renderAppearanceSettings();
   if(typeof renderAccessibilitySettings === 'function') renderAccessibilitySettings();
@@ -91,15 +76,12 @@ function openSettingsModal(){
 function closeSettingsModal(){
   document.getElementById('settingsModal').style.display = 'none';
 }
-// accende o spegne la modalità modifica dello storico, che mostra i
-// bottoni per eliminare un blocco archiviato
 function toggleHistEdit(){
   histEditMode = !histEditMode;
   const btn = document.getElementById('histEditBtn');
   if(btn){ btn.innerHTML = histEditMode ? (ICON_CHECK+' Fatto') : (ICON_PENCIL+' Modifica'); btn.classList.toggle('active', histEditMode); }
   renderHistList();
 }
-// disegna la lista dei blocchi archiviati, come pillole cliccabili
 function renderHistList(){
   if(typeof renderExerciseHistory==='function') renderExerciseHistory();
   const el = document.getElementById('histList');
@@ -120,22 +102,17 @@ function renderHistList(){
   el.innerHTML = titles.map(t=>{
     const safe = String(t).replace(/'/g,"\\'");
     const delBtn = histEditMode ? `<button class="hist-del" onclick="event.stopPropagation();deleteHistEntry('${safe}')" title="Elimina">\u2715</button>` : '';
-    // la data manca per i blocchi archiviati prima che storicoDates esistesse:
-    // in quel caso il sottotitolo semplicemente non compare, invece di mostrare
-    // una data finta o un placeholder confuso
     const dateKey = storicoDates[t];
     const dateHtml = dateKey ? `<span class="hist-chip-date">${formatDateItalian(dateKey)}</span>` : '';
     return `<span class="hist-chip-wrap"><button class="hist-chip ${t===histActive?'active':''}" onclick="selectHist('${safe}')">${escapeHtml(t)}${dateHtml}</button>${delBtn}</span>`;
   }).join('');
 }
-// sceglie quale blocco archiviato guardare, e mostra sempre il suo primo giorno
 function selectHist(t){
   histActive = t; histDayIdx = 0;
   renderHistList();
   renderHistDayTabs();
   renderHistBody();
 }
-// disegna i tab dei giorni dentro il blocco archiviato scelto
 function renderHistDayTabs(){
   const el = document.getElementById('histDayTabs');
   if(!histActive){ el.innerHTML=''; return; }
@@ -145,19 +122,13 @@ function renderHistDayTabs(){
     return `<button class="day-btn ${i===histDayIdx?'active':''}" style="--accent:${a.c}" onclick="selectHistDay(${i})">${escapeHtml(d.name)}</button>`;
   }).join('');
 }
-// cambia il giorno mostrato dentro il blocco archiviato
 function selectHistDay(i){ histDayIdx=i; renderHistDayTabs(); renderHistBody(); }
-// scheda di sola lettura per un esercizio del WO storico: una riga per ogni
-// settimana che ha davvero delle serie compilate, le settimane senza dati,
-// tipo quelle mai arrivate a farle, spariscono invece di mostrarsi vuote
 function renderHistBody(){
   const el = document.getElementById('histBody');
   if(!histActive){ el.innerHTML = `<div class="history-empty-state"><span>${ICON_ARCHIVE}</span><b>Le tue schede archiviate</b><small>Seleziona un blocco per vedere esercizi, serie e settimane registrate.</small></div>`; return; }
   const day = getStorico()[histActive][histDayIdx];
   const a = dayAccent(day, histDayIdx);
   el.innerHTML = day.esercizi.map(ex=>{
-    // il numero di settimane di questo esercizio storico, non quello del blocco
-    // attivo: un WO archiviato può avere una durata diversa da quella corrente
     const nWeeks = (ex.sets && ex.sets.length) || (ex.recupero && ex.recupero.length) || 4;
     const weeksHtml = Array.from({length:nWeeks}, (_,i)=>i).map(w=>{
       const sets = (ex.sets[w]||[]).filter(s=>s.peso||s.rip);

@@ -1,12 +1,5 @@
-// ---------------- PREFERENZE DI ACCESSIBILITÀ ----------------
-// Preferenze solo di interfaccia: non entrano nella scheda o nel backup,
-// quindi ogni persona può usare testo/contrasto/movimento adatti a sé senza
-// cambiare gli allenamenti condivisi con coach o altri dispositivi.
 const ACCESSIBILITY_PREFS_KEY = 'scheda_wo18_accessibility_v1';
 let accessibilityPrefs = { largeText:false, highContrast:false, reduceMotion:false, vibration:true };
-// Il tema è una preferenza del singolo dispositivo, come accessibilità: non
-// entra mai nella scheda né nel backup e quindi non cambia l'aspetto scelto
-// da un coach o da un altro telefono.
 const THEME_PREF_KEY = 'scheda_wo18_theme_v1';
 let themePreference = 'dark';
 
@@ -61,9 +54,6 @@ function applyThemePreference(){
   document.documentElement.style.colorScheme = isLight ? 'light' : 'dark';
   const scheme = document.querySelector('meta[name="color-scheme"]');
   if(scheme) scheme.setAttribute('content', isLight ? 'light dark' : 'dark');
-  // Prima che Navigation sia disponibile all'avvio aggiorniamo comunque il
-  // colore del browser; dopo l'avvio updateThemeColor lo rifinirà in base
-  // alla schermata aperta.
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   if(themeMeta && typeof updateThemeColor !== 'function') themeMeta.setAttribute('content', isLight ? '#F4F6F1' : '#0D0D0D');
   if(typeof updateThemeColor === 'function') updateThemeColor();

@@ -1,9 +1,3 @@
-// ---------------- RECORD PERSONALI (PR) ----------------
-// cerca dentro un giorno il peso più alto mai sollevato per un esercizio
-// specifico, scorrendo tutte le settimane e tutte le serie
-// un dropset è per definizione un peso ridotto dopo il cedimento sulla
-// serie vera: non rappresenta la forza massima del momento, quindi non deve
-// mai contare come record (vedi toggleDropset in js/exercise-card.js)
 function maxPesoInDay(day, key){
   let m = null;
   (day.esercizi||[]).forEach(ex=>{
@@ -22,8 +16,6 @@ function maxPesoInDay(day, key){
   });
   return m;
 }
-// trova il record assoluto per un esercizio, guardando sia il blocco
-// attivo che tutti i mesi archiviati nello storico
 function getRecordForExercise(name){
   const key = String(name||'').trim().toLowerCase();
   if(!key) return null;
@@ -41,12 +33,6 @@ function getRecordForExercise(name){
   });
   return best;
 }
-// festeggiamento a schermo intero (vedi showCelebration in js/utils.js) al
-// posto del vecchio toast: un record merita di essere notato, non solo
-// accennato in un angolo per due secondi
-// PR accumulati dalla sessione in corso (svuotati da confirmFinishWorkout
-// in js/animations.js quando l'allenamento finisce per davvero): servono
-// al recap nel popup "Giorno terminato", non sono un log storico
 let sessionPRs = [];
 function celebratePR(name, weight){
   sessionPRs.push({name: name||'', weight});
@@ -59,4 +45,3 @@ function celebratePR(name, weight){
     accent: 'green'
   });
 }
-

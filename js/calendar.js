@@ -1,14 +1,8 @@
-// ---------------- CALENDARIO ALLENAMENTI ----------------
-// mostra un mese alla volta con un pallino colorato, il colore del giorno
-// Push/Pull/Legs eccetera, per ogni data in cui è stato registrato un
-// allenamento, tramite "Giorno terminato" o toccando a mano una cella per
-// correggerla
 let calendarMonthOffset = 0;
-let calendarViewDate = null;   // "YYYY-MM-DD" della cella aperta, o null per la vista a griglia
-let calendarViewMode = null;   // 'info' per il riepilogo di sola lettura, 'edit' per selezione e conferma
-let calendarEditPending = null; // nomi giorno selezionati mentre si è in modalità modifica, non ancora salvati
+let calendarViewDate = null;
+let calendarViewMode = null;
+let calendarEditPending = null;
 const CAL_MONTH_NAMES = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-// apre il calendario, sempre partendo dal mese corrente e dalla vista a griglia
 function openCalendar(){
   calendarMonthOffset = 0;
   calendarViewDate = null;
@@ -20,14 +14,10 @@ function openCalendar(){
 function closeCalendar(){
   document.getElementById('calendarModal').style.display = 'none';
 }
-// passa al mese precedente o successivo
 function shiftCalendarMonth(delta){
   calendarMonthOffset += delta;
   renderCalendar();
 }
-// quante date, oggi incluso, hanno almeno un allenamento registrato negli
-// ultimi N giorni: piccola spinta motivazionale, calcolata da calendarLog
-// che già esiste, senza bisogno di un nuovo storage
 function countRecentWorkoutDays(days){
   let count = 0;
   const d = new Date();
@@ -37,10 +27,6 @@ function countRecentWorkoutDays(days){
   }
   return count;
 }
-// tocca una cella: se ha già un allenamento registrato, mostra un riepilogo
-// veloce di sola lettura invece di buttare in faccia subito la lista di
-// scelte; se è vuota, va dritto alla selezione perché non c'è nulla da
-// riassumere
 function openCalendarDay(key){
   calendarViewDate = key;
   const hasEntries = (calendarLog[key]||[]).length > 0;
@@ -52,21 +38,17 @@ function openCalendarDay(key){
   }
   renderCalendar();
 }
-// passa dal riepilogo alla modifica di una data già registrata
 function editCalendarDay(){
   calendarViewMode = 'edit';
   calendarEditPending = (calendarLog[calendarViewDate]||[]).map(e=>e.name);
   renderCalendar();
 }
-// chiude la vista di dettaglio di una singola data, tornando alla griglia
 function closeCalendarDayView(){
   calendarViewDate = null;
   calendarViewMode = null;
   calendarEditPending = null;
   renderCalendar();
 }
-// accende o spegne un giorno tra quelli selezionati per questa data,
-// senza ancora salvare nulla
 function togglePendingCalendarDay(dayIdx){
   const day = state.days[dayIdx];
   if(!day) return;
@@ -74,8 +56,6 @@ function togglePendingCalendarDay(dayIdx){
   if(i>=0) calendarEditPending.splice(i,1); else calendarEditPending.push(day.name);
   renderCalendar();
 }
-// niente si salva finché non si preme "Conferma": stesso spirito della
-// modalità di riordino esercizi, così toccare le scelte per sbaglio non scrive subito
 function confirmCalendarDay(){
   const key = calendarViewDate;
   const entries = calendarEditPending.map(name=>{
@@ -87,12 +67,10 @@ function confirmCalendarDay(){
   saveCalendarLog();
   closeCalendarDayView();
 }
-// trasforma una data "YYYY-MM-DD" in un formato leggibile in italiano
 function formatDateItalian(key){
   const [y,m,d] = key.split('-').map(Number);
   return d + ' ' + CAL_MONTH_NAMES[m-1] + ' ' + y;
 }
-// disegna il riepilogo di sola lettura di una data già registrata
 function renderCalendarInfo(key){
   const entries = calendarLog[key] || [];
   const chips = entries.map(e=>`<div class="cal-info-chip" style="--accent:${e.color}">${escapeHtml(e.name)}</div>`).join('');
@@ -105,7 +83,6 @@ function renderCalendarInfo(key){
     </div>
   </div>`;
 }
-// disegna la selezione dei giorni allenati per una data specifica
 function renderCalendarEdit(key){
   const rows = state.days.map((day,idx)=>{
     const a = dayAccent(day, idx);
@@ -120,8 +97,6 @@ function renderCalendarEdit(key){
     <button class="add-ex small2" style="margin-top:8px;" onclick="closeCalendarDayView()">← Annulla</button>
   </div>`;
 }
-// disegna il calendario intero: o la griglia del mese, o il dettaglio di una
-// singola data se ne è stata aperta una
 function renderCalendar(){
   const body = document.getElementById('calendarBody');
   if(!body) return;
@@ -132,7 +107,7 @@ function renderCalendar(){
   const now = new Date();
   const base = new Date(now.getFullYear(), now.getMonth()+calendarMonthOffset, 1);
   const year = base.getFullYear(), month = base.getMonth();
-  const firstDow = (base.getDay()+6)%7; // lunedì diventa il giorno zero, invece di domenica
+  const firstDow = (base.getDay()+6)%7;
   const daysInMonth = new Date(year, month+1, 0).getDate();
   const todayK = todayKey();
   let monthCount = 0;

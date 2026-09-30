@@ -1,5 +1,3 @@
-// Presentation only. Two small GPU surfaces, clocked by the existing GSAP ticker.
-// No workout state, storage, network, pointer handlers or global ticker settings.
 (function(){
   'use strict';
   const vertex = 'attribute vec2 p; varying vec2 uv; void main(){uv=p*.5+.5;gl_Position=vec4(p,0.,1.);}';

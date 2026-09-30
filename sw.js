@@ -1,20 +1,6 @@
-// ---------------- SERVICE WORKER (funzionamento offline) ----------------
-// strategia "network-first": prova SEMPRE a scaricare la versione fresca da
-// internet, e usa la copia in cache solo come riserva se non c'e' rete. Con
-// l'app corretta spesso in queste settimane, la vecchia strategia
-// "stale-while-revalidate" (rispondeva SEMPRE dalla cache, aggiornandola solo
-// in background per la VOLTA DOPO) faceva vedere una versione dell'app
-// vecchia di un giro intero ad ogni apertura - un fix appena pubblicato non
-// si vedeva mai al primo riavvio, serviva riaprire una seconda volta perche'
-// la cache si fosse aggiornata nel frattempo. BUG piu' subdolo di quanto
-// sembri: con l'app che si ricarica da sola spesso (iOS in background),
-// sembrava "il fix non funziona" quando in realta' il telefono stava ancora
-// eseguendo il codice di prima. Offline resta comunque supportato: quando la
-// rete manca, si ripiega sulla cache esattamente come prima
-// Nuova cache per la 1.21: forza l'app installata ad abbandonare gli script
-// che aprivano il tastierino numerico, anche su telefoni che erano rimasti
-// offline o con una vecchia risposta del browser in memoria.
-const CACHE_NAME = 'logbook-cache-v111';
+// Prova la rete e usa la cache se il dispositivo e offline.
+
+const CACHE_NAME = 'logbook-cache-v112';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -82,30 +68,23 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  // La cache offline è solo dell'app. In precedenza qualunque GET partito
-  // dalla pagina poteva essere salvato, compresi dati remoti della sync.
-  // Oltre a essere inutile, era più pesante e meno rispettoso della privacy.
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
   event.respondWith(
     fetch(event.request).then((response) => {
       if (response && response.ok && response.type === 'basic') {
         const copy = response.clone();
-        // Mantiene vivo il worker fino alla scrittura: la cache non resta a
-        // metà se iOS sospende l'app subito dopo aver ricevuto la risposta.
+        // Attende la scrittura in cache prima di consentire la sospensione del worker.
+
         event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {}));
       }
       return response;
-    // Gli asset hanno un ?rev per aggiornarsi. In offline la stessa risorsa
-    // precacheata senza query va bene ed evita duplicati nella cache.
+    // Offline usa la risorsa in cache senza il parametro di revisione.
+
     }).catch(() => caches.match(event.request, {ignoreSearch:true}))
   );
 });
 
-// ---------------- NOTIFICHE PUSH ----------------
-// il contenuto arriva dalla funzione schedulata lato Supabase (vedi
-// supabase/push-reminder-function.ts): qui si mostra solo la notifica,
-// nessuna logica su CHI/QUANDO avvisare vive nel service worker
 self.addEventListener('push', (event) => {
   let data = { title: 'Viridis', body: 'Non ti alleni da un po\' - torna a farti sotto!' };
   if(event.data){
@@ -121,8 +100,6 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// un tocco sulla notifica mette a fuoco una scheda dell'app gia' aperta se
-// c'e', altrimenti ne apre una nuova, invece di aprirne sempre una in piu'
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(

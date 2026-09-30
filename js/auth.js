@@ -1,10 +1,5 @@
-// ---------------- ACCOUNT (login/registrazione) ----------------
-// niente di obbligatorio: senza account l'app funziona esattamente come
-// prima, solo in locale. Il modale qui sotto è l'unico punto in cui si
-// tocca Supabase Auth, js/sync.js si occupa solo di push/pull dei dati,
-// non di autenticazione
-let authMode = 'signin'; // 'signin' o 'signup', quale form mostra il modale
-// apre il modale account, partendo sempre dal form di accesso
+let authMode = 'signin';
+
 function openAuthModal(){
   authMode = 'signin';
   renderAuthModalBody();
@@ -13,13 +8,10 @@ function openAuthModal(){
 function closeAuthModal(){
   document.getElementById('authModal').style.display = 'none';
 }
-// passa dal form di accesso a quello di registrazione e viceversa
 function switchAuthMode(mode){
   authMode = mode;
   renderAuthModalBody();
 }
-// disegna il contenuto del modale account: se sei già collegato mostra lo
-// stato e il bottone per uscire, altrimenti il form di accesso o registrazione
 function renderAuthModalBody(){
   const body = document.getElementById('authBody');
   if(!body) return;
@@ -47,12 +39,10 @@ function renderAuthModalBody(){
     `}
   `;
 }
-// mostra un messaggio di errore sotto ai campi email e password
 function authSetError(msg){
   const el = document.getElementById('authErrorMsg');
   if(el) el.textContent = msg || '';
 }
-// legge email e password dal form e prova ad accedere
 async function handleAuthSignIn(){
   const email = (document.getElementById('authEmailInput').value||'').trim();
   const password = document.getElementById('authPasswordInput').value||'';
@@ -62,8 +52,6 @@ async function handleAuthSignIn(){
   if(error){ authSetError(error.message); return; }
   closeAuthModal();
 }
-// crea un nuovo account con email e password, poi chiede di confermare
-// l'email prima di poter accedere
 async function handleAuthSignUp(){
   const email = (document.getElementById('authEmailInput').value||'').trim();
   const password = document.getElementById('authPasswordInput').value||'';
@@ -76,20 +64,16 @@ async function handleAuthSignUp(){
   const body = document.getElementById('authBody');
   if(body) body.innerHTML = `<div class="footer-note">Controlla la tua email per confermare l'account, poi torna qui e accedi.</div>`;
 }
-// esce dall'account collegato
 async function handleAuthSignOut(){
   await supabaseClient.auth.signOut();
   renderAuthModalBody();
 }
-// aggiorna il bottone account nella topbar, icona piena se loggato, vuota se no
 function renderAuthStatus(){
   const btn = document.getElementById('accountBtn');
   if(btn){
     btn.classList.toggle('logged-in', !!syncSession);
     btn.title = syncSession ? ('Sincronizzato come ' + (syncSession.user.email||'')) : 'Account e sincronizzazione';
   }
-  // stessa informazione ripetuta nella sezione Account dentro Impostazioni,
-  // per chi arriva lì invece che dall'icona account in alto
   const settingsStatus = document.getElementById('settingsAccountStatus');
   if(settingsStatus){
     settingsStatus.textContent = syncSession

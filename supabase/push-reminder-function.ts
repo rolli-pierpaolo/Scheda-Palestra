@@ -1,11 +1,3 @@
-// Edge Function Supabase: manda un promemoria push a chi non si allena da un
-// po' di giorni. Pensata per girare una volta al giorno tramite un Cron
-// Trigger (vedi le istruzioni di deploy piu' sotto), non chiamata dall'app.
-//
-// Legge calendarLog dal payload di user_data (lo stesso oggetto usato da
-// buildBackupPayload in js/chart.js): e' la data dell'ultimo giorno di
-// allenamento registrato, la stessa cosa che vede l'utente nel Calendario
-// dentro l'app.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import webpush from 'https://esm.sh/web-push@3.6.7';
@@ -17,7 +9,6 @@ const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY')!;
 
 webpush.setVapidDetails('mailto:noreply@logbook.app', VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
-// manda il promemoria se non ci si allena da almeno questi giorni
 const DAYS_THRESHOLD = 2;
 
 Deno.serve(async () => {
@@ -42,7 +33,7 @@ Deno.serve(async () => {
     }
     const calendarLog = payload.calendarLog || {};
     const dates = Object.keys(calendarLog).filter((k) => calendarLog[k] && calendarLog[k].length);
-    if (!dates.length) continue; // mai registrato un allenamento: non lo si disturba
+    if (!dates.length) continue;
     dates.sort();
     const lastDate = new Date(dates[dates.length - 1]);
     const daysSince = Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -57,8 +48,8 @@ Deno.serve(async () => {
         );
         sent++;
       } catch (err) {
-        // subscription scaduta/revocata (l'utente ha disinstallato l'app,
-        // cambiato telefono...): la tolgo, non ha senso ritentarla ogni giorno
+        // Rimuove le sottoscrizioni scadute o revocate.
+
         if (err && (err.statusCode === 404 || err.statusCode === 410)) {
           await supabase.from('push_subscriptions').delete().eq('id', sub.id);
         }

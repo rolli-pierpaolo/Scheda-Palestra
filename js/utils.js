@@ -1,8 +1,4 @@
-// ---------------- FUNZIONI DI SUPPORTO VARIE ----------------
-// icone, piccoli aiuti per il rendering, gesti su schermo e simili - roba
-// usata da tanti file diversi in giro per l'app, raccolta qui in un posto solo
 const FEEDBACK_FORM_URL = "https://forms.gle/sjQnNHYtPJqRnG119";
-// apre in una scheda nuova il modulo per lasciare un feedback
 function openFeedbackForm(){
   if(!FEEDBACK_FORM_URL){
     ViridisToast('Link al modulo feedback non ancora configurato (FEEDBACK_FORM_URL in js/utils.js).');
@@ -10,23 +6,11 @@ function openFeedbackForm(){
   }
   window.open(FEEDBACK_FORM_URL, '_blank', 'noopener');
 }
-// icone SVG in linea, stroke="currentColor" così prendono da sole il colore
-// del bottone che le contiene, niente CSS in più da coordinare, al posto
-// delle emoji sui bottoni funzionali della card esercizio - stesso stile a
-// linee dell'icona Home nella barra di navigazione, così l'app ha un set
-// coerente invece di dipendere da come ogni telefono disegna le emoji
 const ICON_TRASH = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 7 H20"/><path d="M9 7 V4.5 A1 1 0 0 1 10 3.5 H14 A1 1 0 0 1 15 4.5 V7"/><path d="M6 7 L7 20 A1 1 0 0 0 8 21 H16 A1 1 0 0 0 17 20 L18 7"/><path d="M10 11 V17"/><path d="M14 11 V17"/></svg>';
 const ICON_CHART = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M4 20 V4"/><path d="M4 20 H20"/><path d="M6.5 15 L11 10.5 L14 13.5 L19 7.5"/></svg>';
 const ICON_PLATE = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>';
 const ICON_LINK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><path d="M10 14 L14 10"/><path d="M8.5 15.5 L6.5 17.5 A3 3 0 0 1 2.5 13.5 L5.5 10.5 A3 3 0 0 1 9.5 10.5"/><path d="M15.5 8.5 L17.5 6.5 A3 3 0 0 1 21.5 10.5 L18.5 13.5 A3 3 0 0 1 14.5 13.5"/></svg>';
-// "..." stile iOS: tre pallini pieni invece del solito bordo/tratto delle
-// altre icone di questo set, si legge meglio a quella dimensione minuscola
 const ICON_MORE = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle"><circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none"/></svg>';
-// piccolo avviso flottante generico, comodo per qualsiasi conferma rapida
-// senza dover creare un nuovo elemento o stile per ognuna
-// innerHTML invece di textContent: serve per poter mettere un'icona dentro
-// il messaggio invece di un'emoji - sicuro qui perché ogni chiamata passa
-// sempre un testo scritto a mano nel codice, mai input dell'utente
 function showQuickToast(msg){
   let el = document.getElementById('prToast');
   if(!el){
@@ -40,11 +24,6 @@ function showQuickToast(msg){
   clearTimeout(window._prToastTimer);
   window._prToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2200);
 }
-// festeggiamento a schermo intero per record personale o obiettivo sbloccato,
-// vedi celebratePR in js/records.js e revealAchievement in js/achievements.js:
-// card centrale più scheggie colorate che esplodono dal centro. Title e
-// subtitle vanno sempre per textContent, mai innerHTML, perché title può
-// contenere il nome di un esercizio scritto dall'utente
 const CELEBRATION_SHARD_COLORS = ['var(--green)','var(--amber)','var(--red)','var(--steel)'];
 function showCelebration(opts){
   let overlay = document.getElementById('celebrationOverlay');
@@ -105,11 +84,6 @@ function showCelebration(opts){
 
   window._celebrationTimer = setTimeout(()=>{ overlay.classList.remove('show'); }, opts.duration || 2600);
 }
-// seconda tornata di icone: intestazioni e bottoni di Storico, cornice dei
-// modali. Stessa funzione svgIcon() per non ripetere gli attributi comuni
-// ogni volta - il percorso di ogni singola icona resta l'unica parte che
-// cambia da una all'altra
-// costruisce il markup di un'icona SVG a partire dai suoi percorsi interni
 function svgIcon(inner, size){
   size = size || 16;
   return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="vertical-align:middle">${inner}</svg>`;
@@ -132,7 +106,6 @@ const ICON_REORDER = svgIcon('<path d="M8 4 L8 20"/><path d="M5 7 L8 4 L11 7"/><
 const ICON_CHECK = svgIcon('<path d="M5 12.5 L10 17.5 L19 6.5"/>');
 const ICON_BELL = svgIcon('<path d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18.5 H4 Z"/><path d="M10 20.5 A2 2 0 0 0 14 20.5"/>');
 const ICON_BELL_OFF = svgIcon('<path d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18.5 H4 Z"/><path d="M10 20.5 A2 2 0 0 0 14 20.5"/><path d="M4 4 L20 20"/>');
-// terza tornata di icone: badge obiettivi, toast e festeggiamenti, indicatori settimana
 const ICON_FLAG = svgIcon('<path d="M6 3 V21"/><path d="M6 4 H16 L13.5 7.5 L16 11 H6"/>');
 const ICON_STAR = svgIcon('<path d="M12 3 L14.6 9 L21 9.6 L16.2 13.8 L17.6 20 L12 16.7 L6.4 20 L7.8 13.8 L3 9.6 L9.4 9 Z"/>');
 const ICON_TROPHY = svgIcon('<path d="M7 4 H17 V8 A5 5 0 0 1 7 8 Z"/><path d="M7 5 H4.5 A2.5 2.5 0 0 0 7 9.5"/><path d="M17 5 H19.5 A2.5 2.5 0 0 1 17 9.5"/><path d="M12 13 V17"/><path d="M9 20 H15"/><path d="M10 17 H14 L14.5 20 H9.5 Z"/>');
@@ -141,28 +114,15 @@ const ICON_LOCK = svgIcon('<rect x="5" y="11" width="14" height="9" rx="1.5"/><p
 const ICON_WARNING = svgIcon('<path d="M12 4 L21 19 H3 Z"/><path d="M12 10 V14"/><circle cx="12" cy="16.7" r="0.9" fill="currentColor" stroke="none"/>');
 const ICON_FLAME = svgIcon('<path d="M12 2 C12 2 6 9 6 13.5 A6 6 0 0 0 18 13.5 C18 11 16.5 9.5 15.8 9 C16 11 14 12 14 10 C14 7.5 15 6 12 2 Z"/>');
 const ICON_LIGHTNING = svgIcon('<path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z"/>');
-// varianti a colori pieni delle stesse tre forme, usate solo per l'icona
-// finale delle frasi motivazionali in Home, splitMotivation in js/home.js:
-// lì si vogliono colorate e piene invece che in tinta unita come il resto
-// dell'app - tutte le altre icone, bottoni, badge, restano a contorno e
-// monocromatiche per coerenza col resto dell'interfaccia
 const ICON_FLAME_COLOR = '<svg viewBox="0 0 24 24" width="21" height="21" style="vertical-align:middle"><path d="M12 2 C12 2 6 9 6 13.5 A6 6 0 0 0 18 13.5 C18 11 16.5 9.5 15.8 9 C16 11 14 12 14 10 C14 7.5 15 6 12 2 Z" fill="#FF7A1A"/></svg>';
 const ICON_LIGHTNING_COLOR = '<svg viewBox="0 0 24 24" width="21" height="21" style="vertical-align:middle"><path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z" fill="#FFD400"/></svg>';
 const ICON_PLATE_COLOR = '<svg viewBox="0 0 24 24" width="21" height="21" style="vertical-align:middle"><circle cx="12" cy="12" r="8" fill="none" stroke="#FF3D7F" stroke-width="3"/><circle cx="12" cy="12" r="3" fill="#FF3D7F"/></svg>';
 const ICON_POINT = svgIcon('<circle cx="12" cy="12" r="8.5"/><path d="M12 8 V13"/><circle cx="12" cy="16" r="0.9" fill="currentColor" stroke="none"/>');
-// stessa identica forma della casetta già in HTML nella barra di navigazione:
-// costante qui solo per poterla riusare anche dentro le stringhe JS della guida
 const ICON_HOME = svgIcon('<path d="M4 11 L12 4 L20 11 V20 H4 Z"/><path d="M9.5 20 V13 H14.5 V20"/>');
-// vibrazione breve su azioni chiave, spunta settimana, obiettivo sbloccato,
-// giorno terminato: silenziosa se il dispositivo o il browser non la
-// supporta, per esempio iOS Safari, che non implementa la Vibration API
 function vibrate(pattern){
   if(typeof accessibilityPrefs !== 'undefined' && !accessibilityPrefs.vibration) return;
   if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
 }
-// Tastiera dell'app per peso e ripetizioni: numeri grandi come vista iniziale,
-// lettere disponibili con un tocco. Evita la tastiera del sistema che su
-// alcuni telefoni copriva il campo o cambiava la viewport.
 let quickNumberInput = null;
 let quickKeyboardMode = 'numbers';
 let quickKeyboardOriginScrollY = null;
@@ -196,8 +156,6 @@ function moveQuickKeyboardScroll(top){
     window.scrollTo({top,behavior:'instant'});
   }else if(window.gsap && window.gsap.ticker){
     const position = {y:window.scrollY};
-    // Le serie basse richiedono più strada: evitare un balzo di centinaia
-    // di pixel nello stesso tempo usato per un piccolo aggiustamento.
     const duration = Math.min(.52,.24 + Math.abs(top-position.y)/2400);
     quickKeyboardScrollTween = window.gsap.to(position,{
       y:top,duration,ease:'power2.inOut',
@@ -212,13 +170,10 @@ function moveQuickKeyboardScroll(top){
     window.scrollBy({top:top-window.scrollY,behavior:'smooth'});
   }
 }
-// Un gesto manuale prevale sempre sul riposizionamento automatico.
+// Lo scroll manuale interrompe il riposizionamento automatico.
 window.addEventListener('touchstart',stopQuickKeyboardScroll,{passive:true});
 window.addEventListener('wheel',stopQuickKeyboardScroll,{passive:true});
 const quickKeyboardPressTimers = new WeakMap();
-// La tastiera e' un pannello esplicito: una volta aperta non deve dipendere
-// dai capricci del focus mobile (che puo' sparire anche toccando un suo gap).
-// Si sblocca esclusivamente con il pulsante "Fine".
 let quickKeyboardPinnedOpen = false;
 function usesTouchKeyboard(){ return !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches); }
 function isQuickNumberTarget(el){
@@ -233,8 +188,6 @@ function positionQuickNumberBar(){
   if(!bar || bar.hidden) return;
   const viewport = window.visualViewport;
   const keyboardInset = viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0;
-  // Con tastiera aperta il bottom del layout resta spesso quello originale:
-  // spostiamo quindi la barra appena sopra la tastiera, non sotto di essa.
   bar.style.bottom = keyboardInset > 40 ? (keyboardInset + 8) + 'px' : '';
 }
 function updateQuickKeyboardAccent(bar){
@@ -251,13 +204,9 @@ function revealQuickKeyboardInput(){
     document.body.style.setProperty('--quick-keyboard-space',`${keyboardHeight + 52}px`);
     document.body.classList.add('quick-keyboard-open');
   }
-  // Misura dopo aver riservato lo spazio: l'ancoraggio del browser non deve
-  // invalidare la destinazione dello scroll nel frame successivo.
   const inputBox = input.getBoundingClientRect();
-  // Non basta togliere la sovrapposizione: un campo basso deve arrivare ben
-  // sopra la tastiera, dove resta leggibile mentre si digitano più valori.
   const safeTop = Math.max(112,(window.visualViewport?.offsetTop||0) + 72);
-  // offsetTop non include la trasformazione dell'animazione d'ingresso.
+  // offsetTop esclude la trasformazione usata nell'animazione di ingresso.
   const keyboardTop = bar.offsetHeight ? bar.offsetTop : barBox.top;
   const targetTop = Math.max(safeTop,keyboardTop - Math.max(inputBox.height,54) - 42);
   const delta = inputBox.top - targetTop;
@@ -277,8 +226,6 @@ function restoreQuickKeyboardScroll(delay=0){
     moveQuickKeyboardScroll(originalY);
   },delay);
 }
-// Lo stato della tastiera non deve sopravvivere a sospensione, navigazione
-// o sostituzione del campo. I valori sono già salvati dagli handler input.
 function resetQuickKeyboardUI(){
   if(quickKeyboardRevealFrame !== null) cancelAnimationFrame(quickKeyboardRevealFrame);
   quickKeyboardRevealFrame = null;
@@ -310,16 +257,12 @@ function hideQuickKeyboardBar(bar){
       bar.hidden = true;
       bar.classList.remove('is-closing');
       bar.style.bottom = '';
-      // Conserva lo spazio finché termina il ritorno della pagina: toglierlo
-      // prima troncherebbe lo scroll quando si parte dalle ultime serie.
+      // Rimuove lo spazio della tastiera solo quando lo scroll di ritorno e terminato.
+
       if(!quickKeyboardScrollTween) clearQuickKeyboardScrollSpace();
     }
   },240);
 }
-// Su alcuni browser mobili il pannello resta già visibile mentre il focus
-// nativo passa per un istante al body. Memorizziamo il campo al tap completo,
-// non all’inizio dello scorrimento: il tasto premuto scrive sempre nella
-// casella che l'utente ha appena scelto.
 function primeQuickKeyboardInput(input){
   if(!isQuickNumberTarget(input)) return null;
   if(input !== quickNumberInput && quickKeyboardOriginScrollY === null) quickKeyboardOriginScrollY = window.scrollY;
@@ -338,8 +281,8 @@ function primeQuickKeyboardInput(input){
   return input;
 }
 function resolveQuickKeyboardInput(){
-  // Il campo toccato è più recente del focus: iOS può lasciare il focus sul
-  // campo precedente mentre sta ancora consegnando il nuovo tocco.
+  // Su iOS il focus puo riferirsi ancora al campo precedente. Usa quello appena toccato.
+
   if(isQuickNumberTarget(quickNumberInput) && quickNumberInput.isConnected) return quickNumberInput;
   const active = document.activeElement;
   if(!usesTouchKeyboard() && isQuickNumberTarget(active)) return primeQuickKeyboardInput(active);
@@ -363,9 +306,6 @@ function syncQuickNumberBar(){
     setTimeout(syncQuickNumberBar,Math.max(20,quickKeyboardInteractionUntil-Date.now()));
     return;
   }
-  // Su iOS il focus puo' andare momentaneamente al body anche se l'utente ha
-  // soltanto sfiorato lo spazio fra due tasti. Non interpretarlo mai come una
-  // richiesta di chiusura: la chiusura e' consentita solo da Fine.
   if(quickKeyboardPinnedOpen && !quickKeyboardFinishRequested){
     showQuickKeyboardBar(bar);
     positionQuickNumberBar();
@@ -390,8 +330,6 @@ function setQuickKeyboardMode(mode){
   bar.querySelectorAll('.quick-keyboard-mode').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===quickKeyboardMode));
   scheduleQuickKeyboardReveal();
 }
-// Riscontro immediato e localizzato sul tasto toccato: la classe resta il
-// tempo sufficiente per essere vista anche durante tocchi rapidi con il pollice.
 function flashQuickKeyboardKey(button){
   if(!button) return;
   clearTimeout(quickKeyboardPressTimers.get(button));
@@ -406,13 +344,10 @@ function insertQuickKey(value){
   const start = input.selectionStart ?? input.value.length;
   const end = input.selectionEnd ?? start;
   input.setRangeText(value,start,end,'end');
-  // input salva subito il valore; change/Fine esegue i feedback conclusivi,
-  // così l'ultima ripetizione "12" non viene interpretata come "1" finita.
   input.dispatchEvent(new Event('input',{bubbles:true}));
   input.dataset.quickKeyboardDirty = '1';
   input.focus({preventScroll:true});
 }
-// Compatibilità con il vecchio nome usato da eventuali cache già aperte.
 function insertQuickNumber(value){ insertQuickKey(value); }
 function deleteQuickNumber(){
   const input = resolveQuickKeyboardInput();
@@ -435,9 +370,8 @@ function finishQuickKeyboardInput(){
     restoreQuickKeyboardScroll();
     return;
   }
-  // Una onchange puo' ridisegnare la card e rimuovere l'input dal DOM prima
-  // che blur() venga eseguito. Azzerare prima il riferimento rende Fine
-  // affidabile anche in quel caso, invece di lasciare la tastiera bloccata.
+  // Azzera il riferimento prima di blur: onchange puo rimuovere il campo dal DOM.
+
   quickKeyboardFinishRequested = true;
   quickKeyboardPinnedOpen = false;
   quickNumberInput = null;
@@ -449,8 +383,8 @@ function finishQuickKeyboardInput(){
   if(bar) hideQuickKeyboardBar(bar);
   restoreQuickKeyboardScroll();
 }
-// inputmode va applicato PRIMA del focus: così sui telefoni non compare per
-// un attimo la tastiera di sistema sotto a quella personalizzata.
+// Imposta inputmode prima del focus per evitare la tastiera di sistema.
+
 document.addEventListener('pointerdown', event=>{
   const target = event.target;
   if(isQuickNumberTarget(target)){
@@ -472,11 +406,6 @@ document.addEventListener('pointerdown', event=>{
     event.preventDefault();
   }
 }, true);
-// I tasti della tastiera lavorano già su pointerdown. Se "Fine" la nasconde
-// prima del click sintetico del browser, quel click non deve mai arrivare al
-// bottone dell'app che si trova dietro al pannello (ghost tap).
-// Il mousedown sintetico di un tap non deve avviare anche lo scroll nativo
-// al focus. Non intercettiamo touchstart/pointerdown: lo swipe resta libero.
 document.addEventListener('mousedown', event=>{
   if(usesTouchKeyboard() && isQuickNumberTarget(event.target)) event.preventDefault();
 }, true);
@@ -494,13 +423,11 @@ document.addEventListener('click', event=>{
     primeQuickKeyboardInput(event.target);
   }
 }, true);
-// Mai cambiare campo automaticamente: Enter conclude l'inserimento corrente,
-// non porta alla casella successiva. Il passaggio resta sempre una scelta.
 document.addEventListener('keydown', event=>{
   if(event.key === 'Enter' && isQuickNumberTarget(event.target)) event.preventDefault();
 });
 document.addEventListener('focusin', syncQuickNumberBar);
-// Memoria solo della pagina viva: nessun ripristino dopo un avvio a freddo.
+// La posizione resta in memoria solo finche la pagina e aperta.
 let suspendedWorkoutScroll = null;
 function suspendWorkoutViewport(){
   if(suspendedWorkoutScroll !== null) return;
@@ -509,7 +436,7 @@ function suspendWorkoutViewport(){
   quickKeyboardRevealFrame = null;
   stopQuickKeyboardScroll();
   clearTimeout(quickKeyboardRestoreTimer);
-  // Mantiene pannello e spazio: rimuoverli qui troncherebbe lo scroll.
+  // Mantiene lo spazio della tastiera per non troncare lo scroll.
 }
 function resumeWorkoutViewport(){
   if(suspendedWorkoutScroll === null) return;
@@ -523,8 +450,6 @@ document.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState === 'hidden') suspendWorkoutViewport();
   else resumeWorkoutViewport();
 });
-// Prepara il campo senza aprire il pannello: touchstart può iniziare uno scroll.
-// Il click viene emesso dal browser solo al termine di un tap, non di uno swipe.
 document.addEventListener('touchstart', event=>{
   if(isQuickNumberTarget(event.target) && usesTouchKeyboard()) event.target.inputMode='none';
 }, {capture:true,passive:true});
@@ -535,24 +460,14 @@ document.addEventListener('focusout', event=>{
     delete input.dataset.quickKeyboardDirty;
     commitQuickNumberInput(input);
   }
-  // Il pannello resta fissato aperto finche' non viene premuto Fine: questo
-  // timeout aggiorna solo l'eventuale cambio di campo, non puo' richiuderlo.
   setTimeout(syncQuickNumberBar,keyboardTapInProgress ? 130 : 0);
 });
 if(window.visualViewport){ window.visualViewport.addEventListener('resize', positionQuickNumberBar); window.visualViewport.addEventListener('scroll', positionQuickNumberBar); }
-// hash minimo e stabile, non Math.random: la stessa frase resta la stessa
-// finché non cambia il seme, esercizio più settimana, invece di saltare a
-// caso a ogni render - stesso principio di pickMotivationalPhrase in js/home.js
 function pickFromPool(pool, seed){
   let hash = 0;
   for(let i=0;i<seed.length;i++){ hash = (hash*31 + seed.charCodeAt(i)) >>> 0; }
   return pool[hash % pool.length];
 }
-// più varianti apposta, prima era una singola frase fissa per direzione,
-// sempre identica: leggeva sempre uguale, cosa giustamente segnalata come
-// stucchevole da rileggere esercizio dopo esercizio - il seme usato per
-// scegliere il suffisso è diverso da quello della frase base, vedi sotto,
-// così le due cose non sono sempre incollate nella stessa combinazione
 const PROGRESSION_SUFFIX_PESO = [
   " Stavolta carica un filo di più!",
   " Oggi il ferro sale ancora!",
@@ -565,18 +480,6 @@ const PROGRESSION_SUFFIX_REP = [
   " Trova un'altra rip nelle gambe... o nelle braccia!",
   " Stavolta il numero sale ancora!",
 ];
-// frase motivazionale per la settimana corrente non ancora conclusa: sempre
-// presente a prescindere dai dati delle settimane vecchie, anche alla
-// primissima settimana in assoluto, dove non c'è proprio nulla prima - i
-// dati passati servono solo per aggiungere un breve suggerimento di
-// direzione in più, più peso o più ripetizioni, quando ci sono, mai per
-// decidere se mostrare la frase o no. La base viene dal gruppo di frasi del
-// gruppo muscolare di questo esercizio, vedi MUSCLE_MOTIVATION e
-// getExerciseGroup: non ha senso una frase sul petto mentre stai facendo
-// gambe. Il suffisso di direzione non rivela mai il numero di ripetizioni
-// fatte la volta scorsa: vederlo scritto potrebbe influenzare a farne
-// apposta di meno per eguagliarlo invece di superarlo, richiesta esplicita
-// dell'utente
 function computeProgressionHint(ex, w){
   if(w < 0) return null;
   const group = getExerciseGroup(ex.nome);
@@ -599,45 +502,22 @@ function computeProgressionHint(ex, w){
   }
   return { text: base.text + suffix, icon: base.icon };
 }
-// rende sicuro un testo da mettere dentro un attributo HTML tra virgolette
 function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
-// per infilare un nome dentro una stringa JS tra apici singoli scritta a mano
-// in un onclick="...('...')": nomi con un apostrofo, per esempio "SLDL (TI
-// TORMENTERA')", un esercizio vero salvato tra i dati, romperebbero
-// l'attributo senza questo escape
 function escapeJs(s){ return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
-// rende sicuro un testo da mettere dentro il contenuto HTML di un elemento
 function escapeHtml(s){ if(s===null||s===undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-// altezza della textarea del nome esercizio calcolata sul contenuto reale:
-// azzerare l'altezza prima del ricalcolo è necessario, altrimenti
-// resterebbe quella vecchia se il testo si accorcia
 function autoGrowTextarea(el){
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
 }
-// dopo ogni renderActive() le textarea dei nomi partono tutte con l'altezza
-// di una riga sola: qui si ricalcolano subito, così i nomi lunghi si vedono
-// già per intero dal primo render, senza dover toccare l'esercizio
 function autoGrowAllExNames(){
   document.querySelectorAll('#viewActive .ex-name').forEach(autoGrowTextarea);
 }
-// le note e tecnica non si allargano più col contenuto: restano piccole
-// finché non ci si clicca sopra, niente più bisogno di ricalcolarle dopo
-// ogni render.
-// Stesso principio per il campo "Serie", schema: prima era un input a riga
-// singola che tagliava gli schemi scritti lunghi, ora è una textarea con
-// riga propria che cresce con il testo, stessa logica di nome e note
 function autoGrowAllExSchema(){
   document.querySelectorAll('#viewActive .meta-input.schema').forEach(el=>{
     autoGrowTextarea(el);
     autoWidthSchema(el);
   });
 }
-// larghezza in "ch", circa un carattere, invece che altezza: per uno schema
-// corto tipo "4x8" il campo resta piccolo come il Recupero qui sopra, invece
-// di occupare comunque tutta la riga. Solo se il testo supera la larghezza
-// disponibile va a capo, e lì entra in gioco la crescita in altezza di
-// autoGrowTextarea qui sopra
 function autoWidthSchema(el){
   const len = (el.value || '').length;
   el.style.width = Math.max(4, Math.min(len + 2, 40)) + 'ch';

@@ -1,5 +1,5 @@
-// Promemoria manuali: non scrivono mai pesi, ripetizioni o progressioni.
-// Sono parte dello stato esistente, quindi seguono salvataggio, backup e sync.
+// I promemoria seguono backup e sync, ma non modificano i carichi.
+
 function loadReminderList(){
   return Array.isArray(state.loadReminders) ? state.loadReminders.filter(r=>r && typeof r.exerciseName==='string' && Number.isInteger(r.setIndex) && r.setIndex>=0) : [];
 }
@@ -9,7 +9,7 @@ function loadReminderSignature(ex,w){
 }
 function loadReminderMatches(reminder,ex){
   if(ex.loadReminderId && reminder.exerciseId===ex.loadReminderId) return true;
-  // Un esercizio ricreato può recuperare la nota, ma solo se il nome è univoco.
+  // Recupera il promemoria per nome solo se non ci sono omonimi.
   const matches=state.days.flatMap(d=>d.esercizi||[]).filter(e=>loadReminderName(e.nome)===loadReminderName(reminder.exerciseName));
   return matches.length===1 && matches[0]===ex;
 }

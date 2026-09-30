@@ -1,4 +1,3 @@
-// Consultazione soltanto: nessuna normalizzazione o scrittura dei dati salvati.
 let exerciseHistoryName = '';
 let exerciseHistoryWeight = '';
 let exerciseHistoryBlock = '';

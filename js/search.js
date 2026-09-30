@@ -1,7 +1,3 @@
-// ---------------- RICERCA GLOBALE ----------------
-// Cerca i nomi degli esercizi sia nella scheda attiva sia in tutti i blocchi
-// archiviati. Ogni risultato porta direttamente al punto giusto, senza dover
-// ricordare in quale mese o giorno era stato inserito.
 let globalSearchEntries = [];
 
 function buildGlobalSearchEntries(){

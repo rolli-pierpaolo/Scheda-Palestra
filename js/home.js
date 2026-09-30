@@ -1,13 +1,4 @@
-// ---------------- HOME ----------------
-// pagina che si apre quando non c'è un allenamento in corso, vedi
-// js/app-init.js e workoutInProgress in js/state.js: elenco giorni,
-// progresso settimanale e giorno suggerito, tutto calcolato dal calendario
-// che già esiste
-// mostra la Home, sistemando prima lo stato "in corso" se serve
 function showHome(){
-  // La Home chiude una sessione rimasta solo come posizione salvata: se non
-  // c'è una ripetizione nella settimana corrente del giorno attivo, l'utente
-  // non ha ancora iniziato davvero e alla riapertura deve restare qui.
   const activeDay = state.days[activeDayIdx];
   if(workoutInProgress && (!activeDay || !dayHasRealProgressThisWeek(activeDay) || allExercisesClosed(activeDay))){
     clearWorkoutSession();
@@ -15,26 +6,17 @@ function showHome(){
   renderHome();
   showView('home');
 }
-// toccare "inizia" da qui non conta più come allenamento iniziato per
-// davvero, vedi markWorkoutStartedByRep in js/state.js: solo scrivere una
-// ripetizione lo fa. Guardare gli esercizi, o toccare "inizia" per sbaglio,
-// senza scrivere nulla, chiudendo l'app forzatamente, deve riportare alla
-// Home la prossima volta, non dritti qui dove ci si era fermati a guardare
 function startDayFromHome(dayIdx){
   selectDay(dayIdx);
   showView('active');
 }
-// trova lunedì e domenica della settimana di calendario corrente
 function currentWeekRange(){
   const now = new Date();
-  const dow = (now.getDay()+6)%7; // lunedì diventa il giorno zero
+  const dow = (now.getDay()+6)%7;
   const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate()-dow);
   const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()+6);
   return {monday, sunday};
 }
-// quanti dei giorni definiti dall'utente sono stati fatti almeno una volta
-// questa settimana di calendario, lunedì-domenica, non quante volte in
-// totale sono stati registrati
 function computeWeeklyProgress(){
 
   const done =
@@ -58,10 +40,6 @@ function computeWeeklyProgress(){
 }
 
 
-// stessa logica di avanzamento già usata da "Giorno terminato": guarda
-// l'ultimo giorno registrato nel calendario, qualsiasi data, e suggerisce
-// quello dopo, tornando al primo se non ci si è mai allenati o se non lo
-// trova più tra i giorni
 function computeSuggestedDayIdx(){
 
   if(state.currentTrainingDayIdx !== null &&
@@ -102,10 +80,6 @@ function computeSuggestedDayIdx(){
 
   return (lastIdx+1) % state.days.length;
 }
-// allenamenti fatti da quando è iniziato il blocco attivo, le settimane
-// della scheda, vedi state.programStartDate, non il mese solare: i due non
-// coincidono quasi mai, e contare per mese solare finiva per includere anche
-// allenamenti del blocco precedente
 function computeMonthlyWorkoutsCount(){
   const startKey = state.programStartDate || mostRecentMondayKey();
   let total = 0;
@@ -116,10 +90,6 @@ function computeMonthlyWorkoutsCount(){
   });
   return total;
 }
-// in che settimana del blocco attivo si è, durata configurabile, vedi
-// state.weeksPerBlock, contando da programStartDate: bloccata tra uno e la
-// durata del blocco perché oltre tocca "Archivia e inizia un nuovo mese",
-// il blocco successivo riparte da uno, eventualmente con una durata diversa
 function computeCurrentBlockWeek(){
 
   const total = state.weeksPerBlock || 4;
@@ -307,36 +277,16 @@ const DEFAULT_MOTIVATION = [
   "Muoviti! Presentati e fai lavorare il sangue, forza! 💪",
   "Dai, piccoli passi, grande trasformazione, senza scuse! 💥",
 ];
-// generica apposta, non più per gruppo muscolare: quelle specifiche per
-// distretto ora si vedono già sui singoli esercizi, vedi
-// computeProgressionHint in js/utils.js, qui in Home ripeterle sarebbe
-// ridondante - stabile per tutto il giorno, non cambia a ogni render, non
-// usa Math.random, ruota in sequenza così non si ripete mai la stessa frase
-// due giorni di fila, torna a capo solo dopo aver fatto vedere tutte le
-// altre del gruppo
 function pickMotivationalPhrase(){
   const dayIndex = Math.floor(Date.now() / 86400000);
   return DEFAULT_MOTIVATION[dayIndex % DEFAULT_MOTIVATION.length];
 }
-// tutte le frasi finiscono con una di queste quattro emoji: invece di
-// riscrivere a mano le tante righe qui sopra, si stacca l'emoji finale a
-// runtime e si sostituisce con l'icona SVG corrispondente - il testo resta
-// quello scritto, solo la punteggiatura finale cambia forma
 function splitMotivation(phrase){
-  // flag "u" obbligatorio: senza, la classe di caratteri [...] con emoji fuori
-  // dal BMP (rappresentate da coppie di surrogati in UTF-16) si spezza in
-  // singole meta' di coppia invece di riconoscere l'emoji intera - il replace
-  // silenziosamente non trovava mai un match
   const m = /\s*([🔥💥💪🦵])\s*$/u.exec(phrase);
   if(!m) return { text: phrase, icon: '' };
   const iconMap = { '🔥':ICON_FLAME_COLOR, '💥':ICON_LIGHTNING_COLOR, '💪':ICON_PLATE_COLOR, '🦵':ICON_PLATE_COLOR };
   return { text: phrase.slice(0, m.index).trim(), icon: iconMap[m[1]] || '' };
 }
-// quante serie per gruppo muscolare nella settimana corrente, in qualsiasi
-// giorno, non solo se è stato sfiorato: solo esercizi con la settimana
-// segnata completata contano, saltata no - stessa logica di ogni altro
-// punto dell'app che tratta weekDone come la fonte di verità del lavoro
-// fatto, ma qui si contano le serie vere invece di segnare solo sì o no
 function computeWeeklyMuscleSetCounts(){
   const w = state.currentWeek || 0;
   const counts = {};
@@ -352,21 +302,12 @@ function computeWeeklyMuscleSetCounts(){
   });
   return counts;
 }
-// due sagome, davanti e dietro, servono entrambe: dal solo davanti non si
-// vedono schiena, femorali e glutei, e viceversa, fatte di due livelli: un
-// corpo di base sempre dello stesso colore, solo per dare la forma di una
-// persona intera, testa, tronco, braccia, gambe, mani, piedi, e sopra delle
-// regioni muscolari che si accendono singolarmente, invece delle forme
-// fluttuanti scollegate della prima versione
 const BODY_BASE_SHAPES =
   '<ellipse cx="50" cy="15" rx="9" ry="10.5"/>' +
   '<path d="M44,24 L56,24 L57,31 L43,31 Z"/>' +
   '<path d="M44,30 C36,30 27,33 26,40 C25,48 27,56 30,64 C31,70 34,76 38,80 L36,88 C36,91 39,93 42,93 L58,93 C61,93 64,91 64,88 L62,80 C66,76 69,70 70,64 C73,56 75,48 74,40 C73,33 64,30 56,30 Z"/>' +
   '<path d="M27,33 C19,34 13,40 12,49 L10,84 C9,94 9,101 11,107 C12,111 16,113 19,113 C22,113 25,111 26,107 C27,101 26,94 26,87 L28,49 C29,41 29,35 27,33 Z"/>' +
   '<path d="M73,33 C81,34 87,40 88,49 L90,84 C91,94 91,101 89,107 C88,111 84,113 81,113 C78,113 75,111 74,107 C73,101 74,94 74,87 L72,49 C71,41 71,35 73,33 Z"/>' +
-  // dita, sinistra: un piccolo ventaglio di quattro dita più pollice ruotati
-  // attorno al polso, invece della mano tonda indistinta - è il dettaglio
-  // che si nota di più in un riferimento anatomico e mancava del tutto prima
   '<rect x="10" y="110" width="2.4" height="9" rx="1.2" transform="rotate(-18 11.2 110)"/>' +
   '<rect x="13.5" y="112.5" width="2.4" height="9.5" rx="1.2" transform="rotate(-6 14.7 112.5)"/>' +
   '<rect x="17.5" y="113" width="2.4" height="10" rx="1.2" transform="rotate(4 18.7 113)"/>' +
@@ -378,15 +319,11 @@ const BODY_BASE_SHAPES =
   '<path d="M62,88 C65,88 67,92 67,98 L67,124 C67,130 65,133 61,133 L53,133 C50,133 49,130 49,124 L49,98 C49,92 52,88 55,88 Z"/>' +
   '<path d="M65,133 C66,133 67,137 67,142 L67,168 C67,174 65,178 61,178 L55,178 C52,178 51,174 51,168 L51,142 C51,137 53,133 55,133 Z"/>' +
   '<ellipse cx="59" cy="184" rx="9" ry="5.5"/>' +
-  // mano destra: stesse dita specchiate, rotazione di segno opposto
   '<rect x="87.6" y="110" width="2.4" height="9" rx="1.2" transform="rotate(18 88.8 110)"/>' +
   '<rect x="84.1" y="112.5" width="2.4" height="9.5" rx="1.2" transform="rotate(6 85.3 112.5)"/>' +
   '<rect x="80.1" y="113" width="2.4" height="10" rx="1.2" transform="rotate(-4 81.3 113)"/>' +
   '<rect x="76.1" y="111" width="2.4" height="9" rx="1.2" transform="rotate(-14 77.3 111)"/>' +
   '<rect x="89.3" y="102" width="2.2" height="7.5" rx="1.1" transform="rotate(40 90.4 102)"/>';
-// linee sottili di definizione muscolare, sempre le stesse, non legate al
-// completato o meno, decorazione fissa, come le venature del riferimento
-// anatomico, sovrapposte sopra le regioni colorate
 const BODY_DETAIL_FRONT =
   '<path d="M33,36 Q50,32 67,36"/><path d="M50,38 L50,86"/>' +
   '<path d="M17,44 Q13,58 17,72"/><path d="M83,44 Q87,58 83,72"/>' +
@@ -395,9 +332,6 @@ const BODY_DETAIL_BACK =
   '<path d="M50,30 L50,86"/><path d="M40,30 L50,40"/><path d="M60,30 L50,40"/>' +
   '<path d="M36,46 Q41,60 39,80"/><path d="M64,46 Q59,60 61,80"/>' +
   '<path d="M42,92 Q50,96 58,92"/><path d="M42,100 L42,130"/><path d="M58,100 L58,130"/>';
-// dimensioni riviste per riempire davvero la parte del corpo che occupano,
-// spalla, petto, addome, braccio, coscia, non più forme piccole che
-// galleggiavano dentro una sagoma molto più grande di loro
 const MUSCLE_MAP_REGIONS_FRONT = [
   { group:'Spalle', shape:'<ellipse cx="25" cy="42" rx="8" ry="7"/><ellipse cx="75" cy="42" rx="8" ry="7"/>' },
   { group:'Petto', shape:'<ellipse cx="39" cy="46" rx="10" ry="11"/><ellipse cx="61" cy="46" rx="10" ry="11"/>' },
@@ -414,21 +348,14 @@ const MUSCLE_MAP_REGIONS_BACK = [
   { group:'Femorali', shape:'<ellipse cx="42" cy="120" rx="8.5" ry="16"/><ellipse cx="58" cy="120" rx="8.5" ry="16"/>' },
   { group:'Polpacci', shape:'<ellipse cx="42" cy="153" rx="7.5" ry="21"/><ellipse cx="58" cy="153" rx="7.5" ry="21"/>' }
 ];
-// disegna una delle due sagome del corpo, con le regioni allenate accese in
-// base a quante serie hanno ricevuto rispetto al gruppo più lavorato
 function renderBodyFigure(regions, counts, maxCount, detailLines){
   const regionsHtml = regions.map(r => {
     const n = counts[r.group] || 0;
-    // 0.35 come minimo invece di zero: anche un solo gruppo allenato deve
-    // restare leggibile, non quasi trasparente solo perché un altro gruppo
-    // ha fatto molte più serie nella stessa settimana
     const intensity = n>0 ? Math.min(1, 0.35 + 0.65*(n/(maxCount||1))) : 0;
     return `<g class="body-region${n>0?' trained':''}"${n>0?` style="--intensity:${intensity.toFixed(2)}"`:''}>${r.shape}</g>`;
   }).join('');
   return `<svg viewBox="0 0 100 195" class="body-figure"><g class="body-base">${BODY_BASE_SHAPES}</g>${regionsHtml}<g class="body-detail">${detailLines}</g></svg>`;
 }
-// disegna la mappa muscolare completa: le due sagome, l'elenco di quante
-// serie per gruppo, e gli extra come cardio che non hanno una regione sul corpo
 function renderMuscleMap(accent){
   const counts = computeWeeklyMuscleSetCounts();
   const maxCount = Math.max(0, ...Object.values(counts));
@@ -450,9 +377,6 @@ function renderMuscleMap(accent){
     <div class="home-muscle-note">${maxCount ? 'Negli esercizi completati' : 'Completa un esercizio per vedere le serie'}</div>
   </div>`;
 }
-// disegna tutta la Home: il progresso della settimana, il giorno
-// suggerito con la sua frase motivazionale, l'elenco dei giorni, la mappa
-// muscolare e le statistiche in fondo
 function renderHome(){
 
   const el = document.getElementById('viewHome');
@@ -476,14 +400,6 @@ const total = weekly.total;
 
   const monthlyCount = computeMonthlyWorkoutsCount();
   const blockWeek = computeCurrentBlockWeek();
-  // ordine fisso, stesso ordine di state.days, lo stesso dei tab Push, Pull,
-  // Legs, Upper nella scheda Allenamento: completare un giorno non lo sposta
-  // più in fondo alla lista, resta al suo posto e cambia solo aspetto,
-  // colorato e più piccolo se fatto, acceso e pulsante se è quello corrente.
-  // Bug risolto qui: prima l'ordine si ricalcolava ogni volta mettendo
-  // corrente, poi coda, poi completati - un giorno fatto finiva sempre in
-  // fondo, anche se era il primo della settimana, e la lista sembrava
-  // saltare ogni volta che si chiudeva un allenamento
   const dayButtons = state.days.map((d,i)=>{
     if(!d) return '';
     const a = dayAccent(d,i);
@@ -509,12 +425,7 @@ const total = weekly.total;
 <span class="home-suggested-label">${resumeSuggested?'ALLENAMENTO IN CORSO':'IL TUO ALLENAMENTO'}</span>
 <span class="home-suggested-name accent-shine">${escapeHtml(suggestedDay.name)}</span><span class="home-suggested-action">${resumeSuggested?'Riprendi':'Inizia'} <span aria-hidden="true">→</span></span></button>
     ${motivationSplit ? `<div class="home-motivation" style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}"><span class="accent-shine">${escapeHtml(motivationSplit.text)}</span> ${motivationSplit.icon}</div>` : ''}` : '';
-  // piccolo assaggio della dashboard Andamenti direttamente in Home, invece
-  // di doverci entrare apposta da Progressi: confronta le ultime due
-  // settimane già concluse, vedi computeHomeVolumeTrend in js/trends.js
   const volumeTrend = computeHomeVolumeTrend();
-  // Il volume non è automaticamente "buono" o "cattivo": il valore resta
-  // neutro, così non suggerisce un giudizio che i soli dati non possono dare.
   const volumeTrendHtml = volumeTrend ? `<div class="home-quick-stat home-volume-trend"><span class="home-stat-icon">${ICON_CHART}</span><span class="home-stat-copy"><b>${volumeTrend.pct>=0?'+':''}${volumeTrend.pct}%</b><span>Volume · kg × ripetizioni</span><small>Settimana ${state.currentWeek} rispetto alla ${state.currentWeek-1}</small></span></div>` : '';
   el.innerHTML = `
     <div class="home-hero">
@@ -554,18 +465,11 @@ const total = weekly.total;
     snap: { innerText: 1 },
     ease: "power2.out"
   });
-  // stessa progressione del numero, ma visiva: la barra sotto rende il
-  // rapporto fatti su totale leggibile a colpo d'occhio, non serve più
-  // calcolarlo a mente
   if(progressBar) gsap.to(progressBar, {
     width: total>0 ? (done/total*100)+'%' : '0%',
     duration: 0.8,
     ease: "power2.out"
   });
-  // La giornata corrente è già evidenziata in modo stabile dal CSS: niente
-  // pulsazione continua, che in Home distraeva dalla CTA principale.
-  // Entrata della frase motivazionale: breve e discreta, senza competere con
-  // il pulsante dell'allenamento.
   if(motivation) gsap.from(motivation, {
     opacity: 0,
     y: 6,

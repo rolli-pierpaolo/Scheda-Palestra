@@ -1,27 +1,18 @@
-// ---------------- NAVIGAZIONE: TAB, VISTE, POSIZIONE ATTIVA ----------------
 let activeDayIdx = 0;
 let activeFirstAnimation = true;
 let selectedTrainingOrder = [];
-// ---------------- POSIZIONE ATTIVA (giorno + esercizio) ----------------
-// ricorda in che giorno ed esercizio ero rimasto, per riaprire l'app
-// esattamente lì
 const ACTIVE_POS_KEY = "scheda_wo18_active_pos_v1";
 let activeExerciseIdx = null;
-// Il titolo dell'esercizio non può dipendere solo dalla classe del body:
-// durante una transizione o il ripristino di una PWA quella classe può arrivare
-// un frame dopo. Questa classe vive sul componente che stiliamo davvero.
 function setWorkoutTopbarMode(isWorkout){
   const topbar = document.querySelector('.topbar');
   if(!topbar) return;
   topbar.classList.toggle('is-workout-header', !!isWorkout);
   if(!isWorkout) topbar.style.removeProperty('--workout-accent');
 }
-// salva su localStorage il giorno e l'esercizio attivi in questo momento
 function saveActivePos(){
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
   try{ localStorage.setItem(ACTIVE_POS_KEY, JSON.stringify({dayIdx:activeDayIdx, exi:activeExerciseIdx})); }catch(e){}
 }
-// legge da localStorage l'ultima posizione salvata, se ancora valida
 function loadActivePos(){
   let pos = null;
   try{ const raw = localStorage.getItem(ACTIVE_POS_KEY); if(raw) pos = JSON.parse(raw); }catch(e){}
@@ -30,19 +21,8 @@ function loadActivePos(){
     if(typeof pos.exi === 'number' && state.days[activeDayIdx].esercizi[pos.exi]) activeExerciseIdx = pos.exi;
   }
 }
-// titolo grande che si restringe scorrendo, come le app native iOS,
-// Impostazioni, Mail: solo un cambio di classe qui, il resto lo fa la
-// transizione CSS già pronta su .topbar e .topbar h1. --topbar-h, l'altezza
-// usata per posizionare l'header sticky di ogni esercizio subito sotto,
-// vedi updateTopbarHeightVar in js/app-init.js, va ricalcolata quando la
-// topbar cambia altezza, altrimenti l'header sticky resterebbe posizionato
-// in base all'altezza vecchia - solo quando lo stato cambia davvero, non a
-// ogni scroll, sia subito che a transizione finita, 300 millisecondi dopo
 let topbarScrolled = false;
 window.addEventListener('scroll', function(){
-  // due soglie diverse, non una sola, apposta: scrollando avanti e indietro
-  // proprio sul bordo di una soglia unica, lo stato cambierebbe a ogni
-  // pixel avanti e indietro, facendo tremolare l'header in continuazione
   const scrolled = topbarScrolled ? (window.scrollY > 8) : (window.scrollY > 20);
   if(scrolled === topbarScrolled) return;
   topbarScrolled = scrolled;
@@ -51,15 +31,9 @@ window.addEventListener('scroll', function(){
   updateTopbarHeightVar();
   setTimeout(updateTopbarHeightVar, 300);
 }, {passive:true});
-// pensato per il telefono, il pollice può far scrollare per sbaglio mentre si
-// tiene in mano: su PC, dove lo scroll è sempre volontario, mouse o
-// tastiera, un salto automatico della pagina è solo fastidioso, quindi lì
-// resta disattivo
 function isDesktopDevice(){
   return window.matchMedia && window.matchMedia('(pointer: coarse)').matches === false;
 }
-// cambia la vista visibile, Home, Allenamento o Progressi, con una
-// dissolvenza incrociata tra la vecchia e la nuova
 const viewScrollPositions={home:0,active:0,hist:0};
 let viewSwitchSequence=0;
 function showView(v){
@@ -92,8 +66,6 @@ function showView(v){
     document.getElementById('tabActiveBtn').classList.toggle('active', v==='active');
     document.getElementById('tabHistBtn').classList.toggle('active', v==='hist');
     document.getElementById('tabHomeBtn').classList.toggle('active', v==='home');
-    // Espone la vista corrente anche a screen reader: il colore da solo non
-    // basta a capire quale sezione sia aperta quando si naviga da tastiera.
     document.getElementById('tabActiveBtn').setAttribute('aria-current', v==='active' ? 'page' : 'false');
     document.getElementById('tabHistBtn').setAttribute('aria-current', v==='hist' ? 'page' : 'false');
     document.getElementById('tabHomeBtn').setAttribute('aria-current', v==='home' ? 'page' : 'false');
@@ -118,27 +90,15 @@ function showView(v){
       animateSuggestedWorkout();
     }
     if(v === 'hist' && typeof renderProgressOverview === 'function'){
-      // La dashboard è un riassunto vivo: viene ricalcolata all'ingresso
-      // nei Progressi, così calendario, blocchi archiviati e serie recenti
-      // non mostrano mai dati della visita precedente.
       renderProgressOverview();
     }
     updateThemeColor();
-    // l'icona account resta solo su Home/Storico: in Allenamento c'e' gia'
-    // il pulsante account nella topbar che distrarrebbe/affollerebbe
-    // l'unica cosa che deve contare li', l'esercizio a schermo
     const accountBtn = document.getElementById('accountBtn');
     if(accountBtn) accountBtn.style.display = v==='active' ? 'none' : '';
     const settingsBtn = document.getElementById('settingsBtn');
     if(settingsBtn) settingsBtn.style.display = v==='active' ? 'none' : '';
-    // In Allenamento la lente restava fissa sopra la barra mentre si
-    // scorreva: non serve in quel momento e può coprire l'intestazione.
     const searchBtn = document.getElementById('searchBtn');
     if(searchBtn) searchBtn.style.display = v==='active' ? 'none' : '';
-    // fade + leggero rialzo sulla vista che diventa visibile: il cambio vero e
-    // proprio resta il display toggle sincrono qui sopra (nessun timing da cui
-    // dipende il resto della funzione cambia), e' solo un'entrata piu' morbida
-    // al posto dello scatto secco
     if(typeof gsap !== "undefined"){
       const shownEl = v==='active' ? document.getElementById('viewActive')
         : v==='hist' ? document.getElementById('viewHist')
@@ -160,14 +120,11 @@ function showView(v){
     } else {
       releaseWakeLock();
     }
-    // Ripristina dopo layout e rendering, senza ereditare lo scroll della
-    // schermata appena nascosta. Ogni vista parte dall'alto alla prima visita.
+    // Ripristina la posizione della vista dopo il rendering.
+
     window.scrollTo({top:viewScrollPositions[v],behavior:'instant'});
   };
 
-  // dissolvenza incrociata: se una vista e' gia' visibile la sfumo via PRIMA
-  // di scambiarla con la nuova, cosi' il cambio non e' piu' un taglio secco
-  // (nascondi-e-basta) ma un vero cross-fade tra le due schermate
   const outgoingEl = ['viewActive','viewHist','viewHome']
     .map(id => document.getElementById(id))
     .find(el => el && el.style.display !== 'none');
@@ -175,10 +132,6 @@ function showView(v){
   if(typeof gsap !== "undefined" && outgoingEl){
     gsap.killTweensOf(outgoingEl);
     gsap.to(outgoingEl, {opacity:0, duration:.12, ease:"power1.in"});
-    // lo scambio vero e proprio parte da un timer, non da onComplete del tween:
-    // se il tab e' in background (o comunque il rAF di gsap non gira) il
-    // callback dell'animazione puo' non scattare mai, lasciando l'app bloccata
-    // sulla schermata vecchia per sempre. Il timer invece scatta sempre
     setTimeout(applyViewSwitch, 120);
   } else {
     applyViewSwitch();
@@ -186,7 +139,6 @@ function showView(v){
 }
 
 
-// ---------------- SCHERMO SEMPRE ACCESO IN ALLENAMENTO ----------------
 
 let wakeLock = null;
 
@@ -207,14 +159,6 @@ function releaseWakeLock(){
 }
 
 
-// ---------------- COLORE BARRA DI STATO (theme-color) ----------------
-// segue l'accent del giorno mentre si e' in Allenamento (variante scura,
-// per restare coerente con il tema scuro dell'app invece di un colore
-// acceso), torna neutro su Home/Storico. Ha effetto solo quando l'app gira
-// dentro Safari/Chrome (tab normale o barra degli indirizzi tintata): da
-// app installata a schermo intero su iOS la barra di stato segue invece
-// apple-mobile-web-app-status-bar-style, che supporta solo pochi stili
-// fissi e non un colore qualsiasi
 function updateThemeColor(){
   const meta = document.querySelector('meta[name="theme-color"]');
   if(!meta) return;
@@ -223,8 +167,6 @@ function updateThemeColor(){
   if(onActive && state && state.days && state.days[activeDayIdx]){
     meta.setAttribute('content', isLight ? '#F4F6F1' : dayAccent(state.days[activeDayIdx], activeDayIdx).d);
   } else {
-    // Il browser chrome parte dalla stessa testata nera, senza una fascia
-    // grigia differente tra l'area di sistema e il contenuto.
     meta.setAttribute('content', isLight ? '#F4F6F1' : '#0D0D0D');
   }
 }
@@ -242,13 +184,6 @@ document.addEventListener('visibilitychange', () => {
 
 
 
-// ---------------- SWIPE TRA ESERCIZI (carosello Allenamento) ----------------
-// stesso pattern gia' collaudato in questa app per lo swipe tra schede (misura
-// dx/dy/dt su touchstart/touchend, richiede un gesto abbastanza orizzontale e
-// abbastanza veloce prima di considerarlo uno swipe vero, non un semplice
-// scroll verticale) - qui pero' cambia esercizio DENTRO Allenamento invece di
-// cambiare scheda. Lo swipe Allenamento<->Storico che c'era prima e' stato
-// tolto apposta: sulla stessa vista i due gesti confliggerebbero
 function anyModalOpen(){
   return Array.prototype.some.call(document.querySelectorAll('.modal-overlay'), el => el.style.display === 'flex');
 }
@@ -256,11 +191,6 @@ let exSwipeStartX = null, exSwipeStartY = null, exSwipeStartTime = 0;
 function onExerciseSwipeStart(e){
   if(isDesktopDevice()){ exSwipeStartX = null; return; }
   if(document.getElementById('viewActive').style.display === 'none' || anyModalOpen()){ exSwipeStartX = null; return; }
-  // niente swipe se il tocco parte da una zona che gestisce gia' un gesto suo
-  // (indice a pallini scorrevole, stepper +/-, un campo di testo dove
-  // trascinare serve a spostare il cursore): altrimenti confliggerebbero
-  // La riga in alto serve esclusivamente a scorrere e scegliere con un tap:
-  // uno swipe su quelle chip non deve mai passare all'esercizio successivo.
   if(e.target.closest('.day-ex-strip, .ex-jump-index, .ex-carousel-nav, .stepper-pair, input, textarea')){ exSwipeStartX = null; return; }
   const t = e.touches[0];
   exSwipeStartX = t.clientX; exSwipeStartY = t.clientY; exSwipeStartTime = Date.now();
@@ -272,8 +202,8 @@ function onExerciseSwipeEnd(e){
   const dy = t.clientY - exSwipeStartY;
   const dt = Date.now() - exSwipeStartTime;
   exSwipeStartX = null;
-  if(dt > 600) return; // troppo lento, non e' uno swipe deciso
-  if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy)*1.8) return; // poco orizzontale o troppo verticale
+  if(dt > 600) return;
+  if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy)*1.8) return;
   const day = state.days[activeDayIdx];
   if(!day) return;
   const progress = computeDayProgress(day);
@@ -281,13 +211,11 @@ function onExerciseSwipeEnd(e){
   const activeItem = progress.items.find(it => it.exi===activeExerciseIdx) || progress.items[0];
   const activePos = activeItem.pos;
   if(dx < 0 && activePos < progress.total){
-    goToExerciseSlide(progress.items[activePos].exi); // swipe a sinistra = avanti
+    goToExerciseSlide(progress.items[activePos].exi);
   } else if(dx > 0 && activePos > 1){
-    goToExerciseSlide(progress.items[activePos-2].exi); // swipe a destra = indietro
+    goToExerciseSlide(progress.items[activePos-2].exi);
   }
 }
-// Il cambio esercizio avviene soltanto dai controlli espliciti: uno scroll
-// diagonale sulla scheda non deve cambiare l'esercizio durante l'allenamento.
 
 function renderDayTabs(){
 
@@ -307,8 +235,6 @@ function renderDayTabs(){
 
   }).join('');
 
-  // Azione sul blocco intero, con un'etichetta leggibile: l'icona da sola
-  // sembrava un comando generico e non faceva capire che archivia la scheda.
   el.innerHTML = dayButtonsHtml + `
     <button id="blockFinishTab" class="block-finish-btn" onclick="openBlockCompletionFlow()" title="Gestisci, archivia o prolunga la scheda" aria-label="Gestisci, archivia o prolunga la scheda">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/></svg>
@@ -318,9 +244,6 @@ function renderDayTabs(){
   updateBlockFinishTab();
 }
 
-// La scelta del giorno resta disponibile, ma non occupa in permanenza la
-// schermata di allenamento: si apre dal piccolo controllo a sinistra della
-// testata, come una scelta di contesto nelle app mobili moderne.
 function toggleWorkoutDayPicker(){
   const tabs = document.getElementById('dayTabsActive');
   if(tabs) tabs.classList.toggle('workout-day-tabs-open');
@@ -338,14 +261,6 @@ function selectDay(i){
   renderActive();
   updateThemeColor();
 }
-// tocco sul tab "Allenamento" in basso: se non c'e' già un allenamento
-// iniziato davvero con una ripetizione sul giorno preciso, apre sempre il
-// giorno che tocca oggi (computeSuggestedDayIdx) invece di
-// restare fermo su qualunque giorno fosse rimasto aperto per caso in una
-// sessione precedente. Se invece si e' scelto apposta un giorno diverso da
-// quello previsto (vedi il banner "Previsto: X - tocca per fare Y oggi" in
-// renderActive), quella scelta resta rispettata finche' non si finisce o
-// non si torna alla Home
 function goToActiveTab(){
   const activeDay = state.days[activeDayIdx];
   const hasRealSession = workoutInProgress && dayHasRealProgressThisWeek(activeDay);
@@ -429,7 +344,6 @@ async function confirmSwitchTrainingDay(newIdx, oldIdx){
 
 }
 
-// ---------------- FINE GIORNO DI ALLENAMENTO ----------------
 
 
 function logWorkoutDay(dayIdx){
@@ -443,7 +357,6 @@ function logWorkoutDay(dayIdx){
   const key = todayKey();
 
 
-  // storico allenamenti
   if(!calendarLog[key]){
     calendarLog[key] = [];
   }
@@ -459,7 +372,6 @@ function logWorkoutDay(dayIdx){
 
 
 
-  // data inizio programma
   if(!state.programStartDate){
 
     state.programStartDate = key;
@@ -468,7 +380,6 @@ function logWorkoutDay(dayIdx){
 
 
 
-  // giorni completati nella settimana corrente
   if(!state.completedTrainingDays){
 
     state.completedTrainingDays = [];
@@ -484,12 +395,10 @@ function logWorkoutDay(dayIdx){
 
 
 
-  // aggiorna la coda allenamenti
   updateTrainingQueueAfterComplete(dayIdx);
 
 
 
-  // controllo fine settimana
   const weekCompleted =
     state.completedTrainingDays.length === state.days.length;
 
@@ -538,11 +447,6 @@ function updateTrainingQueueAfterComplete(dayIdx){
   }
   else{
 
-    // settimana completata: si avanza (azzera anche completedTrainingDays)
-    // e si fa ripartire subito la coda per la settimana nuova, altrimenti
-    // trainingQueue restava vuota e currentTrainingDayIdx restava null per
-    // sempre - nessuna card risultava piu' "quella corrente" da far lampeggiare
-    // in Home, anche dopo aver ricominciato davvero a allenarsi
     advanceProgramWeek();
     state.trainingQueue = state.days.map((_,i)=>i);
     state.currentTrainingDayIdx = state.trainingQueue.length ? state.trainingQueue[0] : null;
@@ -554,18 +458,10 @@ function updateTrainingQueueAfterComplete(dayIdx){
 
 }
 
-// elenco dei giorni gia' completati questa settimana: usata da
-// openTrainingOrderModal (js/animations.js) per sapere quali giorni sono
-// gia' "bloccati" nella lista di pianificazione
 function getWeeklyCompletedDays(){
   return state.completedTrainingDays || [];
 }
 
-// nota: advanceProgramWeek() vive in js/animations.js (versione piu' completa,
-// tiene traccia anche di completedWeeks) - non ridefinirla anche qui: due
-// funzioni con lo stesso nome in file diversi si sovrascrivono silenziosamente
-// (vince l'ultimo script caricato), facile perdere di vista quale sia quella
-// vera
 
 function openNextWeekForDay(dayIdx){
 
@@ -606,14 +502,6 @@ function openNextWeekForDay(dayIdx){
 }
 
 
-// richiude la settimana appena conclusa (solo per gli esercizi di QUESTO
-// giorno, non tutti gli altri giorni) e apre di default quella successiva -
-// "w" e' la vera settimana del programma (state.currentWeek, catturata da
-// confirmFinishWorkout PRIMA che possa gia' essere avanzata), non piu'
-// indovinata riscansionando weekDone/weekSkipped esercizio per esercizio:
-// quella scansione poteva individuare una settimana diversa da quella vera
-// del programma se un esercizio non era ancora stato toccato questa
-// settimana (stesso tipo di bug gia' risolto altrove in allExercisesClosed)
 function forceNextWeekForDay(dayIdx, w){
 
   const day = state.days[dayIdx];
@@ -654,32 +542,17 @@ function forceNextWeekForDay(dayIdx, w){
 }
 
 
-// usata dal bottone "Giorno terminato" sotto l'esercizio (vedi
-// openFinishWorkoutModal in js/animations.js): controlla la VERA settimana corrente del programma
-// (state.currentWeek), la stessa che usa exerciseCard() per decidere cosa
-// mostrare aperto. Prima si inferiva una "settimana corrente" per esercizio
-// cercando l'ultimo indice segnato fatto/saltato: a inizio settimana nuova,
-// prima di toccare qualsiasi esercizio, quell'indice restava fermo
-// sull'ultima settimana GIA' completata (es. la 1), che risultava "chiusa"
-// per definizione - il bottone compariva subito, anche senza aver ancora
-// fatto nulla della settimana vera
 function allExercisesClosed(day){
   const w = state.currentWeek || 0;
   return day.esercizi.every(ex=>{
     const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
     if(!ex.weekDone) ex.weekDone = new Array(nWeeks).fill(false);
     if(!ex.weekSkipped) ex.weekSkipped = new Array(nWeeks).fill(false);
-    if(w >= nWeeks) return true; // esercizio con meno settimane del blocco corrente: gia' "esaurito"
+    if(w >= nWeeks) return true;
     return ex.weekDone[w] || ex.weekSkipped[w];
   });
 }
 
-// il primo esercizio del giorno (nell'ordine in cui sono elencati, cioe'
-// l'ordine di esecuzione) che non risulta ancora completato/saltato per la
-// settimana corrente - quello che si "sta svolgendo" ora. Se sono gia' tutti
-// fatti resta sull'ultimo, cosi' c'e' sempre una slide di default valida per
-// il carosello (vedi resolveActiveExerciseIdx in js/exercise-card.js) invece
-// di una sganciata dall'esercizio davvero in corso
 function computeCurrentDoingExerciseIdx(dayIdx){
   const day = state.days[dayIdx];
   if(!day || !day.esercizi.length) return null;
@@ -687,7 +560,7 @@ function computeCurrentDoingExerciseIdx(dayIdx){
   for(let i=0;i<day.esercizi.length;i++){
     const ex = day.esercizi[i];
     const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
-    if(w >= nWeeks) continue; // esaurito: non e' questo il punto dove sono rimasto
+    if(w >= nWeeks) continue;
     const done = (ex.weekDone && ex.weekDone[w]) || (ex.weekSkipped && ex.weekSkipped[w]);
     if(!done) return i;
   }

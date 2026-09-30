@@ -1,8 +1,3 @@
-// ---------------- CALCOLATORE DISCHI BILANCIERE ----------------
-// il peso del bilanciere è per esercizio, ex.barKg, non un'impostazione unica
-// per tutta l'app: panca e squat usano l'olimpionico da 20 kg, ma il curl usa
-// quello EZ, peso diverso, spesso nemmeno noto, quindi non ha senso un
-// default fisso per tutti
 const PLATE_SIZES = [20,15,10,5,2.5,1.25];
 const BAR_PRESETS = [
   {label:'Olimpionico 20 kg', kg:20},
@@ -12,7 +7,6 @@ const BAR_PRESETS = [
 ];
 let plateCalcExi = null;
 let plateLastTotal = '';
-// apre il calcolatore per un esercizio specifico
 function openPlateCalc(exi){
   plateCalcExi = exi;
   plateLastTotal = '';
@@ -25,15 +19,12 @@ function closePlateCalc(){
   document.getElementById('plateModal').style.display = 'none';
   plateCalcExi = null;
 }
-// salva il peso del bilanciere scelto per questo esercizio
 function setExerciseBarKg(kg){
   const ex = state.days[activeDayIdx].esercizi[plateCalcExi];
   ex.barKg = kg;
   saveState();
   renderPlateBody();
 }
-// chiede un peso di bilanciere personalizzato, per chi non usa uno dei
-// pesi predefiniti
 async function promptCustomBarKg(){
   const val = await ViridisInputDialog('Peso del bilanciere in kg (es. 8):', '', {title:'Peso bilanciere', inputMode:'decimal', validate:value => value && (isNaN(parseFloat(value.replace(',', '.'))) || parseFloat(value.replace(',', '.'))<0) ? 'Numero non valido' : ''});
   if(val===null) return;
@@ -41,15 +32,12 @@ async function promptCustomBarKg(){
   if(isNaN(kg) || kg<0){ ViridisToast('Numero non valido'); return; }
   setExerciseBarKg(kg);
 }
-// dimentica il bilanciere scelto, così la prossima volta lo richiede
 function resetExerciseBarKg(){
   const ex = state.days[activeDayIdx].esercizi[plateCalcExi];
   ex.barKg = null;
   saveState();
   renderPlateBody();
 }
-// scompone il peso per lato nei dischi standard disponibili, i più grandi
-// per primi, così ne servono il meno possibile
 function computePlatesPerSide(totalKg, barKg){
   let remaining = Math.max(0, (totalKg - barKg) / 2);
   const plates = [];
@@ -61,14 +49,10 @@ function computePlatesPerSide(totalKg, barKg){
   });
   return {plates, leftover: remaining};
 }
-// tenuta a mente ogni volta che l'utente scrive un nuovo peso totale da
-// scomporre nei dischi
 function onPlateTotalInput(val){
   plateLastTotal = val;
   renderPlateBody();
 }
-// disegna il contenuto del calcolatore: prima chiede il bilanciere se manca,
-// poi mostra il risultato della scomposizione in dischi
 function renderPlateBody(){
   const ex = state.days[activeDayIdx].esercizi[plateCalcExi];
   const body = document.getElementById('plateBody');

@@ -1,5 +1,3 @@
-// Modalità pensata per l'uso con sudore, guanti o telefono lontano: resta una
-// preferenza locale, quindi non modifica la scheda né viene sincronizzata.
 const TRAINING_FOCUS_MODE_KEY = 'scheda_wo18_training_focus_v1';
 let trainingFocusMode = localStorage.getItem(TRAINING_FOCUS_MODE_KEY) === '1';
 let editingExerciseIdx = null;
@@ -12,17 +10,6 @@ function toggleTrainingFocusMode(){
   renderActive();
 }
 
-// stato dell'icona "Termina blocco" nella riga dei giorni (vedi css
-// .block-finish-btn): apre archiveAndReset (l'intero mese/blocco, NON il
-// singolo giorno - il cambio giorno resta ai tab Push/Pull/ecc e al
-// suggerimento "Previsto: X", che restano intoccati). Funzione a parte
-// invece che solo dentro renderActive(), perche' showView() deve poterla
-// ricalcolare anche quando si torna sulla tab Allenamento SENZA un vero
-// re-render (es. dal tab in alto). Resta SEMPRE cliccabile (anche a blocco
-// incompleto, per chi vuole terminare in anticipo di proposito) - il
-// controllo "sei sicuro?" con l'avviso su settimane/allenamenti mancanti
-// vive dentro archiveAndReset stesso, cosi' protegge anche l'accesso da
-// Impostazioni, non solo questa icona
 function updateBlockFinishTab(){
   const btn = document.getElementById('blockFinishTab');
   if(!btn) return;
@@ -35,10 +22,6 @@ function updateBlockFinishTab(){
   btn.title = blockComplete ? "Scheda completata: archivia o aggiungi settimane" : "Gestisci, archivia o prolunga la scheda";
   btn.setAttribute('aria-label', btn.title);
 }
-// stesso conteggio degli esercizi "chiusi" gia' usato altrove (allExercisesClosed,
-// computeCurrentDoingExerciseIdx): una coppia collegata (super/jump set) conta
-// come UN solo esercizio, essendo un'unica card - qui pero' serve anche la
-// lista con l'indice di posizione (per l'indice rapido sotto)
 function computeDayProgress(day){
   const w = state.currentWeek || 0;
   let total = 0, done = 0;
@@ -54,13 +37,6 @@ function computeDayProgress(day){
   }
   return { total, done, items };
 }
-// striscia con gli esercizi di oggi al posto del vecchio testo "X di Y
-// esercizi" (che diceva QUANTI mancavano ma non QUALI): una chip per
-// esercizio (le coppie collegate contano come una sola, stesso principio
-// gia' usato per l'indice a pallini), stesso linguaggio visivo delle card
-// "I tuoi giorni" in Home (vedi renderHome in js/home.js) applicato qui agli
-// esercizi invece che ai giorni - colorata e piu' piccola se fatta, grande e
-// pulsante (vedi pulseCurrentExerciseChip) se e' quella su cui si e' adesso
 function renderDayExerciseStrip(progress, accent, activeExi){
   if(progress.total===0) return '';
   const day = state.days[activeDayIdx];
@@ -72,9 +48,6 @@ function renderDayExerciseStrip(progress, accent, activeExi){
   }).join('');
   return `<div class="day-ex-strip" id="dayExStrip">${chips}</div>`;
 }
-// Una riga di orientamento prima della lista esercizi: non deriva da un dato
-// parallelo, ma dalla stessa lista di slide che guida il carosello. Quindi
-// resta corretta anche con superset e quando un esercizio viene saltato.
 function renderWorkoutProgress(progress, activeExi, accent){
   if(!progress.total) return '';
   const current = progress.items.find(it=>it.exi===activeExi) || progress.items[0];
@@ -85,11 +58,6 @@ function renderWorkoutProgress(progress, activeExi, accent){
     <div class="workout-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="${progress.total}" aria-valuenow="${position}" aria-label="Esercizio ${position} di ${progress.total}"><span style="width:${percent}%"></span></div>
   </section>`;
 }
-// GSAP che fa "respirare" la chip dell'esercizio corrente nella striscia qui
-// sopra - stesso trattamento delle card giorno in Home. killTweensOf prima di
-// ripartire: sia renderActive() che goToExerciseSlide() ricostruiscono la
-// striscia da zero (outerHTML), senza andrebbero ad accumularsi tween vecchi
-// sugli elementi ricreati
 function pulseCurrentExerciseChip(){
   if(typeof gsap === "undefined") return;
   const chip = document.querySelector(".day-ex-chip.current");
@@ -103,8 +71,6 @@ function pulseCurrentExerciseChip(){
     ease: "sine.inOut"
   });
 }
-// La striscia in alto è anche scorrevole: separiamo uno swipe da un tap per
-// evitare che, arrivando agli ultimi esercizi, uno scorrimento cambi scheda.
 let exerciseStripGesture = {startX:0,startY:0,moved:false};
 let exerciseStripIgnoreClickUntil = 0;
 function startExerciseStripGesture(event){
@@ -120,11 +86,6 @@ function endExerciseStripGesture(){
   setTimeout(()=>{ exerciseStripGesture.moved = false; },0);
 }
 function activateExerciseChip(exi){ if(Date.now() >= exerciseStripIgnoreClickUntil && !exerciseStripGesture.moved) goToExerciseSlide(exi); }
-// indice a pallini + frecce prev/next, sempre visibile (prima solo da 6
-// esercizi in su): ora e' il modo principale per muoversi nel carosello, non
-// solo una scorciatoia per i giorni lunghi. Freccia sinistra assente (non
-// solo disabilitata) se non c'e' un esercizio precedente, destra assente se
-// non c'e' un successivo
 function renderExerciseJumpIndex(progress, accent){
   if(progress.total===0) return '';
   const activeItem = progress.items.find(it => it.exi===activeExerciseIdx) || progress.items[0];
@@ -142,12 +103,6 @@ function renderExerciseJumpIndex(progress, accent){
     <button class="ex-nav-arrow next" ${hasNext?`onclick="goToExerciseSlide(${nextExi})"`:'style="visibility:hidden" tabindex="-1"'} aria-label="Esercizio successivo">›</button>
   </div>`;
 }
-// passa da un esercizio all'altro nel carosello: se il DOM del carosello e'
-// gia' in pagina (praticamente sempre, tranne al primissimo render) tocca
-// SOLO il transform del track e l'header/indice - niente renderActive
-// completo, cosi' lo scorrimento resta una vera animazione invece di uno
-// scatto secco (renderActive ricostruirebbe tutto gia' posizionato, senza
-// transizione visibile)
 function goToExerciseSlide(exi){
   const day = state.days[activeDayIdx];
   if(!day || !day.esercizi[exi]) return;
@@ -170,24 +125,17 @@ function goToExerciseSlide(exi){
   });
   pulseCurrentExerciseChip();
 }
-// In Allenamento la testata identifica la GIORNATA corrente; il nome
-// dell'esercizio resta nella card, dove non viene tagliato e può crescere.
 function updateWorkoutTopbarTitle(){
   const title = document.getElementById('topbarTitle');
   const subtitle = document.getElementById('topbarSubtitle');
   const editBtn = document.getElementById('workoutTitleEditBtn');
   const activeView = document.getElementById('viewActive');
   const topbar = document.querySelector('.topbar');
-  // Rende autonomo il componente: se questa funzione viene richiamata mentre
-  // la vista è già visibile, il titolo non può ereditare l'aspetto del logo.
   if(topbar && activeView && activeView.style.display !== 'none') topbar.classList.add('is-workout-header');
   const day = state.days[activeDayIdx];
   const ex = day && day.esercizi[activeExerciseIdx];
   if(!title || !editBtn || !activeView || activeView.style.display === 'none' || !ex) return;
   if(topbar) topbar.style.setProperty('--workout-accent', dayAccent(day,activeDayIdx).c);
-  // Il titolo fisso descrive la giornata, non l'esercizio: mentre si scorrono
-  // le serie l'orientamento resta stabile. Il nome dell'esercizio vive nella
-  // card grande, dove ha lo spazio per essere letto e modificato davvero.
   title.textContent = day.name || 'Allenamento';
   if(subtitle){
     const workoutName = String(state.title || 'Allenamento').replace(/^wo\b/i,'Workout');
@@ -203,8 +151,6 @@ function toggleWorkoutTopbarEdit(){
   const day = state.days[activeDayIdx];
   const ex = day && day.esercizi[activeExerciseIdx];
   if(!ex) return;
-  // Il click sulla matita può arrivare prima del blur della textarea su alcuni
-  // WebView: salva esplicitamente il nome prima di ricostruire la card.
   if(editingExerciseIdx === activeExerciseIdx){
     const input = document.querySelector('.exercise-card-name-input');
     if(input) updateName(activeExerciseIdx,input.value);
@@ -222,9 +168,6 @@ function renderActive(){
   const a = dayAccent(day, activeDayIdx);
   updateThemeColor();
   const main = document.getElementById('viewActive');
-  // L'accento e' gia' quello usato da titolo, progressione e selettore del
-  // giorno. Lo esponiamo anche alla superficie della vista per il solo glow
-  // decorativo, senza introdurre una seconda palette o dati nuovi.
   main.style.setProperty('--accent', a.c);
   document.body.style.setProperty('--water-base', darkenColor(a.c,0.10));
   document.body.style.setProperty('--water-mid', darkenColor(a.c,0.55));
@@ -233,8 +176,6 @@ function renderActive(){
     main.innerHTML = renderReorderList(day);
     return;
   }
-  // se il giorno non ha ancora esercizi, un invito a aggiungerne uno invece
-  // di lasciare la pagina vuota e basta
   const emptyState = day.esercizi.length===0 ? `<div class="empty-day">
       <div class="empty-day-title">Nessun esercizio ancora</div>
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
@@ -242,9 +183,6 @@ function renderActive(){
   const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex day-exercise-action" onclick="toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>` : '';
   const suggestedIdx = computeSuggestedDayIdx();
 
-// piccolo banner pulsante invece del box grande di prima: deve vedersi
-// SUBITO entrando nel giorno diverso da quello previsto, ma senza occupare
-// spazio vero - tutto il banner e' cliccabile, un solo tocco per cambiare
 const switchTrainingDay =
 activeDayIdx !== suggestedIdx
 ?
@@ -259,15 +197,10 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
 
 
   const progress = computeDayProgress(day);
-  // risolta PRIMA di costruire la striscia esercizi qui sotto, che deve gia'
-  // sapere qual e' quello "corrente" per accenderlo
   activeExerciseIdx = resolveActiveExerciseIdx(day);
   saveActivePos();
   const workoutProgressHtml = renderWorkoutProgress(progress, activeExerciseIdx, a.c);
   const dayExStripHtml = renderDayExerciseStrip(progress, a.c, activeExerciseIdx);
-  // Le azioni della giornata e della lista restano nel flusso della slide
-  // attiva: non sono ancorate al fondo dello schermo, quindi seguono subito
-  // la sezione comune della scheda anche quando un esercizio è corto.
   const dayActionsHtml = `<div class="day-exercise-actions">
     <button class="add-ex day-exercise-action" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>
     ${reorderBtn}
@@ -278,14 +211,6 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
     </button>
   </div>${dayActionsHtml}` : '';
 
-  // un esercizio per schermata: le slide restano nel DOM (stesso rendering di
-  // ogni card di sempre, exerciseCard/linkedExerciseCard), ma sono impilate
-  // in orizzontale dentro un viewport con overflow:hidden e traslate col
-  // transform del track - solo la slide "attiva" e' visibile, le altre
-  // scorrono a lato. Le coppie collegate restano UNA sola slide (esattamente
-  // come oggi sono UNA sola card), quindi si costruisce dalla stessa
-  // progress.items gia' calcolata (che le tratta gia' come un solo elemento),
-  // invece di rifare un secondo loop separato che potrebbe disallinearsi
   const activeItem = progress.items.find(it => it.exi===activeExerciseIdx);
   const activeSlideIdx = activeItem ? progress.items.indexOf(activeItem) : 0;
   let slidesHtml = '';
@@ -338,10 +263,6 @@ function applyPendingWeekVisual(){
   setTimeout(()=>el.classList.remove(cls), 520);
 }
 }
-// quale esercizio mostrare come slide attiva: quello salvato/toccato per
-// ultimo (activeExerciseIdx), normalizzato al primo di una coppia collegata
-// se punta al secondo; altrimenti il primo non ancora chiuso per il blocco
-// (computeCurrentDoingExerciseIdx, gia' usato altrove con lo stesso scopo)
 function resolveActiveExerciseIdx(day){
   if(activeExerciseIdx !== null && day.esercizi[activeExerciseIdx]){
     const ex = day.esercizi[activeExerciseIdx];
@@ -354,10 +275,6 @@ function resolveActiveExerciseIdx(day){
   return fallback !== null ? fallback : 0;
 }
 
-// ---------------- RIORDINO ESERCIZI ----------------
-// modalita' dedicata (solo nome + frecce, niente editing dei dati): finche' non
-// premi "Conferma" il nuovo ordine resta solo in memoria, mai scritto su
-// localStorage, cosi' cambiare idea a meta' non lascia nulla di salvato a meta'
 let reorderMode = false;
 let reorderDirty = false;
 let reorderBackup = null;
@@ -372,8 +289,6 @@ function toggleReorderMode(){
   }
   renderActive();
 }
-// chiamata quando si esce dalla scheda attiva (cambio giorno o tab Storico)
-// mentre c'e' un riordino non ancora confermato: lo scarta silenziosamente
 function discardReorderIfPending(){
   if(reorderMode && reorderDirty && reorderBackup){
     state.days[activeDayIdx].esercizi = reorderBackup;
@@ -382,9 +297,6 @@ function discardReorderIfPending(){
   reorderDirty = false;
   reorderBackup = null;
 }
-// una coppia di esercizi collegati (super set/jump set) va spostata sempre
-// insieme, mai separata: qui si raggruppano in "blocchi" (1 esercizio, o 2 se
-// collegati) e il riordino si fa scambiando blocchi interi, non singoli indici
 function computeExerciseBlocks(day){
   const blocks = [];
   for(let i=0;i<day.esercizi.length;i++){
@@ -403,8 +315,6 @@ function moveExerciseBlock(blockIdx, delta){
   const list = day.esercizi;
   const blockA = blocks[blockIdx].map(i=>list[i]);
   const blockB = blocks[targetIdx].map(i=>list[i]);
-  // toglie entrambi i blocchi (dagli indici piu' alti ai piu' bassi, per non
-  // sballarsi da soli togliendo) e li reinserisce scambiati di posto
   const allIdx = [...blocks[blockIdx], ...blocks[targetIdx]].sort((x,y)=>y-x);
   allIdx.forEach(i=> list.splice(i,1));
   const insertAt = Math.min(...blocks[blockIdx], ...blocks[targetIdx]);
@@ -445,8 +355,6 @@ function renderReorderList(day){
 function updateTitles(){
 document.getElementById('tabActiveLabel').textContent = 'Allenamento';}
 
-// suggerisce il prossimo titolo incrementando l'ultimo numero trovato (es. "WO 18" -> "WO 19");
-// se non c'e' nessun numero nel titolo attuale, ripiega su un nome generico
 function suggestNextTitle(t){
   const m = /^(.*?)(\d+)(\D*)$/.exec(t || "");
   if(m){ return m[1] + (parseInt(m[2],10)+1) + m[3]; }
@@ -459,8 +367,6 @@ function isBlockComplete(){
 function closeBlockCompleteModal(){
   document.getElementById('blockCompleteModal').style.display = 'none';
 }
-// Accesso dal comando esplicito in alto: prima del completamento conserva il
-// flusso protetto già esistente; a scheda conclusa apre invece le scelte utili.
 function openBlockCompletionFlow(){
   if(!isBlockComplete()){
     archiveAndReset();
@@ -515,8 +421,6 @@ function confirmAddWeeksAfterBlock(current, available){
     return;
   }
   extendWeeksPerBlock(current + extra);
-  // La settimana appena conclusa resta nello storico del blocco; si entra
-  // direttamente nella prima delle settimane aggiunte, pronta da compilare.
   state.currentWeek = current;
   state.completedTrainingDays = [];
   state.trainingQueue = state.days.map((_,i)=>i);
@@ -539,10 +443,6 @@ function maybePromptBlockCompletion(){
   setTimeout(()=>openBlockCompleteModal(), 500);
 }
 
-// prima di qualunque prompt: se il blocco non e' ancora completo (settimane
-// mancanti, o allenamenti non ancora fatti in quella corrente) avvisa e
-// chiede conferma esplicita - altrimenti un tocco per sbaglio sull'icona
-// "Termina blocco" azzererebbe pesi/ripetizioni senza nessun avviso
 async function archiveAndReset(){
   const weeksPerBlock = state.weeksPerBlock || 4;
   const completedWeeksCount = (state.completedWeeks||[]).length;
@@ -559,9 +459,6 @@ async function archiveAndReset(){
   if(archiveName === null || !archiveName.trim()) return;
   const newTitle = await ViridisInputDialog("Nome del nuovo mese che stai per iniziare?", suggestNextTitle(state.title));
   if(newTitle === null || !newTitle.trim()) return;
-  // richiesto a ogni nuovo blocco (non solo la primissima volta), precompilato
-  // con l'ultimo valore usato: cosi' si puo' cambiare durata da un blocco
-  // all'altro senza doverla lasciare per forza fissa a quella iniziale
   let weeksVal = await ViridisWeeksPicker("Quante settimane durerà il nuovo blocco?", state.weeksPerBlock||4);
   if(weeksVal === null) return;
   let weeksN = parseInt(String(weeksVal).replace(',','.'), 10);
@@ -573,7 +470,7 @@ async function archiveAndReset(){
   saveStorico();
   storicoDates[archiveName.trim()] = todayKey();
   saveStoricoDates();
-  checkAchievements(); // va fatto ORA: valuta anche "zero settimane saltate" sul blocco appena archiviato, prima che state venga azzerato qui sotto
+  checkAchievements();
 
   const newDays = state.days.map(d => ({
     name: d.name,
@@ -606,30 +503,16 @@ saveState();
   ViridisToast(`Fatto! "${archiveName.trim()}" è ora nello Storico. Hai iniziato "${newTitle.trim()}".`);
 }
 
-// il suggerimento compare SOLO nella settimana subito dopo una segnata come
-// completata (vedi toggleWeekDone/il quadratino con la spunta): se la
-// settimana precedente non e' stata completata, niente suggerimento, anche
-// se in una settimana ancora prima ci fossero gia' dei pesi
-// il valore della settimana scorsa va ripreso cosi' com'e' stato scritto,
-// non riparsato a numero: chi scrive "4,5p" ci mette apposta anche la lettera
-// (fallimento, presa, tecnica...) e perderla nel suggerimento farebbe perdere
-// anche il significato, non solo la formattazione
 function suggestNextWeight(ex, w, si){
   if(w===0) return null;
   const s = ex.sets && ex.sets[w-1] && ex.sets[w-1][si];
   if(!s || s.peso===undefined || s.peso===null) return null;
   const raw = String(s.peso).trim();
-  // Un puro numero non confermato non va proposto per errore; una nota di
-  // peso testuale invece è informazione utile anche prima della spunta.
   const previousDone = !!(ex.weekDone && ex.weekDone[w-1]);
   const isPureNumber = /^[+-]?\d+(?:[.,]\d+)?$/.test(raw);
   if(!previousDone && isPureNumber) return null;
   return raw==='' ? null : raw;
 }
-// stessa idea di suggestNextWeight ma per le righe "Max": se la settimana
-// scorsa il Max era compilato, la nuova settimana lo apre gia' con quel peso
-// come suggerimento (placeholder, non un valore vero e proprio finche' non lo
-// si conferma scrivendoci sopra)
 function suggestNextMaxWeight(ex, w, mi){
   if(w===0) return null;
   const m = ex.maxExtra && ex.maxExtra[w-1] && ex.maxExtra[w-1][mi];
@@ -640,16 +523,13 @@ function suggestNextMaxWeight(ex, w, mi){
   if(!previousDone && isPureNumber) return null;
   return raw==='' ? null : raw;
 }
-// I Max non sono piu' una sola riga in fondo alla tabella: ogni tentativo
-// ricorda dopo quale serie e' stato fatto. I vecchi dati restano leggibili e
-// vengono convertiti al primo utilizzo, senza perdere ne' kg ne' ripetizioni.
 function getMaxEntries(ex, w){
   const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
   if(!ex.maxEntries) ex.maxEntries = Array.from({length:nWeeks}, (_, week)=>{
     const legacy = (ex.maxExtra && ex.maxExtra[week]) || [];
     const lastSet = Math.max(0, ((ex.sets && ex.sets[week]) || []).length - 1);
-    // Le vecchie versioni registravano Max vuoti in maxExtra. Se il riquadro
-    // era stato aperto, sono comunque parte dello schema e non vanno persi.
+    // Conserva anche i Max vuoti salvati dalle versioni precedenti.
+
     const wasShown = !!(ex.maxShown && ex.maxShown[week]);
     return legacy.filter(m => m && (wasShown || String(m.peso||'').trim() || String(m.rip||'').trim()))
       .map(m => ({afterSet:lastSet, peso:m.peso||'', rip:m.rip||''}));
@@ -672,9 +552,6 @@ function exerciseWeekCount(ex){
 function setHasRecordedData(set){
   return !!(set && (String(set.peso || '').trim() || String(set.rip || '').trim()));
 }
-// Una settimana in cui e' gia' stato scritto qualcosa non e' piu' una semplice
-// copia dello schema: durante una rimozione va lasciata intatta, anche se la
-// riga che si vorrebbe togliere e' ancora vuota.
 function weekHasRecordedExerciseData(ex, w){
   const sets = (ex.sets && ex.sets[w]) || [];
   return sets.some(setHasRecordedData) || getMaxEntries(ex,w).some(entry =>
@@ -686,8 +563,6 @@ function removeMaxAttachedToSet(ex, w, setIndex){
   const kept = entries.filter(entry => entry && entry.afterSet < setIndex);
   if(kept.length !== entries.length) ex.maxEntries[w] = kept;
 }
-// I Max sono parte dello schema: settimana dopo settimana riportano le stesse
-// righe e gli stessi kg/rip, salvo i valori già modificati a mano lì.
 function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
   if(!ex || fromWeek < 0) return false;
   const template = getMaxEntries(ex,fromWeek);
@@ -727,8 +602,6 @@ function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
   }
   return changed;
 }
-// Ripara anche le schede salvate con una versione precedente, in cui il Max
-// poteva esistere nella settimana d'origine ma non nelle settimane dopo.
 function syncMaxLayoutsForward(ex){
   let changed = false;
   const nWeeks = exerciseWeekCount(ex);
@@ -749,19 +622,13 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
   }).join('');
   return `<div class="max-entry-box"><div class="set-row max-entry-row" style="--max-count:${entries.length}"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
 }
-// Trasforma lo schema libero della settimana in una piccola guida leggibile
-// accanto alla serie. Se lo schema non usa il formato "1×6-10", non inventa
-// prescrizioni: conserva semplicemente il testo completo nella card sopra.
 function getSetPrescription(schema, setIndex){
   const raw = String(schema||'').replace(/\s+/g,' ').trim();
   if(!raw) return {target:'', extras:''};
-  // Il numero delle serie di avvicinamento non è espresso: non attribuire
-  // il successivo back-off alla prima riga del ramping.
+  // Il ramping non specifica quante serie fare. Il back-off non descrive la prima serie.
+
   if(/\bramping\b/i.test(raw))return {target:'',extras:''};
   const parts = raw.match(/\d+\s*[x×][\s\S]*?(?=\s*\d+\s*[x×]|$)/gi) || [];
-  // "2×8–10" non e' una sola serie: la stessa prescrizione va mostrata
-  // accanto a entrambe. Gli extra (MAX, REST...) restano sull'ultima serie
-  // del gruppo, perché arrivano dopo le ripetizioni previste nello schema.
   const expanded = parts.flatMap(rawPart=>{
     const match = rawPart.match(/^\s*(\d+)\s*[x×]\s*(.*)$/i);
     if(!match) return [];
@@ -817,9 +684,6 @@ function renderExerciseNote(ex, exi){
     <textarea class="ex-comment" rows="1" aria-label="Nota esercizio" placeholder="Aggiungi una nota (facoltativo)" onchange="updateComment(${exi},this.value)">${escapeHtml(ex.commento || '')}</textarea>
   </label></details>`;
 }
-// Le settimane concluse restano modificabili, ma non occupano lo spazio sopra
-// al lavoro in corso: sono raccolte sotto la settimana corrente e chiuse per
-// impostazione iniziale.
 function completedWeeksGroupKey(exi){
   return `completed-weeks_${activeDayIdx}_${exi}`;
 }
@@ -863,8 +727,6 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
     const isPastWeek = w < currentWeek;
     const isFutureWeek = w > currentWeek;
 
-    // I dati restano sempre correggibili: una ripetizione inserita male in una
-    // settimana passata non deve trasformarsi in un dato impossibile da sistemare.
     const isReadOnlyWeek = false;
 
 
@@ -954,12 +816,6 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
     const weekDone = !!(ex.weekDone && ex.weekDone[w]);
     const weekSkipped = !!(ex.weekSkipped && ex.weekSkipped[w]);
 
-    // rispetta un collasso/apertura scelta a mano (collapsedMap, es. da
-    // forceNextWeekForDay dopo "Giorno terminato") se c'e' gia' una voce;
-    // altrimenti parte aperta solo la settimana corrente ANCORA da fare -
-    // se e' gia' fatta o saltata (anche se nominalmente e' quella corrente)
-    // parte chiusa, cosi' rivedendo un giorno gia' concluso non lo si
-    // ritrova tutto spalancato
     const isCollapsed = (wkey in collapsedMap) ? !!collapsedMap[wkey] : (!isCurrentWeek || weekDone || weekSkipped);
     const isCompletedGroup = !isCurrentWeek && (isPastWeek || isCompletedWeek || weekDone || weekSkipped);
     const isFutureGroup = !isCurrentWeek && !isCompletedGroup;
@@ -1154,28 +1010,15 @@ ${renderExerciseCardHero(ex,exi,accent)}
 
 
 }
-// header sticky (nome esercizio, sempre visibile scorrendo) reso a parte
-// invece che dentro ogni card: vive FUORI dal carosello (vedi
-// .ex-carousel-viewport in renderActive), perche' un position:sticky dentro
-// un antenato con overflow:hidden non si aggancia mai allo scroll della
-// pagina (lo stesso motivo per cui .ex-card-wrap teneva l'header fuori dalla
-// card con overflow:hidden, vedi il commento CSS su .ex-card-wrap) - un solo
-// header condiviso che cambia contenuto quando cambia la slide attiva,
-// invece di uno per esercizio quasi sempre fuori vista
 function renderExerciseStickyHeader(exi){
   const day = state.days[activeDayIdx];
   if(!day) return '';
   let ex = day.esercizi[exi];
   if(!ex) return '';
-  // se exi e' il secondo di una coppia collegata, l'header va sempre mostrato
-  // per la coppia intera a partire dal primo (exiA)
   if(ex.linkGroupId && day.esercizi[exi-1] && day.esercizi[exi-1].linkGroupId===ex.linkGroupId){
     exi = exi-1;
     ex = day.esercizi[exi];
   }
-  // --accent va impostato QUI: prima veniva ereditato da .ex-card-wrap (ora
-  // rimosso), senza questo l'header cade sul fallback var(--green) e diventa
-  // sempre verde invece del colore del giorno
   const accent = dayAccent(day, activeDayIdx).c;
   const isEditing = editingExerciseIdx === exi;
   const editBtn = `<button class="ex-edit-mode-btn ${isEditing?'active':''}" onclick="toggleExerciseEditMode(${exi})" aria-label="${isEditing?'Chiudi modifica':'Modifica esercizio'}" title="${isEditing?'Chiudi modifica':'Modifica esercizio'}">${isEditing ? ICON_CHECK : ICON_GEAR}</button>`;
@@ -1193,8 +1036,6 @@ function renderExerciseStickyHeader(exi){
     <div class="ex-sticky-top"><div class="ex-sticky-name-area">${isEditing ? `<textarea class="ex-sticky-name-input" rows="1" oninput="autoGrowTextarea(this)" onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome??'')}</textarea>` : escapeHtml(ex.nome||'Esercizio')}</div>${editBtn}</div></div></div>`;
 }
 
-// Il titolo resta nel flusso della pagina e lo sticky lo aggancia sotto la
-// topbar: nessuno spazio artificiale, quindi non può sovrapporsi alle serie.
 function syncExerciseStickyHeaderSpace(){
   const slot = document.getElementById('exStickyHeaderSlot');
   if(slot) slot.style.height = '';
@@ -1213,9 +1054,6 @@ function renderWeekQuickSummary(exi, w, ex, partnerExi){
   return `<div class="week-quick-summary ${editing?'editing':''}"><div class="week-summary-metas">${content}${!editing&&w===state.currentWeek?`<div class="workout-quick-tools"><button type="button" class="rest-settings-trigger" onclick="configureWorkoutRest()">Timer e avvisi</button><button type="button" class="rest-settings-trigger" onclick="openExerciseHistory(${exi})">Storico esercizio</button></div>`:''}</div><button type="button" class="week-note-trigger" onclick="toggleWeekNote(this)" aria-label="Aggiungi nota alla settimana">Nota</button></div>`;
 }
 
-// apri/chiudi un blocco settimana: tocca solo le classi CSS (niente renderActive,
-// sennò si perderebbe subito lo scroll), e ricorda lo stato aperto/chiuso per quando si
-// ridisegna la pagina altre volte
 function toggleWeek(btn, key, weekIdx){
 
   const nowCollapsed = btn.classList.toggle('collapsed');
@@ -1264,12 +1102,6 @@ function openWeekConfig(exi, w, field){
   }
 }
 
-// pressione prolungata sul nome esercizio: apre un menu contestuale con le
-// stesse azioni gia' nelle iconcine della card (Elimina, Grafico, Calcola
-// dischi, Collega) - piu' comodo da mirare col dito che 4 iconcine minuscole.
-// Solo sulla card SOLO (non su quella di una coppia collegata: li' le azioni
-// sono gia' sdoppiate su due righe separate, meno affollate, e "a quale dei
-// due esercizi si riferirebbe" sarebbe ambiguo per un solo gesto)
 let stickyGesture = { longTimer:null, startX:0, startY:0 };
 function onStickyPointerDown(e, exi){
   stickyGesture.startX = e.clientX;
@@ -1287,10 +1119,6 @@ function onStickyPointerMove(e){
 function onStickyPointerCancel(){
   clearTimeout(stickyGesture.longTimer);
 }
-// condivide il record dell'esercizio (o, se non c'e' ancora, solo il nome)
-// tramite il pannello di condivisione nativo del telefono - su desktop, dove
-// il Web Share API di solito non c'e', ripiega sul copiare il testo negli
-// appunti cosi' il bottone fa comunque qualcosa di utile invece di niente
 async function shareExercise(exi){
   const ex = state.days[activeDayIdx] && state.days[activeDayIdx].esercizi[exi];
   if(!ex) return;
@@ -1299,7 +1127,7 @@ async function shareExercise(exi){
     ? `💪 ${ex.nome}: record personale ${record.peso}kg × ${record.rip||'?'} rip\nTracciato con Viridis`
     : `🏋️ ${ex.nome} - allenamento tracciato con Viridis`;
   if(navigator.share){
-    try{ await navigator.share({text}); }catch(e){} // annullare il pannello non e' un errore
+    try{ await navigator.share({text}); }catch(e){}
   } else if(navigator.clipboard && navigator.clipboard.writeText){
     try{
       await navigator.clipboard.writeText(text);
@@ -1351,10 +1179,6 @@ function closeExerciseContextMenu(){
   if(el) el.remove();
 }
 
-// Azioni che riguardano l'intera giornata, volutamente separate dal menu
-// "..." della card: quel menu resta un posto pulito per Max, serie e opzioni
-// dell'esercizio selezionato. Qui non vengono mai modificati gli esercizi che
-// l'utente ha gia' completato.
 function openDayManagementMenu(){
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
   closeDayManagementMenu();
@@ -1419,12 +1243,6 @@ function updateName(exi, val){
   state.days[activeDayIdx].esercizi[exi].nome = val;
   saveState();
 }
-// ---------------- MODIFICA NOME DALL'HEADER STICKY ----------------
-// il campo nome dentro la card era ridondante con l'header sticky (che resta
-// visibile scorrendo, quindi e' gia' piu' comodo): la modifica vera e propria
-// vive solo qui ora. Un solo tocco non fa nulla apposta (per non aprirla per
-// sbaglio scrollando o toccando l'header), serve il doppio tocco - stessa
-// logica gia' usata per le settimane future (vedi week-toggle.future-week)
 function startEditStickyName(exi){
   const ex = state.days[activeDayIdx].esercizi[exi];
   const header = document.getElementById('exStickyHeaderOuter');
@@ -1439,8 +1257,6 @@ function startEditStickyName(exi){
   ta.focus();
   const len = ta.value.length; ta.setSelectionRange(len,len);
 }
-// il salvataggio vero lo fa gia' l'onchange (updateName): qui si torna solo
-// alla scritta statica, rileggendo il nome aggiornato dallo stato
 function finishEditStickyName(exi){
   const header = document.getElementById('exStickyHeaderOuter');
   if(!header) return;
@@ -1448,11 +1264,6 @@ function finishEditStickyName(exi){
   const ex = state.days[activeDayIdx].esercizi[exi];
   header.textContent = (ex && ex.nome) || 'Esercizio';
 }
-// stessa idea per gli esercizi collegati, ma con tre righe (esercizio A / tipo
-// di collegamento / esercizio B) invece del vecchio "A + B" su una riga sola:
-// qui il doppio tocco serve anche a capire QUALE dei due si sta modificando,
-// mostrandoli entrambi con un campo a testa invece di dover indovinare da che
-// meta' del testo si e' toccato
 function startEditLinkedSticky(exiA, exiB){
   const day = state.days[activeDayIdx];
   const exA = day.esercizi[exiA], exB = day.esercizi[exiB];
@@ -1473,9 +1284,6 @@ function startEditLinkedSticky(exiA, exiB){
     <button class="ex-sticky-confirm-btn" onclick="finishEditLinkedSticky(${exiA},${exiB})">${ICON_CHECK} Conferma</button>
   `;
 }
-// niente onblur qui apposta: passare dal primo campo al secondo (o al bottone
-// del tipo di collegamento) farebbe scattare il blur del primo prima ancora
-// di aver finito - si chiude solo quando si preme davvero "Conferma"
 function finishEditLinkedSticky(exiA, exiB){
   const header = document.getElementById('exStickyHeaderOuter');
   if(!header) return;
@@ -1496,15 +1304,10 @@ function updateComment(exi, val){
 function updateMeta(exi, field, w, val){
   const ex = state.days[activeDayIdx].esercizi[exi];
   ex[field][w] = val;
-  // le settimane successive seguono quella appena modificata (comoda scrittura
-  // in cascata), finche' non vengono a loro volta modificate a mano: da li'
-  // in poi e' quella modifica manuale a propagarsi in avanti
   for(let k=w+1;k<ex[field].length;k++){ ex[field][k] = val; }
   if(w<ex[field].length-1) renderActive();
   saveState();
 }
-// nota libera per la singola settimana, senza cascata: a differenza di
-// recupero/schema qui ogni settimana resta indipendente dalle altre
 function updateWeekNote(exi, w, val){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.weekNote) ex.weekNote=emptyStrArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
@@ -1520,12 +1323,8 @@ function updateSet(exi, w, si, field, val, recordPeso, isDraft=false){
   refreshSeriesFinishUI(exi,w);
   const finishPartner=findLinkedPartner(exi);
   if(finishPartner)refreshSeriesFinishUI(finishPartner.exi,w);
-  // Una ripetizione scritta è il segnale affidabile: i pesi possono essere
-  // già riportati dalla settimana precedente senza che l'allenamento sia iniziato.
   if(field==='rip' && String(val||'').trim()!=='') markWorkoutStartedByRep();
   saveState();
-  // Ogni tasto è già persistito; PR e conferma fine serie aspettano invece
-  // il valore completo (change/Fine), non la prima cifra di "12".
   if(isDraft) return;
   if(field==='peso' && recordPeso!==undefined && recordPeso!==null && !ex.sets[w][si].dropset){
     const p = parseFloat(String(val).replace(',','.'));
@@ -1535,26 +1334,15 @@ function updateSet(exi, w, si, field, val, recordPeso, isDraft=false){
       checkAchievements();
     }
   }
-  // scrivere le rip nell'ultima serie della settimana e' di solito il segnale
-  // che quella settimana e' finita: lo chiediamo subito invece di aspettare
-  // che l'utente vada a cercare il tasto "completata" a parte. Non se ha
-  // aperto il riquadro "max" per questa settimana: vuol dire che vuole ancora
-  // registrare un tentativo di massimale, non ha finito per davvero
   const maxOpenHere = ex.maxShown && ex.maxShown[w];
   const lastSetJustFilled = field==='rip' && String(val||'').trim()!=='' && si===ex.sets[w].length-1 && !(ex.weekDone && ex.weekDone[w]) && !maxOpenHere;
   if(lastSetJustFilled){
-    // esercizio collegato (super/jump set): finire di scrivere il PRIMO dei
-    // due non basta, la conferma deve aspettare che anche il partner abbia
-    // l'ultima serie compilata - altrimenti scatta troppo presto, prima
-    // ancora di aver registrato il secondo esercizio della coppia
     const partner = findLinkedPartner(exi);
     const partnerReady = !partner || isLastSetOfWeekFilled(partner.ex, w);
     if(partnerReady) requestWeekDoneConfirm(exi, w, ex.nome);
   }
 }
 
-// Dato della stessa serie nella settimana immediatamente precedente: non
-// viene mostrato automaticamente, per evitare di condizionare il risultato.
 function getPreviousWeekRep(ex, w, si){
   if(!ex || w < 1 || !ex.sets || !ex.sets[w-1] || !ex.sets[w-1][si]) return null;
   const value = String(ex.sets[w-1][si].rip ?? '').trim();
@@ -1573,9 +1361,6 @@ function updateMaxRepCompareAvailability(input){
   const btn = wrap && wrap.querySelector('.max-compare-btn');
   if(btn) btn.disabled = !String(input.value||'').trim();
 }
-// Feedback leggero: quando peso e ripetizioni della stessa serie sono pieni,
-// la riga si accende appena. Non segna la serie come completata nei dati,
-// è solo un riscontro visivo immediato.
 function markSetVisualState(input){
   const row = input.closest('.set-row');
   if(!row) return;
@@ -1628,17 +1413,9 @@ function isLastSetOfWeekFilled(ex, w){
   const last = sets[sets.length-1];
   return !!(last && String(last.rip||'').trim() !== '');
 }
-// Modale della settimana: chiude prima la tastiera, poi mostra la conferma.
-// Il vecchio dialogo di sistema
-// non segue lo stile dell'app ed e' capitato apparisse ancora con la tastiera
-// aperta sopra, illeggibile - qui si chiude prima la tastiera (blur) e si apre
-// un modale vero, sempre visibile e leggibile
 let weekDoneConfirmTarget = null;
 let finishWorkoutPromptTimer = null;
 
-// Appena l'ultimo esercizio del giorno viene fatto o saltato, il piccolo
-// bottone "Giorno terminato" non deve essere l'unico indizio: mostra una
-// conferma grande, ma una sola volta e solo per la settimana corrente.
 function promptFinishWorkoutWhenReady(dayIdx, weekIdx){
   const day = state.days[dayIdx];
   if(!day || weekIdx !== state.currentWeek || !day.esercizi.length || !allExercisesClosed(day)) return;
@@ -1657,9 +1434,6 @@ function promptFinishWorkoutWhenReady(dayIdx, weekIdx){
 function askWeekDoneConfirm(exi, w, exName){
   weekDoneConfirmTarget = {exi, w};
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
-  // titolo con settimana + nome esercizio ben in vista (prima diceva solo
-  // "Settimana finita?", il nome stava solo nel sottotitolo piu' piccolo e
-  // sembrava riferirsi a tutto l'allenamento invece che a questo esercizio)
   document.getElementById('weekDoneModalBody').innerHTML = `
     <div class="finish-title" style="font-size:20px;">${ICON_CHECK} Settimana ${w+1} di "${escapeHtml(exName||'questo esercizio')}"</div>
     <div class="finish-subtitle" style="font-size:14px;">Segnarla come completata?</div>
@@ -1669,9 +1443,6 @@ function askWeekDoneConfirm(exi, w, exName){
     </div>
   `;
   const modal = document.getElementById('weekDoneModal');
-  // il blur() sopra puo' impiegare un istante a far richiudere la tastiera:
-  // il piccolo ritardo evita che il modale si apra ancora mentre la vista si
-  // sta ridimensionando, che lo farebbe comparire storto/troppo in alto
   setTimeout(()=>{
     modal.style.display = 'flex';
     if(typeof gsap !== 'undefined'){
@@ -1679,9 +1450,6 @@ function askWeekDoneConfirm(exi, w, exName){
     }
   }, 150);
 }
-// La domanda arriva solo quando l'utente ha davvero concluso la scrittura.
-// Con la tastiera interna ogni tasto aggiorna il campo, ma non può più
-// interrompere una ripetizione composta, ad esempio "12", dopo il primo "1".
 let weekDoneConfirmTimer = null;
 function requestWeekDoneConfirm(exi, w, exName){
   clearTimeout(weekDoneConfirmTimer);
@@ -1698,10 +1466,6 @@ function closeWeekDoneConfirm(confirmed){
   weekDoneConfirmTarget = null;
   if(!confirmed || !target) return;
   toggleWeekDone(target.exi, target.w);
-  // esercizi collegati: il bottone "completata" manuale segna sempre ENTRAMBI
-  // insieme (vedi linkedExerciseCard) - se si scriveva nel secondo dei due il
-  // partner restava non segnato, e la casella visualizzata (che legge lo
-  // stato del primo) sembrava non essersi spuntata anche confermando "si'"
   const partner = findLinkedPartner(target.exi);
   if(partner) toggleWeekDone(partner.exi, target.w);
 }
@@ -1724,10 +1488,6 @@ function stepSet(exi, w, si, delta, btn){
     checkAchievements();
   }
 }
-// tocco sul chip "ultimo peso" (vedi kgPlaceholder/suggestNextWeight): riempie
-// la serie SENZA dover riscrivere a mano un numero gia' scritto la settimana
-// scorsa - stesso aggiornamento mirato del solo input di stepSet, invece di
-// un intero re-render, per non perdere scroll/focus sul resto della card
 function fillSuggestedWeight(exi, w, si, value, btn, recordPeso){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
@@ -1738,8 +1498,6 @@ function fillSuggestedWeight(exi, w, si, value, btn, recordPeso){
   updateSet(exi, w, si, 'peso', value, recordPeso);
   btn.remove();
 }
-// RPE (sforzo percepito, 1-10): input VIRIDIS con validazione inline.
-// Facoltativo: lasciare vuoto toglie l'RPE gia' segnato
 async function editRpe(exi, w, si, btn){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
@@ -1758,12 +1516,6 @@ async function editRpe(exi, w, si, btn){
   btn.textContent = val || 'RPE';
   btn.classList.toggle('filled', !!val);
 }
-// dropset: tocca il numero romano della serie per segnarla come tale.
-// Il PESO piu' basso di un dropset (dopo il cedimento sulla serie vera)
-// resta comunque salvato e conta per volume/serie totali - viene solo
-// escluso dal calcolo dei record (vedi maxPesoInDay in js/records.js e i
-// controlli "nuovo PR" dentro updateSet/stepSet qui sopra), altrimenti un
-// dropset piu' pesante di un vecchio record festeggerebbe un PR che non lo e'
 function toggleDropset(exi, w, si, btn){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.sets) ex.sets=emptySetsArr((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4);
@@ -1773,10 +1525,6 @@ function toggleDropset(exi, w, si, btn){
   saveState();
   btn.classList.toggle('dropset', !!ex.sets[w][si].dropset);
 }
-// il riquadro "max" ha lo stesso spirito a cascata di recupero/schema: espandendolo
-// in una settimana si espande anche in quelle dopo. Nascondendolo pero' NON si
-// nasconde nelle settimane successive che hanno gia' dei dati inseriti, altrimenti
-// si perderebbero di vista senza cancellarli davvero
 function maxHasData(ex, w){
   if(ex.maxEntries && ex.maxEntries[w]) return ex.maxEntries[w].some(m=> m && (String(m.peso||'').trim() || String(m.rip||'').trim()));
   const pair = (ex.maxExtra && ex.maxExtra[w]) || [];
@@ -1784,8 +1532,6 @@ function maxHasData(ex, w){
 }
 async function requestAddMax(exi, w, partnerExi){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  // Numero di righe già presentate dalla card, comprese quelle vuote iniziali.
-  // Cambia solo l'elenco delle scelte, senza materializzare serie nei dati.
   const weekBody = document.querySelector(`.week-body[data-exi="${exi}"][data-week="${w}"]`);
   const displayedSets = weekBody ? weekBody.querySelectorAll('.set-series-group, .linked-set-group').length : 0;
   const nSets = displayedSets || Math.max(1, ((ex.sets && ex.sets[w]) || []).length);
@@ -1797,8 +1543,8 @@ async function requestAddMax(exi, w, partnerExi){
     return;
   }
   const entries = getMaxEntries(ex,w);
-  // Il primo Max su quella serie apre i due tentativi base; se esiste gia'
-  // un gruppo Max sulla stessa serie, il nuovo tocco aggiunge un solo tentativo.
+  // Il primo gruppo Max contiene due tentativi; i successivi tocchi ne aggiungono uno.
+
   const amount = entries.some(entry=>entry.afterSet===afterSet-1) ? 1 : 2;
   for(let i=0;i<amount;i++) entries.push({afterSet:afterSet-1,peso:'',rip:''});
   carryMaxLayoutForward(ex,w);
@@ -1852,8 +1598,6 @@ function updateMaxEntry(exi, w, index, field, val, isDraft=false){
   refreshSeriesFinishUI(exi,w);
   const finishPartner=findLinkedPartner(exi);
   if(finishPartner)refreshSeriesFinishUI(finishPartner.exi,w);
-  // Se le righe future erano già state create vuote, riempi anche quelle
-  // senza cancellare eventuali modifiche scritte in autonomia più avanti.
   if(!isDraft) carryMaxLayoutForward(ex,w);
   if(field==='rip' && String(val||'').trim()!=='') markWorkoutStartedByRep();
   saveState();
@@ -1869,15 +1613,6 @@ function toggleMax(exi, w){
   saveState();
   renderActive();
 }
-// segna la settimana come completata (solo per QUESTO esercizio) e, se non era
-// gia' l'ultima, chiude questa settimana e apre la successiva: il suggerimento
-// di peso (suggestNextWeight) fara' comparire da solo il peso appena usato
-// come placeholder nella settimana che si apre. Se la si segna completata (non
-// se la si smarca) e c'e' un esercizio dopo in questo giorno, la pagina avanza
-// da sola su quello, cosi' non serve scrollare a mano
-// se exi fa parte di una coppia collegata, il "prossimo esercizio" deve
-// saltare il partner (e' gia' visibile nella stessa card) e puntare a quello
-// dopo l'intero gruppo, altrimenti l'auto-avanzamento resterebbe fermo li'
 function nextCardIndex(exi){
   const list = state.days[activeDayIdx].esercizi;
   const ex = list[exi];
@@ -1885,11 +1620,6 @@ function nextCardIndex(exi){
   if(ex && ex.linkGroupId && list[next] && list[next].linkGroupId===ex.linkGroupId) next++;
   return next;
 }
-// un esercizio e' "chiuso per il blocco" quando OGNI settimana risulta fatta
-// O saltata - saltare una settimana apposta (infortunio, imprevisto) conta
-// come chiuderla, non come lasciarla in sospeso: usata sia per il festeggiamento
-// di fine esercizio sotto, sia (indirettamente, vedi allExercisesClosed in
-// js/navigation.js) per far comparire il bottone "Giorno terminato"
 function exerciseFullyClosed(ex){
   if(!ex.weekDone) return false;
   return ex.weekDone.every((d,i) => d || (ex.weekSkipped && ex.weekSkipped[i]));
@@ -1899,12 +1629,9 @@ function toggleWeekDone(exi, w){
   if(!ex.weekDone) ex.weekDone=new Array((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4).fill(false);
   const nowDone = !ex.weekDone[w];
   ex.weekDone[w] = nowDone;
-  // completata e saltata sono mutuamente esclusive: segnarne una toglie l'altra
   if(nowDone && ex.weekSkipped) ex.weekSkipped[w] = false;
   if(nowDone) pendingWeekVisual = {type:'done',exi,w};
 
-  // Segnare fatta una settimana non apre da solo una sessione alla prossima
-  // apertura: quel segnale arriva esclusivamente da una ripetizione inserita.
   saveState();
   renderActive();
   if(nowDone){
@@ -1914,37 +1641,23 @@ function toggleWeekDone(exi, w){
     if(exerciseFullyClosed(ex)) celebrateExerciseDone(ex.nome);
     promptFinishWorkoutWhenReady(activeDayIdx, w);
   }
-  // segnare completata la settimana che si sta davvero svolgendo oggi avanza
-  // da sola il carosello al prossimo esercizio, con la stessa animazione di
-  // scorrimento di uno swipe manuale (vedi goToExerciseSlide)
   const next = nextCardIndex(exi);
   if(nowDone && w === state.currentWeek && state.days[activeDayIdx].esercizi[next]){
     setTimeout(()=>goToExerciseSlide(next), 250);
   }
 }
-// piccolo pop quando si spunta una settimana come completata: il cambio di
-// stato (bordo/colore via CSS ".checked") resta istantaneo, qui si aggiunge
-// solo un rimbalzo dopo il re-render - renderActive() ricrea il bottone da
-// zero, quindi il tween va fatto DOPO, sul bottone nuovo, non su quello appena
-// distrutto (un tween sull'elemento vecchio non avrebbe piu' alcun effetto visibile)
 function pulseWeekDoneBtn(exi, w){
   if(typeof gsap === "undefined") return;
   const btn = document.querySelector(`.week-done-btn[data-exi="${exi}"][data-w="${w}"]`);
   if(!btn) return;
   gsap.fromTo(btn, {scale:1.5}, {scale:1, duration:.35, ease:"back.out(3)"});
 }
-// stesso identico pop di pulseWeekDoneBtn ma sul bottone "saltata": segnare
-// una settimana come saltata apposta ha la stessa dignita' di segnarla fatta,
-// non deve sentirsi un'azione di serie B
 function pulseWeekSkipBtn(exi, w){
   if(typeof gsap === "undefined") return;
   const btn = document.querySelector(`.week-skip-btn[data-exi="${exi}"][data-w="${w}"]`);
   if(!btn) return;
   gsap.fromTo(btn, {scale:1.5}, {scale:1, duration:.35, ease:"back.out(3)"});
 }
-// notifica piccola e discreta (non il festeggiamento vistoso di un PR) quando
-// TUTTE le settimane di un esercizio risultano chiuse (fatte o saltate): dura
-// pochissimo, serve solo a confermare "questo esercizio e' finito per il blocco intero"
 function celebrateExerciseDone(name){
   let el = document.getElementById('exDoneToast');
   if(!el){
@@ -1958,12 +1671,6 @@ function celebrateExerciseDone(name){
   clearTimeout(window._exDoneToastTimer);
   window._exDoneToastTimer = setTimeout(()=>{ el.classList.remove('show'); }, 1100);
 }
-// "saltata" e' per le settimane che non farai apposta (infortunio, imprevisto):
-// diversamente da una settimana lasciata vuota per caso, questa resta distinguibile
-// anche nello Storico (vedi renderHistBody in history.js) invece di sparire e basta.
-// Stesso "mood" di toggleWeekDone qui sopra (vibrazione, pop, controllo
-// obiettivi, avanzamento al prossimo esercizio): per l'app saltare di
-// proposito e' comunque chiudere la settimana, non un'azione minore
 function toggleWeekSkipped(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
   if(!ex.weekSkipped) ex.weekSkipped=new Array((ex.recupero&&ex.recupero.length)||state.weeksPerBlock||4).fill(false);
@@ -1972,8 +1679,6 @@ function toggleWeekSkipped(exi, w){
   if(nowSkipped && ex.weekDone) ex.weekDone[w] = false;
   if(nowSkipped) pendingWeekVisual = {type:'skipped',exi,w};
 
-  // Anche "salta" chiude la settimana, ma non significa che l'utente stia
-  // ancora allenandosi: non deve quindi attivare la ripresa automatica.
   saveState();
   renderActive();
   if(nowSkipped){
@@ -1983,8 +1688,6 @@ function toggleWeekSkipped(exi, w){
     if(exerciseFullyClosed(ex)) celebrateExerciseDone(ex.nome);
     promptFinishWorkoutWhenReady(activeDayIdx, w);
   }
-  // stesso principio di toggleWeekDone qui sopra: saltare di proposito la
-  // settimana di oggi avanza comunque il carosello, non e' un'azione minore
   const next = nextCardIndex(exi);
   if(nowSkipped && w === state.currentWeek && state.days[activeDayIdx].esercizi[next]){
     setTimeout(()=>goToExerciseSlide(next), 250);
@@ -1996,7 +1699,6 @@ function updateMax(exi, w, idx, field, val){
   if(!ex.maxExtra[w]) ex.maxExtra[w]=[];
   if(!ex.maxExtra[w][idx]) ex.maxExtra[w][idx]={};
   ex.maxExtra[w][idx][field]=val;
-  // Anche nei Max il segnale è la ripetizione: il peso può essere predisposto.
   if(field==='rip' && String(val||'').trim()!=='') markWorkoutStartedByRep();
   saveState();
 }
@@ -2005,8 +1707,8 @@ function addSet(exi, w){
   const nWeeks = exerciseWeekCount(ex);
   if(!ex.sets) ex.sets=emptySetsArr(nWeeks);
   while(ex.sets.length<nWeeks) ex.sets.push([]);
-  // Lo schema si propaga solo dalla settimana su cui si lavora in poi: il
-  // passato resta una fotografia fedele di cio' che e' stato gia' svolto.
+  // Propaga lo schema dalla settimana modificata in avanti, senza cambiare il passato.
+
   for(let k=w;k<nWeeks;k++){
     if(!ex.sets[k]) ex.sets[k]=[];
     ex.sets[k].push({peso:'',rip:''});
@@ -2016,7 +1718,7 @@ function addSet(exi, w){
 }
 async function removeSet(exi, w){
   const ex = state.days[activeDayIdx].esercizi[exi];
-  if(!ex.sets || !ex.sets[w] || ex.sets[w].length<=1) return; // tieni sempre almeno 1 serie in questa settimana
+  if(!ex.sets || !ex.sets[w] || ex.sets[w].length<=1) return;
   const lastIndex=ex.sets[w].length-1;
   const currentHasData = setHasRecordedData(ex.sets[w][lastIndex]) ||
     getMaxEntries(ex,w).some(entry=>entry.afterSet>=lastIndex&&setHasRecordedData(entry));
@@ -2026,9 +1728,6 @@ async function removeSet(exi, w){
   for(let k=w;k<nWeeks;k++){
     const weekSets = ex.sets[k] || [];
     if(weekSets.length<=1) continue;
-    // La settimana corrente e' una scelta esplicita. Per quelle successive,
-    // invece, non si tocca mai una settimana che contiene gia' dati: cosi' una
-    // correzione fatta alla settimana 1 non cancella lo storico della 2.
     if(k!==w && weekHasRecordedExerciseData(ex,k)){
       preservedWeeks++;
       continue;
@@ -2046,17 +1745,12 @@ async function removeSet(exi, w){
     ViridisToast(message);
   }
 }
-// aggiunge una scheda esercizio vuota in fondo al giorno; niente qui obbliga a
-// scegliere subito il nome, si compila dopo dal campo con l'autocomplete
 async function addExercise(dayIdx){
   const n = state.weeksPerBlock || await ensureWeeksPerBlock();
   state.days[dayIdx].esercizi.push({nome:'',commento:'',recupero:emptyStrArr(n),schema:emptyStrArr(n),sets:emptySetsArr(n)});
   renderActive();
   saveState();
 }
-// oltre alla conferma gia' presente, tiene per qualche secondo l'esercizio
-// appena tolto (lastDeletedExercise) cosi' un tocco su "Annulla" lo rimette
-// esattamente dove stava, in caso di ripensamento o tocco sbagliato
 let lastDeletedExercise = null;
 let undoDeleteTimer = null;
 async function deleteExercise(exi){
@@ -2095,12 +1789,6 @@ function undoDeleteExercise(){
   document.getElementById('undoToast').classList.remove('show');
 }
 
-// ---------------- SUPERSET / JUMP SET (esercizi collegati) ----------------
-// due esercizi "collegati" restano due oggetti indipendenti (peso/rip propri,
-// grafico e calcolo dischi propri), ma condividono un'unica intestazione
-// settimana (recupero/schema/nota/completata-saltata/max): quei campi si
-// scrivono su ENTRAMBI richiamando due volte le stesse funzioni gia' esistenti
-// per il singolo esercizio, cosi' restano coerenti anche se poi li si slega
 let linkPickerExi = null;
 let linkPickerPartnerExi = null;
 function findLinkedPartner(exi){
@@ -2132,8 +1820,6 @@ function chooseLinkType(type){
   linkExercises(linkPickerExi, linkPickerPartnerExi, type);
   closeLinkPicker();
 }
-// collega i due esercizi e sposta il partner subito dopo il primo: il gruppo
-// deve restare sempre adiacente, e' cosi' che il render li riconosce come coppia
 function linkExercises(exiA, exiB, type){
   const list = state.days[activeDayIdx].esercizi;
   const objA = list[exiA];
@@ -2183,11 +1869,6 @@ function renderLinkModal(){
       </div>`;
     return;
   }
-  // stessa lista completa (alfabetica, ricercabile, filtrabile per gruppo
-  // muscolare) della Libreria esercizi, non solo quelli gia' in questo giorno:
-  // toccando un nome lo collega se esiste gia' qui, altrimenti lo crea al volo.
-  // Se il testo cercato non corrisponde a nessun esercizio noto, compare anche
-  // un bottone per aggiungerlo e collegarlo subito con quel nome nuovo
   const names = filteredExerciseNames(linkListFilterText, linkListFilterGroup);
   const trimmed = linkListFilterText.trim();
   const exactMatch = trimmed && getList('esercizi').some(n=>String(n).toLowerCase()===trimmed.toLowerCase());
@@ -2202,9 +1883,6 @@ function renderLinkModal(){
 }
 let linkListFilterText = '';
 let linkListFilterGroup = '';
-// il re-render sostituisce il campo di ricerca nel DOM: senza rimettere a mano
-// il focus (e il cursore in fondo al testo), ogni carattere digitato farebbe
-// perdere il focus e servirebbe ritoccare il campo a ogni lettera
 function onLinkListSearchInput(val){
   linkListFilterText = val;
   renderLinkModal();
@@ -2215,10 +1893,6 @@ function onLinkListGroupFilter(group){
   linkListFilterGroup = group;
   renderLinkModal();
 }
-// risolve il nome cercato/scritto: se corrisponde (case-insensitive) a un
-// esercizio gia' presente in questo giorno lo usa come partner, altrimenti ne
-// crea uno nuovo con quel nome (stesso identico esercizio vuoto che crea
-// "+ Aggiungi esercizio", solo col nome gia' compilato) e lo usa come partner
 async function onLinkPartnerNameChosen(val){
   val = String(val||'').trim();
   if(!val) return;
@@ -2237,8 +1911,6 @@ async function onLinkPartnerNameChosen(val){
   day.esercizi.push({nome:val, commento:'', recupero:emptyStrArr(n), schema:emptyStrArr(n), sets:emptySetsArr(n)});
   pickLinkPartner(day.esercizi.length-1);
 }
-// input kg/rip di UNA sola riga di UN solo esercizio del gruppo (con la sua
-// etichetta per distinguerla dall'altro esercizio nella stessa riga numerata)
 function linkedSubRowInputsHtml(ex, exi, w, si){
   const sets = ex.sets && ex.sets[w] ? ex.sets[w] : [];
   const s = sets[si] || {peso:'',rip:''};
@@ -2281,9 +1953,6 @@ function linkedMaxEntriesHtml(exA, exiA, exB, exiB, w, si){
   }
   return html;
 }
-// la card per una coppia collegata: stesso impianto di exerciseCard, ma con due
-// intestazioni (una per esercizio) e un'unica settimana condivisa, dove ogni
-// riga numerata si sdoppia in due sotto-righe (una per esercizio)
 function linkedExerciseCard(exA, exiA, exB, exiB, accent, dayManagementHtml=''){
   const typeLabel = exA.linkType === 'jumpset' ? 'Jump set' : 'Super set';
   const nWeeks = (exA.recupero && exA.recupero.length) || state.weeksPerBlock || 4;
@@ -2299,9 +1968,6 @@ const isFutureWeek = w > state.currentWeek;
 
     const weekDone = !!(exA.weekDone && exA.weekDone[w]);
     const weekSkipped = !!(exA.weekSkipped && exA.weekSkipped[w]);
-    // stessa logica della card solo: rispetta collapsedMap se presente,
-    // altrimenti collassa di default una settimana gia' fatta/saltata anche
-    // se e' nominalmente quella corrente
     const isCollapsed =
       (wkey in collapsedMap)
       ? !!collapsedMap[wkey]

@@ -1,6 +1,3 @@
-// ---------------- ANIMAZIONI (GSAP) ----------------
-// Fa comparire il bottone del giorno suggerito una sola volta. Il feedback
-// continuo è affidato al tocco, non a un bagliore che resta sempre in moto.
 function animateSuggestedWorkout(){
 
   if(typeof gsap === "undefined") return;
@@ -9,9 +6,6 @@ function animateSuggestedWorkout(){
 
   if(!btn) return;
 
-  // killTweensOf: showView('home') può richiamare questa funzione più volte,
-  // ogni volta che si torna alla Home, altrimenti si accumulerebbero più
-  // loop infiniti sullo stesso bottone
   gsap.killTweensOf(btn);
 
   gsap.set(btn, {clearProps:"transform,opacity,boxShadow"});
@@ -29,8 +23,6 @@ function animateSuggestedWorkout(){
 }
 
 
-// piccolo festeggiamento che sale e sparisce quando si completa un
-// allenamento, "+1 workout completato"
 function animateWorkoutComplete(){
 
   const el = document.getElementById("workoutCompleteFx");
@@ -76,20 +68,13 @@ function animateWorkoutComplete(){
 
 
 
-// ---------------- POPUP FINE ALLENAMENTO ----------------
 
-// prepara e mostra il popup di conferma per chiudere il giorno, con il
-// recap della sessione appena fatta e il passaggio al giorno successivo
 function openFinishWorkoutModal(dayIdx){
 
   const day = state.days[dayIdx];
 
   if(!day) return;
 
-// prima era fissa a false, il ramo "attenzione" qui sotto non poteva mai
-// scattare qualunque cosa mancasse: allExercisesClosed guarda la vera
-// settimana corrente del programma su ogni esercizio, la stessa già usata
-// dal bottone flottante "Giorno terminato"
 const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
 
   const accent = dayAccent(day, dayIdx).c;
@@ -103,10 +88,6 @@ const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
 
   const body = document.getElementById("finishWorkoutBody");
 
-  // recap: cosa è successo davvero in questa sessione, volume e serie di
-  // oggi, non di tutta la settimana, più i PR presi da quando è iniziata -
-  // niente da mostrare se non è stato ancora scritto nulla, per esempio si
-  // apre il popup senza aver fatto una sola serie
   const stats = computeDaySessionStats(day);
   const recapHtml = stats.setsCount>0 ? `
     <div class="finish-recap">
@@ -177,7 +158,6 @@ const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
 
 }
 
-// prepara e mostra il popup per pianificare i prossimi allenamenti della settimana
 function openTrainingOrderModal(){
 
   const body = document.getElementById("trainingOrderBody");
@@ -358,7 +338,6 @@ ${
   );
 
 }
-// accende o spegne un giorno tra quelli scelti per l'ordine dei prossimi allenamenti
 function selectTrainingOrder(idx){
 
   const pos = selectedTrainingOrder.indexOf(idx);
@@ -379,7 +358,6 @@ function selectTrainingOrder(idx){
   openTrainingOrderModal();
 
 }
-// salva l'ordine scelto per i prossimi allenamenti della settimana
 function confirmTrainingOrder(){
 
   if(selectedTrainingOrder.length !== state.trainingQueue.length){
@@ -401,8 +379,6 @@ function confirmTrainingOrder(){
 
 }
 
-// scorciatoia per invertire l'ordine dei prossimi allenamenti senza doverli
-// scegliere uno per uno
 function applyTrainingOrder(reverse){
 
   if(!state.trainingQueue || state.trainingQueue.length < 2){
@@ -428,7 +404,6 @@ function applyTrainingOrder(reverse){
 
 }
 
-// chiude il popup di pianificazione allenamenti con un'animazione di uscita
 function closeTrainingOrderModal(){
 
   const modal = document.getElementById("trainingOrderModal");
@@ -447,7 +422,6 @@ gsap.to("#trainingOrderModal .finish-modal",{
 
 }
 
-// chiude il popup di fine allenamento con un'animazione di uscita
 function closeFinishWorkoutModal(){
 
   const modal = document.getElementById("finishWorkoutModal");
@@ -473,21 +447,13 @@ function closeFinishWorkoutModal(){
 
 
 
-// ---------------- CONFERMA FINE ALLENAMENTO ----------------
 
-// chiude davvero il giorno di allenamento: registra il completamento, fa
-// avanzare la settimana se serve, resetta la posizione e torna alla Home
-// con il festeggiamento
 function confirmFinishWorkout(dayIdx){
 
   closeFinishWorkoutModal();
 
   setTimeout(()=>{
 
-    // catturata prima di logWorkoutDay: quella funzione può già far avanzare
-    // da sola state.currentWeek al suo interno, se questo era l'ultimo
-    // giorno mancante della settimana, quindi leggerla dopo chiuderebbe la
-    // settimana sbagliata, quella nuova invece di quella appena conclusa
     const finishedWeek = state.currentWeek;
 
     logWorkoutDay(dayIdx);
@@ -515,8 +481,6 @@ if(weekFinished){
     renderActive();
     showHome();
 
-    // Dopo l'ultimo giorno dell'ultima settimana, mostra le scelte di fine
-    // scheda invece di lasciare solo un'icona poco chiara nella riga giorni.
     maybePromptBlockCompletion();
 
     animateWorkoutComplete();
@@ -526,16 +490,9 @@ if(weekFinished){
 
 }
 
-// lo schema ("Serie") di solito resta identico settimana dopo settimana: se
-// la nuova settimana che si apre non ha ancora il suo schema, lo riprende
-// dall'ultima settimana precedente che ce l'aveva, invece di lasciarlo vuoto
-// da ridigitare da capo. Resta comunque un campo vero e modificabile solo
-// per quella settimana, non un placeholder fantasma
 function cascadeScheduleToWeek(newWeek){
   state.days.forEach(day => {
     (day.esercizi||[]).forEach(ex => {
-      // I Max appartengono allo schema della serie: passano alla nuova
-      // settimana con posizione, numero e valori, salvo modifiche già fatte.
       if(typeof carryMaxLayoutForward === 'function') carryMaxLayoutForward(ex,newWeek-1,newWeek);
       if(!ex.schema || ex.schema[newWeek]===undefined) return;
       if(String(ex.schema[newWeek]||'').trim() !== '') return;
@@ -549,21 +506,13 @@ function cascadeScheduleToWeek(newWeek){
     });
   });
 }
-// chiude la settimana corrente e apre la successiva, se il blocco non è
-// ancora finito
 function advanceProgramWeek(){
 
-  // idempotente: viene chiamata da più punti diversi per lo stesso evento
-  // "settimana finita", updateTrainingQueueAfterComplete, logWorkoutDay,
-  // confirmFinishWorkout. Se i giorni completati non sono più al completo
-  // non fa nulla, così le chiamate ripetute per lo stesso completamento non
-  // fanno avanzare la settimana più di una volta
   if((state.completedTrainingDays||[]).length < state.days.length) return;
 
   const maxWeek = (state.weeksPerBlock || 4) - 1;
 
 
-  // salvo la settimana appena conclusa
   if(!state.completedWeeks){
     state.completedWeeks = [];
   }
@@ -574,11 +523,9 @@ function advanceProgramWeek(){
   }
 
 
-  // reset giorni completati
   state.completedTrainingDays = [];
 
 
-  // passo alla settimana successiva
   if(state.currentWeek < maxWeek){
 
     state.currentWeek++;

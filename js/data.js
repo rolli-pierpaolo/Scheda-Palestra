@@ -1,8 +1,3 @@
-// ---------------- DATI DI BASE DELL'APP ----------------
-// elenco di esercizi, recuperi e schemi noti per l'autocomplete, la scheda di
-// partenza, e lo storico dei mesi già fatti. Generato automaticamente dai
-// dati reali dell'utente, non è pensato per essere letto o modificato a
-// mano qui: le modifiche vanno fatte dentro l'app, non in questo file
 const DATA = {
   "esercizi": [
     "Crunch al cavo",

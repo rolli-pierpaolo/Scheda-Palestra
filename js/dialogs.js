@@ -1,5 +1,5 @@
-// Dialoghi di presentazione: null = annulla input/scelta, false = annulla conferma.
-// Nessun accesso a stato, storage o sincronizzazione.
+// Annullamento: null per input e scelte, false per conferme.
+
 const ViridisDialogs = (() => {
   let tail = Promise.resolve();
   let sequence = 0;
@@ -155,7 +155,6 @@ const ViridisDialogs = (() => {
         visualViewport.addEventListener('scroll', resize);
         resize();
       }
-      // Focus sul contenitore: le scelte non aprono mai la tastiera.
       box.focus({preventScroll:true});
     }));
     tail = task.catch(() => {});
@@ -222,8 +221,6 @@ function ViridisToast(message){
   next();
 }
 
-// Conserva value e onchange dei select esistenti: cambia solo il controllo visibile.
-// Anche quelli generati dopo un render usano lo stesso selettore touch.
 const viridisSelectButtons = new WeakMap();
 function enhanceViridisSelects(){
   if(!window.document) return;

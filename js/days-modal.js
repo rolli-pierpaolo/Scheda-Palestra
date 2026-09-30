@@ -1,7 +1,3 @@
-// ---------------- CATEGORIE GIORNI (impostazioni) ----------------
-// disegna il modale per rinominare i giorni, cambiarne il colore,
-// aggiungerne o toglierne, e modificare titolo e numero di settimane
-// del blocco attivo
 function openDaysModal(){
   const body = document.getElementById('daysModalBody');
   body.innerHTML = state.days.map((d,i)=>{
@@ -47,8 +43,6 @@ async function chooseDayColor(i){
   updateDayColor(i, value);
   openDaysModal();
 }
-// controlla il nuovo numero di settimane scelto e, se è valido e confermato,
-// allunga il blocco attuale
 async function handleExtendWeeksInput(el){
   const current = state.weeksPerBlock || 4;
   const newTotal = parseInt(el.value, 10);
@@ -67,7 +61,6 @@ async function handleExtendWeeksInput(el){
   renderActive();
   openDaysModal();
 }
-// cambia il nome di un giorno, ignorando un valore vuoto
 function renameDay(i, val){
   val = (val||'').trim();
   if(!val){ renderDayTabs(); renderActive(); return; }
@@ -76,8 +69,6 @@ function renameDay(i, val){
   renderDayTabs();
   renderActive();
 }
-// cambia il titolo generale dell'allenamento, tornando a un nome
-// predefinito se lasciato vuoto
 function updateWorkoutTitle(val){
   val = (val || '').trim();
 
@@ -90,17 +81,12 @@ function updateWorkoutTitle(val){
   saveState();
   updateTitles();
 }
-// colore scelto a mano dall'utente per quel giorno: da qui in poi dayAccent()
-// usa sempre questo invece di ripiegare sui colori di default per posizione
 function updateDayColor(i, hex){
   state.days[i].color = hex;
   saveState();
   renderDayTabs();
   if(i === activeDayIdx) renderActive();
 }
-// i giorni non sono per forza quattro: se ne serve uno in più, per esempio un
-// giorno di cardio a parte, si aggiunge qui, con un nome segnaposto da
-// rinominare subito
 function addDay(){
   state.days.push({ name: 'Nuovo giorno ' + (state.days.length + 1), esercizi: [] });
   saveState();
@@ -108,9 +94,6 @@ function addDay(){
   updateTitles();
   renderDayTabs();
 }
-// elimina il giorno e tutti i suoi esercizi, con conferma dato che non si
-// torna indietro; tiene sempre almeno un giorno e sposta activeDayIdx se
-// quello eliminato era quello aperto o ne cambiava la posizione
 async function deleteDay(i){
   if(state.days.length<=1){ ViridisToast('Deve rimanere almeno un giorno.'); return; }
   if(!await ViridisConfirmDialog('Eliminare "'+(state.days[i].name||('Giorno '+(i+1)))+'" e tutti i suoi esercizi?')) return;

@@ -1,21 +1,8 @@
 
-// ---------------- STATO: CARICAMENTO, SALVATAGGIO, COLORI DEI GIORNI ----------------
-// colore per i quattro giorni storici, i nomi di default. Se un giorno viene
-// rinominato o è uno in più, accentFor ripiega sulla stessa lista di colori
-// scelta in base alla posizione, così c'è sempre un colore assegnato
 const ACCENTS = {};
-// stessi colori di --green, --amber, --red, --steel in css/style.css, lì sono
-// per l'accento di default dell'app, qui per i quattro giorni storici -
-// tenerli coordinati non è un caso: è la stessa palette ricalibrata, meno
-// satura di prima, così i colori dei vari giorni sembrano un set scelto
-// apposta invece di quattro tinte a caso una diversa dall'altra
 function accentFor(name, idx){
   return ACCENTS[name] || [{c:"#7EA83C",d:"#33470F"},{c:"#C98A3A",d:"#4F350F"},{c:"#B23D30",d:"#421A15"},{c:"#417C8E",d:"#152C33"}][idx%4];
 }
-// scurisce un colore esadecimale di un fattore da zero a uno: serve per
-// ricavare da un solo colore scelto dall'utente anche la variante scura
-// usata sull'intestazione del blocco settimana, senza dover far scegliere
-// due colori separati
 function darkenColor(hex, factor){
   const h = String(hex||'').replace('#','');
   if(h.length!==6) return '#33470F';
@@ -23,9 +10,6 @@ function darkenColor(hex, factor){
   const toHex = v => Math.max(0,Math.min(255,Math.round(v*factor))).toString(16).padStart(2,'0');
   return '#'+toHex(r)+toHex(g)+toHex(b);
 }
-// colore effettivo di un giorno: se l'utente ne ha scelto uno a mano, da
-// "Modifica categorie giorni", usa quello, altrimenti ripiega su accentFor,
-// nome noto o posizione, come succedeva finora
 function dayAccent(day, idx){
   if(day && day.color){
     return { c: day.color, d: darkenColor(day.color, 0.38) };
@@ -48,25 +32,12 @@ let collapsedMap = {};
 let storicoExtra = {};
 let extraLists = {esercizi:[], recuperi:[], schemi:[], giorni:[]};
 let deletedStorico = [];
-// data "YYYY-MM-DD" in cui ogni blocco è stato archiviato, chiave uguale allo
-// stesso titolo usato in storicoExtra: serve solo a mostrare quando in
-// Storico, se manca, blocchi archiviati prima che questo campo esistesse,
-// semplicemente non si mostra nessuna data per quella voce, niente di rotto
 let storicoDates = {};
 function saveStoricoDates(){
   localStorage.setItem(STORICO_DATES_KEY, JSON.stringify(storicoDates));
 }
-// gruppo muscolare per esercizio, chiave uguale al nome in minuscolo per non
-// dipendere da maiuscole e minuscole: DATA.gruppiEsercizi sono i valori di
-// base spediti con l'app, exerciseGroups sono le correzioni e le aggiunte
-// fatte dall'utente, che vincono
 let exerciseGroups = {};
-// esercizi di base, incorporati nel file, che l'utente ha tolto dalla
-// Libreria esercizi: non si può modificare quei dati per davvero, quindi si
-// tiene un elenco di quelli da nascondere, stesso trucco usato per lo storico eliminato
 let deletedEsercizi = [];
-// legge il gruppo muscolare di un esercizio, prima dalle correzioni
-// dell'utente, poi dai valori di base
 function getExerciseGroup(name){
   const key = String(name||'').trim().toLowerCase();
   if(!key) return '';
@@ -74,7 +45,6 @@ function getExerciseGroup(name){
   const baseMatch = Object.keys(DATA.gruppiEsercizi||{}).find(k=>k.toLowerCase()===key);
   return baseMatch ? DATA.gruppiEsercizi[baseMatch] : '';
 }
-// assegna un gruppo muscolare a un esercizio
 function setExerciseGroup(name, group){
   const key = String(name||'').trim().toLowerCase();
   if(!key) return;
@@ -87,8 +57,6 @@ function saveExerciseGroups(){
 function saveDeletedEsercizi(){
   localStorage.setItem(DELETED_ESERCIZI_KEY, JSON.stringify(deletedEsercizi));
 }
-// aggiunge un esercizio alla Libreria, stessa lista usata dall'autocomplete,
-// con il gruppo muscolare già assegnato se indicato
 function addLibraryExercise(name, group){
   name = String(name||'').trim();
   if(!name) return;
@@ -101,9 +69,6 @@ function addLibraryExercise(name, group){
   }
   if(group) setExerciseGroup(name, group);
 }
-// se è un esercizio aggiunto a mano lo toglie del tutto; se è uno di base
-// spedito con l'app non si può davvero rimuoverlo dai dati incorporati,
-// quindi si aggiunge a deletedEsercizi così getList() lo nasconde
 function removeLibraryExercise(name){
   const key = String(name||'').trim().toLowerCase();
   if(!key) return;
@@ -118,15 +83,7 @@ function removeLibraryExercise(name){
   delete exerciseGroups[key];
   saveExerciseGroups();
 }
-// giorni di allenamento segnati come terminati, vedi finishDay in
-// navigation.js: chiave "YYYY-MM-DD" con una lista di {name, color}, così il
-// calendario può mostrare un pallino colorato per ogni giorno di allenamento
-// fatto, anche più di uno stesso giorno
 let calendarLog = {};
-// true da quando si scrive davvero una ripetizione, non solo aprendo la
-// scheda o ritrovando pesi già predisposti, fino a "Giorno terminato": serve a decidere se,
-// riaprendo l'app da chiusa, si deve tornare dritti dove si era rimasti
-// oppure mostrare la Home, vedi js/app-init.js
 const WORKOUT_IN_PROGRESS_KEY = "scheda_wo18_workout_in_progress_v1";
 const WORKOUT_STARTED_AT_KEY = "scheda_wo18_workout_started_at_v1";
 let workoutInProgress = false;
@@ -144,8 +101,8 @@ function clearWorkoutSession(){
   saveWorkoutInProgress();
   saveWorkoutStartedAt();
 }
-// Un allenamento inizia davvero solo quando si registra una ripetizione: i
-// pesi possono essere riportati automaticamente dalla settimana precedente.
+// Una ripetizione inserita avvia la sessione; il peso puo essere gia precompilato.
+
 function markWorkoutStartedByRep(){
   if(!workoutInProgress){
     workoutInProgress = true;
@@ -154,14 +111,7 @@ function markWorkoutStartedByRep(){
     saveWorkoutStartedAt();
   }
 }
-// Alias sicuro per vecchie chiamate ancora in cache: un peso da solo non deve
-// più trasformare l'app in una sessione "in corso".
 function markWorkoutStartedByWeight(){}
-// workoutInProgress è un segnale della sessione in corso, non del blocco
-// completo. Alla riapertura conta soltanto il giorno e la settimana correnti:
-// un peso riportato automaticamente o una settimana chiusa in passato non
-// deve far saltare la Home. Una ripetizione scritta, invece, è la prova che
-// l'allenamento è iniziato davvero.
 function dayHasRealProgressThisWeek(day){
   if(!day) return false;
   const w = state.currentWeek || 0;
@@ -172,61 +122,41 @@ function dayHasRealProgressThisWeek(day){
       maxEntries.some(entry => entry && String(entry.rip||'').trim()!=='');
   });
 }
-// trasforma una data in una chiave "YYYY-MM-DD", oggi se non specificata
 function todayKey(d){
   d = d || new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
-// trova la chiave del lunedì della settimana corrente
 function mostRecentMondayKey(){
   const now = new Date();
-  const dow = (now.getDay()+6)%7; // lunedì diventa il giorno zero
+  const dow = (now.getDay()+6)%7;
   const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate()-dow);
   return todayKey(monday);
 }
 function saveCalendarLog(){
   localStorage.setItem(CALENDAR_LOG_KEY, JSON.stringify(calendarLog));
 }
-// tutto lo stato vive in localStorage sotto queste chiavi; se una chiave manca
-// o è corrotta si ripiega sui valori di default, scheda vuota o allenamento
-// base spedito con l'app
 function loadState(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){ state = JSON.parse(raw); }
   }catch(e){}
-  // per capire, alla fine, se una delle riparazioni qui sotto ha davvero
-  // cambiato qualcosa, vedi il confronto finale prima di saveState()
   const rawStateJson = state ? JSON.stringify(state) : null;
   if(!state) state = JSON.parse(JSON.stringify(DATA.attivo));
   if(!state.title) state.title = DATA.attivo.title || "Allenamento";
   if(!state.days) state.days = [];
 
-  // settimana corrente
   if(state.currentWeek === undefined) state.currentWeek = 0;
-  // giorni completati nella settimana corrente
   if(!state.completedTrainingDays) state.completedTrainingDays = [];
-  // storico settimane completate, compatibilità con vecchi salvataggi
   if(!state.completedWeeks){
     state.completedWeeks = [];
     if(state.currentWeek > 0){
       for(let i = 0; i < state.currentWeek; i++) state.completedWeeks.push(i);
     }
   }
-  // coda allenamenti: un array vuoto è un valore legittimo in JavaScript,
-  // quindi "verosimile", il solo controllo !state.trainingQueue da solo non
-  // lo intercetta, ma qui non è mai vuoto se ci sono giorni definiti -
-  // succedeva con un bug ormai risolto in updateTrainingQueueAfterComplete,
-  // finire l'ultimo giorno della settimana svuotava la coda senza mai
-  // ripopolarla, ma chi ha già i dati salvati rotti da prima del fix
-  // resterebbe con nessun giorno corrente per sempre se non si ripara anche
-  // qui, al caricamento
   if(!state.trainingQueue || (state.trainingQueue.length===0 && state.days.length>0)){
     state.trainingQueue = state.days.map((_,i)=>i);
     state.currentTrainingDayIdx = state.trainingQueue.length ? state.trainingQueue[0] : null;
   } else if(state.currentTrainingDayIdx===undefined || state.currentTrainingDayIdx===null || !state.days[state.currentTrainingDayIdx]){
-    // giorno allenamento corrente mancante o non più valido, per esempio un
-    // giorno è stato eliminato: si ripiega sul primo della coda
     state.currentTrainingDayIdx = state.trainingQueue.length ? state.trainingQueue[0] : null;
   }
 
@@ -254,23 +184,9 @@ function loadState(){
     const rawcal = localStorage.getItem(CALENDAR_LOG_KEY);
     if(rawcal) calendarLog = JSON.parse(rawcal);
   }catch(e){ calendarLog = {}; }
-  // data di inizio del blocco di allenamento attivo: serve per contare gli
-  // allenamenti di questo blocco invece che del mese solare, che non
-  // coincide necessariamente. Se manca ed è un utente nuovo, calendario
-  // vuoto, resta senza valore: la assegnerà logWorkoutDay al primo "Giorno
-  // terminato" premuto davvero, così parte dal giorno vero e non da una
-  // stima. Se invece il calendario ha già delle voci, dati vecchi salvati
-  // prima che questo campo esistesse, si stima il lunedì di questa settimana
   if(!state.programStartDate && Object.keys(calendarLog).length){
     state.programStartDate = mostRecentMondayKey();
   }
-  // numero di settimane del blocco attivo, prima era sempre fisso a quattro
-  // in tutta l'app. Se manca: se il programma ha già esercizi veri, dati
-  // salvati prima che questo campo esistesse, si assume quattro senza
-  // chiedere nulla, per non alterare dati già in uso; se invece è un
-  // programma davvero vuoto, utente nuovo, nessun esercizio da nessuna
-  // parte, resta senza valore, sarà ensureWeeksPerBlock() a chiederlo al
-  // primo esercizio aggiunto
   if(!state.weeksPerBlock){
     const hasExistingData = (state.days||[]).some(d=>(d.esercizi||[]).some(ex=>ex.recupero && ex.recupero.length));
     if(hasExistingData) state.weeksPerBlock = 4;
@@ -286,47 +202,22 @@ function loadState(){
   try{
     workoutInProgress = localStorage.getItem(WORKOUT_IN_PROGRESS_KEY) === '1';
   }catch(e){ workoutInProgress = false; }
-  // Non correggere qui il flag "in corso": qui non è ancora nota la
-  // posizione salvata dell'utente. js/app-init.js decide dopo aver caricato
-  // activeDayIdx, guardando le ripetizioni del giorno/settimana effettivi.
 
-  // salva solo se il caricamento ha davvero corretto o riempito qualcosa:
-  // prima si chiamava saveState() incondizionatamente a ogni avvio, anche
-  // quando non c'era nulla da riparare - risultato: ogni apertura
-  // dell'app mandava comunque un invio al cloud, una volta collegato
-  // l'account, aggiornando "updated_at" sulla riga anche senza nessuna
-  // modifica vera. Con più di un dispositivo, questo faceva comparire il
-  // banner "dati aggiornati da un altro dispositivo" anche quando davvero
-  // non era cambiato nulla, solo perché un altro dispositivo era stato
-  // aperto nel frattempo
   if(JSON.stringify(state) !== rawStateJson) saveState();
 }
-// dice se una settimana è già completata, è quella attiva, o non è ancora arrivata
 function getWeekStatus(weekIndex){
   const current = state.currentWeek || 0;
   if(weekIndex < current) return "completed";
   if(weekIndex === current) return "active";
   return "locked";
 }
-// ---------------- SETTIMANE PER BLOCCO (configurabile, non più fisso a quattro) ----------------
-// crea un array di n stringhe vuote
 function emptyStrArr(n){ return new Array(n).fill(''); }
-// niente Array(n).fill([]): condividerebbe lo stesso array tra tutte le
-// settimane, fill non clona, una modifica su una settimana finirebbe per
-// comparire anche nelle altre. Array.from crea un array nuovo per ogni indice
 function emptySetsArr(n){ return Array.from({length:n}, () => []); }
-// riporta un array esistente alla nuova lunghezza n, mantenendo i valori già
-// presenti indice per indice e riempiendo il resto col valore di riserva:
-// usato quando si archivia e si sceglie un numero di settimane diverso dal
-// blocco precedente
 function resizeArr(arr, n, fill){
   const out = [];
   for(let i=0;i<n;i++) out.push(arr && arr[i]!==undefined ? arr[i] : fill);
   return out;
 }
-// chiesto la primissima volta che si aggiunge un esercizio a un programma
-// nuovo, weeksPerBlock ancora senza valore - da lì in poi resta quello per
-// tutto il blocco corrente, finché non si archivia e se ne sceglie uno nuovo
 async function ensureWeeksPerBlock(){
   if(state.weeksPerBlock) return state.weeksPerBlock;
   let val = await ViridisWeeksPicker('Quante settimane dura un blocco di allenamento?', '4');
@@ -337,14 +228,6 @@ async function ensureWeeksPerBlock(){
   saveState();
   return n;
 }
-// estende, mai riduce, il numero di settimane del blocco attualmente in
-// corso, senza dover archiviare e ricominciare un blocco nuovo - utile se
-// all'inizio se ne sceglie uno troppo corto e a metà ci si accorge di
-// volerlo allungare. Riusa resizeArr, già usata da archiveAndReset per lo
-// stesso tipo di ridimensionamento, lì però passando da un blocco chiuso a
-// uno nuovo: le settimane nuove ereditano l'ultimo schema e recupero già
-// scritti, stessa convenzione a cascata di updateMeta, il resto, fatta,
-// saltata, serie, nota, parte vuoto come qualsiasi settimana mai toccata
 function extendWeeksPerBlock(newTotal){
   const current = state.weeksPerBlock || 4;
   if(newTotal <= current) return false;
@@ -358,18 +241,12 @@ function extendWeeksPerBlock(newTotal){
       ex.weekDone = resizeArr(ex.weekDone, newTotal, false);
       ex.weekSkipped = resizeArr(ex.weekSkipped, newTotal, false);
       ex.maxShown = resizeArr(ex.maxShown, newTotal, false);
-      // niente resizeArr(arr, n, []) per sets e maxExtra: condividerebbe lo
-      // stesso array vuoto tra tutte le settimane nuove, stesso motivo già
-      // documentato su emptySetsArr qui sopra - ognuna ne vuole uno tutto suo
       const newSets = [];
       for(let i=0;i<newTotal;i++) newSets.push((ex.sets && ex.sets[i]) || []);
       ex.sets = newSets;
       const newMaxExtra = [];
       for(let i=0;i<newTotal;i++) newMaxExtra.push((ex.maxExtra && ex.maxExtra[i]) || []);
       ex.maxExtra = newMaxExtra;
-      // Il formato attuale dei Max ricorda anche dopo quale serie appaiono.
-      // Se si allunga una scheda, le settimane nuove ricevono l'ultimo layout
-      // disponibile senza condividere riferimenti tra settimane diverse.
       if(ex.maxEntries){
         const lastEntries = [...ex.maxEntries].reverse().find(entries => entries && entries.length) || [];
         const newMaxEntries = [];
@@ -396,9 +273,6 @@ function saveDeletedStorico(){
 function saveExtraLists(){
   localStorage.setItem(LISTS_KEY, JSON.stringify(extraLists));
 }
-// lista suggerimenti per l'autocomplete: quella di base, kind è esercizi,
-// recuperi, schemi o giorni, più le voci aggiunte a mano dall'utente, senza
-// duplicati e senza distinguere maiuscole e minuscole
 function getList(kind){
   const base = DATA[kind] || [];
   const extra = extraLists[kind] || [];

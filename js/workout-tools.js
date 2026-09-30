@@ -1,4 +1,3 @@
-// Strumenti di interfaccia. Il timer non completa esercizi e non cambia carichi.
 const REST_PREF_KEY = 'viridis_rest_preferences_v1';
 let restPreferences = {enabled:false,sound:true};
 try{Object.assign(restPreferences,JSON.parse(localStorage.getItem(REST_PREF_KEY)||'{}'));}catch(e){}
@@ -7,7 +6,6 @@ const finishedSeriesUI = new WeakMap();
 
 function restSecondsFromText(value){
   const text=String(value||'').trim().toLowerCase().replace(/[’‘]/g,"'").replace(/[”“]/g,'"');
-  // Intervalli e testi liberi richiedono una scelta, mai una durata inventata.
   const match=text.match(/^(?:(?:super|jump)\s*set\s*)?(\d+)\s*(s|sec|secondi|"|''|m|min|minuti|')?$/);
   if(!match)return null;
   const seconds=Number(match[1])*(/^(m|min|minuti|')$/.test(match[2]||'')?60:1);
@@ -41,7 +39,7 @@ function playRestSignal(){
 }
 function saveRestPreferences(){try{localStorage.setItem(REST_PREF_KEY,JSON.stringify(restPreferences));}catch(e){} }
 async function configureWorkoutRest(){
-  // Il contesto audio nasce nel gesto diretto dell'utente, prima del dialogo.
+  // Crea il contesto audio durante il gesto utente, prima di aprire il dialogo.
   unlockRestAudio();
   const action=await ViridisOptionPicker({title:'Recupero facoltativo',
     message:'Avviso sonoro con app aperta e vibrazione dove supportata. Con iPhone bloccato gli avvisi non sono garantiti. Prova il suono prima di usarlo.',
