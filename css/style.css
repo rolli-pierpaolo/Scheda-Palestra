@@ -159,6 +159,8 @@ body.shared-readonly button:not(.exit-shared-view){pointer-events:none;opacity:.
 .quick-number-bar.is-closing{opacity:0;transform:translateY(18px);pointer-events:none;}
 .quick-number-bar [hidden]{display:none!important;}
 .quick-keyboard-head{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
+.quick-keyboard-footer{margin:12px 0 0;}
+.quick-keyboard-footer .quick-keyboard-mode,.quick-keyboard-footer .quick-keyboard-done{min-height:44px;min-width:44px;}
 .quick-keyboard-mode-switch{display:flex;align-items:center;gap:2px;padding:2px;border:1px solid rgba(255,255,255,.1);border-radius:11px;background:#0b0b0b;}
 .quick-keyboard-head span{position:absolute;left:50%;transform:translateX(-50%);pointer-events:none;white-space:nowrap;color:#8c8c8c;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.62px;text-align:center;}
 .quick-keyboard-head button{min-height:32px;padding:0 10px;background:transparent;border:0;border-radius:9px;color:#929292;font-size:10px;font-weight:900;letter-spacing:.4px;transition:background .1s ease,color .1s ease,transform .1s ease;}
