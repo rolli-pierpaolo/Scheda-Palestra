@@ -1484,6 +1484,14 @@ body.on-workout.liquid-page-ready>.viridis-liquid-page{opacity:.65;}
 body.on-progress.liquid-page-ready>.viridis-liquid-page{opacity:.38;}
 .series-finish{display:block;width:100%;min-height:44px;padding:9px 12px;margin:9px 0 2px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);font:inherit;font-size:12px;white-space:normal;}
 .series-finish.is-finished{color:var(--green);border-color:color-mix(in srgb,var(--green) 45%,var(--line));background:color-mix(in srgb,var(--green) 10%,var(--panel2));}
+.set-series-group.series-collapsed,.linked-set-group.series-collapsed{padding:4px 10px;border-color:var(--green);}
+.series-collapsed>:not(.series-completed-summary){display:none!important;}
+.series-completed-summary{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:4px 0;border:0;background:transparent;text-align:left;color:var(--text);font:inherit;font-size:12px;}
+.series-completed-title{color:var(--green);font-weight:700;white-space:nowrap;}
+.series-completed-values{flex:1;min-width:0;overflow-wrap:anywhere;}
+.series-completed-edit{color:var(--muted);font-size:11px;}
+body.a11y-large-text .series-completed-summary,body.a11y-large-text .series-completed-edit{font-size:16px;}
+body.a11y-high-contrast .series-completed-edit{color:var(--text);}
 .rest-settings-trigger{padding:7px 10px;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--muted);font:inherit;font-size:12px;white-space:normal;}
 .workout-quick-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
 .linked-set-group{border-radius:18px;background:var(--panel2);padding:12px;margin-bottom:12px;}

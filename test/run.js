@@ -1639,6 +1639,27 @@ test('superset e dropset mostrano le prescrizioni senza riempire le ripetizioni 
   assert.strictEqual(JSON.stringify(ex),before);
 });
 
+test('spunta conserva il bersaglio del click e compatta la serie senza perdere dati',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.sets[0][0]={peso:'40',rip:'10'};
+  window.renderActive();
+  const button=window.document.querySelector('[data-finish-ex="0"][data-finish-set="0"]');
+  const group=button.closest('.set-series-group');
+  window.updateSet(0,0,0,'rip','11',undefined,true);
+  assert.strictEqual(window.document.querySelector('[data-finish-ex="0"][data-finish-set="0"]'),button);
+  button.click();
+  assert.ok(group.classList.contains('series-collapsed'));
+  assert.strictEqual(button.getAttribute('aria-pressed'),'true');
+  assert.ok(group.querySelector('.series-completed-summary').textContent.includes('40 kg × 11'));
+  window.renderActive();
+  const summary=window.document.querySelector('.series-completed-summary');
+  assert.ok(summary,'completamento conservato al rendering');
+  summary.click();
+  assert.ok(!window.document.querySelector('.series-collapsed'));
+  assert.strictEqual(ex.sets[0][0].rip,'11');
+  assert.strictEqual(ex.sets[0][0].peso,'40');
+});
+
 test('completa superset richiede entrambe le serie e non cambia dati o avanzamento',()=>{
   const {window,ex}=workoutInputFixture();
   const partner=JSON.parse(JSON.stringify(ex));

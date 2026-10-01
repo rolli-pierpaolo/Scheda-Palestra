@@ -124,13 +124,36 @@ function completeSeriesUI(exi,w,si,partnerExi,button){
     entries.forEach(s=>finishedSeriesUI.set(s,`${s.peso}|${s.rip}`));vibrate(15);
     if(restPreferences.enabled)startWorkoutRest(exi,w);
   }
-  if(button)button.outerHTML=renderSeriesFinish(exi,w,si,partnerExi);
+  refreshSeriesFinishUI(exi,w);
 }
+function updateSeriesFinishButton(button){
+  const exi=Number(button.dataset.finishEx),w=Number(button.dataset.finishWeek),si=Number(button.dataset.finishSet);
+  const partner=findLinkedPartner(exi);
+  const template=document.createElement('template');
+  template.innerHTML=renderSeriesFinish(exi,w,si,partner?.exi);
+  const updated=template.content.firstElementChild;
+  if(!updated)return;
+  // Mantiene il pulsante durante il blur, altrimenti il click puo andare perso.
+  for(const attr of updated.attributes)button.setAttribute(attr.name,attr.value);
+  button.innerHTML=updated.innerHTML;
+  const group=button.closest('.set-series-group,.linked-set-group');
+  if(!group)return;
+  const done=button.getAttribute('aria-pressed')==='true';
+  group.classList.toggle('series-collapsed',done);
+  group.querySelector(':scope > .series-completed-summary')?.remove();
+  if(done){
+    const summary=document.createElement('button');
+    summary.type='button';summary.className='series-completed-summary';
+    const values=seriesUIEntries(exi,w,si,partner?.exi).map(s=>`${s.peso} kg × ${s.rip}`).join(' · ');
+    summary.innerHTML=`<span class="series-completed-title">✓ Serie ${si+1}</span><span class="series-completed-values">${escapeHtml(values)}</span><span class="series-completed-edit">Modifica</span>`;
+    summary.setAttribute('aria-label',`Serie ${si+1} completata: ${values}. Riapri per modificare`);
+    summary.onclick=()=>{completeSeriesUI(exi,w,si,partner?.exi,button);button.focus({preventScroll:true});};
+    group.appendChild(summary);
+  }
+}
+function refreshAllSeriesFinishUI(){document.querySelectorAll('[data-finish-ex]').forEach(updateSeriesFinishButton);}
 function refreshSeriesFinishUI(exi,w){
-  document.querySelectorAll(`[data-finish-ex="${exi}"][data-finish-week="${w}"]`).forEach(button=>{
-    const partner=findLinkedPartner(exi);
-    button.outerHTML=renderSeriesFinish(exi,w,Number(button.dataset.finishSet),partner?.exi);
-  });
+  document.querySelectorAll(`[data-finish-ex="${exi}"][data-finish-week="${w}"]`).forEach(updateSeriesFinishButton);
 }
 
 function workoutSaveStatus(){

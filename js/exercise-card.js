@@ -229,6 +229,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
 
   main.innerHTML = workoutProgressHtml + dayExStripHtml + switchTrainingDay + emptyState + carouselHtml +
     (day.esercizi.length ? '' : dayActionsHtml);
+  refreshAllSeriesFinishUI();
     autoGrowAllExNames();
     autoGrowAllExSchema();
   applyPendingWeekVisual();
