@@ -1660,6 +1660,22 @@ test('spunta conserva il bersaglio del click e compatta la serie senza perdere d
   assert.strictEqual(ex.sets[0][0].peso,'40');
 });
 
+test('completamento resiste a doppio tocco e ricostruzione dei dati',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.sets[0][0]={peso:'40',rip:'10'};
+  window.completeSeriesUI(0,0,0,null);
+  window.completeSeriesUI(0,0,0,null);
+  assert.ok(window.seriesUIFinished(window.seriesUIEntries(0,0,0,null)));
+  window.__bridge.state=JSON.parse(JSON.stringify(window.__bridge.state));
+  window.renderActive();
+  assert.ok(window.document.querySelector('.series-completed-summary'));
+  window.__bridge.state.days[0].esercizi[0].sets[0][0].rip='11';
+  window.refreshSeriesFinishUI(0,0);
+  assert.ok(!window.document.querySelector('.series-completed-summary'));
+  window.__bridge.state.days[0].esercizi[0].sets[0][0].rip='10';
+  assert.ok(!window.seriesUIFinished(window.seriesUIEntries(0,0,0,null)));
+});
+
 test('completa superset richiede entrambe le serie e non cambia dati o avanzamento',()=>{
   const {window,ex}=workoutInputFixture();
   const partner=JSON.parse(JSON.stringify(ex));

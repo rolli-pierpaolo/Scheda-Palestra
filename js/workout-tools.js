@@ -2,7 +2,8 @@ const REST_PREF_KEY = 'viridis_rest_preferences_v1';
 let restPreferences = {enabled:false,sound:true};
 try{Object.assign(restPreferences,JSON.parse(localStorage.getItem(REST_PREF_KEY)||'{}'));}catch(e){}
 let workoutRest = null, workoutRestInterval = null, restAudio = null;
-const finishedSeriesUI = new WeakMap();
+const finishedSeriesUI = new Map();
+const seriesEntryKeys = new WeakMap();
 
 function restSecondsFromText(value){
   const text=String(value||'').trim().toLowerCase().replace(/[’‘]/g,"'").replace(/[”“]/g,'"');
@@ -99,10 +100,20 @@ function seriesUIEntries(exi,w,si,partnerExi){
   return indexes.flatMap(index=>{
     const ex=state.days[activeDayIdx]?.esercizi[index];
     if(!ex)return [];
-    return [ex.sets?.[w]?.[si]||{peso:'',rip:''},...maxEntriesAfter(ex,w,si).map(item=>item.entry)];
+    const entries=[ex.sets?.[w]?.[si]||{peso:'',rip:''},...maxEntriesAfter(ex,w,si).map(item=>item.entry)];
+    entries.forEach((entry,part)=>seriesEntryKeys.set(entry,JSON.stringify([
+      state.title,state.programStartDate,activeDayIdx,state.days[activeDayIdx].name,
+      ex.loadReminderId||index,ex.nome,w,si,part
+    ])));
+    return entries;
   });
 }
-function seriesUIFinished(entries){return entries.length>0&&entries.every(s=>finishedSeriesUI.get(s)===`${s.peso}|${s.rip}`);}
+function seriesUIFinished(entries){return entries.length>0&&entries.every(s=>{
+  const key=seriesEntryKeys.get(s);
+  if(finishedSeriesUI.get(key)===`${s.peso}|${s.rip}`)return true;
+  finishedSeriesUI.delete(key);
+  return false;
+});}
 function renderSeriesFinish(exi,w,si,partnerExi){
   if(w!==state.currentWeek||(typeof isViewingShared==='function'&&isViewingShared()))return '';
   const ex=state.days[activeDayIdx]?.esercizi[exi];
@@ -119,11 +130,14 @@ function completeSeriesUI(exi,w,si,partnerExi,button){
   if(!entries.length||entries.some(s=>!String(s.rip??'').trim()||!String(s.peso??'').trim())){
     ViridisToast('Inserisci peso e ripetizioni di tutta la serie, inclusi eventuali Max.');return;
   }
-  if(seriesUIFinished(entries)){entries.forEach(s=>finishedSeriesUI.delete(s));}
-  else{
-    entries.forEach(s=>finishedSeriesUI.set(s,`${s.peso}|${s.rip}`));vibrate(15);
+  if(!seriesUIFinished(entries)){
+    entries.forEach(s=>finishedSeriesUI.set(seriesEntryKeys.get(s),`${s.peso}|${s.rip}`));vibrate(15);
     if(restPreferences.enabled)startWorkoutRest(exi,w);
   }
+  refreshSeriesFinishUI(exi,w);
+}
+function reopenSeriesUI(exi,w,si,partnerExi){
+  seriesUIEntries(exi,w,si,partnerExi).forEach(s=>finishedSeriesUI.delete(seriesEntryKeys.get(s)));
   refreshSeriesFinishUI(exi,w);
 }
 function updateSeriesFinishButton(button){
@@ -147,7 +161,7 @@ function updateSeriesFinishButton(button){
     const values=seriesUIEntries(exi,w,si,partner?.exi).map(s=>`${s.peso} kg × ${s.rip}`).join(' · ');
     summary.innerHTML=`<span class="series-completed-title">✓ Serie ${si+1}</span><span class="series-completed-values">${escapeHtml(values)}</span><span class="series-completed-edit">Modifica</span>`;
     summary.setAttribute('aria-label',`Serie ${si+1} completata: ${values}. Riapri per modificare`);
-    summary.onclick=()=>{completeSeriesUI(exi,w,si,partner?.exi,button);button.focus({preventScroll:true});};
+    summary.onclick=()=>{reopenSeriesUI(exi,w,si,partner?.exi);button.focus({preventScroll:true});};
     group.appendChild(summary);
   }
 }
