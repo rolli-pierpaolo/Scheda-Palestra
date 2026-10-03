@@ -390,6 +390,11 @@ document.addEventListener('pointerdown', event=>{
   if(isQuickNumberTarget(target)){
     if(window.matchMedia && window.matchMedia('(pointer:coarse)').matches) target.inputMode = 'none';
   }
+  const finishButton = target?.closest?.('.series-finish');
+  if(finishButton && quickNumberInput){
+    suppressQuickKeyboardClickUntil = 0;
+    event.preventDefault();
+  }
   const keyboardArea = target && target.closest && target.closest('#quickNumberBar');
   if(keyboardArea){
     suppressQuickKeyboardClickUntil = Date.now()+600;

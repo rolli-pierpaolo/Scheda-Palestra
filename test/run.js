@@ -1670,9 +1670,18 @@ test('spunta serie conferma il campo e chiude la tastiera',async()=>{
   ex.sets[0][0].peso='40';
   window.renderActive();
   const input=window.document.querySelector('[aria-label="Ripetizioni serie 1"]');
-  input.focus();window.insertQuickKey('1');window.insertQuickKey('2');
+  input.focus();
+  for(const digit of ['1','2']){
+    const key=window.document.querySelector(`[data-quick-key="${digit}"]`);
+    key.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
+    key.click();
+  }
   const bar=window.document.getElementById('quickNumberBar');bar.hidden=false;
-  window.document.querySelector('[data-finish-ex="0"][data-finish-set="0"]').click();
+  const finish=window.document.querySelector('[data-finish-ex="0"][data-finish-set="0"]');
+  finish.click();
+  assert.ok(!window.seriesUIFinished(window.seriesUIEntries(0,0,0,null)),'il click residuo della tastiera resta bloccato');
+  finish.dispatchEvent(new window.Event('pointerdown',{bubbles:true,cancelable:true}));
+  finish.click();
   assert.strictEqual(ex.sets[0][0].rip,'12');
   assert.notStrictEqual(window.document.activeElement,input);
   assert.ok(window.seriesUIFinished(window.seriesUIEntries(0,0,0,null)));
