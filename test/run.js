@@ -1660,6 +1660,22 @@ test('spunta conserva il bersaglio del click e compatta la serie senza perdere d
   assert.strictEqual(ex.sets[0][0].peso,'40');
 });
 
+test('spunta serie conferma il campo e chiude la tastiera',async()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.sets[0][0].peso='40';
+  window.renderActive();
+  const input=window.document.querySelector('[aria-label="Ripetizioni serie 1"]');
+  input.focus();window.insertQuickKey('1');window.insertQuickKey('2');
+  const bar=window.document.getElementById('quickNumberBar');bar.hidden=false;
+  window.document.querySelector('[data-finish-ex="0"][data-finish-set="0"]').click();
+  assert.strictEqual(ex.sets[0][0].rip,'12');
+  assert.notStrictEqual(window.document.activeElement,input);
+  assert.ok(window.seriesUIFinished(window.seriesUIEntries(0,0,0,null)));
+  await new Promise(resolve=>setTimeout(resolve,300));
+  assert.ok(bar.hidden);
+  assert.strictEqual(JSON.parse(window.localStorage.getItem('scheda_wo18_state_v1')).days[0].esercizi[0].sets[0][0].rip,'12');
+});
+
 test('completamento resiste a doppio tocco e ricostruzione dei dati',()=>{
   const {window,ex}=workoutInputFixture();
   ex.sets[0][0]={peso:'40',rip:'10'};

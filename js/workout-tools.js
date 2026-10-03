@@ -126,6 +126,9 @@ function renderSeriesFinish(exi,w,si,partnerExi){
 function completeSeriesUI(exi,w,si,partnerExi,button){
   const ex=state.days[activeDayIdx]?.esercizi[exi];
   if(!ex||w!==state.currentWeek||(typeof isViewingShared==='function'&&isViewingShared()))return;
+  if(!document.getElementById('quickNumberBar')?.hidden||isQuickNumberTarget(document.activeElement)){
+    finishQuickKeyboardInput();
+  }
   const entries=seriesUIEntries(exi,w,si,partnerExi);
   if(!entries.length||entries.some(s=>!String(s.rip??'').trim()||!String(s.peso??'').trim())){
     ViridisToast('Inserisci peso e ripetizioni di tutta la serie, inclusi eventuali Max.');return;
