@@ -26,9 +26,8 @@ function computeDayProgress(day){
   const w = state.currentWeek || 0;
   let total = 0, done = 0;
   const items = [];
-  for(let exi=0; exi<day.esercizi.length; exi++){
+  for(const [exi] of computeExerciseBlocks(day)){
     const ex = day.esercizi[exi];
-    if(ex.linkGroupId && day.esercizi[exi-1] && day.esercizi[exi-1].linkGroupId===ex.linkGroupId) continue;
     total++;
     const nWeeks = (ex.recupero && ex.recupero.length) || state.weeksPerBlock || 4;
     const isDone = w>=nWeeks || (ex.weekDone && ex.weekDone[w]) || (ex.weekSkipped && ex.weekSkipped[w]);
@@ -216,7 +215,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   let slidesHtml = '';
   progress.items.forEach((it, slideIdx) => {
     const ex = day.esercizi[it.exi];
-    const partnerExi = (ex.linkGroupId && day.esercizi[it.exi+1] && day.esercizi[it.exi+1].linkGroupId===ex.linkGroupId) ? it.exi+1 : null;
+    const partnerExi = findLinkedPartner(it.exi)?.exi ?? null;
     const cardHtml = partnerExi!==null
       ? linkedExerciseCard(ex, it.exi, day.esercizi[partnerExi], partnerExi, a, dayManagementHtml)
       : exerciseCard(ex, it.exi, a, dayManagementHtml);
@@ -266,11 +265,7 @@ function applyPendingWeekVisual(){
 }
 function resolveActiveExerciseIdx(day){
   if(activeExerciseIdx !== null && day.esercizi[activeExerciseIdx]){
-    const ex = day.esercizi[activeExerciseIdx];
-    if(ex.linkGroupId && day.esercizi[activeExerciseIdx-1] && day.esercizi[activeExerciseIdx-1].linkGroupId===ex.linkGroupId){
-      return activeExerciseIdx-1;
-    }
-    return activeExerciseIdx;
+    return computeExerciseBlocks(day).find(block=>block.includes(activeExerciseIdx))?.[0] ?? activeExerciseIdx;
   }
   const fallback = computeCurrentDoingExerciseIdx(activeDayIdx);
   return fallback !== null ? fallback : 0;
@@ -300,11 +295,13 @@ function discardReorderIfPending(){
 }
 function computeExerciseBlocks(day){
   const blocks = [];
+  const seen=new Set();
   for(let i=0;i<day.esercizi.length;i++){
+    if(seen.has(i))continue;
     const ex = day.esercizi[i];
-    if(ex.linkGroupId && day.esercizi[i-1] && day.esercizi[i-1].linkGroupId===ex.linkGroupId) continue;
-    const partner = (ex.linkGroupId && day.esercizi[i+1] && day.esercizi[i+1].linkGroupId===ex.linkGroupId) ? i+1 : null;
-    blocks.push(partner!==null ? [i, partner] : [i]);
+    const partner=ex.linkGroupId?day.esercizi.findIndex((other,j)=>j!==i&&!seen.has(j)&&other.linkGroupId===ex.linkGroupId):-1;
+    const block=partner>=0?[i,partner]:[i];
+    block.forEach(index=>seen.add(index));blocks.push(block);
   }
   return blocks;
 }
@@ -314,13 +311,10 @@ function moveExerciseBlock(blockIdx, delta){
   const targetIdx = blockIdx + delta;
   if(targetIdx<0 || targetIdx>=blocks.length) return;
   const list = day.esercizi;
-  const blockA = blocks[blockIdx].map(i=>list[i]);
-  const blockB = blocks[targetIdx].map(i=>list[i]);
-  const allIdx = [...blocks[blockIdx], ...blocks[targetIdx]].sort((x,y)=>y-x);
-  allIdx.forEach(i=> list.splice(i,1));
-  const insertAt = Math.min(...blocks[blockIdx], ...blocks[targetIdx]);
-  const ordered = delta>0 ? [...blockB, ...blockA] : [...blockA, ...blockB];
-  list.splice(insertAt, 0, ...ordered);
+  const active=list[activeExerciseIdx];
+  [blocks[blockIdx],blocks[targetIdx]]=[blocks[targetIdx],blocks[blockIdx]];
+  day.esercizi=blocks.flatMap(block=>block.map(i=>list[i]));
+  if(active)activeExerciseIdx=day.esercizi.indexOf(active);
   reorderDirty = true;
   renderActive();
 }
@@ -341,7 +335,7 @@ function renderReorderList(day){
   const rows = blocks.map((block, bi)=>{
     const upBtn = bi>0 ? `<button class="reorder-arrow" onclick="moveExerciseBlock(${bi},-1)" aria-label="Sposta su">▲</button>` : '';
     const downBtn = bi<lastBlockIdx ? `<button class="reorder-arrow" onclick="moveExerciseBlock(${bi},1)" aria-label="Sposta giù">▼</button>` : '';
-    const names = block.map(i=>escapeHtml(day.esercizi[i].nome || '(senza nome)')).join(' + ');
+    const names = block.map(i=>escapeHtml(day.esercizi[i].nome || '(senza nome)')).join(`<span class="exercise-link-label">${exerciseLinkLabel(day.esercizi[block[0]])}</span>`);
     return `<div class="reorder-row">
       <span class="reorder-name">${names}</span>
       <div class="reorder-arrows">${upBtn}${downBtn}</div>
@@ -673,7 +667,7 @@ function renderLinkedExerciseCardHero(exA, exiA, exB, exiB, accent){
   const editing = editingExerciseIdx === exiA;
   const names = editing
     ? `<textarea class="exercise-card-name-input" rows="1" aria-label="Nome primo esercizio" oninput="autoGrowTextarea(this)" onchange="updateName(${exiA},this.value)">${escapeHtml(exA.nome||'')}</textarea><textarea class="exercise-card-name-input linked" rows="1" aria-label="Nome secondo esercizio" oninput="autoGrowTextarea(this)" onchange="updateName(${exiB},this.value)">${escapeHtml(exB.nome||'')}</textarea>`
-    : `<h2>${escapeHtml(exA.nome||'Esercizio')} <small>${exA.linkType === 'jumpset' ? '· Jump set ·' : '· Super set ·'} ${escapeHtml(exB.nome||'Esercizio')}</small></h2>`;
+    : `<h2>${escapeHtml(exA.nome||'Esercizio')}</h2><span class="exercise-link-label">${exerciseLinkLabel(exA)}</span><h2>${escapeHtml(exB.nome||'Esercizio')}</h2>`;
   return `<div class="exercise-card-hero linked-hero">
     <div class="exercise-card-title">${names}</div>
     <button type="button" class="card-week-pill" onclick="toggleExerciseWeek(${exiA},${week},'${key}')" aria-label="Apri o chiudi settimana ${week+1}">SETTIMANA ${week+1}<span>▾</span></button>
@@ -1016,14 +1010,15 @@ function renderExerciseStickyHeader(exi){
   if(!day) return '';
   let ex = day.esercizi[exi];
   if(!ex) return '';
-  if(ex.linkGroupId && day.esercizi[exi-1] && day.esercizi[exi-1].linkGroupId===ex.linkGroupId){
-    exi = exi-1;
+  const primary=computeExerciseBlocks(day).find(block=>block.includes(exi))?.[0];
+  if(primary!==undefined&&primary!==exi){
+    exi = primary;
     ex = day.esercizi[exi];
   }
   const accent = dayAccent(day, activeDayIdx).c;
   const isEditing = editingExerciseIdx === exi;
   const editBtn = `<button class="ex-edit-mode-btn ${isEditing?'active':''}" onclick="toggleExerciseEditMode(${exi})" aria-label="${isEditing?'Chiudi modifica':'Modifica esercizio'}" title="${isEditing?'Chiudi modifica':'Modifica esercizio'}">${isEditing ? ICON_CHECK : ICON_GEAR}</button>`;
-  const partnerExi = (ex.linkGroupId && day.esercizi[exi+1] && day.esercizi[exi+1].linkGroupId===ex.linkGroupId) ? exi+1 : null;
+  const partnerExi = findLinkedPartner(exi)?.exi ?? null;
   if(partnerExi !== null){
     const exB = day.esercizi[partnerExi];
     const typeLabel = ex.linkType === 'jumpset' ? 'Jump set' : 'Super set';
@@ -1615,11 +1610,10 @@ function toggleMax(exi, w){
   renderActive();
 }
 function nextCardIndex(exi){
-  const list = state.days[activeDayIdx].esercizi;
-  const ex = list[exi];
-  let next = exi+1;
-  if(ex && ex.linkGroupId && list[next] && list[next].linkGroupId===ex.linkGroupId) next++;
-  return next;
+  const day=state.days[activeDayIdx];
+  const blocks=computeExerciseBlocks(day);
+  const index=blocks.findIndex(block=>block.includes(exi));
+  return blocks[index+1]?.[0] ?? day.esercizi.length;
 }
 function exerciseFullyClosed(ex){
   if(!ex.weekDone) return false;
@@ -1796,10 +1790,11 @@ function findLinkedPartner(exi){
   const list = state.days[activeDayIdx].esercizi;
   const ex = list[exi];
   if(!ex || !ex.linkGroupId) return null;
-  if(list[exi-1] && list[exi-1].linkGroupId === ex.linkGroupId) return {ex:list[exi-1], exi:exi-1};
-  if(list[exi+1] && list[exi+1].linkGroupId === ex.linkGroupId) return {ex:list[exi+1], exi:exi+1};
+  const index=list.findIndex((other,i)=>i!==exi&&other.linkGroupId===ex.linkGroupId);
+  if(index>=0)return {ex:list[index],exi:index};
   return null;
 }
+function exerciseLinkLabel(ex){return ex.linkType==='jumpset'?'Jump set':ex.linkType==='dropset'?'Drop set':'Superset';}
 function openLinkPicker(exi){
   linkPickerExi = exi;
   linkPickerPartnerExi = null;
@@ -1988,6 +1983,7 @@ const isFutureWeek = w > state.currentWeek;
           <div class="set-label">${roman}</div>
           <div class="linked-sub-rows">
             <div class="linked-sub-row">${linkedSubRowInputsHtml(exA, exiA, w, si)}</div>
+            <span class="exercise-link-label">${exerciseLinkLabel(exA)}</span>
             <div class="linked-sub-row">${linkedSubRowInputsHtml(exB, exiB, w, si)}</div>
           </div>
         </div>

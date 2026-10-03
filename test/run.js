@@ -1692,6 +1692,37 @@ test('completamento resiste a doppio tocco e ricostruzione dei dati',()=>{
   assert.ok(!window.seriesUIFinished(window.seriesUIEntries(0,0,0,null)));
 });
 
+test('coppia separata resta unita nel riordino e conserva tutte le serie',()=>{
+  const {window,ex}=workoutInputFixture();
+  const partner=JSON.parse(JSON.stringify(ex));
+  const single=JSON.parse(JSON.stringify(ex));single.nome='Singolo';
+  ex.nome='Primo esercizio con un nome molto lungo';
+  partner.nome='Secondo esercizio con un nome molto lungo';
+  ex.linkGroupId=partner.linkGroupId='pair';ex.linkType=partner.linkType='jumpset';
+  ex.sets[0]=Array.from({length:10},(_,i)=>({peso:String(40+i),rip:'8'}));
+  partner.sets[0]=Array.from({length:10},(_,i)=>({peso:String(20+i),rip:'12'}));
+  const day=window.__bridge.state.days[0];day.esercizi=[ex,single,partner];
+  assert.strictEqual(JSON.stringify(window.computeExerciseBlocks(day)),'[[0,2],[1]]');
+  assert.strictEqual(window.computeDayProgress(day).total,2);
+  window.renderActive();
+  assert.strictEqual(window.document.querySelectorAll('.current-week-block .series-finish').length,13);
+  assert.ok(window.document.querySelector('.linked-hero').textContent.includes(partner.nome));
+  assert.ok(window.document.querySelector('.linked-hero .exercise-link-label').textContent.includes('Jump set'));
+  const snapshot=JSON.stringify([ex.sets,partner.sets]);
+  window.moveExerciseBlock(0,1);
+  assert.strictEqual(day.esercizi[0],single);
+  assert.strictEqual(day.esercizi[1],ex);
+  assert.strictEqual(day.esercizi[2],partner);
+  assert.strictEqual(JSON.stringify([ex.sets,partner.sets]),snapshot);
+  window.moveExerciseBlock(1,-1);
+  assert.strictEqual(day.esercizi[0],ex);
+  assert.strictEqual(day.esercizi[1],partner);
+  const last=window.document.querySelector('.linked-group .current-week-block [data-finish-set="9"]');
+  assert.ok(last);
+  window.updateSet(1,0,9,'rip','15',undefined,true);
+  assert.strictEqual(partner.sets[0][9].rip,'15');
+});
+
 test('completa superset richiede entrambe le serie e non cambia dati o avanzamento',()=>{
   const {window,ex}=workoutInputFixture();
   const partner=JSON.parse(JSON.stringify(ex));
