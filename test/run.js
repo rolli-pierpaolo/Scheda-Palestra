@@ -245,7 +245,7 @@ test('toggleWeekSkipped chiude una settimana senza avviare una sessione, e un mi
   assert.strictEqual(window.allExercisesClosed(day), true, 'il giorno deve risultare chiuso (bottone "Giorno terminato") anche con un mix fatto/saltato');
 });
 
-test('updateSet non chiede "settimana completata?" su un esercizio collegato finche\' anche il partner non ha l\'ultima serie compilata', () => {
+test('la conferma del gruppo collegato parte dalla spunta finale, non dai campi', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
@@ -263,9 +263,11 @@ test('updateSet non chiede "settimana completata?" su un esercizio collegato fin
 
   window.updateSet(1, 0, 0, 'peso', '50');
   window.updateSet(1, 0, 0, 'rip', '8');
+  assert.strictEqual(window.__bridge.weekDoneConfirmTarget,null,'scrivere non apre la conferma');
+  window.completeSeriesUI(0,0,0,1);
   const target = window.__bridge.weekDoneConfirmTarget;
-  assert.ok(target, 'con entrambi compilati deve finalmente chiedere conferma');
-  assert.strictEqual(target.exi, 1);
+  assert.ok(target, 'la spunta finale deve chiedere conferma');
+  assert.strictEqual(target.exi, 0);
   assert.strictEqual(target.w, 0);
 });
 
@@ -401,15 +403,17 @@ test('il menu "..." mantiene le azioni Max e Serie in una action sheet compatta'
   const menu = window.document.getElementById('exContextMenu');
   const maxActions = menu.querySelector('.ex-context-max-actions');
   const seriesActions = menu.querySelector('.ex-context-series-actions');
+  assert.ok(seriesActions.compareDocumentPosition(maxActions)&window.Node.DOCUMENT_POSITION_FOLLOWING);
+  assert.ok(!menu.textContent.includes('Modifica esercizio'));
   assert.ok(maxActions, 'Aggiungi/Rimuovi Max devono restare disponibili nella sezione rapida');
   assert.ok(maxActions.textContent.includes('Aggiungi serie Max') && maxActions.textContent.includes('Rimuovi serie Max'), 'con un Max esistente devono apparire sia Aggiungi sia Rimuovi Max');
   assert.strictEqual(seriesActions.querySelectorAll('.paired-action').length, 2, 'Aggiungi e Rimuovi serie devono restare affiancati');
-  assert.ok(seriesActions.textContent.includes('Aggiungi serie') && seriesActions.textContent.includes('Rimuovi serie'), 'la coppia rapida deve riguardare le serie');
+  assert.ok(seriesActions.textContent.includes('Aggiungi serie') && seriesActions.textContent.includes('Rimuovi ultima serie'), 'la coppia rapida deve riguardare le serie');
   const labels = [...menu.querySelectorAll('.ex-context-group-label')].map(el=>el.textContent.trim());
   assert.ok(labels.includes('Strumenti'), 'Calcola dischi deve essere separato dalle azioni sulle serie');
   assert.ok(menu.querySelector('.ex-context-danger-zone .danger'), 'Elimina esercizio deve restare separato e marcato come distruttivo');
   const handlers = [...menu.querySelectorAll('button')].map(button=>button.getAttribute('onclick')||'').join(' ');
-  ['requestAddMax','requestRemoveMax','addSet','removeSet','openPlateCalc','toggleExerciseEditMode','openLinkPicker','openChart','shareExercise','deleteExercise'].forEach(action=>{
+  ['requestAddMax','requestRemoveMax','addSet','removeSet','openPlateCalc','openLinkPicker','openChart','shareExercise','deleteExercise'].forEach(action=>{
     assert.ok(handlers.includes(action), `${action} deve restare collegata al proprio pulsante dopo il restyling`);
   });
   window.closeExerciseContextMenu();
@@ -1138,7 +1142,7 @@ test('tastiera rapida crea spazio e porta in alto le serie sotto il quarto blocc
   assert.ok(scroll && scroll.top > 400, 'la serie bassa deve salire ben sopra la tastiera, non solo di pochi pixel');
 });
 
-test('Gestisci giornata resta sotto Settimane concluse: i "..." restano per il singolo esercizio', () => {
+test('azioni giornata accanto alla lista e modifica dentro la card', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
@@ -1150,15 +1154,13 @@ test('Gestisci giornata resta sotto Settimane concluse: i "..." restano per il s
   window.renderActive();
   assert.ok(!window.document.getElementById('exDayFinishTab'), 'BUG: non deve piu\' esserci l\'icona accanto ai pallini');
   assert.strictEqual(window.document.querySelector('.finish-day-btn'), null, 'non deve restare il vecchio bottone di fine giornata in fondo alla card');
-  const btn = window.document.querySelector('.day-management-btn');
-  assert.ok(btn, 'deve esserci un unico comando per le azioni della giornata');
-  const completedSection = window.document.querySelector('.week-section-completed');
-  assert.ok(completedSection, 'la settimana chiusa deve essere raccolta nella sua sezione');
-  assert.strictEqual(completedSection.nextElementSibling, btn.closest('.day-management-row'), 'Gestisci giornata deve stare subito sotto Settimane concluse, prima delle settimane future');
-  const actions = btn.closest('.day-management-row').nextElementSibling;
-  assert.ok(actions?.classList.contains('day-exercise-actions'), 'Aggiungi esercizio e Modifica ordine devono stare subito sotto Gestisci giornata, non ancorati in fondo allo schermo');
-  assert.strictEqual(window.document.querySelector('#viewActive > .day-exercise-actions'), null, 'le azioni non devono vivere fuori dal carosello, dove una slide più alta creerebbe spazio vuoto');
-  assert.strictEqual(actions.querySelectorAll('.day-exercise-action').length, 1, 'con un solo esercizio resta solo Aggiungi esercizio; Modifica ordine conserva la propria logica esistente');
+  const actions=window.document.querySelector('#viewActive > .workout-list-actions');
+  assert.ok(actions);
+  assert.ok(actions.textContent.includes('Opzioni giornata'));
+  assert.ok(window.document.querySelector('#dayExStrip > .day-add-exercise'));
+  assert.strictEqual(window.document.querySelector('.card .day-management-row'),null);
+  assert.ok(window.document.querySelector('.card-heading-actions .card-edit-button'));
+  assert.ok(window.document.getElementById('workoutTitleEditBtn').hidden);
   window.openDayManagementMenu();
   const menu = window.document.getElementById('dayManagementMenu');
   assert.ok(menu, 'il comando comune deve aprire il suo menu');
@@ -1276,6 +1278,9 @@ test('ripetizioni salvate a ogni tasto prima di Fine, senza confermare la prima 
   assert.strictEqual(ex.sets[0][2].rip,'12');
   assert.strictEqual(confirmations,0);
   window.finishQuickKeyboardInput();
+  assert.strictEqual(confirmations,0);
+  ex.sets[0][2].peso='40';
+  window.completeSeriesUI(0,0,2,null);
   assert.strictEqual(confirmations,1);
 });
 test('ridisegnare la card prima di Fine non cancella peso o ripetizioni',()=>{
@@ -1674,6 +1679,23 @@ test('spunta serie conferma il campo e chiude la tastiera',async()=>{
   await new Promise(resolve=>setTimeout(resolve,300));
   assert.ok(bar.hidden);
   assert.strictEqual(JSON.parse(window.localStorage.getItem('scheda_wo18_state_v1')).days[0].esercizi[0].sets[0][0].rip,'12');
+});
+
+test('conferma finale solo alla spunta e dopo i Max compilati',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.sets[0][2]={peso:'40',rip:''};
+  ex.maxEntries=[[{afterSet:2,peso:'30',rip:''}],[]];
+  window.updateSet(0,0,2,'rip','10');
+  assert.strictEqual(window.__bridge.weekDoneConfirmTarget,null);
+  window.completeSeriesUI(0,0,2,null);
+  assert.strictEqual(window.__bridge.weekDoneConfirmTarget,null);
+  window.updateMaxEntry(0,0,0,'rip','8');
+  assert.strictEqual(window.__bridge.weekDoneConfirmTarget,null);
+  window.completeSeriesUI(0,0,2,null);
+  assert.ok(window.__bridge.weekDoneConfirmTarget);
+  window.closeWeekDoneConfirm(false);
+  window.completeSeriesUI(0,0,2,null);
+  assert.strictEqual(window.__bridge.weekDoneConfirmTarget,null,'il doppio tocco non ripete la domanda');
 });
 
 test('completamento resiste a doppio tocco e ricostruzione dei dati',()=>{

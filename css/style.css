@@ -1557,3 +1557,17 @@ body.a11y-large-text .kg-with-reminder .load-reminder-inline{font-size:11px;flex
 @media(max-width:360px){.set-series-heading{flex-wrap:wrap;}.set-series-prescription{flex-basis:45%;}.set-series-heading .set-series-number{font-size:11px;}}
 
 .quick-keyboard-grid .quick-number-zero{grid-column:span 2;}
+.card-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0;}
+.card-edit-button{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:8px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--accent,var(--green));}
+.exercise-card-hero{flex-wrap:wrap;}
+@media(max-width:480px){.exercise-card-hero .exercise-card-title{flex-basis:100%;}.card-heading-actions{margin-left:auto;}}
+.workout-list-actions{display:flex;justify-content:space-between;gap:12px;padding:0 16px 10px;}
+.workout-list-actions button{width:auto;min-height:44px;margin:0;padding:4px 8px;border:0;background:transparent;color:var(--muted);font:inherit;font-size:12px;}
+.day-add-exercise{flex:0 0 100px;min-height:60px;border-radius:15px;font:inherit;font-size:12px;min-width:100px;background:transparent;border:1px dashed var(--line);color:var(--text);}
+.week-actions-btn{width:auto;min-height:44px;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;}
+.week-actions-btn span{font-size:12px;}
+#exContextMenu .ex-context-series-actions,#exContextMenu .ex-context-max-actions{display:flex;flex-direction:column;gap:0;margin:0 14px;}
+#exContextMenu .ex-context-quick-action,#exContextMenu .ex-context-quick-action.max-primary,#exContextMenu .ex-context-max-remove{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;min-height:48px;width:100%;margin:0;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:var(--text);font-family:var(--font-body);font-size:14px;font-weight:500;box-shadow:none;}
+#exContextMenu .ex-context-quick-action.danger,#exContextMenu .ex-context-max-remove{color:var(--red);}
+#exContextMenu .ex-context-quick-symbol{font-size:20px;min-width:20px;}
+body.a11y-large-text .workout-list-actions button,body.a11y-large-text .week-actions-btn span{font-size:16px;}

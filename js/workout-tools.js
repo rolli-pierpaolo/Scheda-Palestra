@@ -133,11 +133,17 @@ function completeSeriesUI(exi,w,si,partnerExi,button){
   if(!entries.length||entries.some(s=>!String(s.rip??'').trim()||!String(s.peso??'').trim())){
     ViridisToast('Inserisci peso e ripetizioni di tutta la serie, inclusi eventuali Max.');return;
   }
-  if(!seriesUIFinished(entries)){
+  const newlyFinished=!seriesUIFinished(entries);
+  if(newlyFinished){
     entries.forEach(s=>finishedSeriesUI.set(seriesEntryKeys.get(s),`${s.peso}|${s.rip}`));vibrate(15);
     if(restPreferences.enabled)startWorkoutRest(exi,w);
   }
   refreshSeriesFinishUI(exi,w);
+  const indexes=Number.isInteger(partnerExi)?[exi,partnerExi]:[exi];
+  const lastSeries=Math.max(...indexes.map(index=>state.days[activeDayIdx].esercizi[index].sets?.[w]?.length||0))-1;
+  if(newlyFinished&&si===lastSeries&&!(ex.weekDone&&ex.weekDone[w])){
+    requestWeekDoneConfirm(exi,w,ex.nome);
+  }
 }
 function reopenSeriesUI(exi,w,si,partnerExi){
   seriesUIEntries(exi,w,si,partnerExi).forEach(s=>finishedSeriesUI.delete(seriesEntryKeys.get(s)));
