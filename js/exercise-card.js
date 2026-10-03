@@ -660,12 +660,16 @@ function toggleCardEdit(exi,button){
     if(fields[0])updateName(exi,fields[0].value);
     if(fields[1]&&partner)updateName(partner.exi,fields[1].value);
   }
-  toggleExerciseEditMode(exi);
+  if(editingExerciseIdx===exi)toggleExerciseEditMode(exi);
+  else {
+    const ex=state.days[activeDayIdx].esercizi[exi];
+    openExerciseContextMenu(exi,ex.nome,state.currentWeek||0,findLinkedPartner(exi)?.exi);
+  }
 }
 function renderCardEditButton(exi){
   const editing=editingExerciseIdx===exi;
   if(typeof isViewingShared==='function'&&isViewingShared())return '';
-  return `<button type="button" class="card-edit-button" aria-label="${editing?'Conferma modifica esercizio':'Modifica esercizio'}" onclick="toggleCardEdit(${exi},this)">${editing?ICON_CHECK:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20l1-5L16 4l4 4L9 19z"/></svg>'}</button>`;
+  return `<button type="button" class="card-edit-button" aria-label="${editing?'Conferma modifica esercizio':'Opzioni esercizio'}" onclick="toggleCardEdit(${exi},this)">${editing?ICON_CHECK:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20l1-5L16 4l4 4L9 19z"/></svg>'}</button>`;
 }
 function renderLinkedExerciseCardHero(exA, exiA, exB, exiB, accent){
   const week = state.currentWeek || 0;
@@ -765,23 +769,21 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
       <div class="set-row${setFilled?' filled':''}">
         <div class="kg-cell">
         <div class="kg-wrap kg-with-reminder">
-          <div class="weight-step-controls">
-            <button type="button" class="stepper" aria-label="Aumenta peso serie ${si+1}" ${isReadOnlyWeek?'disabled':''} onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
             <button class="stepper"
             aria-label="Riduci peso serie ${si+1}"
             ${isReadOnlyWeek?'disabled':''}
             onclick="stepSet(${exi},${w},${si},-2.5,this)">
             −
             </button>
-          </div>
           <input type="text" class="set-input"
           ${isReadOnlyWeek?'disabled':''}
           aria-label="Peso serie ${si+1} in chilogrammi"
           placeholder="0"
           value="${escapeAttr(s.peso ?? '')}"
           oninput="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr},true)" onchange="updateSet(${exi},${w},${si},'peso',this.value,${recordAttr});markSetVisualState(this)">
-          ${renderLoadReminder(ex,exi,w,si,true)}
+            <button type="button" class="stepper" aria-label="Aumenta peso serie ${si+1}" ${isReadOnlyWeek?'disabled':''} onclick="stepSet(${exi},${w},${si},2.5,this)">+</button>
         </div>
+        ${renderLoadReminder(ex,exi,w,si,true)}
         ${suggestedKg!==null ? `<button type="button" class="kg-fill-chip" ${isReadOnlyWeek?'disabled':''} title="Usa l'ultimo peso: ${suggestedKg} kg" onclick="fillSuggestedWeight(${exi},${w},${si},'${suggestedKg}',this,${recordAttr})">↺ ultimo: ${suggestedKg} kg</button>` : ''}
         </div>
         <div class="rip-cell">
@@ -1156,8 +1158,10 @@ function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
   el.className = 'modal-overlay ex-context-overlay';
   el.onclick = (e) => { if(e.target===el) closeExerciseContextMenu(); };
   el.innerHTML = `
-    <div class="ex-context-sheet">
-      <div class="ex-context-title">${escapeHtml(exName||'Esercizio')}</div>
+    <div class="ex-context-sheet" role="dialog" aria-modal="true" aria-labelledby="exerciseOptionsTitle" tabindex="-1">
+      <div class="ex-sheet-grip" aria-hidden="true"><span></span></div>
+      <div class="ex-sheet-header"><div class="ex-context-title" id="exerciseOptionsTitle">${escapeHtml(exName||'Esercizio')}</div><button type="button" class="ex-sheet-close" aria-label="Chiudi opzioni esercizio" onclick="closeExerciseContextMenu()">${ICON_CLOSE}</button></div>
+      <div class="ex-sheet-content">
       ${hasWeekContext ? `<div class="ex-context-group-label">Serie</div>` : ''}
       ${setActions}
       ${hasWeekContext?'<div class="ex-context-group-label">Serie Max</div>':''}${maxActions}
@@ -1167,17 +1171,19 @@ function openExerciseContextMenu(exi, exName, weekIdx, partnerExi){
       <button class="ex-context-action ex-context-row-action" onclick="closeExerciseContextMenu();openChart(${exi})"><span class="ex-context-action-icon">${ICON_CHART}</span><span>Grafico progressione</span></button>
       <button class="ex-context-action ex-context-row-action" onclick="closeExerciseContextMenu();openPlateCalc(${exi})"><span class="ex-context-action-icon">${ICON_PLATE}</span><span>Calcola dischi bilanciere</span></button>
       <div class="ex-context-group-label">Altro</div>
+      <button class="ex-context-action ex-context-row-action" onclick="closeExerciseContextMenu();toggleExerciseEditMode(${exi})"><span class="ex-context-action-icon">${ICON_GEAR}</span><span>Modifica esercizio</span><span class="ex-context-action-chevron">›</span></button>
       <button class="ex-context-action ex-context-row-action" onclick="closeExerciseContextMenu();shareExercise(${exi})"><span class="ex-context-action-icon">${ICON_SHARE}</span><span class="ex-context-action-copy">Condividi</span></button>
       <div class="ex-context-danger-zone"><button class="ex-context-action ex-context-row-action danger" onclick="closeExerciseContextMenu();deleteExercise(${exi})"><span class="ex-context-action-icon">${ICON_TRASH}</span><span class="ex-context-action-copy">Elimina esercizio</span></button></div>
+      </div>
     </div>
-    <button class="ex-context-cancel" onclick="closeExerciseContextMenu()">Annulla</button>
   `;
   document.body.appendChild(el);
+  el.sheetCleanup=bindViridisSheet(el,el.querySelector('.ex-context-sheet'),closeExerciseContextMenu);
   vibrate(20);
 }
 function closeExerciseContextMenu(){
   const el = document.getElementById('exContextMenu');
-  if(el) el.remove();
+  if(el){el.sheetCleanup?.();el.remove();}
 }
 
 function openDayManagementMenu(){

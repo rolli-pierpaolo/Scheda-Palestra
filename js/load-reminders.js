@@ -24,7 +24,7 @@ function loadReminderWritable(ex,w){
 function renderLoadReminder(ex,exi,w,si,compact=false){
   if(!loadReminderWritable(ex,w)) return '';
   const reminder=loadReminderList().find(r=>loadReminderMatches(r,ex)&&loadReminderBound(r,ex,w)&&r.setIndex===si);
-  if(compact)return `<button type="button" class="load-reminder-inline${reminder?' has-reminder':''}" onclick="editLoadReminder(${exi},${w},${si})" aria-label="Prossima volta · serie ${si+1}${reminder?.target?` · ${escapeAttr(reminder.target)} kg`:''}" title="Promemoria aumento carico">Prossima<br>volta</button>`;
+  if(compact)return `<button type="button" class="load-reminder-inline${reminder?' has-reminder':''}" onclick="editLoadReminder(${exi},${w},${si})" aria-label="Prossima volta · serie ${si+1}${reminder?.target?` · ${escapeAttr(reminder.target)} kg`:''}" title="Promemoria aumento carico">Prossima volta</button>`;
   if(!reminder)return '';
   const label=reminder ? (reminder.target ? `↑ ${reminder.sourceWeek===w?'Prossima':'Obiettivo'}: ${reminder.target} kg` : '↑ Da aumentare') : '↑ Prossima volta';
   return `<button type="button" class="load-reminder-chip${reminder?' has-reminder':''}" onclick="editLoadReminder(${exi},${w},${si})" aria-label="${escapeAttr(label)} · serie ${si+1}">${escapeHtml(label)}</button>`;

@@ -163,6 +163,43 @@ const ViridisDialogs = (() => {
   return { open };
 })();
 
+function bindViridisSheet(overlay,box,close){
+  const previous=document.activeElement;
+  const siblings=[...document.body.children].filter(el=>el!==overlay&&!['SCRIPT','STYLE'].includes(el.tagName));
+  const states=siblings.map(el=>el.inert);
+  const overflow=document.body.style.overflow;
+  siblings.forEach(el=>el.inert=true);
+  document.body.style.overflow='hidden';
+  let start=null;
+  const grip=box.querySelector('.ex-sheet-grip');
+  grip.addEventListener('pointerdown',event=>{
+    start={y:event.clientY,id:event.pointerId};
+    if(grip.setPointerCapture)grip.setPointerCapture(event.pointerId);
+  });
+  grip.addEventListener('pointerup',event=>{
+    if(start&&start.id===event.pointerId&&event.clientY-start.y>48)close();
+    start=null;
+  });
+  grip.addEventListener('pointercancel',()=>start=null);
+  function keydown(event){
+    if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close();}
+    if(event.key==='Tab'){
+      const buttons=[...box.querySelectorAll('button:not(:disabled)')];
+      const first=buttons[0],last=buttons[buttons.length-1];
+      if(event.shiftKey&&(document.activeElement===first||document.activeElement===box)){event.preventDefault();last?.focus();}
+      else if(!event.shiftKey&&(document.activeElement===last||document.activeElement===box)){event.preventDefault();first?.focus();}
+    }
+  }
+  document.addEventListener('keydown',keydown,true);
+  box.focus({preventScroll:true});
+  return ()=>{
+    document.removeEventListener('keydown',keydown,true);
+    siblings.forEach((el,index)=>el.inert=states[index]);
+    document.body.style.overflow=overflow;
+    if(previous?.isConnected)previous.focus({preventScroll:true});
+  };
+}
+
 function ViridisConfirmDialog(message, options = {}){
   const destructive = /elimina|togliere|sovrascriv|azzero|terminare comunque/i.test(message);
   return ViridisDialogs.open({title:destructive ? 'Conferma operazione' : 'Conferma', message,

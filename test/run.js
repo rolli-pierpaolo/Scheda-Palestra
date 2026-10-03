@@ -367,7 +367,7 @@ test('il carosello Allenamento mostra un esercizio a schermo e naviga con goToEx
   assert.strictEqual(window.__bridge.activeExerciseIdx, 0, 'l\'avanzamento automatico e\' rimandato, non deve scattare subito');
 });
 
-test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare i dati, con tutte e 5 le azioni', () => {
+test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare i dati, con tutte le azioni', () => {
   const window = loadApp();
   window.__bridge.activeDayIdx = 0;
   window.__bridge.state = {
@@ -382,7 +382,7 @@ test('il menu contestuale (pressione prolungata) si apre e chiude senza toccare 
   const menu = window.document.getElementById('exContextMenu');
   assert.ok(menu, 'deve apparire nel DOM');
   assert.strictEqual(menu.querySelector('.ex-context-title').textContent.trim(), 'Ex A');
-  assert.strictEqual(menu.querySelectorAll('.ex-context-action').length, 5, 'Grafico, Calcola dischi, Collega, Condividi, Elimina');
+  assert.strictEqual(menu.querySelectorAll('.ex-context-action').length, 6, 'Grafico, Calcola dischi, Collega, Condividi, Elimina');
   assert.ok(menu.querySelector('.ex-context-action.danger'), 'Elimina deve essere marcata come azione pericolosa');
 
   window.closeExerciseContextMenu();
@@ -404,7 +404,7 @@ test('il menu "..." mantiene le azioni Max e Serie in una action sheet compatta'
   const maxActions = menu.querySelector('.ex-context-max-actions');
   const seriesActions = menu.querySelector('.ex-context-series-actions');
   assert.ok(seriesActions.compareDocumentPosition(maxActions)&window.Node.DOCUMENT_POSITION_FOLLOWING);
-  assert.ok(!menu.textContent.includes('Modifica esercizio'));
+  assert.ok(menu.textContent.includes('Modifica esercizio'));
   assert.ok(maxActions, 'Aggiungi/Rimuovi Max devono restare disponibili nella sezione rapida');
   assert.ok(maxActions.textContent.includes('Aggiungi serie Max') && maxActions.textContent.includes('Rimuovi serie Max'), 'con un Max esistente devono apparire sia Aggiungi sia Rimuovi Max');
   assert.strictEqual(seriesActions.querySelectorAll('.paired-action').length, 2, 'Aggiungi e Rimuovi serie devono restare affiancati');
@@ -1842,8 +1842,8 @@ test('ramping non assegna il back-off alla prima serie e la nota vuota resta ric
   assert.ok(note&&!note.open);
   const group=window.document.querySelector('.set-series-group');
   assert.ok(group.querySelector('.set-series-heading .series-finish.compact'));
-  assert.ok(group.querySelector('.kg-wrap .load-reminder-inline'));
-  assert.strictEqual(group.querySelectorAll('.weight-step-controls .stepper').length,2);
+  assert.ok(group.querySelector('.kg-cell > .load-reminder-inline'));
+  assert.strictEqual(group.querySelectorAll('.kg-wrap > .stepper').length,2);
   assert.ok(!group.querySelector('.set-series-heading .load-reminder-inline'));
   assert.ok(!group.querySelector('.load-reminder-chip'));
   ex.commento='Pausa in basso';window.renderActive();
@@ -1880,6 +1880,32 @@ test('Home Allenamento e Progressi conservano posizioni indipendenti',()=>{
   window.showView('active');assert.strictEqual(y,650);
   window.showView('home');assert.strictEqual(y,150);
   window.showView('hist');assert.strictEqual(y,320);
+});
+
+test('sheet esercizio ripristina focus e scorrimento con X, Escape e swipe',()=>{
+  const {window}=workoutInputFixture();
+  window.renderActive();
+  const button=window.document.querySelector('[aria-label="Opzioni esercizio"]');
+  button.focus();
+  const before=JSON.stringify(window.__bridge.state);
+  for(const method of ['close','escape','swipe','outside']){
+    button.click();
+    const overlay=window.document.getElementById('exContextMenu');
+    assert.ok(overlay.querySelector('[role="dialog"]'));
+    assert.strictEqual(window.document.body.style.overflow,'hidden');
+    if(method==='close')overlay.querySelector('.ex-sheet-close').click();
+    if(method==='outside')overlay.click();
+    if(method==='escape')window.document.dispatchEvent(new window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    if(method==='swipe'){
+      const grip=overlay.querySelector('.ex-sheet-grip');
+      grip.dispatchEvent(new window.MouseEvent('pointerdown',{clientY:20}));
+      grip.dispatchEvent(new window.MouseEvent('pointerup',{clientY:90}));
+    }
+    assert.ok(!window.document.getElementById('exContextMenu'));
+    assert.strictEqual(window.document.body.style.overflow,'');
+    assert.strictEqual(window.document.activeElement,button);
+    assert.strictEqual(JSON.stringify(window.__bridge.state),before);
+  }
 });
 
 (async () => {

@@ -1571,3 +1571,39 @@ body.a11y-large-text .kg-with-reminder .load-reminder-inline{font-size:11px;flex
 #exContextMenu .ex-context-quick-action.danger,#exContextMenu .ex-context-max-remove{color:var(--red);}
 #exContextMenu .ex-context-quick-symbol{font-size:20px;min-width:20px;}
 body.a11y-large-text .workout-list-actions button,body.a11y-large-text .week-actions-btn span{font-size:16px;}
+
+#exContextMenu.ex-context-overlay{position:fixed;inset:0;z-index:2000;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding: max(12px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:rgba(0,0,0,.58);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}
+#exContextMenu .ex-context-sheet{display:flex;flex-direction:column;width:100%;max-width:480px;max-height:100%;max-height:min(88dvh,840px);min-height:0;overflow:hidden;border-radius:24px;border:1px solid var(--line);background:var(--panel2);animation:viridis-keyboard-enter .18s ease-out;}
+.ex-sheet-grip{flex-shrink:0;display:flex;align-items:center;justify-content:center;height:24px;touch-action:none;cursor:grab;}
+.ex-sheet-grip span{width:36px;height:4px;border-radius:4px;background:var(--muted);opacity:.5;}
+.ex-sheet-header{display:flex;align-items:center;gap:8px;padding:0 12px 8px 16px;flex-shrink:0;border-bottom:1px solid var(--line);}
+#exContextMenu .ex-context-title{flex:1;min-width:0;margin:0;padding:0;text-align:left;font-size:18px;line-height:1.25;overflow-wrap:anywhere;}
+.ex-sheet-close{width:44px;min-height:44px;flex-shrink:0;display:grid;place-items:center;border:0;border-radius:12px;color:var(--muted);background:transparent;}
+.ex-sheet-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:4px 8px 12px;-webkit-overflow-scrolling:touch;}
+#exContextMenu .ex-context-group-label{margin:0;padding:8px 12px 2px;font-size:10px;line-height:1.2;letter-spacing:.8px;color:var(--muted);}
+#exContextMenu .ex-context-series-actions,#exContextMenu .ex-context-max-actions{margin:0;}
+#exContextMenu .ex-context-row-action,#exContextMenu .ex-context-quick-action,#exContextMenu .ex-context-quick-action.max-primary,#exContextMenu .ex-context-max-remove{min-height:52px;margin:0;padding:10px 12px;gap:12px;font-size:14px;line-height:1.3;justify-content:flex-start;text-align:left;border:0;border-radius:10px;background:transparent;color:var(--text);}
+#exContextMenu .ex-context-action-icon,#exContextMenu .ex-context-quick-symbol{display:grid;place-items:center;flex:0 0 20px;width:20px;font-size:20px;color:var(--muted);}
+#exContextMenu .ex-context-action-icon svg{width:20px;height:20px;}
+#exContextMenu .ex-context-series-actions button:first-child .ex-context-quick-symbol{color:var(--green);}
+#exContextMenu .ex-context-danger-zone{margin:8px 0 0;padding:4px 0 0;border-top:1px solid var(--line);}
+#exContextMenu .ex-context-danger-zone button,#exContextMenu .ex-context-danger-zone .ex-context-action-icon{color:var(--red);}
+#exContextMenu .ex-context-series-actions .paired-action,#exContextMenu .ex-context-series-actions .paired-action.danger{min-height:52px;padding:10px 12px;border:0;background:transparent;color:var(--text);font-size:14px;font-weight:500;text-align:left;box-shadow:none;}
+.ex-context-action-chevron{margin-left:auto;}
+.exercise-card-hero{padding:12px 16px 8px;gap:8px;}
+.card-heading-actions{gap:8px;}
+.week-block.current-week-block .week-quick-summary{padding:4px 0 0;}
+.workout-quick-tools{gap:8px;flex-wrap:wrap;}
+.exercise-note-disclosure>summary{padding:4px 0;}
+.set-series-group,.set-series-group.has-max{padding:8px;border-radius:14px;}
+.kg-with-reminder .stepper{flex:0 0 44px;min-height:44px;width:44px;padding:0;}
+.kg-cell>.load-reminder-inline{display:block;width:auto;max-width:100%;min-height:44px;margin:0;padding:4px 0;background:transparent;border:0;color:var(--muted);font:inherit;font-size:11px;text-align:left;}
+.kg-cell>.load-reminder-inline br{display:none;}
+.kg-cell>.load-reminder-inline br:after{content:' ';}
+body.a11y-large-text .kg-cell>.load-reminder-inline{font-size:16px;}
+body.a11y-large-text #exContextMenu .ex-sheet-content button{font-size:16px;}
+body.a11y-high-contrast .ex-sheet-content button{outline-color:var(--text);}
+body.a11y-reduce-motion #exContextMenu .ex-context-sheet{animation:none;}
+@media(prefers-reduced-motion:reduce){#exContextMenu .ex-context-sheet{animation:none;}}
+
+#exContextMenu .ex-context-series-actions .danger .ex-context-quick-symbol{color:var(--muted);}
