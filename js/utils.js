@@ -216,15 +216,10 @@ function clearQuickKeyboardScrollSpace(){
   document.body.classList.remove('quick-keyboard-open');
   document.body.style.removeProperty('--quick-keyboard-space');
 }
-function restoreQuickKeyboardScroll(delay=0){
+function restoreQuickKeyboardScroll(){
   clearTimeout(quickKeyboardRestoreTimer);
-  if(quickKeyboardOriginScrollY === null) return;
-  quickKeyboardRestoreTimer = setTimeout(()=>{
-    if(quickNumberInput || quickKeyboardOriginScrollY === null) return;
-    const originalY = quickKeyboardOriginScrollY;
-    quickKeyboardOriginScrollY = null;
-    moveQuickKeyboardScroll(originalY);
-  },delay);
+  quickKeyboardOriginScrollY = null;
+  stopQuickKeyboardScroll();
 }
 function resetQuickKeyboardUI(){
   if(quickKeyboardRevealFrame !== null) cancelAnimationFrame(quickKeyboardRevealFrame);
@@ -257,7 +252,7 @@ function hideQuickKeyboardBar(bar){
       bar.hidden = true;
       bar.classList.remove('is-closing');
       bar.style.bottom = '';
-      // Rimuove lo spazio della tastiera solo quando lo scroll di ritorno e terminato.
+      // Rimuove lo spazio aggiuntivo dopo la chiusura della tastiera.
 
       if(!quickKeyboardScrollTween) clearQuickKeyboardScrollSpace();
     }

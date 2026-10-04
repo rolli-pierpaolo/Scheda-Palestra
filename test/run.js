@@ -1447,6 +1447,24 @@ test('storico esercizio: serie e Max di tutte le schede, senza modificare dati o
   assert.strictEqual(JSON.stringify([window.__bridge.state,window.__bridge.storicoExtra]),before);
 });
 
+test('chiudere la tastiera conserva lo scroll anche dopo campi successivi',async()=>{
+  const {window}=workoutInputFixture();
+  let y=180;
+  Object.defineProperty(window,'scrollY',{configurable:true,get:()=>y});
+  const positions=[];
+  window.scrollTo=options=>positions.push(options.top);
+  window.scrollBy=options=>positions.push(options.top+y);
+  const inputs=window.document.querySelectorAll('.set-input');
+  inputs[0].focus();window.primeQuickKeyboardInput(inputs[0]);
+  y=940;
+  inputs[1].focus();window.primeQuickKeyboardInput(inputs[1]);
+  window.finishQuickKeyboardInput();
+  await new Promise(resolve=>setTimeout(resolve,300));
+  assert.deepStrictEqual(positions,[],'nessun ritorno al punto di apertura');
+  assert.strictEqual(y,940);
+  assert.ok(window.document.getElementById('quickNumberBar').hidden);
+});
+
 test('scroll tastiera: un nuovo campo sostituisce il movimento e il gesto manuale lo interrompe', () => {
   const window = loadApp();
   const tweens = [];
