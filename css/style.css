@@ -1619,3 +1619,47 @@ body.a11y-reduce-motion #exContextMenu .ex-context-sheet{animation:none;}
 .kg-cell>.load-reminder-inline{margin-top:-2px;margin-bottom:-4px;padding:2px 0;}
 .linked-sub-rows{gap:8px;}
 body.a11y-large-text .day-ex-chip{width:104px;}
+
+/* Rifiniture condivise tra allenamento, Home e Progressi. */
+:root{
+  --surface-edge:rgba(255,255,255,.12);
+  --surface-highlight:inset 0 1px 0 rgba(255,255,255,.055);
+  --readable-muted:#AEB5B1;
+}
+body:not(.theme-light):not(.a11y-high-contrast) :is(.set-series-group,.linked-set-group,.progress-quick-actions button,.progress-timeline-card,.home-reminders){
+  border-color:var(--surface-edge);
+  background:linear-gradient(155deg,#202321,#181B19);
+  box-shadow:var(--surface-highlight);
+}
+body:not(.theme-light):not(.a11y-high-contrast) :is(.set-series-group.is-filled,.linked-set-group.is-filled){border-color:color-mix(in srgb,var(--accent,var(--green)) 40%,#343936);}
+body:not(.theme-light):not(.a11y-high-contrast) :is(.set-series-group.series-collapsed,.linked-set-group.series-collapsed){border-color:var(--green);background:color-mix(in srgb,var(--green) 9%,#171B18);}
+body:not(.theme-light) :is(.kg-wrap,.rip-wrap):focus-within{border-color:var(--accent,var(--green));box-shadow:0 0 0 1px var(--accent,var(--green));}
+:is(.kg-wrap,.rip-wrap) .set-input{font-variant-numeric:tabular-nums;caret-color:var(--accent,var(--green));}
+.day-ex-chip{display:flex;flex-direction:column;justify-content:center;gap:3px;}
+.day-ex-chip-name{font-size:10px;line-height:1.25;}
+.day-ex-chip.current{box-shadow:var(--surface-highlight);}
+.set-columns-labels{font-size:10px;letter-spacing:.35px;}
+body:not(.theme-light):not(.a11y-high-contrast) :is(.set-columns-labels,.home-section-note,.home-muscle-note,.home-stat-copy small,.progress-metric-grid span,.progress-quick-actions small,.progress-timeline-row small){color:var(--readable-muted);}
+.progress-hero-topline>span,.progress-section-head>span{font-size:11px;letter-spacing:.8px;}
+.progress-hero-title{line-height:1.12;}
+.progress-weekline,.progress-weekline b{font-size:13px;}
+.progress-metric-grid span{font-size:11px;line-height:1.4;}
+.progress-metric-grid b,.home-stat-value{font-variant-numeric:tabular-nums;}
+.progress-quick-actions b{font-size:13px;line-height:1.3;}
+.progress-quick-actions small{font-size:11px;line-height:1.35;}
+.progress-quick-actions button{gap:6px;min-height:104px;border-radius:16px;}
+.progress-quick-actions button>span{width:30px;height:30px;}
+.progress-timeline-row{min-height:56px;}
+.progress-timeline-row b{font-size:13px;line-height:1.35;}
+.progress-timeline-row small{font-size:11px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;}
+.progress-hero-topline button{width:44px;height:44px;}
+.progress-section-head button{min-height:44px;font-size:12px;}
+.home-section-note,.home-muscle-note,.home-stat-copy,.home-stat-copy small{font-size:11px;line-height:1.45;}
+.home-day-card{min-height:44px;}
+#exContextMenu .ex-context-row-action{font-weight:500;}
+#exContextMenu .ex-context-row-action:active{background:rgba(255,255,255,.06);}
+#exContextMenu .ex-context-danger-zone .ex-context-row-action:active{background:color-mix(in srgb,var(--red) 12%,transparent);}
+body.a11y-large-text :is(.day-ex-chip-name,.set-columns-labels,.progress-hero-topline>span,.progress-section-head>span,.progress-metric-grid span,.progress-quick-actions small,.progress-timeline-row small){font-size:14px;}
+body.a11y-large-text :is(.progress-quick-actions b,.progress-timeline-row b,.progress-weekline,.progress-weekline b){font-size:16px;}
+@media(max-width:360px){.progress-quick-actions{gap:6px;}.progress-quick-actions button{padding:8px;}}
+@media(max-width:520px){body.a11y-large-text .progress-quick-actions{grid-template-columns:1fr;}body.a11y-large-text .progress-quick-actions button{min-height:80px;}}
