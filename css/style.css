@@ -1607,3 +1607,15 @@ body.a11y-reduce-motion #exContextMenu .ex-context-sheet{animation:none;}
 @media(prefers-reduced-motion:reduce){#exContextMenu .ex-context-sheet{animation:none;}}
 
 #exContextMenu .ex-context-series-actions .danger .ex-context-quick-symbol{color:var(--muted);}
+
+.day-ex-chip{width:86px;min-height:44px;padding:4px 6px;border-radius:11px;}
+.day-ex-chip-pos{font-size:13px;}
+.set-series-group,.set-series-group.has-max{padding:6px;border-radius:12px;}
+.set-series-heading{margin-bottom:0;gap:4px;}
+.set-columns-labels{margin-bottom:2px;}
+.set-series-group .kg-wrap,.set-series-group .rip-wrap{min-height:44px;}
+.set-series-group .kg-wrap .set-input,.set-series-group .rip-wrap .set-input{height:44px;min-height:44px;}
+.set-series-group .stepper{height:44px;}
+.kg-cell>.load-reminder-inline{margin-top:-2px;margin-bottom:-4px;padding:2px 0;}
+.linked-sub-rows{gap:8px;}
+body.a11y-large-text .day-ex-chip{width:104px;}

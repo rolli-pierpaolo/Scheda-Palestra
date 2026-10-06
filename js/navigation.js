@@ -236,6 +236,7 @@ function renderDayTabs(){
   }).join('');
 
   el.innerHTML = dayButtonsHtml + `
+    <button class="block-finish-btn" onclick="document.getElementById('dayTabsActive').classList.remove('workout-day-tabs-open');openDayManagementMenu()">Opzioni giornata</button>
     <button id="blockFinishTab" class="block-finish-btn" onclick="openBlockCompletionFlow()" title="Gestisci, archivia o prolunga la scheda" aria-label="Gestisci, archivia o prolunga la scheda">
       <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M4.5 8.5 V18.5 A1 1 0 0 0 5.5 19.5 H18.5 A1 1 0 0 0 19.5 18.5 V8.5"/><path d="M10 12.5 H14"/></svg>
       <span class="block-finish-label">Gestisci scheda</span>

@@ -179,7 +179,7 @@ function renderActive(){
       <div class="empty-day-title">Nessun esercizio ancora</div>
       <div class="empty-day-sub">Aggiungine uno per iniziare a costruire "${escapeHtml(day.name)}"</div>
     </div>` : '';
-  const reorderBtn = day.esercizi.length>1 ? `<button class="add-ex day-exercise-action" onclick="toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>` : '';
+
   const suggestedIdx = computeSuggestedDayIdx();
 
 const switchTrainingDay =
@@ -200,7 +200,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   saveActivePos();
   const workoutProgressHtml = renderWorkoutProgress(progress, activeExerciseIdx, a.c);
   const dayExStripHtml = renderDayExerciseStrip(progress, a.c, activeExerciseIdx);
-  const dayActionsHtml = `<div class="workout-list-actions">${reorderBtn}${day.esercizi.length?'<button type="button" onclick="openDayManagementMenu()">Opzioni giornata</button>':`<button type="button" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button>`}</div>`;
+  const dayActionsHtml = day.esercizi.length ? '' : `<div class="workout-list-actions"><button type="button" onclick="addExercise(${activeDayIdx})">+ Aggiungi esercizio</button></div>`;
   const dayManagementHtml = '';
 
   const activeItem = progress.items.find(it => it.exi===activeExerciseIdx);
@@ -1200,6 +1200,8 @@ function openDayManagementMenu(){
   el.innerHTML = `
     <div class="ex-context-sheet day-management-sheet">
       <div class="ex-context-title">${escapeHtml(day.name||'Giornata')}</div>
+      <div class="ex-context-group-label">Organizza</div>
+      ${day.esercizi.length>1?`<button class="ex-context-action" onclick="closeDayManagementMenu();toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>`:''}
       <div class="ex-context-group-label">Vista</div>
       <button class="ex-context-action" onclick="closeDayManagementMenu();toggleTrainingFocusMode()">${trainingFocusMode ? '↙' : '⛶'} ${trainingFocusMode ? 'Torna alla vista normale' : 'Modalità allenamento grande'}</button>
       <div class="ex-context-group-label">Questa giornata · ${progress.done}/${progress.total} esercizi chiusi</div>

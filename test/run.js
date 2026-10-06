@@ -1155,8 +1155,9 @@ test('azioni giornata accanto alla lista e modifica dentro la card', () => {
   assert.ok(!window.document.getElementById('exDayFinishTab'), 'BUG: non deve piu\' esserci l\'icona accanto ai pallini');
   assert.strictEqual(window.document.querySelector('.finish-day-btn'), null, 'non deve restare il vecchio bottone di fine giornata in fondo alla card');
   const actions=window.document.querySelector('#viewActive > .workout-list-actions');
-  assert.ok(actions);
-  assert.ok(actions.textContent.includes('Opzioni giornata'));
+  assert.strictEqual(actions,null);
+  window.renderDayTabs();
+  assert.ok(window.document.getElementById('dayTabsActive').textContent.includes('Opzioni giornata'));
   assert.ok(window.document.querySelector('#dayExStrip > .day-add-exercise'));
   assert.strictEqual(window.document.querySelector('.card .day-management-row'),null);
   assert.ok(window.document.querySelector('.card-heading-actions .card-edit-button'));
@@ -1892,6 +1893,13 @@ test('riga vuota si elimina senza avviso per dati in altre serie, Max compilati 
   assert.strictEqual(confirmations,1);
   assert.strictEqual(ex.sets[0].length,2);
   assert.strictEqual(ex.maxEntries[0][0].rip,'8');
+  ex.maxEntries[0].unshift({afterSet:0,peso:'20',rip:'12'});
+  window.ViridisConfirmDialog=async()=>true;
+  await window.removeSet(0,0);
+  assert.strictEqual(ex.sets[0].length,1);
+  assert.strictEqual(ex.maxEntries[0].length,1);
+  assert.strictEqual(ex.maxEntries[0][0].afterSet,0);
+  assert.strictEqual(ex.maxEntries[0][0].rip,'12');
 });
 test('Home Allenamento e Progressi conservano posizioni indipendenti',()=>{
   const {window}=workoutInputFixture();
