@@ -1716,6 +1716,26 @@ test('confronto resta disponibile nella serie completata senza riaprirla',()=>{
   assert.ok(!group.querySelector('.series-completed-comparisons'));
 });
 
+test('spunte conservate al riavvio, riapertura persistente e settimane separate',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.sets[0][0]={peso:'40',rip:'10'};
+  window.completeSeriesUI(0,0,0,null);
+  const key='viridis_finished_series_v1';
+  const stateCopy=JSON.stringify(window.__bridge.state);
+  const reload=loadApp({[key]:window.localStorage.getItem(key)});
+  reload.__bridge.state=JSON.parse(stateCopy);reload.__bridge.activeDayIdx=0;
+  assert.ok(reload.seriesUIFinished(reload.seriesUIEntries(0,0,0,null)));
+  assert.ok(!reload.seriesUIFinished(reload.seriesUIEntries(0,1,0,null)));
+  reload.reopenSeriesUI(0,0,0,null);
+  const again=loadApp({[key]:reload.localStorage.getItem(key)});
+  again.__bridge.state=JSON.parse(stateCopy);again.__bridge.activeDayIdx=0;
+  assert.ok(!again.seriesUIFinished(again.seriesUIEntries(0,0,0,null)));
+  reload.completeSeriesUI(0,0,0,null);
+  reload.__bridge.state.days[0].esercizi[0].sets[0][0].rip='11';
+  assert.ok(!reload.seriesUIFinished(reload.seriesUIEntries(0,0,0,null)));
+  assert.strictEqual(JSON.parse(reload.localStorage.getItem(key)).length,0);
+});
+
 test('spunta serie conferma il campo e chiude la tastiera',async()=>{
   const {window,ex}=workoutInputFixture();
   ex.sets[0][0].peso='40';

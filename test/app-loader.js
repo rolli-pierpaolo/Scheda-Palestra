@@ -4,12 +4,13 @@ const { JSDOM } = require('jsdom');
 
 const ROOT = path.join(__dirname, '..');
 
-function loadApp(){
+function loadApp(storage = {}){
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const dom = new JSDOM(html, { url: 'http://localhost/', pretendToBeVisual: true, runScripts: 'dangerously' });
   const { window } = dom;
 
   window.localStorage.clear();
+  Object.entries(storage).forEach(([key,value])=>window.localStorage.setItem(key,value));
   // WebGL viene verificato separatamente: jsdom non dispone di una GPU.
   const originalContext = window.HTMLCanvasElement.prototype.getContext;
   window.HTMLCanvasElement.prototype.getContext = function(kind, ...args){

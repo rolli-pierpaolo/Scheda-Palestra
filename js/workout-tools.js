@@ -2,7 +2,18 @@ const REST_PREF_KEY = 'viridis_rest_preferences_v1';
 let restPreferences = {enabled:false,sound:true};
 try{Object.assign(restPreferences,JSON.parse(localStorage.getItem(REST_PREF_KEY)||'{}'));}catch(e){}
 let workoutRest = null, workoutRestInterval = null, restAudio = null;
+const FINISHED_SERIES_KEY = 'viridis_finished_series_v1';
 const finishedSeriesUI = new Map();
+try{
+  const saved=JSON.parse(localStorage.getItem(FINISHED_SERIES_KEY)||'[]');
+  if(Array.isArray(saved))saved.forEach(item=>{
+    if(Array.isArray(item)&&typeof item[0]==='string'&&typeof item[1]==='string')finishedSeriesUI.set(item[0],item[1]);
+  });
+}catch(e){}
+function saveFinishedSeriesUI(){
+  try{localStorage.setItem(FINISHED_SERIES_KEY,JSON.stringify([...finishedSeriesUI]));}
+  catch(e){ViridisToast('Non riesco a salvare le spunte sul dispositivo.');}
+}
 const seriesEntryKeys = new WeakMap();
 
 function restSecondsFromText(value){
@@ -111,7 +122,7 @@ function seriesUIEntries(exi,w,si,partnerExi){
 function seriesUIFinished(entries){return entries.length>0&&entries.every(s=>{
   const key=seriesEntryKeys.get(s);
   if(finishedSeriesUI.get(key)===`${s.peso}|${s.rip}`)return true;
-  finishedSeriesUI.delete(key);
+  if(finishedSeriesUI.delete(key))saveFinishedSeriesUI();
   return false;
 });}
 function renderSeriesFinish(exi,w,si,partnerExi){
@@ -135,7 +146,8 @@ function completeSeriesUI(exi,w,si,partnerExi,button){
   }
   const newlyFinished=!seriesUIFinished(entries);
   if(newlyFinished){
-    entries.forEach(s=>finishedSeriesUI.set(seriesEntryKeys.get(s),`${s.peso}|${s.rip}`));vibrate(15);
+    entries.forEach(s=>finishedSeriesUI.set(seriesEntryKeys.get(s),`${s.peso}|${s.rip}`));
+    saveFinishedSeriesUI();vibrate(15);
     if(restPreferences.enabled)startWorkoutRest(exi,w);
   }
   refreshSeriesFinishUI(exi,w);
@@ -147,6 +159,7 @@ function completeSeriesUI(exi,w,si,partnerExi,button){
 }
 function reopenSeriesUI(exi,w,si,partnerExi){
   seriesUIEntries(exi,w,si,partnerExi).forEach(s=>finishedSeriesUI.delete(seriesEntryKeys.get(s)));
+  saveFinishedSeriesUI();
   refreshSeriesFinishUI(exi,w);
 }
 function updateSeriesFinishButton(button){
