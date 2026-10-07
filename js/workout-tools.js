@@ -164,6 +164,7 @@ function updateSeriesFinishButton(button){
   const done=button.getAttribute('aria-pressed')==='true';
   group.classList.toggle('series-collapsed',done);
   group.querySelector(':scope > .series-completed-summary')?.remove();
+  group.querySelector(':scope > .series-completed-comparisons')?.remove();
   if(done){
     const summary=document.createElement('button');
     summary.type='button';summary.className='series-completed-summary';
@@ -172,6 +173,20 @@ function updateSeriesFinishButton(button){
     summary.setAttribute('aria-label',`Serie ${si+1} completata: ${values}. Riapri per modificare`);
     summary.onclick=()=>{reopenSeriesUI(exi,w,si,partner?.exi);button.focus({preventScroll:true});};
     group.appendChild(summary);
+    const comparisons=document.createElement('div');
+    comparisons.className='series-completed-comparisons';
+    group.querySelectorAll('.rep-compare-btn:not(:disabled)').forEach(source=>{
+      const cell=document.createElement('div');
+      cell.className='rip-cell';
+      const compare=source.cloneNode(true);
+      const name=source.closest('.linked-sub-row')?.querySelector('.linked-tag')?.getAttribute('title');
+      compare.textContent=name?`Confronta · ${name}`:source.classList.contains('max-compare-btn')?'Confronta Max':'Confronta';
+      cell.appendChild(compare);
+      const output=document.createElement('span');
+      output.className='rep-comparison';output.hidden=true;output.setAttribute('aria-live','polite');
+      cell.appendChild(output);comparisons.appendChild(cell);
+    });
+    if(comparisons.childElementCount)group.appendChild(comparisons);
   }
 }
 function refreshAllSeriesFinishUI(){document.querySelectorAll('[data-finish-ex]').forEach(updateSeriesFinishButton);}

@@ -1488,7 +1488,7 @@ body.on-progress.liquid-page-ready>.viridis-liquid-page{opacity:.38;}
 .series-finish{display:block;width:100%;min-height:44px;padding:9px 12px;margin:9px 0 2px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--text);font:inherit;font-size:12px;white-space:normal;}
 .series-finish.is-finished{color:var(--green);border-color:color-mix(in srgb,var(--green) 45%,var(--line));background:color-mix(in srgb,var(--green) 10%,var(--panel2));}
 .set-series-group.series-collapsed,.linked-set-group.series-collapsed{padding:4px 10px;border-color:var(--green);}
-.series-collapsed>:not(.series-completed-summary){display:none!important;}
+.series-collapsed>:not(.series-completed-summary):not(.series-completed-comparisons){display:none!important;}
 .series-completed-summary{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:4px 0;border:0;background:transparent;text-align:left;color:var(--text);font:inherit;font-size:12px;}
 .series-completed-title{color:var(--green);font-weight:700;white-space:nowrap;}
 .series-completed-values{flex:1;min-width:0;overflow-wrap:anywhere;}
@@ -1663,3 +1663,9 @@ body.a11y-large-text :is(.day-ex-chip-name,.set-columns-labels,.progress-hero-to
 body.a11y-large-text :is(.progress-quick-actions b,.progress-timeline-row b,.progress-weekline,.progress-weekline b){font-size:16px;}
 @media(max-width:360px){.progress-quick-actions{gap:6px;}.progress-quick-actions button{padding:8px;}}
 @media(max-width:520px){body.a11y-large-text .progress-quick-actions{grid-template-columns:1fr;}body.a11y-large-text .progress-quick-actions button{min-height:80px;}}
+
+.series-completed-comparisons{display:flex;flex-wrap:wrap;gap:4px 12px;border-top:1px solid var(--line);}
+.series-completed-comparisons .rip-cell{flex:1 1 140px;min-width:0;}
+.series-completed-comparisons .rep-compare-btn{align-self:flex-start;min-height:44px;margin:0;padding:4px 0;font-size:12px;white-space:normal;text-align:left;}
+.series-completed-comparisons .rep-comparison{font-size:12px;line-height:1.4;padding:0 0 8px;}
+body.a11y-large-text .series-completed-comparisons :is(.rep-compare-btn,.rep-comparison){font-size:16px;}

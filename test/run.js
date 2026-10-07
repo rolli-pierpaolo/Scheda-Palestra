@@ -1684,6 +1684,25 @@ test('spunta conserva il bersaglio del click e compatta la serie senza perdere d
   assert.strictEqual(ex.sets[0][0].peso,'40');
 });
 
+test('confronto resta disponibile nella serie completata senza riaprirla',()=>{
+  const {window,ex}=workoutInputFixture();
+  window.__bridge.state.currentWeek=1;
+  ex.sets[0][0]={peso:'35',rip:'8'};
+  ex.sets[1][0]={peso:'40',rip:'10'};
+  window.renderActive();
+  window.completeSeriesUI(0,1,0,null);
+  const group=window.document.querySelector('.series-collapsed');
+  const compare=group.querySelector('.series-completed-comparisons .rep-compare-btn');
+  assert.ok(compare);
+  compare.click();
+  assert.ok(group.querySelector('.series-completed-comparisons .rep-comparison').textContent.includes('35 kg × 8'));
+  assert.ok(group.classList.contains('series-collapsed'));
+  window.refreshAllSeriesFinishUI();
+  assert.strictEqual(group.querySelectorAll('.series-completed-comparisons').length,1);
+  group.querySelector('.series-completed-summary').click();
+  assert.ok(!group.querySelector('.series-completed-comparisons'));
+});
+
 test('spunta serie conferma il campo e chiude la tastiera',async()=>{
   const {window,ex}=workoutInputFixture();
   ex.sets[0][0].peso='40';
