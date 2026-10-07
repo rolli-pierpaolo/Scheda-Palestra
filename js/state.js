@@ -255,7 +255,7 @@ function extendWeeksPerBlock(newTotal){
           newMaxEntries.push(source.map(entry=>({
             afterSet:entry.afterSet,
             peso:entry.peso || '',
-            rip:entry.rip || ''
+            rip:ex.maxEntries[i] ? entry.rip || '' : ''
           })));
         }
         ex.maxEntries = newMaxEntries;

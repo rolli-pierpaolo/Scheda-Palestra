@@ -292,7 +292,7 @@ test('extendWeeksPerBlock allunga (mai riduce) le settimane del blocco in corso,
   assert.strictEqual(ex.sets[2].length, 0, 'le settimane nuove partono con le serie vuote');
   assert.strictEqual(ex.maxEntries[2].length, 1, 'le settimane nuove mantengono anche il layout Max');
   assert.strictEqual(ex.maxEntries[2][0].peso, '50');
-  assert.strictEqual(ex.maxEntries[2][0].rip, '8');
+  assert.strictEqual(ex.maxEntries[2][0].rip, '');
 
   ex.sets[2].push({peso:99, rip:1});
   assert.strictEqual(ex.sets[3].length, 0, 'BUG: le settimane nuove non devono condividere lo stesso array di serie');
@@ -1310,7 +1310,7 @@ test('passaggio rapido fra due campi non perde il valore precedente',()=>{
   assert.strictEqual(ex.sets[0][0].rip,'8');
   assert.strictEqual(ex.sets[0][1].rip,'9');
 });
-test('Max conserva il layout e propaga il valore completo solo alla conferma',()=>{
+test('Max salva le ripetizioni solo nella settimana compilata',()=>{
   const {window,ex}=workoutInputFixture();
   ex.maxEntries=[[{afterSet:2,peso:'',rip:''}],[]];
   window.renderActive();
@@ -1320,9 +1320,9 @@ test('Max conserva il layout e propaga il valore completo solo alla conferma',()
   assert.strictEqual(ex.maxEntries[1].length,1, 'la riga Max esiste subito anche nella settimana successiva');
   assert.strictEqual(ex.maxEntries[1][0].rip,'');
   window.finishQuickKeyboardInput();
-  assert.strictEqual(ex.maxEntries[1][0].rip,'12');
+  assert.strictEqual(ex.maxEntries[1][0].rip,'');
 });
-test('un gruppo Max mantiene struttura e valori in tutte le settimane successive',()=>{
+test('un gruppo Max riporta struttura e kg, mai ripetizioni',()=>{
   const {window,ex}=workoutInputFixture();
   ex.recupero=['90','90','90'];
   ex.sets.push(Array.from({length:3},()=>({peso:'',rip:''})));
@@ -1331,9 +1331,22 @@ test('un gruppo Max mantiene struttura e valori in tutte le settimane successive
   for(const week of [1,2]){
     assert.strictEqual(ex.maxEntries[week].length,2);
     assert.deepStrictEqual(ex.maxEntries[week].map(entry=>entry.afterSet),[1,1]);
-    assert.deepStrictEqual(ex.maxEntries[week].map(entry=>[entry.peso,entry.rip]),[['80','9'],['80','8']]);
+    assert.deepStrictEqual(ex.maxEntries[week].map(entry=>[entry.peso,entry.rip]),[['80',''],['80','']]);
   }
 });
+test('riporto Max conserva risultati esistenti e lascia vuote le nuove settimane',()=>{
+  const {window,ex}=workoutInputFixture();
+  ex.maxEntries=[[{afterSet:1,peso:'80',rip:'9'}],[{afterSet:1,peso:'85',rip:'7'}]];
+  window.carryMaxLayoutForward(ex,0);
+  assert.strictEqual(ex.maxEntries[1][0].rip,'7');
+  assert.strictEqual(ex.maxEntries[1][0].peso,'85');
+  window.extendWeeksPerBlock(3);
+  assert.strictEqual(ex.maxEntries[0][0].rip,'9');
+  assert.strictEqual(ex.maxEntries[1][0].rip,'7');
+  assert.strictEqual(ex.maxEntries[2][0].peso,'85');
+  assert.strictEqual(ex.maxEntries[2][0].rip,'');
+});
+
 test('aggiungere una serie aggiorna solo settimana corrente e successive',()=>{
   const {window,ex}=workoutInputFixture();
   ex.recupero=['90','90','90'];

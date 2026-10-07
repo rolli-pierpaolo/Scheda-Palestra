@@ -569,16 +569,12 @@ function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
       sourceCounts.set(entry.afterSet,seen+1);
       const matching = target.filter(item=>item.afterSet===entry.afterSet)[seen];
       if(!matching){
-        target.push({afterSet:entry.afterSet,peso:entry.peso??'',rip:entry.rip??''});
+        target.push({afterSet:entry.afterSet,peso:entry.peso??'',rip:''});
         changed = true;
         return;
       }
       if(!String(matching.peso??'').trim() && String(entry.peso??'').trim()){
         matching.peso = entry.peso;
-        changed = true;
-      }
-      if(!String(matching.rip??'').trim() && String(entry.rip??'').trim()){
-        matching.rip = entry.rip;
         changed = true;
       }
     });
