@@ -645,8 +645,8 @@ function renderExerciseCardHero(ex, exi, accent){
     ? `<textarea class="exercise-card-name-input" rows="1" aria-label="Nome esercizio" oninput="autoGrowTextarea(this)" onchange="updateName(${exi},this.value)">${escapeHtml(ex.nome||'')}</textarea>`
     : `<h2>${escapeHtml(ex.nome||'Esercizio')}</h2>`;
   return `<div class="exercise-card-hero">
-    <div class="exercise-card-title">${name}</div>
     <div class="card-heading-actions"><button type="button" class="card-week-pill" onclick="toggleExerciseWeek(${exi},${week},'${key}')" aria-label="Apri o chiudi settimana ${week+1}">SETTIMANA ${week+1}<span>▾</span></button>${renderCardEditButton(exi)}</div>
+    <div class="exercise-card-title">${name}</div>
   </div>`;
 }
 function toggleCardEdit(exi,button){
@@ -675,8 +675,8 @@ function renderLinkedExerciseCardHero(exA, exiA, exB, exiB, accent){
     ? `<textarea class="exercise-card-name-input" rows="1" aria-label="Nome primo esercizio" oninput="autoGrowTextarea(this)" onchange="updateName(${exiA},this.value)">${escapeHtml(exA.nome||'')}</textarea><textarea class="exercise-card-name-input linked" rows="1" aria-label="Nome secondo esercizio" oninput="autoGrowTextarea(this)" onchange="updateName(${exiB},this.value)">${escapeHtml(exB.nome||'')}</textarea>`
     : `<h2>${escapeHtml(exA.nome||'Esercizio')}</h2><span class="exercise-link-label">${exerciseLinkLabel(exA)}</span><h2>${escapeHtml(exB.nome||'Esercizio')}</h2>`;
   return `<div class="exercise-card-hero linked-hero">
-    <div class="exercise-card-title">${names}</div>
     <div class="card-heading-actions"><button type="button" class="card-week-pill" onclick="toggleExerciseWeek(${exiA},${week},'${key}')" aria-label="Apri o chiudi settimana ${week+1}">SETTIMANA ${week+1}<span>▾</span></button>${renderCardEditButton(exiA)}</div>
+    <div class="exercise-card-title">${names}</div>
   </div>`;
 }
 function renderExerciseNote(ex, exi){

@@ -1368,7 +1368,7 @@ body.liquid-system,body.liquid-system .quick-number-bar{animation:none!important
 body.liquid-system>main{position:relative;z-index:1;}
 body.liquid-system .quick-number-bar> :not(.viridis-liquid-canvas){position:relative;z-index:1;}
 body.liquid-page-ready>.viridis-liquid-page,.liquid-keyboard-ready>.viridis-liquid-canvas{opacity:1;}
-body.theme-light>.viridis-liquid-page,body.a11y-high-contrast>.viridis-liquid-page,body.a11y-reduce-motion>.viridis-liquid-page{opacity:0;}
+body.a11y-high-contrast>.viridis-liquid-page,body.a11y-reduce-motion>.viridis-liquid-page{opacity:0;}
 
 body:not(.theme-light) .topbar,body.on-workout:not(.theme-light) .topbar{
   background:transparent;border:0;box-shadow:none;
@@ -1528,7 +1528,7 @@ body.a11y-high-contrast .series-completed-edit{color:var(--text);}
 body.quick-keyboard-open .workout-rest-panel{top:calc(var(--topbar-h,110px) + 8px);bottom:auto;}
 body.a11y-large-text .series-finish,body.a11y-large-text .rest-settings-trigger,body.a11y-large-text .rest-status,body.a11y-large-text .home-reminder-item,body.a11y-large-text .workout-save-status{font-size:16px;}
 body.a11y-high-contrast .series-finish,body.a11y-high-contrast .workout-rest-panel,body.a11y-high-contrast .home-reminders{border-color:var(--text);}
-body.a11y-high-contrast>.viridis-liquid-page,body.a11y-reduce-motion>.viridis-liquid-page,body.theme-light>.viridis-liquid-page{opacity:0!important;}
+body.a11y-high-contrast>.viridis-liquid-page,body.a11y-reduce-motion>.viridis-liquid-page{opacity:0!important;}
 .load-reminder-review{display:block;width:100%;padding:12px;margin:0 0 12px;background:var(--panel2);color:var(--green);border:1px solid var(--green);border-radius:12px;text-align:left;line-height:1.5;}
 .load-reminder-review small{display:block;color:var(--muted);font-size:.85em;}
 body.a11y-large-text .load-reminder-chip{font-size:14px;}
@@ -1669,3 +1669,47 @@ body.a11y-large-text :is(.progress-quick-actions b,.progress-timeline-row b,.pro
 .series-completed-comparisons .rep-compare-btn{align-self:flex-start;min-height:44px;margin:0;padding:4px 0;font-size:12px;white-space:normal;text-align:left;}
 .series-completed-comparisons .rep-comparison{font-size:12px;line-height:1.4;padding:0 0 8px;}
 body.a11y-large-text .series-completed-comparisons :is(.rep-compare-btn,.rep-comparison){font-size:16px;}
+
+.exercise-card-hero{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:8px 12px;}
+.exercise-card-hero .card-heading-actions{align-self:flex-end;margin:0;gap:4px;}
+.exercise-card-hero .exercise-card-title{flex-basis:auto;width:100%;}
+.card-heading-actions .card-week-pill{min-height:44px;padding:0 8px;font-size:9px;background:transparent;}
+.card-heading-actions .card-edit-button{width:44px;min-height:44px;border:0;background:transparent;}
+.card-heading-actions .card-edit-button svg{width:16px;height:16px;}
+.weeks{padding-left:12px;padding-right:12px;}
+.day-ex-chip{width:80px;min-height:44px;padding:3px 5px;}
+.set-series-group:has(.series-finish.compact):not(.series-collapsed){position:relative;}
+.set-series-group:has(.series-finish.compact) .set-series-heading{min-height:24px;}
+.set-series-group:not(.series-collapsed) .series-finish.compact{position:absolute;bottom:6px;right:6px;}
+.set-series-group .set-series-prescription{line-height:1.2;}
+.linked-set-group{padding:6px;margin-bottom:8px;border-radius:12px;}
+.linked-set-wrap{gap:4px;}
+.linked-sub-rows{gap:4px;}
+.linked-sub-rows>.exercise-link-label{margin:2px 0;font-size:10px;}
+.linked-sub-row{gap:4px;}
+.linked-sub-row .linked-tag{font-size:11px;line-height:1.25;}
+.linked-field-label{margin-bottom:2px;font-size:9px;}
+.linked-sub-row .linked-prescription{display:inline;margin-left:6px;font-size:10px;}
+.linked-sub-row .kg-wrap,.linked-sub-row .rip-wrap{min-height:44px;}
+.linked-sub-row .set-input{height:44px;min-height:44px;}
+.linked-set-group>.series-finish{margin:4px 0 0;min-height:44px;padding:4px 8px;}
+body.theme-light.liquid-page-ready>.viridis-liquid-page{opacity:.85;}
+body.theme-light .quick-keyboard-head span{color:var(--text);text-shadow:none;}
+body.theme-light .linked-set-group{background:#F3F5F1;border-color:#D5DCD2;}
+body.a11y-large-text .card-week-pill{font-size:13px;}
+body.a11y-large-text :is(.linked-tag,.linked-field-label,.linked-prescription){font-size:14px;}
+@media(max-width:360px){
+  .linked-sub-row .kg-cell,.linked-sub-row .rip-cell{flex:1 1 0;}
+  .linked-sub-row .kg-wrap>.stepper{flex-basis:32px;width:32px;}
+  body.a11y-large-text .linked-sub-row .kg-cell,body.a11y-large-text .linked-sub-row .rip-cell{flex-basis:100%;}
+}
+
+.card-head:has(>.exercise-card-hero){padding:4px 12px 8px;}
+.card-head>.exercise-card-hero{padding:0;}
+body.theme-light :is(.week-plan-schema,.stepper,.set-series-prescription span){color:var(--text);}
+body.theme-light :is(.set-series-prescription small,.linked-prescription){color:var(--muted);}
+body.theme-light .linked-pair-frame{background:#F3F5F1;border-color:#D5DCD2;}
+body.theme-light .linked-pair-frame .link-type-pill{background:#E3EAE3!important;color:var(--text);}
+body.theme-light :is(.kg-wrap,.rip-wrap):focus-within{border-color:var(--accent,var(--green));box-shadow:0 0 0 1px var(--accent,var(--green));}
+
+.set-series-group:has(.series-finish.compact) .kg-cell>.load-reminder-inline{margin-top:2px;margin-bottom:0;}

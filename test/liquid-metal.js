@@ -31,7 +31,7 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
   f.w.document.body.classList.add('a11y-reduce-motion');await flush();
   assert.equal(f.listeners.size,0);assert(!bar.classList.contains('liquid-keyboard-ready'));
   f.w.document.body.classList.remove('a11y-reduce-motion');await flush();assert.equal(f.listeners.size,1);count++;
-  f.w.document.body.classList.add('theme-light');await flush();assert.equal(f.listeners.size,0);
+  f.w.document.body.classList.add('theme-light');await flush();assert.equal(f.listeners.size,1);
   f.w.document.body.classList.remove('theme-light');await flush();assert.equal(f.listeners.size,1);count++;
   const canvas=f.w.document.querySelector('canvas');canvas.dispatchEvent(new f.w.Event('webglcontextlost',{cancelable:true}));
   assert(!f.w.document.body.classList.contains('liquid-page-ready'));

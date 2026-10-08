@@ -2,7 +2,7 @@
   'use strict';
   const vertex = 'attribute vec2 p; varying vec2 uv; void main(){uv=p*.5+.5;gl_Position=vec4(p,0.,1.);}';
   const fragment = `precision mediump float;
-    varying vec2 uv; uniform float time; uniform float aspect; uniform vec3 tint; uniform float strength;
+    varying vec2 uv; uniform float time; uniform float aspect; uniform vec3 tint; uniform float strength; uniform float lightMode;
     float surface(vec2 p){
       p += .28*vec2(sin(p.y*2.1+time*.37),cos(p.x*1.7-time*.31));
       return sin(p.x*2.5+p.y*1.6+time*.48)*.38
@@ -20,7 +20,9 @@
       vec3 graphite=vec3(.035,.047,.052)+vec3(.08,.095,.10)*band;
       vec3 metal=graphite + tint*(.07+.28*glow)+vec3(.62,.68,.70)*silver*.55;
       float vignette=1.-.23*length(uv-.5);
-      gl_FragColor=vec4(metal*strength*vignette,1.);
+      vec3 pearl=vec3(.86,.88,.87) - vec3(.15,.14,.13)*band + vec3(.12)*silver;
+      pearl=mix(pearl,tint,.08+.04*glow);
+      gl_FragColor=vec4(mix(metal*strength*vignette,pearl,lightMode),1.);
     }`;
   let started=false;
   function start(){
@@ -66,7 +68,7 @@
           gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
           gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
           item.uniforms={};
-          for(const name of ['time','aspect','tint','strength']) item.uniforms[name]=gl.getUniformLocation(program,name);
+          for(const name of ['time','aspect','tint','strength','lightMode']) item.uniforms[name]=gl.getUniformLocation(program,name);
         }finally{shaders.forEach(shader=>gl.deleteShader(shader));}
         return true;
       }catch(error){
@@ -76,7 +78,7 @@
         return false;
       }
     }
-    function allowed(){return !body.classList.contains('theme-light') && !body.classList.contains('a11y-reduce-motion') && !body.classList.contains('a11y-high-contrast') && !motion.matches;}
+    function allowed(){return !body.classList.contains('a11y-reduce-motion') && !body.classList.contains('a11y-high-contrast') && !motion.matches;}
     function visible(item){return item.page || (!keyboard.hidden && getComputedStyle(keyboard).display!=='none');}
     function draw(item){
       if(!visible(item)||item.lost||!init(item)) return false;
@@ -89,6 +91,7 @@
       gl.viewport(0,0,width,height);gl.useProgram(item.program);
       gl.uniform1f(u.time,elapsed);gl.uniform1f(u.aspect,width/height);
       gl.uniform3f(u.tint,palette.r,palette.g,palette.b);
+      gl.uniform1f(u.lightMode,body.classList.contains('theme-light')?1:0);
       gl.uniform1f(u.strength,!item.page?1.05:body.classList.contains('on-workout')?.85:.55);
       gl.drawArrays(gl.TRIANGLES,0,3);
       const readyClass=item.page?'liquid-page-ready':'liquid-keyboard-ready';
