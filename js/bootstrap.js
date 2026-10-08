@@ -12,7 +12,7 @@
       window.location.reload();
     };
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw.js?rev=20261007c', {updateViaCache:'none'}).then(function(registration){
+      navigator.serviceWorker.register('sw.js?rev=20261008a', {updateViaCache:'none'}).then(function(registration){
         if(registration.waiting) showAppUpdateBanner();
         registration.addEventListener('updatefound', function(){
           var worker = registration.installing;

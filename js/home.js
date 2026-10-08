@@ -441,7 +441,6 @@ const total = weekly.total;
         <div class="home-progress-bar-wrap" style="--accent:${progressAccent}"><div class="home-progress-bar-fill" id="homeProgressBar" style="width:0%"></div></div>
       </div>
     ${suggestedHtml}
-    ${renderHomeLoadReminders()}
     <div class="home-middle-row">
       <div class="home-days-col">
         <div class="home-days-label">I tuoi giorni</div>
