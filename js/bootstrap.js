@@ -7,12 +7,26 @@
       var banner = document.getElementById('appUpdateBanner');
       if(banner){ banner.hidden = false; updateBannerShown = true; }
     }
+    var applyingUpdate = false;
     window.applyAppUpdate = function(){
+      if(applyingUpdate)return;
+      applyingUpdate = true;
       if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
-      window.location.reload();
+      if(typeof finishQuickKeyboardInput==='function')finishQuickKeyboardInput();
+      if(typeof persistWorkoutView==='function')persistWorkoutView();
+      if(typeof flushSaveState==='function')flushSaveState();
+      navigator.serviceWorker.getRegistration().then(function(registration){
+        if(registration && registration.waiting){
+          navigator.serviceWorker.addEventListener('controllerchange',function(){window.location.reload();},{once:true});
+          registration.waiting.postMessage({type:'APPLY_UPDATE'});
+        }else window.location.reload();
+      }).catch(function(){
+        applyingUpdate = false;
+        if(typeof ViridisToast==='function')ViridisToast('Aggiornamento non disponibile. I dati sono salvati: riprova tra poco.');
+      });
     };
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw.js?rev=20261008b', {updateViaCache:'none'}).then(function(registration){
+      navigator.serviceWorker.register('sw.js?rev=20261009a', {updateViaCache:'none'}).then(function(registration){
         if(registration.waiting) showAppUpdateBanner();
         registration.addEventListener('updatefound', function(){
           var worker = registration.installing;

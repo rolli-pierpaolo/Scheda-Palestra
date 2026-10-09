@@ -182,9 +182,10 @@ function bindViridisSheet(overlay,box,close){
   });
   grip.addEventListener('pointercancel',()=>start=null);
   function keydown(event){
+    if(overlay.inert||!overlay.isConnected)return;
     if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close();}
     if(event.key==='Tab'){
-      const buttons=[...box.querySelectorAll('button:not(:disabled)')];
+      const buttons=[...box.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href],summary,[tabindex="0"]')].filter(el=>!el.closest('[hidden]')&&(!el.closest('details:not([open])')||el.tagName==='SUMMARY'));
       const first=buttons[0],last=buttons[buttons.length-1];
       if(event.shiftKey&&(document.activeElement===first||document.activeElement===box)){event.preventDefault();last?.focus();}
       else if(!event.shiftKey&&(document.activeElement===last||document.activeElement===box)){event.preventDefault();first?.focus();}

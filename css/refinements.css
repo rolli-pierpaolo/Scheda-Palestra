@@ -1,0 +1,67 @@
+:root{--control-size:44px;--card-radius:20px;--row-radius:12px;}
+.exercise-card-hero{gap:6px;}
+.card-heading-actions .card-week-pill{font-size:11px;letter-spacing:.4px;}
+.day-ex-chip-name{font-size:11px;}
+.set-series-group,.linked-set-group{padding:8px;margin-bottom:8px;border-radius:var(--row-radius);}
+.set-series-heading{gap:8px;margin-bottom:6px;}
+.set-columns-labels,.linked-field-label{font-size:11px;line-height:1.3;}
+.linked-sub-row .linked-tag{font-size:12px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;}
+.linked-sub-row .linked-prescription{font-size:11px;}
+.linked-sub-rows>.exercise-link-label{font-size:11px;padding:4px 0;border-bottom:1px solid var(--line);}
+.linked-sub-rows{gap:8px;}
+.linked-sub-row{background:transparent;border:0;box-shadow:none;padding:0;}
+.previous-set-button{display:block;min-height:44px;max-width:100%;width:auto;margin:0;padding:4px 0;font-size:11px;line-height:1.3;text-align:left;white-space:normal;text-decoration:none;}
+.set-series-group .previous-set-button{max-width:calc(100% - 48px);}
+.linked-sub-row .rip-cell:has(>.previous-set-button){padding-bottom:0;}
+.series-completed-comparisons .rip-cell{padding-bottom:0;}
+.series-completed-comparisons{gap:0 8px;}
+.series-completed-summary{min-height:48px;}
+.series-completed-values{font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+.day-management-sheet .ex-context-action{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;margin:0;padding:8px 12px;border:0;border-radius:10px;background:transparent;color:var(--text);text-align:left;}
+.day-management-sheet .day-skip-action{color:var(--muted);}
+.day-management-sheet .day-finish-action{color:var(--green);}
+.history-sheet{width:min(100%,620px);}
+.history-sheet .ex-sheet-content{overflow:auto;overscroll-behavior:contain;}
+.history-sheet h2{font-size:18px;margin:0;}
+.history-sheet h3{font-size:20px;line-height:1.25;overflow-wrap:anywhere;}
+.exercise-history-filters{display:flex;flex-wrap:wrap;gap:8px;}
+.exercise-history-actions{display:flex;align-items:start;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.exercise-history-actions button,.exercise-history-actions summary{min-height:44px;display:flex;align-items:center;padding:8px 0;background:transparent;border:0;color:var(--accent,var(--green));font-size:12px;cursor:pointer;}
+.exercise-history-actions details{max-width:100%;}
+.exercise-history-filters button,.history-comparison button{min-height:44px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:10px;padding:8px 10px;}
+.exercise-history-session summary{overflow-wrap:anywhere;}
+.history-comparison{border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0;}
+.history-comparison table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px;}
+.history-comparison td,.history-comparison th{padding:8px 4px;text-align:left;overflow-wrap:anywhere;border-bottom:1px solid var(--line);}
+.history-comparison p{font-size:12px;color:var(--muted);}
+.workout-rest-panel{display:grid;grid-template-columns:minmax(0,1fr) auto;padding:6px 10px;border-radius:18px;gap:0 8px;max-width:520px;}
+.rest-heading{display:contents;}
+.rest-context{grid-column:1;grid-row:1;font-size:11px;align-self:center;max-height:32px;overflow:hidden;}
+.rest-heading>button{grid-column:2;grid-row:1;min-height:32px;min-width:44px;border:0;}
+.rest-controls{grid-column:1 / -1;grid-row:2;justify-content:center;gap:16px;}
+.rest-controls .rest-time{font-size:24px;font-variant-numeric:tabular-nums;min-width:72px;text-align:center;}
+.rest-status{grid-column:1 / -1;font-size:11px;margin:3px 0;text-align:center;}
+body.has-rest-timer{padding-bottom:calc(230px + env(safe-area-inset-bottom));}
+body.has-rest-timer.quick-keyboard-open{padding-bottom:calc(230px + env(safe-area-inset-bottom) + var(--quick-keyboard-space,0px));}
+body.quick-keyboard-open .workout-rest-panel{top:calc(var(--topbar-h,110px) + 4px);}
+body.quick-keyboard-open .rest-status{display:none;}
+body.quick-keyboard-open .workout-rest-panel{grid-template-columns:minmax(0,1fr) auto auto;align-items:center;}
+body.quick-keyboard-open .rest-context{grid-column:1;}
+body.quick-keyboard-open .rest-controls{grid-column:2;grid-row:1;gap:4px;}
+body.quick-keyboard-open .rest-heading>button{grid-column:3;}
+body.quick-keyboard-open .rest-time{font-size:20px;min-width:54px;}
+body.a11y-large-text :is(.previous-set-button,.linked-field-label,.linked-prescription,.linked-tag,.rest-context,.rest-status){font-size:14px;}
+body.a11y-large-text .workout-rest-panel{display:flex;flex-wrap:wrap;}
+body.a11y-large-text .rest-heading{display:flex;flex:1 1 100%;}
+body.a11y-high-contrast :is(.set-series-group,.linked-set-group,.history-comparison){border-color:var(--text);}
+body.a11y-reduce-motion .ex-carousel-track{transition:none;}
+@media(prefers-reduced-motion:reduce){.ex-carousel-track{transition:none;}}
+@media(min-width:1000px) and (pointer:fine){
+  #viewActive{display:grid;grid-template-columns:200px minmax(0,680px);gap:16px;max-width:920px;margin:0 auto;align-items:start;}
+  #viewActive>.workout-progress{grid-column:1 / -1;}
+  #viewActive>.day-ex-strip{grid-column:1;grid-row:2;display:flex;flex-direction:column;position:sticky;top:calc(var(--topbar-h,100px) + 12px);overflow:auto;max-height:calc(100dvh - var(--topbar-h,100px) - 110px);}
+  #viewActive .day-ex-chip{width:100%;flex-direction:row;justify-content:flex-start;gap:10px;text-align:left;padding:8px;}
+  #viewActive .day-ex-chip-name{white-space:normal;font-size:13px;}
+  #viewActive>.ex-carousel-viewport{grid-column:2;grid-row:2 / span 4;}
+  #viewActive>.switch-training-pill,#viewActive>.empty-day,#viewActive>.workout-list-actions{grid-column:1 / -1;}
+}

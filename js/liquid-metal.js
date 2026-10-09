@@ -40,7 +40,7 @@
       canvas.className='viridis-liquid-canvas'+(page?' viridis-liquid-page':'');
       canvas.setAttribute('aria-hidden','true');
       host.prepend(canvas);
-      const item={host,canvas,page,gl:null,program:null,buffer:null,uniforms:null,lost:false,failed:false};
+      const item={host,canvas,page,gl:null,program:null,buffer:null,uniforms:null,lost:false,failed:false,sizeDirty:true};
       canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();item.lost=true;host.classList.remove(page?'liquid-page-ready':'liquid-keyboard-ready');sync();});
       canvas.addEventListener('webglcontextrestored',()=>{item.lost=false;item.gl=null;item.program=null;item.buffer=null;item.failed=false;sync();});
       return item;
@@ -82,11 +82,15 @@
     function visible(item){return item.page || (!keyboard.hidden && getComputedStyle(keyboard).display!=='none');}
     function draw(item){
       if(!visible(item)||item.lost||!init(item)) return false;
-      const box=item.canvas.getBoundingClientRect();
-      if(!box.width||!box.height) return false;
-      const scale=Math.min(1,900/Math.max(box.width,box.height));
-      const width=Math.max(1,Math.round(box.width*scale)),height=Math.max(1,Math.round(box.height*scale));
-      if(item.canvas.width!==width||item.canvas.height!==height){item.canvas.width=width;item.canvas.height=height;}
+      if(item.sizeDirty){
+        const box=item.canvas.getBoundingClientRect();
+        if(!box.width||!box.height)return false;
+        const scale=Math.min(1,800/Math.max(box.width,box.height));
+        item.canvas.width=Math.max(1,Math.round(box.width*scale));
+        item.canvas.height=Math.max(1,Math.round(box.height*scale));
+        item.sizeDirty=false;
+      }
+      const width=item.canvas.width,height=item.canvas.height;
       const gl=item.gl,u=item.uniforms;
       gl.viewport(0,0,width,height);gl.useProgram(item.program);
       gl.uniform1f(u.time,elapsed);gl.uniform1f(u.aspect,width/height);
@@ -99,11 +103,12 @@
       return true;
     }
     function tick(time){
-      if(time-last<1/30) return;
+      if(time-last<1/65) return;
       elapsed+=Math.min(.06,Math.max(0,time-last));last=time;
       surfaces.forEach(draw);
     }
     function sync(){
+      surfaces.forEach(item=>{if(!item.page)item.sizeDirty=true;});
       const enabled=allowed()&&!document.hidden&&!suspended;
       if(enabled){surfaces.forEach(draw);}
       else surfaces.forEach(item=>{const c=item.page?'liquid-page-ready':'liquid-keyboard-ready';if(item.host.classList.contains(c)) item.host.classList.remove(c);});
@@ -125,11 +130,16 @@
     if(keyboard)new MutationObserver(sync).observe(keyboard,{attributes:true,attributeFilter:['hidden']});
     const active=document.getElementById('viewActive');
     if(active)new MutationObserver(sync).observe(active,{attributes:true,attributeFilter:['style']});
-    window.addEventListener('resize',sync);
+    function resizeSurfaces(){surfaces.forEach(item=>item.sizeDirty=true);sync();}
+    if(typeof ResizeObserver!=='undefined'){
+      const sizes=new ResizeObserver(resizeSurfaces);surfaces.forEach(item=>sizes.observe(item.canvas));
+    }
+    window.addEventListener('resize',resizeSurfaces);
     document.addEventListener('visibilitychange',sync);
     window.addEventListener('pagehide',()=>{suspended=true;sync();});
     window.addEventListener('pageshow',()=>{suspended=false;sync();});
-    motion.addEventListener('change',sync);
+    if(motion.addEventListener)motion.addEventListener('change',sync);
+    else if(motion.addListener)motion.addListener(sync);
     sync();
   }
   window.addEventListener('load',start,{once:true});

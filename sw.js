@@ -1,6 +1,6 @@
 // Prova la rete e usa la cache se il dispositivo e offline.
 
-const CACHE_NAME = 'logbook-cache-v130';
+const CACHE_NAME = 'logbook-cache-v131';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -12,11 +12,13 @@ const CORE_ASSETS = [
   './fonts/ibm-plex-sans.woff2',
   './fonts/orbitron.woff2',
   './css/style.css',
+  './css/refinements.css',
   './js/bootstrap.js',
   './js/error-boundary.js',
   './js/dialogs.js',
   './js/data.js',
   './js/state.js',
+  './js/preferences.js',
   './js/combobox.js',
   './js/records.js',
   './js/chart.js',
@@ -28,6 +30,7 @@ const CORE_ASSETS = [
   './js/exercise-card.js',
   './js/load-reminders.js',
   './js/workout-tools.js',
+  './js/session-ui.js',
   './js/history.js',
   './js/exercise-history.js',
   './js/search.js',
@@ -54,8 +57,10 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS))
   );
-  self.skipWaiting();
+
 });
+
+self.addEventListener('message',event=>{if(event.data?.type==='APPLY_UPDATE')self.skipWaiting();});
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(

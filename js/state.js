@@ -253,6 +253,7 @@ function extendWeeksPerBlock(newTotal){
         for(let i=0;i<newTotal;i++){
           const source = ex.maxEntries[i] || lastEntries;
           newMaxEntries.push(source.map(entry=>({
+            ...(ex.maxEntries[i]&&entry.uiId?{uiId:entry.uiId}:{}),
             afterSet:entry.afterSet,
             peso:entry.peso || '',
             rip:ex.maxEntries[i] ? entry.rip || '' : ''

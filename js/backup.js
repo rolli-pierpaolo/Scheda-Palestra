@@ -30,6 +30,15 @@ async function shareBackup(){
 }
 function applyBackup(backup){
   state = backup.state;
+  finishedSeriesUI.clear();
+  (backup.finishedSeries||[]).forEach(([key,value])=>finishedSeriesUI.set(key,value));
+  saveFinishedSeriesUI();
+  storicoDates=backup.storicoDates||{};saveStoricoDates();
+  workoutInProgress=!!backup.workoutSession?.inProgress;
+  workoutStartedAt=Number(backup.workoutSession?.startedAt)||0;
+  saveWorkoutInProgress();saveWorkoutStartedAt();
+  localStorage.removeItem(WORKOUT_VIEW_KEY);
+  if(typeof backup.workoutSession?.position==='string')localStorage.setItem(WORKOUT_VIEW_KEY,backup.workoutSession.position);
   storicoExtra = backup.storicoExtra || {};
   collapsedMap = backup.collapsedMap || {};
   deletedStorico = backup.deletedStorico || [];
@@ -46,6 +55,10 @@ function applyBackup(backup){
   saveExerciseGroups();
   saveDeletedEsercizi();
   activeDayIdx = 0;
+  activeExerciseIdx = 0;
+  prepareWorkoutIdentity();
+  pendingWorkoutAnchor = null;
+  restoreWorkoutView();
   histActive = null;
   updateTitles();
   renderDayTabs();
@@ -82,6 +95,12 @@ function validateBackup(backup){
       return { valid:false, reason:'il campo "'+f+'" del backup non ha il formato atteso.' };
     }
   }
+  if(backup.finishedSeries!==undefined && (!Array.isArray(backup.finishedSeries)||backup.finishedSeries.some(item=>!Array.isArray(item)||item.length!==2||item.some(v=>typeof v!=='string'))))return {valid:false,reason:'spunte serie non valide.'};
+  if(backup.workoutSession!==undefined && (!backup.workoutSession||typeof backup.workoutSession!=='object'||Array.isArray(backup.workoutSession)))return {valid:false,reason:'sessione non valida.'};
+  const aliases=backup.state.exerciseAliases;
+  if(aliases!==undefined&&(!Array.isArray(aliases)||aliases.some(group=>!Array.isArray(group)||group.some(name=>typeof name!=='string'))))return {valid:false,reason:'nomi storici non validi.'};
+  const sessions=backup.state.sessionHistory;
+  if(sessions!==undefined&&(!Array.isArray(sessions)||sessions.some(session=>!session||typeof session.id!=='string'||typeof session.date!=='string'||!Number.isFinite(Date.parse(session.date))||!Number.isInteger(session.week)||session.week<0||!Array.isArray(session.exercises)||session.exercises.some(ex=>!ex||typeof ex.nome!=='string'||!Array.isArray(ex.sets)||!Array.isArray(ex.maxEntries)||[...ex.sets,...ex.maxEntries].some(row=>!row||typeof row!=='object'||Array.isArray(row))))))return {valid:false,reason:'storico delle sessioni non valido.'};
   return { valid:true };
 }
 async function importBackup(){

@@ -99,7 +99,7 @@ function showView(v){
     if(settingsBtn) settingsBtn.style.display = v==='active' ? 'none' : '';
     const searchBtn = document.getElementById('searchBtn');
     if(searchBtn) searchBtn.style.display = v==='active' ? 'none' : '';
-    if(typeof gsap !== "undefined"){
+    if(typeof gsap !== "undefined" && !prefersReducedMotion()){
       const shownEl = v==='active' ? document.getElementById('viewActive')
         : v==='hist' ? document.getElementById('viewHist')
         : document.getElementById('viewHome');
@@ -122,14 +122,14 @@ function showView(v){
     }
     // Ripristina la posizione della vista dopo il rendering.
 
-    window.scrollTo({top:viewScrollPositions[v],behavior:'instant'});
+    window.scrollTo({top:workoutViewScrollTop(v),behavior:'instant'});
   };
 
   const outgoingEl = ['viewActive','viewHist','viewHome']
     .map(id => document.getElementById(id))
     .find(el => el && el.style.display !== 'none');
 
-  if(typeof gsap !== "undefined" && outgoingEl){
+  if(typeof gsap !== "undefined" && outgoingEl && !prefersReducedMotion()){
     gsap.killTweensOf(outgoingEl);
     gsap.to(outgoingEl, {opacity:0, duration:.12, ease:"power1.in"});
     setTimeout(applyViewSwitch, 120);
@@ -348,6 +348,7 @@ async function confirmSwitchTrainingDay(newIdx, oldIdx){
 
 
 function logWorkoutDay(dayIdx){
+  captureWorkoutSession(dayIdx);
 
   const day = state.days[dayIdx];
 

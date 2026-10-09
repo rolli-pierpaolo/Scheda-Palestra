@@ -434,11 +434,11 @@ const total = weekly.total;
         <div class="home-progress-day">
           <div class="home-progress-label">GIORNO</div>
           <div class="home-progress-num" style="--accent:${progressAccent}">
-            <span id="homeProgressCount">0</span>
+            <span id="homeProgressCount">${done}</span>
             <span class="home-progress-of">/${total}</span>
           </div>
         </div>
-        <div class="home-progress-bar-wrap" style="--accent:${progressAccent}"><div class="home-progress-bar-fill" id="homeProgressBar" style="width:0%"></div></div>
+        <div class="home-progress-bar-wrap" style="--accent:${progressAccent}"><div class="home-progress-bar-fill" id="homeProgressBar" style="width:${total>0?done/total*100:0}%"></div></div>
       </div>
     ${suggestedHtml}
     <div class="home-middle-row">
@@ -454,7 +454,7 @@ const total = weekly.total;
     </div>
     ${renderWorkoutSaveStatus()}
   `;
-  if(typeof gsap !== "undefined"){
+  if(typeof gsap !== "undefined" && !prefersReducedMotion()){
   const progressCount = document.getElementById('homeProgressCount');
   const progressBar = document.getElementById('homeProgressBar');
   const motivation = document.querySelector('.home-motivation');

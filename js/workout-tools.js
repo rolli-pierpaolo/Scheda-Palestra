@@ -2,6 +2,11 @@ const REST_PREF_KEY = 'viridis_rest_preferences_v1';
 let restPreferences = {enabled:false,sound:true};
 try{Object.assign(restPreferences,JSON.parse(localStorage.getItem(REST_PREF_KEY)||'{}'));}catch(e){}
 let workoutRest = null, workoutRestInterval = null, restAudio = null;
+const REST_ACTIVE_KEY='viridis_rest_active_v1';
+function saveWorkoutRest(){try{if(workoutRest)localStorage.setItem(REST_ACTIVE_KEY,JSON.stringify(workoutRest));else localStorage.removeItem(REST_ACTIVE_KEY);}catch(e){}}
+window.addEventListener('load',()=>{
+  try{const saved=JSON.parse(localStorage.getItem(REST_ACTIVE_KEY)||'null');if(saved&&Number.isFinite(saved.end)&&Date.now()-saved.end<3600000){workoutRest=saved;workoutRestInterval=setInterval(tickWorkoutRest,250);tickWorkoutRest();}}catch(e){}
+});
 const FINISHED_SERIES_KEY = 'viridis_finished_series_v1';
 const finishedSeriesUI = new Map();
 try{
@@ -82,13 +87,15 @@ async function startWorkoutRest(exi,w){
     if(value===null)return;seconds=Number(value);
   }
   workoutRest={end:Date.now()+seconds*1000,name:ex.nome,announced:false};
+  saveWorkoutRest();
   clearInterval(workoutRestInterval);
   workoutRestInterval=setInterval(tickWorkoutRest,250);tickWorkoutRest();
 }
-function stopWorkoutRest(){workoutRest=null;clearInterval(workoutRestInterval);document.getElementById('workoutRestPanel')?.remove();}
-function adjustWorkoutRest(delta){if(!workoutRest)return;workoutRest.end=Math.max(Date.now(),Math.max(Date.now(),workoutRest.end)+delta*1000);workoutRest.announced=false;clearInterval(workoutRestInterval);workoutRestInterval=setInterval(tickWorkoutRest,250);tickWorkoutRest();}
+function stopWorkoutRest(){workoutRest=null;saveWorkoutRest();document.body.classList.remove('has-rest-timer');clearInterval(workoutRestInterval);document.getElementById('workoutRestPanel')?.remove();}
+function adjustWorkoutRest(delta){if(!workoutRest)return;workoutRest.end=Math.max(Date.now(),Math.max(Date.now(),workoutRest.end)+delta*1000);workoutRest.announced=false;saveWorkoutRest();clearInterval(workoutRestInterval);workoutRestInterval=setInterval(tickWorkoutRest,250);tickWorkoutRest();}
 function tickWorkoutRest(){
   if(!workoutRest)return;
+  document.body.classList.add('has-rest-timer');
   let panel=document.getElementById('workoutRestPanel');
   if(!panel){
     panel=document.createElement('section');panel.id='workoutRestPanel';panel.className='workout-rest-panel';panel.setAttribute('aria-label','Timer recupero');
@@ -100,9 +107,10 @@ function tickWorkoutRest(){
   panel.querySelector('.rest-time').textContent=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
   panel.classList.toggle('finished',seconds===0);
   if(seconds===0&&!workoutRest.announced&&document.visibilityState!=='hidden'){
-    workoutRest.announced=true;playRestSignal();clearInterval(workoutRestInterval);
+    workoutRest.announced=true;saveWorkoutRest();playRestSignal();clearInterval(workoutRestInterval);
     panel.querySelector('.rest-status').textContent='Recupero terminato · riprendi quando sei pronto';
-  }else if(seconds>0&&panel.querySelector('.rest-status').textContent!=='Recupero in corso')panel.querySelector('.rest-status').textContent='Recupero in corso';
+  }else if(seconds===0){clearInterval(workoutRestInterval);panel.querySelector('.rest-status').textContent='Recupero terminato · riprendi quando sei pronto';}
+  else if(seconds>0&&panel.querySelector('.rest-status').textContent!=='Recupero in corso')panel.querySelector('.rest-status').textContent='Recupero in corso';
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tickWorkoutRest();});
 
@@ -112,10 +120,7 @@ function seriesUIEntries(exi,w,si,partnerExi){
     const ex=state.days[activeDayIdx]?.esercizi[index];
     if(!ex)return [];
     const entries=[ex.sets?.[w]?.[si]||{peso:'',rip:''},...maxEntriesAfter(ex,w,si).map(item=>item.entry)];
-    entries.forEach((entry,part)=>seriesEntryKeys.set(entry,JSON.stringify([
-      state.title,state.programStartDate,activeDayIdx,state.days[activeDayIdx].name,
-      ex.loadReminderId||index,ex.nome,w,si,part
-    ])));
+    entries.forEach(entry=>seriesEntryKeys.set(entry,JSON.stringify(['v2',workoutIdentity(ex),w,workoutIdentity(entry)])));
     return entries;
   });
 }
@@ -135,6 +140,7 @@ function renderSeriesFinish(exi,w,si,partnerExi){
   return `<button type="button" class="series-finish${compact?' compact':''}${done?' is-finished':''}" aria-label="${label} ${si+1}" title="${label}" aria-pressed="${done}" data-finish-ex="${exi}" data-finish-week="${w}" data-finish-set="${si}" onclick="completeSeriesUI(${exi},${w},${si},${Number.isInteger(partnerExi)?partnerExi:'null'},this)">${compact?'✓':(done?'✓ ':'')+label}</button>`;
 }
 function completeSeriesUI(exi,w,si,partnerExi,button){
+  prepareWorkoutIdentity();
   const ex=state.days[activeDayIdx]?.esercizi[exi];
   if(!ex||w!==state.currentWeek||(typeof isViewingShared==='function'&&isViewingShared()))return;
   if(!document.getElementById('quickNumberBar')?.hidden||isQuickNumberTarget(document.activeElement)){
@@ -147,7 +153,9 @@ function completeSeriesUI(exi,w,si,partnerExi,button){
   const newlyFinished=!seriesUIFinished(entries);
   if(newlyFinished){
     entries.forEach(s=>finishedSeriesUI.set(seriesEntryKeys.get(s),`${s.peso}|${s.rip}`));
-    saveFinishedSeriesUI();vibrate(15);
+    saveFinishedSeriesUI();
+    [exi,partnerExi].filter(Number.isInteger).forEach(index=>recordExerciseDate(state.days[activeDayIdx].esercizi[index],w));
+    saveState();vibrate(15);
     if(restPreferences.enabled)startWorkoutRest(exi,w);
   }
   refreshSeriesFinishUI(exi,w);
@@ -160,6 +168,7 @@ function completeSeriesUI(exi,w,si,partnerExi,button){
 function reopenSeriesUI(exi,w,si,partnerExi){
   seriesUIEntries(exi,w,si,partnerExi).forEach(s=>finishedSeriesUI.delete(seriesEntryKeys.get(s)));
   saveFinishedSeriesUI();
+  saveState();
   refreshSeriesFinishUI(exi,w);
 }
 function updateSeriesFinishButton(button){
@@ -175,6 +184,8 @@ function updateSeriesFinishButton(button){
   const group=button.closest('.set-series-group,.linked-set-group');
   if(!group)return;
   const done=button.getAttribute('aria-pressed')==='true';
+  if(group.classList.contains('series-collapsed')===done && (!done||group.querySelector('.series-completed-summary')))return;
+  const beforeTop=group.getBoundingClientRect().top;
   group.classList.toggle('series-collapsed',done);
   group.querySelector(':scope > .series-completed-summary')?.remove();
   group.querySelector(':scope > .series-completed-comparisons')?.remove();
@@ -193,13 +204,15 @@ function updateSeriesFinishButton(button){
       cell.className='rip-cell';
       const compare=source.cloneNode(true);
       const name=source.closest('.linked-sub-row')?.querySelector('.linked-tag')?.getAttribute('title');
-      compare.textContent=name?`Confronta · ${name}`:source.classList.contains('max-compare-btn')?'Confronta Max':'Confronta';
+      compare.textContent=name?`${name} · ${source.textContent}`:source.classList.contains('max-compare-btn')?'Confronta Max':source.textContent;
       cell.appendChild(compare);
       const output=document.createElement('span');
       output.className='rep-comparison';output.hidden=true;output.setAttribute('aria-live','polite');
       cell.appendChild(output);comparisons.appendChild(cell);
     });
     if(comparisons.childElementCount)group.appendChild(comparisons);
+    const shift=group.getBoundingClientRect().top-beforeTop;
+    if(Math.abs(shift)>1)window.scrollBy({top:shift,behavior:'instant'});
   }
 }
 function refreshAllSeriesFinishUI(){document.querySelectorAll('[data-finish-ex]').forEach(updateSeriesFinishButton);}

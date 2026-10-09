@@ -205,7 +205,8 @@ function revealQuickKeyboardInput(){
     document.body.classList.add('quick-keyboard-open');
   }
   const inputBox = input.getBoundingClientRect();
-  const safeTop = Math.max(112,(window.visualViewport?.offsetTop||0) + 72);
+  const rest=document.getElementById('workoutRestPanel');
+  const safeTop = Math.max(112,(window.visualViewport?.offsetTop||0) + 72,rest?rest.getBoundingClientRect().bottom+8:0);
   // offsetTop esclude la trasformazione usata nell'animazione di ingresso.
   const keyboardTop = bar.offsetHeight ? bar.offsetTop : barBox.top;
   const targetTop = Math.max(safeTop,keyboardTop - Math.max(inputBox.height,54) - 42);

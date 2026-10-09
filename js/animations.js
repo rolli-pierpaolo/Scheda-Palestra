@@ -1,6 +1,6 @@
 function animateSuggestedWorkout(){
 
-  if(typeof gsap === "undefined") return;
+  if(typeof gsap === "undefined" || prefersReducedMotion()) return;
 
   const btn=document.querySelector(".home-suggested-btn");
 

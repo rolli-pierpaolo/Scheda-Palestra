@@ -58,7 +58,7 @@ function renderWorkoutProgress(progress, activeExi, accent){
   </section>`;
 }
 function pulseCurrentExerciseChip(){
-  if(typeof gsap === "undefined") return;
+  if(typeof gsap === "undefined" || prefersReducedMotion()) return;
   const chip = document.querySelector(".day-ex-chip.current");
   if(!chip) return;
   gsap.killTweensOf(chip);
@@ -111,6 +111,7 @@ function goToExerciseSlide(exi){
   const item = progress.items.find(it => it.exi===exi);
   const slideIdx = item ? progress.items.indexOf(item) : 0;
   const track = document.getElementById('exCarouselTrack');
+  document.querySelectorAll('.ex-carousel-slide').forEach((slide,index)=>slide.classList.toggle('current',index===slideIdx));
   if(!track){ renderActive(); return; }
   track.style.transform = 'translateX(-'+(slideIdx*100)+'%)';
   updateWorkoutTopbarTitle();
@@ -120,7 +121,7 @@ function goToExerciseSlide(exi){
   if(stripWrap) stripWrap.outerHTML = renderDayExerciseStrip(progress, dayAccent(day, activeDayIdx).c, exi);
   requestAnimationFrame(()=>{
     const currentChip = document.querySelector('#dayExStrip .day-ex-chip.current');
-    if(currentChip && typeof currentChip.scrollIntoView === 'function') currentChip.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+    if(currentChip && typeof currentChip.scrollIntoView === 'function') currentChip.scrollIntoView({block:'nearest',inline:'center',behavior:prefersReducedMotion()?'instant':'smooth'});
   });
   pulseCurrentExerciseChip();
 }
@@ -157,6 +158,7 @@ function toggleWorkoutTopbarEdit(){
   toggleExerciseEditMode(activeExerciseIdx);
 }
 function renderActive(){
+  prepareWorkoutIdentity();
   if(typeof resetQuickKeyboardUI==='function') resetQuickKeyboardUI();
   const day = state.days[activeDayIdx];
   let maxLayoutWasRepaired = false;
@@ -230,7 +232,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
   updateWorkoutTopbarTitle();
 
   const currentCard = document.querySelector("#viewActive .ex-carousel-slide.current .card");
-  if(typeof gsap !== "undefined" && activeFirstAnimation && currentCard){
+  if(typeof gsap !== "undefined" && !prefersReducedMotion() && activeFirstAnimation && currentCard){
   activeFirstAnimation = false;
 
   gsap.from(currentCard, {
@@ -469,6 +471,8 @@ async function archiveAndReset(){
     }))
   }));
 state = { 
+  sessionHistory:state.sessionHistory||[],
+  exerciseAliases:state.exerciseAliases||[],
   ...(Array.isArray(state.loadReminders) ? {loadReminders:state.loadReminders.map(r=>({...r,review:true}))} : {}),
   title: newTitle.trim(), 
   days: newDays, 
@@ -599,9 +603,9 @@ function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
   const kgFields = entries.map(({entry,index},attempt)=>
     `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Peso Max ${attempt+1}" placeholder="Kg" value="${escapeAttr(entry.peso??'')}" oninput="updateMaxEntry(${exi},${w},${index},'peso',this.value,true)" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)">`).join('');
   const ripFields = entries.map(({entry,index},attempt)=>{
-    const previous = w>0 ? getMaxEntries(ex,w-1)[index] : null;
+    const previous = previousMaxEntry(ex,w,index);
     const canCompare = showComparison && String(previous?.rip??'').trim();
-    return `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Ripetizioni Max ${attempt+1}" placeholder="Rip" value="${escapeAttr(entry.rip??'')}" oninput="updateMaxEntry(${exi},${w},${index},'rip',this.value,true)" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)">${canCompare ? `<button type="button" class="rep-compare-btn max-compare-btn" aria-label="Confronta ripetizioni Max" title="Confronta con la settimana scorsa" ${isReadOnlyWeek || !String(entry.rip??'').trim() ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">↺</button>` : ''}</div>`;
+    return `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Ripetizioni Max ${attempt+1}" placeholder="Rip" value="${escapeAttr(entry.rip??'')}" oninput="updateMaxEntry(${exi},${w},${index},'rip',this.value,true)" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)">${canCompare ? `<button type="button" class="rep-compare-btn max-compare-btn" aria-label="Confronta ripetizioni Max" title="Confronta con la settimana scorsa" ${isReadOnlyWeek ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">↺</button>` : ''}</div>`;
   }).join('');
   return `<div class="max-entry-box"><div class="set-row max-entry-row" style="--max-count:${entries.length}"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
 }
@@ -792,8 +796,8 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
         oninput="updateSet(${exi},${w},${si},'rip',this.value,undefined,true)" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this);markSetVisualState(this)">
 
         <button type="button" class="rpe-chip ${s.rpe?'filled':''}" ${isReadOnlyWeek?'disabled':''} onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
-        ${isCurrentWeek && getPreviousWeekRep(ex,w,si) ? `<button type="button" class="rep-compare-btn" ${isReadOnlyWeek || !String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
         </div>
+        ${renderPreviousSetButton(ex,exi,w,si)}
         <span class="rep-comparison" aria-live="polite" hidden></span>
         </div>
 
@@ -1194,8 +1198,10 @@ function openDayManagementMenu(){
   el.className = 'modal-overlay ex-context-overlay day-management-overlay';
   el.onclick = (e) => { if(e.target===el) closeDayManagementMenu(); };
   el.innerHTML = `
-    <div class="ex-context-sheet day-management-sheet">
-      <div class="ex-context-title">${escapeHtml(day.name||'Giornata')}</div>
+    <div class="ex-context-sheet day-management-sheet" role="dialog" aria-modal="true" aria-labelledby="dayManagementTitle" tabindex="-1">
+      <div class="ex-sheet-grip" aria-hidden="true"><span></span></div>
+      <div class="ex-sheet-header"><div class="ex-context-title" id="dayManagementTitle">${escapeHtml(day.name||'Giornata')}</div><button class="ex-sheet-close" type="button" onclick="closeDayManagementMenu()" aria-label="Chiudi opzioni giornata">${ICON_CLOSE}</button></div>
+      <div class="ex-sheet-content">
       <div class="ex-context-group-label">Organizza</div>
       ${day.esercizi.length>1?`<button class="ex-context-action" onclick="closeDayManagementMenu();toggleReorderMode()">${ICON_REORDER} Modifica ordine</button>`:''}
       <div class="ex-context-group-label">Vista</div>
@@ -1204,15 +1210,16 @@ function openDayManagementMenu(){
       ${isClosed
         ? `<button class="ex-context-action day-finish-action" onclick="closeDayManagementMenu();openFinishWorkoutModal(${activeDayIdx})">${ICON_CHECK} Termina giornata</button>`
         : `<button class="ex-context-action day-skip-action" onclick="closeDayManagementMenu();skipRemainingExercisesForDay()">${ICON_WARNING} Salta gli esercizi rimanenti</button>`}
+      </div>
     </div>
-    <button class="ex-context-cancel" onclick="closeDayManagementMenu()">Annulla</button>
   `;
   document.body.appendChild(el);
+  el.sheetCleanup=bindViridisSheet(el,el.querySelector('.ex-context-sheet'),closeDayManagementMenu);
   vibrate(20);
 }
 function closeDayManagementMenu(){
   const el = document.getElementById('dayManagementMenu');
-  if(el) el.remove();
+  if(el){el.sheetCleanup?.();el.remove();}
 }
 async function skipRemainingExercisesForDay(){
   if(typeof isViewingShared === 'function' && isViewingShared()) return;
@@ -1325,6 +1332,7 @@ function updateSet(exi, w, si, field, val, recordPeso, isDraft=false){
   if(!ex.sets[w]) ex.sets[w]=[];
   while(ex.sets[w].length<=si) ex.sets[w].push({peso:'',rip:''});
   ex.sets[w][si][field]=val;
+  if(field==='rip'&&String(val??'').trim())recordExerciseDate(ex,w);
   refreshSeriesFinishUI(exi,w);
   const finishPartner=findLinkedPartner(exi);
   if(finishPartner)refreshSeriesFinishUI(finishPartner.exi,w);
@@ -1342,6 +1350,12 @@ function updateSet(exi, w, si, field, val, recordPeso, isDraft=false){
 
 }
 
+function renderPreviousSetButton(ex,exi,w,si){
+  const previous=ex.sets?.[w-1]?.[si];
+  if(w!==state.currentWeek||!String(previous?.rip??'').trim())return '';
+  const text=`Prima: ${previous.peso||'—'} kg × ${previous.rip}`;
+  return `<button type="button" class="rep-compare-btn previous-set-button" aria-label="Confronta, settimana ${w}: ${escapeAttr(text)}" onclick="showRepComparison(${exi},${w},${si},this)">${escapeHtml(text)}</button>`;
+}
 function getPreviousWeekRep(ex, w, si){
   if(!ex || w < 1 || !ex.sets || !ex.sets[w-1] || !ex.sets[w-1][si]) return null;
   const value = String(ex.sets[w-1][si].rip ?? '').trim();
@@ -1352,13 +1366,13 @@ function updateRepCompareAvailability(input){
   if(!cell) return;
   const btn = cell.querySelector('.rep-compare-btn');
   const output = cell.querySelector('.rep-comparison');
-  if(btn) btn.disabled = !String(input.value||'').trim();
+  if(btn) btn.disabled = false;
   if(output){ output.hidden = true; output.textContent = ''; }
 }
 function updateMaxRepCompareAvailability(input){
   const wrap = input.closest('.max-rip-compare');
   const btn = wrap && wrap.querySelector('.max-compare-btn');
-  if(btn) btn.disabled = !String(input.value||'').trim();
+  if(btn) btn.disabled = false;
 }
 function markSetVisualState(input){
   const row = input.closest('.set-row');
@@ -1375,33 +1389,41 @@ function showRepComparison(exi, w, si, btn){
   const output = cell && cell.querySelector('.rep-comparison');
   if(!ex || !output) return;
   const current = String((((ex.sets||[])[w]||[])[si]||{}).rip ?? '').trim();
-  if(!current) return;
   const previous = getPreviousWeekRep(ex, w, si);
   if(previous === null){
     output.textContent = 'Nessun dato per questa serie la settimana scorsa.';
   } else {
     const nowNum = Number(String(current).replace(',','.'));
     const prevNum = Number(String(previous).replace(',','.'));
-    const delta = Number.isFinite(nowNum) && Number.isFinite(prevNum) ? nowNum - prevNum : null;
+    const sameWeight=historyWeightKey(ex.sets[w][si].peso)===historyWeightKey(ex.sets[w-1][si].peso);
+    const delta = current && sameWeight && Number.isFinite(nowNum) && Number.isFinite(prevNum) ? nowNum - prevNum : null;
     const deltaText = delta === null || delta === 0 ? '' : ` · ${delta>0?'+':''}${String(delta).replace('.',',')}`;
     const weight = String(ex.sets[w-1][si].peso ?? '').trim();
     output.textContent = `Settimana scorsa: ${weight ? `${weight} kg × ` : ''}${previous} rip${deltaText}`;
   }
   output.hidden = false;
 }
+function previousMaxEntry(ex,w,index){
+  if(w<1)return null;
+  const entries=getMaxEntries(ex,w),current=entries[index];
+  if(!current)return null;
+  const attempt=entries.slice(0,index).filter(entry=>entry.afterSet===current.afterSet).length;
+  return getMaxEntries(ex,w-1).filter(entry=>entry.afterSet===current.afterSet)[attempt]||null;
+}
 function showMaxRepComparison(exi, w, index){
   const ex = state.days[activeDayIdx] && state.days[activeDayIdx].esercizi[exi];
   if(!ex) return;
   const current = getMaxEntries(ex,w)[index];
-  if(!current || !String(current.rip||'').trim()) return;
-  const previous = w>0 ? (getMaxEntries(ex,w-1)[index] || null) : null;
+  if(!current) return;
+  const previous = previousMaxEntry(ex,w,index);
   if(!previous || !String(previous.rip||'').trim()){
     showQuickToast('Nessun Max corrispondente la settimana scorsa');
     return;
   }
   const nowNum = Number(String(current.rip).replace(',','.'));
   const prevNum = Number(String(previous.rip).replace(',','.'));
-  const delta = Number.isFinite(nowNum) && Number.isFinite(prevNum) ? nowNum-prevNum : null;
+  const sameWeight=historyWeightKey(current.peso)===historyWeightKey(previous.peso);
+  const delta = String(current.rip??'').trim()&&sameWeight&&Number.isFinite(nowNum) && Number.isFinite(prevNum) ? nowNum-prevNum : null;
   const deltaText = delta===null || delta===0 ? '' : ` · ${delta>0?'+':''}${String(delta).replace('.',',')}`;
   const weight = String(previous.peso ?? '').trim();
   showQuickToast(`Max settimana scorsa: ${weight ? `${weight} kg × ` : ''}${previous.rip} rip${deltaText}`);
@@ -1594,6 +1616,7 @@ function updateMaxEntry(exi, w, index, field, val, isDraft=false){
   const entry = getMaxEntries(ex,w)[index];
   if(!entry) return;
   entry[field] = val;
+  if(field==='rip'&&String(val??'').trim())recordExerciseDate(ex,w);
   refreshSeriesFinishUI(exi,w);
   const finishPartner=findLinkedPartner(exi);
   if(finishPartner)refreshSeriesFinishUI(finishPartner.exi,w);
@@ -1645,13 +1668,13 @@ function toggleWeekDone(exi, w){
   }
 }
 function pulseWeekDoneBtn(exi, w){
-  if(typeof gsap === "undefined") return;
+  if(typeof gsap === "undefined" || prefersReducedMotion()) return;
   const btn = document.querySelector(`.week-done-btn[data-exi="${exi}"][data-w="${w}"]`);
   if(!btn) return;
   gsap.fromTo(btn, {scale:1.5}, {scale:1, duration:.35, ease:"back.out(3)"});
 }
 function pulseWeekSkipBtn(exi, w){
-  if(typeof gsap === "undefined") return;
+  if(typeof gsap === "undefined" || prefersReducedMotion()) return;
   const btn = document.querySelector(`.week-skip-btn[data-exi="${exi}"][data-w="${w}"]`);
   if(!btn) return;
   gsap.fromTo(btn, {scale:1.5}, {scale:1, duration:.35, ease:"back.out(3)"});
@@ -1932,8 +1955,8 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
     <div class="rip-wrap">
     <input type="text" class="set-input" aria-label="Ripetizioni ${escapeAttr(ex.nome)} serie ${si+1}" placeholder="rip" value="${escapeAttr(s.rip ?? '')}" oninput="updateSet(${exi},${w},${si},'rip',this.value,undefined,true)" onchange="updateSet(${exi},${w},${si},'rip',this.value);updateRepCompareAvailability(this)">
     <button type="button" class="rpe-chip ${s.rpe?'filled':''}" onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
-    ${w===state.currentWeek && getPreviousWeekRep(ex,w,si) ? `<button type="button" class="rep-compare-btn" ${!String(s.rip??'').trim() ? 'disabled' : ''} onclick="showRepComparison(${exi},${w},${si},this)">Confronta</button>` : ''}
     </div>
+    ${renderPreviousSetButton(ex,exi,w,si)}
     <span class="rep-comparison" aria-live="polite" hidden></span>
     </div>`;
 }

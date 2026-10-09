@@ -80,6 +80,11 @@ function getStorico(){
 }
 async function deleteHistEntry(t){
   if(!await ViridisConfirmDialog('Eliminare definitivamente "'+t+'" dallo storico? Non potrai piu recuperarlo (a meno di avere un backup).')) return;
+  const dayIds=new Set((getStorico()[t]||[]).map(day=>day.uiId).filter(Boolean));
+  if(Array.isArray(state?.sessionHistory)){
+    state.sessionHistory=state.sessionHistory.filter(session=>!dayIds.has(session.dayId));
+    saveState();
+  }
   if(Object.prototype.hasOwnProperty.call(storicoExtra, t)){
     delete storicoExtra[t];
     saveStorico();

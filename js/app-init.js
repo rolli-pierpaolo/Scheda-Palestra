@@ -19,6 +19,8 @@ try{
   loadAccessibilityPrefs();
   workoutStartedAt = Number(localStorage.getItem(WORKOUT_STARTED_AT_KEY)) || 0;
   loadActivePos();
+  prepareWorkoutIdentity();
+  restoreWorkoutView();
   loadAchievements();
   maybeAutoBackup();
   updateTitles();

@@ -128,7 +128,7 @@ test('validateBackup accetta un backup vero e rifiuta quelli corrotti con un mot
 
   const good = window.buildBackupPayload();
   assert.strictEqual(window.validateBackup(good).valid, true);
-  assert.strictEqual(good.schemaVersion, 1);
+  assert.strictEqual(good.schemaVersion, 2);
 
   assert.strictEqual(window.validateBackup({}).valid, false);
   assert.strictEqual(window.validateBackup({state:{days:'non-array'}}).valid, false);
@@ -180,11 +180,12 @@ test('computeExerciseTrend aggrega volume e 1RM stimato su mesi archiviati + set
   window.__bridge.deletedStorico = [];
 
   const { volumePoints, oneRMPoints } = window.computeExerciseTrend('Panca piana');
-  assert.strictEqual(volumePoints.length, 2, 'un punto per il mese archiviato (aggregato) + uno per la settimana gia\' fatta nel blocco attivo');
-  assert.strictEqual(volumePoints[0].label, 'WO 1', 'il mese archiviato deve venire prima (piu\' vecchio) ed etichettato col suo nome');
-  assert.strictEqual(volumePoints[0].value, 55*8 + 57*8, 'il volume del mese archiviato somma TUTTE le sue settimane');
-  assert.strictEqual(volumePoints[1].label, 'Sett. 1', 'il blocco attivo mostra un punto per settimana, non uno aggregato');
-  assert.ok(oneRMPoints.length === 2 && oneRMPoints[1].value > 0);
+  assert.strictEqual(volumePoints.length,3,'una voce per settimana anche nelle schede archiviate');
+  assert.strictEqual(volumePoints[0].label,'WO 1 · S1');
+  assert.strictEqual(volumePoints[0].value,55*8);
+  assert.strictEqual(volumePoints[1].value,57*8);
+  assert.strictEqual(volumePoints[2].label,'Sett. 1');
+  assert.ok(oneRMPoints.length===3&&oneRMPoints[2].value>0);
 });
 
 test('computeHomeVolumeTrend confronta due settimane gia\' concluse, non "questo mese contro il precedente" mentre e\' ancora a meta\'', () => {
@@ -1831,16 +1832,16 @@ test('completa superset richiede entrambe le serie e non cambia dati o avanzamen
   ex.linkGroupId=partner.linkGroupId='pair';ex.linkType=partner.linkType='superset';
   window.__bridge.state.days[0].esercizi.push(partner);
   ex.sets[0][0]={peso:'40',rip:'10'};
-  const before=JSON.stringify(window.__bridge.state);
+  const before=JSON.stringify(window.__bridge.state,(key,value)=>['uiId','sessionDates'].includes(key)?undefined:value);
   window.completeSeriesUI(0,0,0,1);
   assert.ok(!window.seriesUIFinished(window.seriesUIEntries(0,0,0,1)));
-  assert.strictEqual(JSON.stringify(window.__bridge.state),before);
+  assert.strictEqual(JSON.stringify(window.__bridge.state,(key,value)=>['uiId','sessionDates'].includes(key)?undefined:value),before);
   partner.sets[0][0]={peso:'20',rip:'12'};
-  const filled=JSON.stringify(window.__bridge.state);
+  const filled=JSON.stringify(window.__bridge.state,(key,value)=>['uiId','sessionDates'].includes(key)?undefined:value);
   window.completeSeriesUI(0,0,0,1);
   assert.ok(window.seriesUIFinished(window.seriesUIEntries(0,0,0,1)));
   assert.ok(window.renderSeriesFinish(0,0,0,1).includes('superset completata'));
-  assert.strictEqual(JSON.stringify(window.__bridge.state),filled);
+  assert.strictEqual(JSON.stringify(window.__bridge.state,(key,value)=>['uiId','sessionDates'].includes(key)?undefined:value),filled);
   assert.ok(!window.document.getElementById('workoutRestPanel'),'timer facoltativo disattivato inizialmente');
   partner.sets[0][0].rip='13';
   assert.ok(!window.seriesUIFinished(window.seriesUIEntries(0,0,0,1)));
