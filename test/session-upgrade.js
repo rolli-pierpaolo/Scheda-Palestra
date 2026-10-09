@@ -99,4 +99,40 @@ test('lo storico in sheet torna alla sua sede senza cambiare pagina',w=>{
   w.openExerciseHistory(0);assert(results.closest('#exerciseHistorySheet'));
   w.closeExerciseHistorySheet();assert.equal(results.parentElement,parent);assert(!w.document.getElementById('exerciseHistorySheet'));
 });
+test('passaggio esercizio cerca prima avanti e poi recupera il primo precedente aperto',w=>{
+  const day=w.__bridge.state.days[0],base=day.esercizi[0];
+  day.esercizi=Array.from({length:5},(_,i)=>({...JSON.parse(JSON.stringify(base)),nome:'Esercizio '+i,weekDone:[false,false],weekSkipped:[false,false]}));
+  day.esercizi[1].weekDone[0]=true;day.esercizi[2].weekSkipped[0]=true;
+  assert.equal(w.nextCardIndex(0),3);
+  day.esercizi[4].weekDone[0]=true;
+  assert.equal(w.nextCardIndex(3),0);
+  day.esercizi[0].weekDone[0]=true;
+  assert.equal(w.nextCardIndex(3),5);
+});
+test('la navigazione tratta le coppie come un gruppo e controlla entrambi i componenti',w=>{
+  const day=w.__bridge.state.days[0],base=day.esercizi[0];
+  day.esercizi=Array.from({length:4},(_,i)=>({...JSON.parse(JSON.stringify(base)),nome:'Esercizio '+i,weekDone:[false,false]}));
+  day.esercizi[1].linkGroupId=day.esercizi[2].linkGroupId='coppia';
+  day.esercizi[1].linkType=day.esercizi[2].linkType='jumpset';
+  day.esercizi[1].weekDone[0]=true;
+  assert.equal(w.nextCardIndex(0),1);
+  day.esercizi[2].weekDone[0]=true;
+  assert.equal(w.nextCardIndex(0),3);
+  assert.equal(w.nextCardIndex(2),3);
+});
+test('completa e salta usano il prossimo aperto e conservano la richiesta di fine giornata',w=>{
+  const day=w.__bridge.state.days[0],base=day.esercizi[0];
+  day.esercizi=Array.from({length:3},(_,i)=>({...JSON.parse(JSON.stringify(base)),nome:'Esercizio '+i,weekDone:[false,false]}));
+  day.esercizi[1].weekDone[0]=true;
+  w.renderActive();const callbacks=[];w.setTimeout=(fn,ms)=>{if(ms===250)callbacks.push(fn);return 1;};
+  let moved=null,finished=0;w.goToExerciseSlide=i=>moved=i;
+  w.promptFinishWorkoutWhenReady=()=>{if(w.allExercisesClosed(day))finished++;};
+  w.toggleWeekDone(0,0);callbacks.pop()();assert.equal(moved,2);
+  moved=null;w.toggleWeekSkipped(2,0);callbacks.pop()();assert.equal(moved,null);assert.equal(finished,1);
+});
+test('un cambio esercizio manuale annulla il salto automatico in attesa',w=>{
+  const day=w.__bridge.state.days[0];day.esercizi.push(JSON.parse(JSON.stringify(day.esercizi[0])));
+  let callback;w.setTimeout=fn=>{callback=fn;return 1;};let moves=0;w.goToExerciseSlide=()=>moves++;
+  w.advanceToOpenExercise(0,0);w.__bridge.activeExerciseIdx=1;callback();assert.equal(moves,0);
+});
 console.log(count+' test aggiornamento passati');

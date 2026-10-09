@@ -17,6 +17,7 @@
 .series-completed-comparisons{gap:0 8px;}
 .series-completed-summary{min-height:48px;}
 .series-completed-values{font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+body.theme-light:not(.a11y-high-contrast) :is(.set-series-group.series-collapsed,.linked-set-group.series-collapsed){border-color:var(--accent,var(--green));background:color-mix(in srgb,var(--accent,var(--green)) 7%,var(--panel));}
 .day-management-sheet .ex-context-action{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;margin:0;padding:8px 12px;border:0;border-radius:10px;background:transparent;color:var(--text);text-align:left;}
 .day-management-sheet .day-skip-action{color:var(--muted);}
 .day-management-sheet .day-finish-action{color:var(--green);}

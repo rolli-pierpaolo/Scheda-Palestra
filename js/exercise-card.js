@@ -1639,7 +1639,25 @@ function nextCardIndex(exi){
   const day=state.days[activeDayIdx];
   const blocks=computeExerciseBlocks(day);
   const index=blocks.findIndex(block=>block.includes(exi));
-  return blocks[index+1]?.[0] ?? day.esercizi.length;
+  const w=state.currentWeek||0;
+  const candidates=[...blocks.slice(index+1),...blocks.slice(0,index)];
+  const next=candidates.find(block=>block.some(i=>{
+    const ex=day.esercizi[i];
+    const weeks=ex.recupero?.length||state.weeksPerBlock||4;
+    return w<weeks&&!ex.weekDone?.[w]&&!ex.weekSkipped?.[w];
+  }));
+  return next?.[0] ?? day.esercizi.length;
+}
+let nextOpenExerciseTimer;
+function advanceToOpenExercise(exi,w){
+  clearTimeout(nextOpenExerciseTimer);
+  if(w!==state.currentWeek)return;
+  const day=state.days[activeDayIdx],visible=activeExerciseIdx;
+  nextOpenExerciseTimer=setTimeout(()=>{
+    if(state.days[activeDayIdx]!==day||state.currentWeek!==w||activeExerciseIdx!==visible)return;
+    const next=nextCardIndex(exi);
+    if(day.esercizi[next])goToExerciseSlide(next);
+  },250);
 }
 function exerciseFullyClosed(ex){
   if(!ex.weekDone) return false;
@@ -1662,10 +1680,7 @@ function toggleWeekDone(exi, w){
     if(exerciseFullyClosed(ex)) celebrateExerciseDone(ex.nome);
     promptFinishWorkoutWhenReady(activeDayIdx, w);
   }
-  const next = nextCardIndex(exi);
-  if(nowDone && w === state.currentWeek && state.days[activeDayIdx].esercizi[next]){
-    setTimeout(()=>goToExerciseSlide(next), 250);
-  }
+  if(nowDone)advanceToOpenExercise(exi,w);
 }
 function pulseWeekDoneBtn(exi, w){
   if(typeof gsap === "undefined" || prefersReducedMotion()) return;
@@ -1709,10 +1724,7 @@ function toggleWeekSkipped(exi, w){
     if(exerciseFullyClosed(ex)) celebrateExerciseDone(ex.nome);
     promptFinishWorkoutWhenReady(activeDayIdx, w);
   }
-  const next = nextCardIndex(exi);
-  if(nowSkipped && w === state.currentWeek && state.days[activeDayIdx].esercizi[next]){
-    setTimeout(()=>goToExerciseSlide(next), 250);
-  }
+  if(nowSkipped)advanceToOpenExercise(exi,w);
 }
 function updateMax(exi, w, idx, field, val){
   const ex = state.days[activeDayIdx].esercizi[exi];
