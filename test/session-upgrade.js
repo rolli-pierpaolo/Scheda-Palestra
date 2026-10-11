@@ -47,7 +47,7 @@ test('backup vecchi restano importabili e spunte corrotte sono respinte',w=>{
 });
 test('confronto visibile prima di digitare e senza delta tra carichi diversi',w=>{
   const ex=w.__bridge.state.days[0].esercizi[0];w.__bridge.state.currentWeek=1;ex.sets[1][0]={peso:'50',rip:'10'};w.renderActive();
-  const button=w.document.querySelector('.previous-set-button');assert(button);assert(button.textContent.includes('40 kg'));
+  const button=w.document.querySelector('.previous-set-button');assert(button);assert.equal(button.textContent,'Confronta');assert(button.closest('.rip-cell').querySelector('.rep-comparison').hidden);
   w.showRepComparison(0,1,0,button);assert(!button.closest('.rip-cell').querySelector('.rep-comparison').textContent.includes('+2'));
 });
 test('estendere il blocco conserva le spunte Max senza copiarle nelle settimane nuove',w=>{
@@ -134,5 +134,27 @@ test('un cambio esercizio manuale annulla il salto automatico in attesa',w=>{
   const day=w.__bridge.state.days[0];day.esercizi.push(JSON.parse(JSON.stringify(day.esercizi[0])));
   let callback;w.setTimeout=fn=>{callback=fn;return 1;};let moves=0;w.goToExerciseSlide=()=>moves++;
   w.advanceToOpenExercise(0,0);w.__bridge.activeExerciseIdx=1;callback();assert.equal(moves,0);
+});
+test('confronti indipendenti, richiudibili e conservati al completamento e riordino',w=>{
+  const ex=w.__bridge.state.days[0].esercizi[0];w.__bridge.state.currentWeek=1;
+  ex.sets[1]=[{peso:'40',rip:'9'},{peso:'30',rip:'11'}];w.renderActive();
+  let buttons=w.document.querySelectorAll('.previous-set-button');
+  const dataBefore=JSON.stringify(ex.sets);
+  buttons[0].click();assert.equal(buttons[0].textContent,'Nascondi confronto');
+  assert(!buttons[0].closest('.rip-cell').querySelector('.rep-comparison').hidden);
+  assert(buttons[1].closest('.rip-cell').querySelector('.rep-comparison').hidden);
+  w.completeSeriesUI(0,1,0,null);
+  let completed=w.document.querySelector('.series-completed-comparisons .previous-set-button');
+  assert.equal(completed.textContent,'Nascondi confronto');
+  completed.click();assert.equal(completed.textContent,'Confronta');assert(completed.closest('.rip-cell').querySelector('.rep-comparison').hidden);
+  completed.click();w.reopenSeriesUI(0,1,0,null);
+  assert.equal(w.document.querySelector('.previous-set-button').textContent,'Nascondi confronto');
+  assert.equal(JSON.stringify(ex.sets),dataBefore);
+  w.__bridge.state.days[0].esercizi.unshift({nome:'Altro',recupero:['90','90'],schema:['1x8','1x8'],sets:[[],[]]});
+  w.__bridge.activeExerciseIdx=1;w.renderActive();
+  assert.equal(w.document.querySelector('.previous-set-button').textContent,'Nascondi confronto');
+});
+test('senza una registrazione precedente non compare Confronta',w=>{
+  w.renderActive();assert.equal(w.document.querySelectorAll('.previous-set-button').length,0);
 });
 console.log(count+' test aggiornamento passati');

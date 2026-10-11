@@ -798,7 +798,6 @@ function exerciseCard(ex, exi, accent, dayManagementHtml=''){
         <button type="button" class="rpe-chip ${s.rpe?'filled':''}" ${isReadOnlyWeek?'disabled':''} onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
         </div>
         ${renderPreviousSetButton(ex,exi,w,si)}
-        <span class="rep-comparison" aria-live="polite" hidden></span>
         </div>
 
 
@@ -1350,11 +1349,30 @@ function updateSet(exi, w, si, field, val, recordPeso, isDraft=false){
 
 }
 
+const openSeriesComparisons=new Set();
+function seriesComparisonKey(ex,w,si){return JSON.stringify([workoutIdentity(ex),w,workoutIdentity(ex.sets[w][si])]);}
+function syncSeriesComparison(button,animate=false){
+  const output=button.closest('.rip-cell')?.querySelector('.rep-comparison');
+  if(!output)return;
+  const open=openSeriesComparisons.has(button.dataset.comparisonKey);
+  button.textContent=open?'Nascondi confronto':'Confronta';
+  button.setAttribute('aria-expanded',String(open));
+  output.getAnimations?.().forEach(animation=>animation.cancel());
+  if(open){
+    output.textContent=button.dataset.comparisonText;
+    output.hidden=false;
+    if(animate&&!prefersReducedMotion())output.animate?.([{height:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:0},{height:output.getBoundingClientRect().height+'px',opacity:1}],{duration:160,easing:'ease-out'});
+  }else if(animate&&!prefersReducedMotion()&&output.animate&&!output.hidden){
+    const animation=output.animate([{height:output.getBoundingClientRect().height+'px',opacity:1},{height:'0px',paddingTop:'0px',paddingBottom:'0px',opacity:0}],{duration:140,easing:'ease-in'});
+    animation.onfinish=()=>{output.hidden=true;};
+  }else output.hidden=true;
+}
 function renderPreviousSetButton(ex,exi,w,si){
   const previous=ex.sets?.[w-1]?.[si];
   if(w!==state.currentWeek||!String(previous?.rip??'').trim())return '';
-  const text=`Prima: ${previous.peso||'—'} kg × ${previous.rip}`;
-  return `<button type="button" class="rep-compare-btn previous-set-button" aria-label="Confronta, settimana ${w}: ${escapeAttr(text)}" onclick="showRepComparison(${exi},${w},${si},this)">${escapeHtml(text)}</button>`;
+  const text=`Settimana ${w}: ${previous.peso||'—'} kg × ${previous.rip} rip`;
+  const key=seriesComparisonKey(ex,w,si),open=openSeriesComparisons.has(key);
+  return `<button type="button" class="rep-compare-btn previous-set-button" data-comparison-key="${escapeAttr(key)}" data-comparison-text="${escapeAttr(text)}" aria-expanded="${open}" onclick="showRepComparison(${exi},${w},${si},this)">${open?'Nascondi confronto':'Confronta'}</button><span class="rep-comparison" aria-live="polite" ${open?'':'hidden'}>${open?escapeHtml(text):''}</span>`;
 }
 function getPreviousWeekRep(ex, w, si){
   if(!ex || w < 1 || !ex.sets || !ex.sets[w-1] || !ex.sets[w-1][si]) return null;
@@ -1367,7 +1385,8 @@ function updateRepCompareAvailability(input){
   const btn = cell.querySelector('.rep-compare-btn');
   const output = cell.querySelector('.rep-comparison');
   if(btn) btn.disabled = false;
-  if(output){ output.hidden = true; output.textContent = ''; }
+  if(btn?.dataset.comparisonKey)syncSeriesComparison(btn);
+  else if(output){ output.hidden = true; output.textContent = ''; }
 }
 function updateMaxRepCompareAvailability(input){
   const wrap = input.closest('.max-rip-compare');
@@ -1384,6 +1403,12 @@ function markSetVisualState(input){
   if(group) group.classList.toggle('is-filled', filled);
 }
 function showRepComparison(exi, w, si, btn){
+  if(btn.dataset.comparisonKey){
+    const key=btn.dataset.comparisonKey;
+    if(openSeriesComparisons.has(key))openSeriesComparisons.delete(key);else openSeriesComparisons.add(key);
+    document.querySelectorAll('[data-comparison-key]').forEach(button=>{if(button.dataset.comparisonKey===key)syncSeriesComparison(button,true);});
+    return;
+  }
   const ex = state.days[activeDayIdx] && state.days[activeDayIdx].esercizi[exi];
   const cell = btn.closest('.rip-cell');
   const output = cell && cell.querySelector('.rep-comparison');
@@ -1969,7 +1994,6 @@ function linkedSubRowInputsHtml(ex, exi, w, si){
     <button type="button" class="rpe-chip ${s.rpe?'filled':''}" onclick="editRpe(${exi},${w},${si},this)" title="RPE di questa serie">${s.rpe ? escapeHtml(String(s.rpe)) : 'RPE'}</button>
     </div>
     ${renderPreviousSetButton(ex,exi,w,si)}
-    <span class="rep-comparison" aria-live="polite" hidden></span>
     </div>`;
 }
 function linkedMaxEntriesHtml(exA, exiA, exB, exiB, w, si){

@@ -1680,7 +1680,7 @@ body.a11y-large-text .series-completed-comparisons :is(.rep-compare-btn,.rep-com
 .day-ex-chip{width:80px;min-height:44px;padding:3px 5px;}
 .set-series-group:has(.series-finish.compact):not(.series-collapsed){position:relative;}
 .set-series-group:has(.series-finish.compact) .set-series-heading{min-height:24px;}
-.set-series-group:not(.series-collapsed) .series-finish.compact{position:absolute;bottom:6px;right:6px;}
+.set-series-group:not(.series-collapsed) .series-finish.compact{position:static;align-self:start;justify-self:end;}
 .set-series-group .set-series-prescription{line-height:1.2;}
 .linked-set-group{padding:6px;margin-bottom:8px;border-radius:12px;}
 .linked-set-wrap{gap:4px;}

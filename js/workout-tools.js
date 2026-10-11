@@ -204,11 +204,13 @@ function updateSeriesFinishButton(button){
       cell.className='rip-cell';
       const compare=source.cloneNode(true);
       const name=source.closest('.linked-sub-row')?.querySelector('.linked-tag')?.getAttribute('title');
+      if(name&&compare.dataset.comparisonKey){const label=document.createElement('span');label.className='comparison-exercise-name';label.textContent=name;cell.appendChild(label);}
       compare.textContent=name?`${name} · ${source.textContent}`:source.classList.contains('max-compare-btn')?'Confronta Max':source.textContent;
       cell.appendChild(compare);
       const output=document.createElement('span');
       output.className='rep-comparison';output.hidden=true;output.setAttribute('aria-live','polite');
       cell.appendChild(output);comparisons.appendChild(cell);
+      if(compare.dataset.comparisonKey)syncSeriesComparison(compare);
     });
     if(comparisons.childElementCount)group.appendChild(comparisons);
     const shift=group.getBoundingClientRect().top-beforeTop;
