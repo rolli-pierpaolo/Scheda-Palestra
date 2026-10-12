@@ -156,9 +156,9 @@ function moveQuickKeyboardScroll(top){
     window.scrollTo({top,behavior:'instant'});
   }else if(window.gsap && window.gsap.ticker){
     const position = {y:window.scrollY};
-    const duration = Math.min(.52,.24 + Math.abs(top-position.y)/2400);
+    const duration = Math.min(.52,.32 + Math.abs(top-position.y)/2400);
     quickKeyboardScrollTween = window.gsap.to(position,{
-      y:top,duration,ease:'power2.inOut',
+      y:top,duration,ease:'power3.out',
       onUpdate:()=>window.scrollTo({top:position.y,behavior:'instant'}),
       onComplete:()=>{
         quickKeyboardScrollTween=null;

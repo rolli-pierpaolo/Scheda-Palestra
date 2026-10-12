@@ -150,6 +150,7 @@ const ViridisDialogs = (() => {
       }
       document.addEventListener('keydown', keydown, true);
       document.body.append(overlay);
+      ViridisMotion.enterMenu(box);
       if(window.visualViewport){
         visualViewport.addEventListener('resize', resize);
         visualViewport.addEventListener('scroll', resize);
@@ -164,6 +165,7 @@ const ViridisDialogs = (() => {
 })();
 
 function bindViridisSheet(overlay,box,close){
+  ViridisMotion.enterMenu(box);
   const previous=document.activeElement;
   const siblings=[...document.body.children].filter(el=>el!==overlay&&!['SCRIPT','STYLE'].includes(el.tagName));
   const states=siblings.map(el=>el.inert);
@@ -176,11 +178,17 @@ function bindViridisSheet(overlay,box,close){
     start={y:event.clientY,id:event.pointerId};
     if(grip.setPointerCapture)grip.setPointerCapture(event.pointerId);
   });
+  grip.addEventListener('pointermove',event=>{
+    if(!start||start.id!==event.pointerId||ViridisMotion.reduced())return;
+    box.style.animation='none';
+    box.style.transform=`translateY(${Math.max(0,event.clientY-start.y)*.8}px)`;
+  });
   grip.addEventListener('pointerup',event=>{
     if(start&&start.id===event.pointerId&&event.clientY-start.y>48)close();
+    else{const from=box.style.transform||'translateY(0)';box.style.transform='';ViridisMotion.animate(box,[{transform:from},{transform:'translateY(0)'}]);}
     start=null;
   });
-  grip.addEventListener('pointercancel',()=>start=null);
+  grip.addEventListener('pointercancel',()=>{start=null;box.style.transform='';});
   function keydown(event){
     if(overlay.inert||!overlay.isConnected)return;
     if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close();}
@@ -194,6 +202,7 @@ function bindViridisSheet(overlay,box,close){
   document.addEventListener('keydown',keydown,true);
   box.focus({preventScroll:true});
   return ()=>{
+    ViridisMotion.depart(overlay);
     document.removeEventListener('keydown',keydown,true);
     siblings.forEach((el,index)=>el.inert=states[index]);
     document.body.style.overflow=overflow;

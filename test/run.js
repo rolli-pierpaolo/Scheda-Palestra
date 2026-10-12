@@ -1535,6 +1535,8 @@ test('Home: etichette Inizia/Riprendi e contesto muscoli senza modificare i dati
   window.renderHome();
   assert.ok(window.document.querySelector('.home-suggested-action').textContent.includes('Inizia'));
   state.days[0].esercizi[0].sets[0][0].rip='8';
+  window.__bridge.workoutInProgress=true;
+  window.__bridge.activeDayIdx=0;
   const before=JSON.stringify(state);
   window.renderHome();
   assert.ok(window.document.querySelector('.home-suggested-action').textContent.includes('Riprendi'));

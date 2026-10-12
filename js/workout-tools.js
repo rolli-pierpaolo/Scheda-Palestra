@@ -171,7 +171,7 @@ function reopenSeriesUI(exi,w,si,partnerExi){
   saveState();
   refreshSeriesFinishUI(exi,w);
 }
-function updateSeriesFinishButton(button){
+function updateSeriesFinishButton(button,animate=false){
   const exi=Number(button.dataset.finishEx),w=Number(button.dataset.finishWeek),si=Number(button.dataset.finishSet);
   const partner=findLinkedPartner(exi);
   const template=document.createElement('template');
@@ -186,6 +186,7 @@ function updateSeriesFinishButton(button){
   const done=button.getAttribute('aria-pressed')==='true';
   if(group.classList.contains('series-collapsed')===done && (!done||group.querySelector('.series-completed-summary')))return;
   const beforeTop=group.getBoundingClientRect().top;
+  const beforeHeight=group.getBoundingClientRect().height;
   group.classList.toggle('series-collapsed',done);
   group.querySelector(':scope > .series-completed-summary')?.remove();
   group.querySelector(':scope > .series-completed-comparisons')?.remove();
@@ -216,10 +217,11 @@ function updateSeriesFinishButton(button){
     const shift=group.getBoundingClientRect().top-beforeTop;
     if(Math.abs(shift)>1)window.scrollBy({top:shift,behavior:'instant'});
   }
+  if(animate)ViridisMotion.resize(group,beforeHeight);
 }
-function refreshAllSeriesFinishUI(){document.querySelectorAll('[data-finish-ex]').forEach(updateSeriesFinishButton);}
+function refreshAllSeriesFinishUI(){document.querySelectorAll('[data-finish-ex]').forEach(button=>updateSeriesFinishButton(button));}
 function refreshSeriesFinishUI(exi,w){
-  document.querySelectorAll(`[data-finish-ex="${exi}"][data-finish-week="${w}"]`).forEach(updateSeriesFinishButton);
+  document.querySelectorAll(`[data-finish-ex="${exi}"][data-finish-week="${w}"]`).forEach(button=>updateSeriesFinishButton(button,true));
 }
 
 function workoutSaveStatus(){

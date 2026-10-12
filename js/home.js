@@ -410,7 +410,8 @@ const total = weekly.total;
     return `<div class="${cls}" style="--accent:${a.c}" aria-label="${escapeHtml(d.name)}${isCompleted?', completato':isCurrent?', giornata corrente':''}"><span class="home-day-dot" aria-hidden="true"></span><span class="home-day-name">${escapeHtml(d.name)}</span>${isCompleted?'<svg class="home-day-check" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>':''}${isEmpty?'<span class="home-day-empty-tag">vuoto</span>':''}</div>`;
   }).join('');
   const motivationSplit = suggestedDay ? splitMotivation(pickMotivationalPhrase(suggestedIdx)) : null;
-  const resumeSuggested = suggestedDay && !(state.completedTrainingDays||[]).includes(suggestedIdx) &&
+  const resumeSuggested = workoutInProgress && suggestedIdx === activeDayIdx && suggestedDay &&
+    (suggestedDay.esercizi||[]).some(ex=>!ex.weekDone?.[state.currentWeek||0]&&!ex.weekSkipped?.[state.currentWeek||0]) && !(state.completedTrainingDays||[]).includes(suggestedIdx) &&
     typeof dayHasRealProgressThisWeek === 'function' && dayHasRealProgressThisWeek(suggestedDay);
   const suggestedHtml = suggestedDay ? `
  <button 
@@ -422,7 +423,7 @@ const total = weekly.total;
   ontouchstart="this.classList.add('pressed')"
   ontouchend="this.classList.remove('pressed')"
   onclick="startDayFromHome(${suggestedIdx})">
-<span class="home-suggested-label">${resumeSuggested?'ALLENAMENTO IN CORSO':'IL TUO ALLENAMENTO'}</span>
+<span class="home-suggested-label">${resumeSuggested?'ALLENAMENTO IN CORSO':'ALLENAMENTO DA INIZIARE'}</span>
 <span class="home-suggested-name accent-shine">${escapeHtml(suggestedDay.name)}</span><span class="home-suggested-action">${resumeSuggested?'Riprendi':'Inizia'} <span aria-hidden="true">→</span></span></button>
     ${motivationSplit ? `<div class="home-motivation" style="--accent:${dayAccent(suggestedDay,suggestedIdx).c}"><span class="accent-shine">${escapeHtml(motivationSplit.text)}</span> ${motivationSplit.icon}</div>` : ''}` : '';
   const volumeTrend = computeHomeVolumeTrend();

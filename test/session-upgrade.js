@@ -157,4 +157,31 @@ test('confronti indipendenti, richiudibili e conservati al completamento e riord
 test('senza una registrazione precedente non compare Confronta',w=>{
   w.renderActive();assert.equal(w.document.querySelectorAll('.previous-set-button').length,0);
 });
+test('Home propone Inizia con valori presenti ma nessuna sessione avviata',w=>{
+  w.__bridge.workoutInProgress=false;w.renderHome();
+  assert.equal(w.document.querySelector('.home-suggested-label').textContent,'ALLENAMENTO DA INIZIARE');
+  assert(w.document.querySelector('.home-suggested-action').textContent.includes('Inizia'));
+});
+test('Home propone Riprendi solo per la sessione attiva con ripetizioni',w=>{
+  w.__bridge.workoutInProgress=true;w.renderHome();
+  assert.equal(w.document.querySelector('.home-suggested-label').textContent,'ALLENAMENTO IN CORSO');
+  w.__bridge.state.days[0].esercizi[0].sets[0].forEach(set=>set.rip='');w.renderHome();
+  assert.equal(w.document.querySelector('.home-suggested-label').textContent,'ALLENAMENTO DA INIZIARE');
+});
+test('Home non indica in corso un esercizio gia chiuso',w=>{
+  w.__bridge.workoutInProgress=true;
+  w.__bridge.state.days[0].esercizi[0].weekDone=[true,false];w.renderHome();
+  assert(!w.document.querySelector('.home-suggested-label')?.textContent.includes('IN CORSO'));
+});
+test('animazioni interrotte e ridotte non lasciano pulsanti rimpiccioliti',w=>{
+  const motion=w.eval('ViridisMotion'),button=w.document.createElement('button');
+  let canceled=0;
+  button.animate=()=>{const animation=new w.EventTarget();animation.cancel=()=>{canceled++;animation.dispatchEvent(new w.Event('cancel'));};return animation;};
+  const press=motion.animate(button,[],{fill:'forwards'},'press');
+  press.dispatchEvent(new w.Event('finish'));
+  motion.animate(button,[],{},'press');assert.equal(canceled,1);
+  motion.stop();assert.equal(canceled,2);
+  w.document.body.classList.add('a11y-reduce-motion');
+  assert.equal(motion.animate(button,[]),null);
+});
 console.log(count+' test aggiornamento passati');
