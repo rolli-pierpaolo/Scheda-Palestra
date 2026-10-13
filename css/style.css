@@ -1713,3 +1713,14 @@ body.theme-light .linked-pair-frame .link-type-pill{background:#E3EAE3!important
 body.theme-light :is(.kg-wrap,.rip-wrap):focus-within{border-color:var(--accent,var(--green));box-shadow:0 0 0 1px var(--accent,var(--green));}
 
 .set-series-group:has(.series-finish.compact) .kg-cell>.load-reminder-inline{margin-top:2px;margin-bottom:0;}
+
+.max-attempt-row{display:grid;grid-template-columns:44px minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:start;padding:6px 0;}
+.max-attempt-row .max-label{padding-top:24px;font-size:11px;color:var(--amber);}
+.max-attempt-field,.max-attempt-field label{display:flex;flex-direction:column;min-width:0;gap:4px;}
+.max-attempt-field label>span,.max-attempt-field>span:not(.rep-comparison){font-size:10px;color:var(--muted);font-weight:700;}
+.max-attempt-field .max-input{width:100%;min-width:0;min-height:44px;text-align:center;}
+.max-attempt-field .rep-compare-btn,.series-completed-comparisons .rep-compare-btn{position:static;transform:none;width:auto;max-width:100%;height:auto;min-height:44px;white-space:normal;overflow-wrap:anywhere;}
+.max-attempt-field .rep-comparison{white-space:normal;overflow-wrap:anywhere;}
+body.a11y-large-text .max-attempt-field label>span,body.a11y-large-text .max-attempt-field>span:not(.rep-comparison){font-size:14px;}
+
+.linked-max-comparison{grid-column:2/-1;min-width:0;}

@@ -75,6 +75,20 @@ test('rimozione Max: selezione gruppo, tutela dati e partner, annullamento', asy
   assert.strictEqual(ex.maxEntries[0].length,0);
   w.close();
 });
+test('Max eliminati nella settimana corrente restano assenti dopo riporto e riapertura',async()=>{
+  const w=app(),ex=w.__bridge.state.days[0].esercizi[0];
+  w.__bridge.state.currentWeek=1;
+  ex.maxEntries=[[{afterSet:0,peso:'40',rip:'6'}],[{afterSet:0,peso:'40',rip:''}],[],[]];
+  const pending=w.requestRemoveMax(0,1);
+  await click(w,'Elimina');await click(w,'Elimina');await pending;
+  w.syncMaxLayoutsForward(ex);w.syncMaxLayoutsForward(ex);
+  assert.equal(ex.maxEntries[1].length,0);assert.equal(ex.maxEntries[0][0].rip,'6');
+  w.__bridge.state=JSON.parse(JSON.stringify(w.__bridge.state));
+  w.syncMaxLayoutsForward(w.__bridge.state.days[0].esercizi[0]);
+  assert.equal(w.__bridge.state.days[0].esercizi[0].maxEntries[1].length,0);
+  w.close();
+});
+
 test('conferme: Esc, focus, sfondo inerte e coda non sovrapposta', async () => {
   const w=app(), trigger=w.document.getElementById('settingsBtn');
   trigger.focus();

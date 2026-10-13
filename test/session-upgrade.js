@@ -184,4 +184,31 @@ test('animazioni interrotte e ridotte non lasciano pulsanti rimpiccioliti',w=>{
   w.document.body.classList.add('a11y-reduce-motion');
   assert.equal(motion.animate(button,[]),null);
 });
+test('riporto Max non riempie un peso cancellato e non trasferisce ripetizioni',w=>{
+  const ex=w.__bridge.state.days[0].esercizi[0];
+  ex.maxEntries=[[{afterSet:0,peso:'40',rip:'6'}],[]];w.carryMaxLayoutForward(ex,0);
+  assert.equal(ex.maxEntries[1][0].peso,'40');assert.equal(ex.maxEntries[1][0].rip,'');
+  w.updateMaxEntry(0,1,0,'peso','');w.renderActive();w.renderActive();
+  assert.equal(ex.maxEntries[1][0].peso,'');assert.equal(ex.maxEntries[0][0].rip,'6');
+  w.extendWeeksPerBlock(3);w.renderActive();assert.equal(ex.maxEntries[1][0].peso,'');
+});
+test('un Max rimosso non viene rigenerato dal riporto dopo ricaricamento',w=>{
+  const ex=w.__bridge.state.days[0].esercizi[0];
+  ex.maxEntries=[[{afterSet:0,peso:'40',rip:'6'}],[]];w.carryMaxLayoutForward(ex,0);
+  w.rememberRemovedMax(ex,1,0);ex.maxEntries[1]=[];
+  w.__bridge.state=JSON.parse(JSON.stringify(w.__bridge.state));w.renderActive();w.renderActive();
+  const restored=w.__bridge.state.days[0].esercizi[0];
+  assert.equal(restored.maxEntries[1].length,0);assert.equal(restored.maxEntries[0][0].rip,'6');
+});
+test('serie con Max completata conserva confronto inline e stato al render',w=>{
+  const ex=w.__bridge.state.days[0].esercizi[0];w.__bridge.state.currentWeek=1;
+  ex.maxEntries=[[{afterSet:0,peso:'35',rip:'5'}],[{afterSet:0,peso:'40',rip:'6'}]];
+  ex.sets[1][0].rip='8';w.renderActive();w.completeSeriesUI(0,1,0,null);
+  let group=w.document.querySelector('.week-section-current .series-collapsed');assert(group);
+  let button=group.querySelector('.previous-max-button');assert(button);button.click();
+  assert(button.closest('.rip-cell').querySelector('.rep-comparison').textContent.includes('35 kg × 5'));
+  w.renderActive();group=w.document.querySelector('.week-section-current .series-collapsed');
+  assert(group);assert.equal(group.querySelector('.previous-max-button').textContent,'Nascondi confronto');
+  assert.equal(ex.maxEntries[1][0].rip,'6');
+});
 console.log(count+' test aggiornamento passati');

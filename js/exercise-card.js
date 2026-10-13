@@ -552,7 +552,14 @@ function weekHasRecordedExerciseData(ex, w){
 function removeMaxAttachedToSet(ex, w, setIndex){
   const entries = getMaxEntries(ex,w);
   const kept = entries.filter(entry => entry && entry.afterSet < setIndex);
-  if(kept.length !== entries.length) ex.maxEntries[w] = kept;
+  if(kept.length !== entries.length){
+    entries.filter(entry=>entry.afterSet>=setIndex).forEach(entry=>rememberRemovedMax(ex,w,entry.afterSet));
+    ex.maxEntries[w] = kept;
+  }
+}
+function rememberRemovedMax(ex,w,si){
+  if(!ex.maxRemovedByWeek)ex.maxRemovedByWeek={};
+  ex.maxRemovedByWeek[w]=[...new Set([...(ex.maxRemovedByWeek[w]||[]),si])];
 }
 function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
   if(!ex || fromWeek < 0) return false;
@@ -569,6 +576,8 @@ function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
     const target = getMaxEntries(ex,week);
     const sourceCounts = new Map();
     template.forEach(entry=>{
+      if(ex.maxRemovedByWeek?.[week]?.includes(entry.afterSet))return;
+      if(ex.sets?.[week]?.length && entry.afterSet>=ex.sets[week].length)return;
       const seen = sourceCounts.get(entry.afterSet)||0;
       sourceCounts.set(entry.afterSet,seen+1);
       const matching = target.filter(item=>item.afterSet===entry.afterSet)[seen];
@@ -577,7 +586,7 @@ function carryMaxLayoutForward(ex, fromWeek, onlyWeek){
         changed = true;
         return;
       }
-      if(!String(matching.peso??'').trim() && String(entry.peso??'').trim()){
+      if(!matching.pesoEdited && !String(matching.rip??'').trim() && !String(matching.peso??'').trim() && String(entry.peso??'').trim()){
         matching.peso = entry.peso;
         changed = true;
       }
@@ -600,15 +609,26 @@ function syncMaxLayoutsForward(ex){
 function renderMaxEntries(ex, exi, w, si, isReadOnlyWeek, showComparison){
   const entries = maxEntriesAfter(ex,w,si);
   if(!entries.length) return '';
-  const kgFields = entries.map(({entry,index},attempt)=>
-    `<input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Peso Max ${attempt+1}" placeholder="Kg" value="${escapeAttr(entry.peso??'')}" oninput="updateMaxEntry(${exi},${w},${index},'peso',this.value,true)" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)">`).join('');
-  const ripFields = entries.map(({entry,index},attempt)=>{
-    const previous = previousMaxEntry(ex,w,index);
-    const canCompare = showComparison && String(previous?.rip??'').trim();
-    return `<div class="max-rip-compare"><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Ripetizioni Max ${attempt+1}" placeholder="Rip" value="${escapeAttr(entry.rip??'')}" oninput="updateMaxEntry(${exi},${w},${index},'rip',this.value,true)" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value);updateMaxRepCompareAvailability(this)">${canCompare ? `<button type="button" class="rep-compare-btn max-compare-btn" aria-label="Confronta ripetizioni Max" title="Confronta con la settimana scorsa" ${isReadOnlyWeek ? 'disabled' : ''} onclick="showMaxRepComparison(${exi},${w},${index})">↺</button>` : ''}</div>`;
-  }).join('');
-  return `<div class="max-entry-box"><div class="set-row max-entry-row" style="--max-count:${entries.length}"><span class="set-label max-label">MAX</span><div class="max-cell">${kgFields}</div><div class="max-cell">${ripFields}</div></div></div>`;
+  return `<div class="max-entry-box">${entries.map(({entry,index},attempt)=>`
+    <div class="max-attempt-row">
+      <span class="set-label max-label">MAX ${attempt+1}</span>
+      <label class="max-attempt-field"><span>KG</span><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Peso Max ${attempt+1}" placeholder="Kg" value="${escapeAttr(entry.peso??'')}" oninput="updateMaxEntry(${exi},${w},${index},'peso',this.value,true)" onchange="updateMaxEntry(${exi},${w},${index},'peso',this.value)"></label>
+      <div class="rip-cell max-attempt-field"><label><span>RIP</span><input type="text" class="set-input max-input" ${isReadOnlyWeek?'disabled':''} aria-label="Ripetizioni Max ${attempt+1}" placeholder="Rip" value="${escapeAttr(entry.rip??'')}" oninput="updateMaxEntry(${exi},${w},${index},'rip',this.value,true)" onchange="updateMaxEntry(${exi},${w},${index},'rip',this.value)"></label>${showComparison?renderPreviousMaxButton(ex,exi,w,index,attempt):''}</div>
+    </div>`).join('')}</div>`;
 }
+function renderPreviousMaxButton(ex,exi,w,index,attempt){
+  const previous=previousMaxEntry(ex,w,index),entry=getMaxEntries(ex,w)[index];
+  if(w!==state.currentWeek||!entry||!String(previous?.rip??'').trim())return '';
+  const key=JSON.stringify(['max',workoutIdentity(ex),w,workoutIdentity(entry)]),open=openSeriesComparisons.has(key);
+  const text=`Max ${attempt+1} · Settimana ${w}: ${previous.peso||'—'} kg × ${previous.rip} rip`;
+  return `<button type="button" class="rep-compare-btn previous-max-button" data-comparison-label="Confronta Max ${attempt+1}" data-comparison-key="${escapeAttr(key)}" data-comparison-text="${escapeAttr(text)}" aria-expanded="${open}" onclick="toggleSeriesComparison(this)">${open?'Nascondi confronto':`Confronta Max ${attempt+1}`}</button><span class="rep-comparison" aria-live="polite" ${open?'':'hidden'}>${open?escapeHtml(text):''}</span>`;
+}
+function toggleSeriesComparison(button){
+  const key=button.dataset.comparisonKey;
+  if(openSeriesComparisons.has(key))openSeriesComparisons.delete(key);else openSeriesComparisons.add(key);
+  document.querySelectorAll('[data-comparison-key]').forEach(item=>{if(item.dataset.comparisonKey===key)syncSeriesComparison(item,true);});
+}
+
 function getSetPrescription(schema, setIndex){
   const raw = String(schema||'').replace(/\s+/g,' ').trim();
   if(!raw) return {target:'', extras:''};
@@ -1355,7 +1375,7 @@ function syncSeriesComparison(button,animate=false){
   const output=button.closest('.rip-cell')?.querySelector('.rep-comparison');
   if(!output)return;
   const open=openSeriesComparisons.has(button.dataset.comparisonKey);
-  button.textContent=open?'Nascondi confronto':'Confronta';
+  button.textContent=open?'Nascondi confronto':(button.dataset.comparisonLabel||'Confronta');
   button.setAttribute('aria-expanded',String(open));
   output.getAnimations?.().forEach(animation=>animation.cancel());
   if(open){
@@ -1589,6 +1609,7 @@ async function requestAddMax(exi, w, partnerExi){
     return;
   }
   const entries = getMaxEntries(ex,w);
+  if(ex.maxRemovedByWeek?.[w])ex.maxRemovedByWeek[w]=ex.maxRemovedByWeek[w].filter(si=>si!==afterSet-1);
   // Il primo gruppo Max contiene due tentativi; i successivi tocchi ne aggiungono uno.
 
   const amount = entries.some(entry=>entry.afterSet===afterSet-1) ? 1 : 2;
@@ -1597,6 +1618,7 @@ async function requestAddMax(exi, w, partnerExi){
   if(typeof partnerExi==='number'){
     const partner = state.days[activeDayIdx].esercizi[partnerExi];
     const partnerEntries = getMaxEntries(partner,w);
+    if(partner.maxRemovedByWeek?.[w])partner.maxRemovedByWeek[w]=partner.maxRemovedByWeek[w].filter(si=>si!==afterSet-1);
     for(let i=0;i<amount;i++) partnerEntries.push({afterSet:afterSet-1,peso:'',rip:''});
     carryMaxLayoutForward(partner,w);
   }
@@ -1606,6 +1628,7 @@ async function requestAddMax(exi, w, partnerExi){
   ViridisToast('Serie Max aggiunta');
 }
 async function requestRemoveMax(exi, w, partnerExi){
+  finishQuickKeyboardInput();
   const ex = state.days[activeDayIdx].esercizi[exi];
   const entries = getMaxEntries(ex,w);
   if(!entries.length) return;
@@ -1629,8 +1652,10 @@ async function requestRemoveMax(exi, w, partnerExi){
   const hasData = [...toRemove, ...partnerEntries.filter(entry=>entry.afterSet===afterSet)]
     .some(entry=>String(entry.peso||'').trim() || String(entry.rip||'').trim());
   if(hasData && !await ViridisConfirmDialog('Questo Max contiene kg o ripetizioni. Vuoi eliminarlo comunque?')) return;
+  rememberRemovedMax(ex,w,afterSet);
   ex.maxEntries[w] = entries.filter(entry=>entry.afterSet!==afterSet);
   if(typeof partnerExi==='number'){
+    rememberRemovedMax(state.days[activeDayIdx].esercizi[partnerExi],w,afterSet);
     state.days[activeDayIdx].esercizi[partnerExi].maxEntries[w] = partnerEntries.filter(entry=>entry.afterSet!==afterSet);
   }
   saveState();
@@ -1641,6 +1666,7 @@ function updateMaxEntry(exi, w, index, field, val, isDraft=false){
   const entry = getMaxEntries(ex,w)[index];
   if(!entry) return;
   entry[field] = val;
+  if(field==='peso')entry.pesoEdited=true;
   if(field==='rip'&&String(val??'').trim())recordExerciseDate(ex,w);
   refreshSeriesFinishUI(exi,w);
   const finishPartner=findLinkedPartner(exi);
@@ -2005,8 +2031,8 @@ function linkedMaxEntriesHtml(exA, exiA, exB, exiB, w, si){
     const a = aItems[i], b = bItems[i];
     html += `<div class="linked-set-group max-entry-group"><div class="linked-set-wrap">
       <div class="set-label max-label">MAX</div><div class="linked-sub-rows">
-      <div class="linked-sub-row"><span class="linked-tag">${escapeHtml(exA.nome||'—')}</span><input type="text" class="set-input max-input" placeholder="kg" value="${escapeAttr(a ? a.entry.peso??'' : '')}" ${a?'':'disabled'} oninput="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'peso',this.value,true)" onchange="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'peso',this.value)"><input type="text" class="set-input max-input" placeholder="rip" value="${escapeAttr(a ? a.entry.rip??'' : '')}" ${a?'':'disabled'} oninput="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'rip',this.value,true)" onchange="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'rip',this.value)"></div>
-      <div class="linked-sub-row"><span class="linked-tag">${escapeHtml(exB.nome||'—')}</span><input type="text" class="set-input max-input" placeholder="kg" value="${escapeAttr(b ? b.entry.peso??'' : '')}" ${b?'':'disabled'} oninput="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'peso',this.value,true)" onchange="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'peso',this.value)"><input type="text" class="set-input max-input" placeholder="rip" value="${escapeAttr(b ? b.entry.rip??'' : '')}" ${b?'':'disabled'} oninput="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'rip',this.value,true)" onchange="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'rip',this.value)"></div>
+      <div class="linked-sub-row"><span class="linked-tag">${escapeHtml(exA.nome||'—')}</span><input type="text" class="set-input max-input" placeholder="kg" value="${escapeAttr(a ? a.entry.peso??'' : '')}" ${a?'':'disabled'} oninput="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'peso',this.value,true)" onchange="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'peso',this.value)"><input type="text" class="set-input max-input" placeholder="rip" value="${escapeAttr(a ? a.entry.rip??'' : '')}" ${a?'':'disabled'} oninput="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'rip',this.value,true)" onchange="updateMaxEntry(${exiA},${w},${a ? a.index : 0},'rip',this.value)"><div class="rip-cell linked-max-comparison">${a?renderPreviousMaxButton(exA,exiA,w,a.index,i):''}</div></div>
+      <div class="linked-sub-row"><span class="linked-tag">${escapeHtml(exB.nome||'—')}</span><input type="text" class="set-input max-input" placeholder="kg" value="${escapeAttr(b ? b.entry.peso??'' : '')}" ${b?'':'disabled'} oninput="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'peso',this.value,true)" onchange="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'peso',this.value)"><input type="text" class="set-input max-input" placeholder="rip" value="${escapeAttr(b ? b.entry.rip??'' : '')}" ${b?'':'disabled'} oninput="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'rip',this.value,true)" onchange="updateMaxEntry(${exiB},${w},${b ? b.index : 0},'rip',this.value)"><div class="rip-cell linked-max-comparison">${b?renderPreviousMaxButton(exB,exiB,w,b.index,i):''}</div></div>
       </div></div></div>`;
   }
   return html;

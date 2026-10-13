@@ -1,6 +1,6 @@
 // Prova la rete e usa la cache se il dispositivo e offline.
 
-const CACHE_NAME = 'logbook-cache-v134';
+const CACHE_NAME = 'logbook-cache-v135';
 const CORE_ASSETS = [
   './',
   './index.html',
