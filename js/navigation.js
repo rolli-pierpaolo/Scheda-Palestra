@@ -264,7 +264,7 @@ function selectDay(i){
 }
 function goToActiveTab(){
   const activeDay = state.days[activeDayIdx];
-  const hasRealSession = workoutInProgress && dayHasRealProgressThisWeek(activeDay);
+  const hasRealSession = activeWorkoutTimer() || workoutInProgress && dayHasRealProgressThisWeek(activeDay);
   if(!hasRealSession){
     if(workoutInProgress) clearWorkoutSession();
     const suggested = computeSuggestedDayIdx();
@@ -348,6 +348,7 @@ async function confirmSwitchTrainingDay(newIdx, oldIdx){
 
 
 function logWorkoutDay(dayIdx){
+  finishTimedWorkout(dayIdx);
   captureWorkoutSession(dayIdx);
 
   const day = state.days[dayIdx];

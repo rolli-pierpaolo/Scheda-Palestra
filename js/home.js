@@ -1,6 +1,6 @@
 function showHome(){
   const activeDay = state.days[activeDayIdx];
-  if(workoutInProgress && (!activeDay || !dayHasRealProgressThisWeek(activeDay) || allExercisesClosed(activeDay))){
+  if(!activeWorkoutTimer() && workoutInProgress && (!activeDay || !dayHasRealProgressThisWeek(activeDay) || allExercisesClosed(activeDay))){
     clearWorkoutSession();
   }
   renderHome();
@@ -410,7 +410,7 @@ const total = weekly.total;
     return `<div class="${cls}" style="--accent:${a.c}" aria-label="${escapeHtml(d.name)}${isCompleted?', completato':isCurrent?', giornata corrente':''}"><span class="home-day-dot" aria-hidden="true"></span><span class="home-day-name">${escapeHtml(d.name)}</span>${isCompleted?'<svg class="home-day-check" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>':''}${isEmpty?'<span class="home-day-empty-tag">vuoto</span>':''}</div>`;
   }).join('');
   const motivationSplit = suggestedDay ? splitMotivation(pickMotivationalPhrase(suggestedIdx)) : null;
-  const resumeSuggested = workoutInProgress && suggestedIdx === activeDayIdx && suggestedDay &&
+  const resumeSuggested = (activeWorkoutTimer()?.dayId===suggestedDay?.uiId && activeWorkoutTimer()?.week===state.currentWeek) || workoutInProgress && suggestedIdx === activeDayIdx && suggestedDay &&
     (suggestedDay.esercizi||[]).some(ex=>!ex.weekDone?.[state.currentWeek||0]&&!ex.weekSkipped?.[state.currentWeek||0]) && !(state.completedTrainingDays||[]).includes(suggestedIdx) &&
     typeof dayHasRealProgressThisWeek === 'function' && dayHasRealProgressThisWeek(suggestedDay);
   const suggestedHtml = suggestedDay ? `

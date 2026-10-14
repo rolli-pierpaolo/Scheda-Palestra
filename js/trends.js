@@ -27,7 +27,7 @@ function computeDaySessionStats(day){
       if(!isNaN(p) && p>0 && !isNaN(r) && r>0){ volume += p*r; setsCount++; }
     });
   });
-  const elapsedMs = workoutStartedAt ? Math.max(0, Date.now() - workoutStartedAt) : 0;
+  const elapsedMs = recordedWorkoutDuration(day) ?? (workoutStartedAt ? Math.max(0, Date.now() - workoutStartedAt) : 0);
   return { volume: Math.round(volume), setsCount, durationMins: Math.max(1, Math.round(elapsedMs / 60000)) };
 }
 function computeHomeVolumeTrend(){

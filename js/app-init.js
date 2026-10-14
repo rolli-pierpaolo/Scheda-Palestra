@@ -32,7 +32,7 @@ try{
   if(typeof initSync === 'function') initSync();
 
   renderHistBody();
-  if(workoutInProgress && dayHasRealProgressThisWeek(state.days[activeDayIdx])){
+  if(activeWorkoutTimer() || workoutInProgress && dayHasRealProgressThisWeek(state.days[activeDayIdx])){
     showView('active');
     requestWakeLock();
   } else {

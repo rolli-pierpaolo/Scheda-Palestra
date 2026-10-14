@@ -26,7 +26,7 @@
       });
     };
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw.js?rev=20261013a', {updateViaCache:'none'}).then(function(registration){
+      navigator.serviceWorker.register('sw.js?rev=20261014a', {updateViaCache:'none'}).then(function(registration){
         if(registration.waiting) showAppUpdateBanner();
         registration.addEventListener('updatefound', function(){
           var worker = registration.installing;

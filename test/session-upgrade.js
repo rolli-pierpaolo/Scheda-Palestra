@@ -211,4 +211,34 @@ test('serie con Max completata conserva confronto inline e stato al render',w=>{
   assert(group);assert.equal(group.querySelector('.previous-max-button').textContent,'Nascondi confronto');
   assert.equal(ex.maxEntries[1][0].rip,'6');
 });
+test('cronometro esplicito continua senza ripetizioni, in Home e nel backup',w=>{
+  w.__bridge.state.days[0].esercizi[0].sets[0].forEach(set=>set.rip='');
+  const before=JSON.stringify(w.__bridge.state.days[0].esercizi[0].sets);
+  w.startTimedWorkout();const timer=w.__bridge.state.activeWorkoutTimer;
+  assert(timer);w.startTimedWorkout();assert.equal(w.__bridge.state.activeWorkoutTimer.id,timer.id);
+  timer.startedAt-=90000;w.showHome();assert(w.activeWorkoutTimer());
+  assert(w.document.querySelector('.home-suggested-action').textContent.includes('Riprendi'));
+  const backup=JSON.parse(JSON.stringify(w.buildBackupPayload()));assert(w.validateBackup(backup).valid);
+  w.applyBackup(backup);assert.equal(w.activeWorkoutTimer().id,timer.id);
+  assert.equal(JSON.stringify(w.__bridge.state.days[0].esercizi[0].sets),before);
+  assert(w.recordedWorkoutDuration(w.__bridge.state.days[0])>=90000);
+});
+test('durata salvata una sola volta e legata al giorno corretto',w=>{
+  w.startTimedWorkout();w.__bridge.state.activeWorkoutTimer.startedAt-=125000;
+  w.__bridge.state.days.push({name:'Altro',uiId:'altro',esercizi:[]});
+  assert.equal(w.finishTimedWorkout(1),null);assert(w.activeWorkoutTimer());
+  const result=w.finishTimedWorkout(0);assert(result.durationMs>=125000);assert(!w.activeWorkoutTimer());
+  w.finishTimedWorkout(0);assert.equal(w.__bridge.state.workoutDurations.length,1);
+  w.renderProgressOverview();assert(w.document.querySelector('.workout-duration-history').textContent.includes('02:05'));
+  assert(w.validateBackup(w.buildBackupPayload()).valid);
+});
+test('fine esercizi salva durata prima del cambio settimana senza modificare serie',w=>{
+  w.startTimedWorkout();w.__bridge.state.activeWorkoutTimer.startedAt-=65000;
+  const ex=w.__bridge.state.days[0].esercizi[0];ex.weekDone=[true,false];
+  const before=JSON.stringify(ex.sets);w.openFinishWorkoutModal(0);
+  assert(!w.activeWorkoutTimer());assert.equal(w.__bridge.state.workoutDurations.length,1);
+  w.openFinishWorkoutModal(0);assert.equal(w.__bridge.state.workoutDurations.length,1);
+  assert.equal(JSON.stringify(ex.sets),before);
+  w.document.getElementById('finishWorkoutModal').style.display='none';
+});
 console.log(count+' test aggiornamento passati');

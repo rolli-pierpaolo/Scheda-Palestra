@@ -76,6 +76,7 @@ function openFinishWorkoutModal(dayIdx){
   if(!day) return;
 
 const incomplete = day.esercizi.length > 0 && !allExercisesClosed(day);
+  if(!incomplete)finishTimedWorkout(dayIdx);
 
   const accent = dayAccent(day, dayIdx).c;
 

@@ -221,7 +221,7 @@ onclick="confirmSwitchTrainingDay(${activeDayIdx}, ${suggestedIdx})">
       <div class="ex-carousel-track" id="exCarouselTrack" style="transform:translateX(-${activeSlideIdx*100}%)">${slidesHtml}</div>
     </div>` : '';
 
-  main.innerHTML = workoutProgressHtml + dayExStripHtml + dayActionsHtml + switchTrainingDay + emptyState + carouselHtml;
+  main.innerHTML = renderWorkoutTimer() + workoutProgressHtml + dayExStripHtml + dayActionsHtml + switchTrainingDay + emptyState + carouselHtml;
   refreshAllSeriesFinishUI();
     autoGrowAllExNames();
     autoGrowAllExSchema();
@@ -461,6 +461,8 @@ async function archiveAndReset(){
   saveStoricoDates();
   checkAchievements();
 
+  const runningTimer=activeWorkoutTimer();
+  if(runningTimer)finishTimedWorkout(state.days.findIndex(day=>day.uiId===runningTimer.dayId),runningTimer.week);
   const newDays = state.days.map(d => ({
     name: d.name,
     esercizi: d.esercizi.map(ex => ({
@@ -472,6 +474,7 @@ async function archiveAndReset(){
   }));
 state = { 
   sessionHistory:state.sessionHistory||[],
+  workoutDurations:state.workoutDurations||[],
   exerciseAliases:state.exerciseAliases||[],
   ...(Array.isArray(state.loadReminders) ? {loadReminders:state.loadReminders.map(r=>({...r,review:true}))} : {}),
   title: newTitle.trim(), 

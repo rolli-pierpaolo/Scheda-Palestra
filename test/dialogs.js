@@ -290,6 +290,15 @@ test('vibrazione disabilitata e testo non interpretato come HTML', async()=>{
   assert.strictEqual(w.document.querySelector('.viridis-toast img'),null);
   w.close();
 });
+test('Termina salva il tempo senza completare esercizi e Annulla lo lascia attivo',async()=>{
+  const w=app();w.startTimedWorkout();const timer=w.__bridge.state.activeWorkoutTimer;timer.startedAt-=70000;
+  const before=JSON.stringify(w.__bridge.state.days);
+  let pending=w.requestEndTimedWorkout();await click(w,'Annulla');await pending;assert(w.activeWorkoutTimer());
+  pending=w.requestEndTimedWorkout();await click(w,'Termina');await pending;
+  assert(!w.activeWorkoutTimer());assert.equal(w.__bridge.state.workoutDurations.length,1);
+  assert(w.__bridge.state.workoutDurations[0].durationMs>=70000);
+  assert.equal(JSON.stringify(w.__bridge.state.days),before);w.close();
+});
 (async()=>{
   let failed=0;
   for(const {name,run} of tests){

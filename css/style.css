@@ -1724,3 +1724,14 @@ body.theme-light :is(.kg-wrap,.rip-wrap):focus-within{border-color:var(--accent,
 body.a11y-large-text .max-attempt-field label>span,body.a11y-large-text .max-attempt-field>span:not(.rep-comparison){font-size:14px;}
 
 .linked-max-comparison{grid-column:2/-1;min-width:0;}
+
+.workout-session-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 16px 12px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:16px;}
+.workout-session-bar>div{display:flex;flex-direction:column;min-width:0;gap:3px;}
+.workout-session-bar span{font-size:12px;color:var(--muted);overflow-wrap:anywhere;}
+.workout-session-bar b{font-size:20px;font-variant-numeric:tabular-nums;}
+.workout-session-bar button{min-height:44px;padding:8px 12px;border:1px solid var(--accent,var(--green));border-radius:12px;color:var(--accent,var(--green));background:transparent;font:inherit;font-size:12px;font-weight:700;max-width:55%;}
+.workout-duration-list{max-height:360px;overflow:auto;}
+.workout-duration-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line);}
+.workout-duration-row>div{min-width:0;}.workout-duration-row small{display:block;color:var(--muted);margin-top:4px;overflow-wrap:anywhere;}
+.workout-duration-row strong{font-variant-numeric:tabular-nums;white-space:nowrap;}
+body.a11y-large-text .workout-session-bar button,body.a11y-large-text .workout-session-bar span{font-size:16px;}

@@ -99,6 +99,11 @@ function validateBackup(backup){
   if(backup.workoutSession!==undefined && (!backup.workoutSession||typeof backup.workoutSession!=='object'||Array.isArray(backup.workoutSession)))return {valid:false,reason:'sessione non valida.'};
   const aliases=backup.state.exerciseAliases;
   if(aliases!==undefined&&(!Array.isArray(aliases)||aliases.some(group=>!Array.isArray(group)||group.some(name=>typeof name!=='string'))))return {valid:false,reason:'nomi storici non validi.'};
+  const validTimer=item=>item&&typeof item.id==='string'&&typeof item.dayId==='string'&&typeof item.day==='string'&&Number.isInteger(item.week)&&item.week>=0&&Number.isFinite(item.startedAt)&&item.startedAt>0;
+  const activeTimer=backup.state.activeWorkoutTimer;
+  if(activeTimer!=null&&!validTimer(activeTimer))return {valid:false,reason:'cronometro non valido.'};
+  const durations=backup.state.workoutDurations;
+  if(durations!==undefined&&(!Array.isArray(durations)||durations.some(item=>!validTimer(item)||!Number.isFinite(item.endedAt)||!Number.isFinite(item.durationMs)||item.durationMs<0)))return {valid:false,reason:'durate non valide.'};
   const sessions=backup.state.sessionHistory;
   if(sessions!==undefined&&(!Array.isArray(sessions)||sessions.some(session=>!session||typeof session.id!=='string'||typeof session.date!=='string'||!Number.isFinite(Date.parse(session.date))||!Number.isInteger(session.week)||session.week<0||!Array.isArray(session.exercises)||session.exercises.some(ex=>!ex||typeof ex.nome!=='string'||!Array.isArray(ex.sets)||!Array.isArray(ex.maxEntries)||[...ex.sets,...ex.maxEntries].some(row=>!row||typeof row!=='object'||Array.isArray(row))))))return {valid:false,reason:'storico delle sessioni non valido.'};
   return { valid:true };

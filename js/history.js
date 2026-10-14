@@ -63,7 +63,7 @@ function renderProgressOverview(){
     <section class="progress-timeline-card">
       <div class="progress-section-head"><span>ATTIVITÀ RECENTE</span><button type="button" onclick="openCalendar()">Vedi tutto</button></div>
       <div class="progress-timeline">${timelineHtml}</div>
-    </section>`;
+    </section>${renderWorkoutDurations()}`;
 }
 function openSettingsModal(){
   if(typeof renderAppearanceSettings === 'function') renderAppearanceSettings();
